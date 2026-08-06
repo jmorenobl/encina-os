@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: encina-branding
-Source: https://github.com/CAMBIA/encina
+Source: https://github.com/jmorenobl/encina-os
 
 Files: *
 Copyright: 2026 Jorge MB <jmorenobl@gmail.com>
