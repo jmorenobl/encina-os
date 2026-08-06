@@ -1,8 +1,27 @@
 #!/usr/bin/make -f
 # Todo el arbol de src/ se copia tal cual a la raiz del sistema.
 
+TEMA = debian/encina-branding/usr/share/plymouth/themes/encina
+
 %:
 	dh $@
 
 override_dh_auto_install:
 	cp -a src/. debian/encina-branding/
+#
+# El logotipo del splash tiene que vivir DENTRO del directorio del tema, no
+# solo en usr/share/backgrounds/. Dos motivos, y el segundo es el que manda:
+#
+#   1. encina.script hace Image("logo.png") y Plymouth resuelve esa ruta
+#      contra el ImageDir declarado en encina.plymouth, que es el directorio
+#      del tema.
+#   2. El hook de initramfs copia UNICAMENTE el directorio del tema. Una ruta
+#      absoluta a /usr/share/backgrounds/ tampoco funcionaria, porque ese
+#      fichero no existe dentro del initramfs.
+#
+# Si falta, el splash pinta el degradado de fondo pero no el logotipo, y no
+# hay ningun error: el sprite se queda vacio en silencio.
+#
+# Se copia aqui, en vez de duplicarlo en src/, para que 02-activos.sh siga
+# siendo el unico sitio que genera el fichero y las dos copias no se separen.
+	install -D -m 644 src/usr/share/backgrounds/encina/logo.png $(TEMA)/logo.png
