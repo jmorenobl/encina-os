@@ -6,6 +6,29 @@
 #
 # No hay que llamar a glib-compile-schemas (R2): libglib2.0-0 tiene un
 # disparador de dpkg sobre este directorio.
+#
+# ---------------------------------------------------------------------------
+# OJO con las secciones ':ubuntu'. No son decorativas ni redundantes.
+#
+# GSettings admite overrides POR ESCRITORIO: una seccion [esquema:escritorio]
+# se aplica solo cuando XDG_CURRENT_DESKTOP contiene ese nombre, y tiene
+# PRIORIDAD sobre la seccion generica, sea cual sea el numero del fichero.
+#
+# Ubuntu define [org.gnome.desktop.background:ubuntu] en su
+# 10_ubuntu-settings.gschema.override, y la sesion de escritorio corre con
+# XDG_CURRENT_DESKTOP=ubuntu:GNOME. Sin duplicar aqui la variante ':ubuntu',
+# el fondo de Ubuntu gana siempre y el nuestro no se ve nunca, por muy alto
+# que sea el 99 del nombre: no compiten en la misma categoria.
+#
+# El fallo es especialmente traicionero porque 'gsettings get' desde una
+# terminal (sin XDG_CURRENT_DESKTOP) devuelve el valor de Encina y parece que
+# todo esta bien. Para comprobarlo de verdad hay que fijar la variable:
+#
+#   XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.desktop.background picture-uri
+#
+# Las secciones genericas se conservan para la sesion "GNOME" pura y para
+# cualquier otro escritorio, donde Ubuntu no define variante propia.
+# ---------------------------------------------------------------------------
 
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/encina/encina.jpg'
@@ -14,7 +37,19 @@ picture-options='zoom'
 primary-color='#2F4033'
 secondary-color='#2F4033'
 
+[org.gnome.desktop.background:ubuntu]
+picture-uri='file:///usr/share/backgrounds/encina/encina.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+picture-options='zoom'
+primary-color='#2F4033'
+secondary-color='#2F4033'
+
 [org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+picture-options='zoom'
+primary-color='#2F4033'
+
+[org.gnome.desktop.screensaver:ubuntu]
 picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
 picture-options='zoom'
 primary-color='#2F4033'

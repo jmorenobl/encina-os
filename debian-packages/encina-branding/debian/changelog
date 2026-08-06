@@ -1,3 +1,14 @@
+encina-branding (0.1.2) noble; urgency=medium
+
+  * Duplicar las secciones del gschema.override con el sufijo :ubuntu.
+    Un override por escritorio tiene prioridad sobre el generico sea
+    cual sea el numero del fichero, de modo que
+    [org.gnome.desktop.background:ubuntu] de 10_ubuntu-settings ganaba
+    siempre y el fondo de Encina no se veia nunca en la sesion de
+    escritorio.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Thu, 06 Aug 2026 23:23:52 +0200
+
 encina-branding (0.1.1) noble; urgency=medium
 
   * Instalar etc/dconf/profile/gdm. Sin el, el perfil de gdm.d/ se
