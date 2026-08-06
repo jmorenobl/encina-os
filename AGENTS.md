@@ -89,13 +89,15 @@ override_dh_auto_install:
 |---|---|
 | `usr/share/backgrounds/encina/encina.jpg` | Fondo claro |
 | `usr/share/backgrounds/encina/encina-dark.jpg` | Fondo oscuro |
-| `usr/share/backgrounds/encina/logo.png` | Logotipo para Plymouth, PNG con transparencia |
+| `usr/share/backgrounds/encina/logo.png` | Logotipo, PNG con transparencia (origen) |
+| `usr/share/plymouth/themes/encina/logo.png` | **Copia obligatoria del logotipo dentro del tema.** `debian/rules` la instala |
 | `usr/share/gnome-background-properties/encina.xml` | Hace que el fondo aparezca en Ajustes → Apariencia |
 | `usr/share/glib-2.0/schemas/99-encina-branding.gschema.override` | Predeterminados de fondo y salvapantallas |
 | `usr/share/icons/hicolor/scalable/apps/encina-logo.svg` | Logotipo del sistema |
 | `usr/share/plymouth/themes/encina/encina.plymouth` | Definición del tema |
 | `usr/share/plymouth/themes/encina/encina.script` | Script del tema |
 | `etc/dconf/db/gdm.d/99-encina` | Logotipo y mensaje en la pantalla de inicio de sesión |
+| `etc/dconf/profile/gdm` | Perfil que hace que GDM lea la base de datos anterior. Sin él, en Debian/Ubuntu no se lee nunca |
 
 ### 4.2 Requisitos concretos
 
@@ -103,12 +105,64 @@ override_dh_auto_install:
 `picture-uri-dark`. Deben definirse ambos; si falta el oscuro, el usuario en modo
 oscuro verá el fondo claro.
 
+**El `gschema.override` debe duplicar cada sección con el sufijo `:ubuntu`.**
+GSettings admite overrides por escritorio: una sección `[esquema:escritorio]`
+solo se aplica cuando `XDG_CURRENT_DESKTOP` contiene ese nombre, y **tiene
+prioridad sobre la genérica sea cual sea el número del fichero**. Ubuntu define
+`[org.gnome.desktop.background:ubuntu]` en `10_ubuntu-settings.gschema.override`
+y la sesión corre con `XDG_CURRENT_DESKTOP=ubuntu:GNOME`, así que un `99-`
+genérico **no le gana**: no compiten en la misma categoría.
+
+El fallo es traicionero porque `gsettings get` desde una terminal no tiene esa
+variable y devuelve el valor propio, dando la falsa impresión de que funciona.
+La comprobación válida es:
+
+```
+XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.desktop.background picture-uri
+```
+
+Lo mismo aplica a `org.gnome.desktop.screensaver`.
+
 **GDM usa su propia base de datos de dconf**, no `gschema.override`. Por eso el
 perfil va en `/etc/dconf/db/gdm.d/` y el `postinst` debe ejecutar `dconf update`.
+
+**En Debian y Ubuntu eso no basta.** El perfil que instala `gdm3` vive en
+`/usr/share/dconf/profile/gdm` y **no incluye `system-db:gdm`**:
+
+```
+user-db:user
+file-db:/var/lib/gdm3/greeter-dconf-defaults
+```
+
+Sin `system-db:gdm`, el fichero de `gdm.d/` se compila y no se lee jamás, y el
+fallo es silencioso: la pantalla de GDM sigue con el logotipo de Ubuntu, que
+`10_ubuntu-settings.gschema.override` fija por defecto. La solución es instalar
+`/etc/dconf/profile/gdm` desde el propio paquete (dconf busca antes en `/etc`
+que en `/usr/share`, así que no se sobrescribe nada ajeno y R5 se respeta),
+conservando el `file-db:` de Debian para no perder sus valores por defecto.
+
+Comprobación sin reiniciar GDM:
+
+```
+DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/logo
+```
 
 **El campo `logo` de GDM sí acepta una ruta absoluta.** (En `os-release`, en
 cambio, `LOGO` espera un *nombre de icono*; irrelevante aquí porque `os-release`
 está fuera de alcance.)
+
+**Las imágenes del tema de Plymouth deben estar dentro del directorio del
+tema.** `Image("logo.png")` se resuelve contra el `ImageDir` declarado en el
+`.plymouth`, y sobre todo: **el hook de initramfs copia únicamente el
+directorio del tema**, así que una ruta absoluta a `/usr/share/backgrounds/`
+tampoco sirve — ese fichero no existe dentro del initramfs. Si falta, el splash
+pinta el fondo pero no el logotipo, **sin dar ningún error**. Comprobación:
+
+```
+lsinitramfs /boot/initrd.img-$(uname -r) | grep encina
+```
+
+Deben aparecer el `.plymouth`, el `.script` **y el `logo.png`**.
 
 **El script de Plymouth debe implementar el callback de contraseña.** Sin él, en
 equipos con disco cifrado (LUKS) el arranque se queda en negro sin solicitar la
