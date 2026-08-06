@@ -1,0 +1,31 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [encina-branding]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar dependencias de construcción
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y devscripts debhelper lintian
+
+      - name: Comprobar las reglas duras
+        run: |
+          chmod +x scripts/*.sh
+          ENCINA_REPO="$GITHUB_WORKSPACE" ./scripts/03-construir.sh
+
+      - name: Subir el paquete como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.package }}-deb
+          path: debian-packages/*.deb
+          if-no-files-found: error
