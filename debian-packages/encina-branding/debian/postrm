@@ -1,0 +1,18 @@
+#!/bin/sh
+# Tras retirar el tema hay que regenerar el initramfs y la base de dconf,
+# o el sistema seguiria arrancando con un tema que ya no existe.
+set -e
+
+case "$1" in
+    remove|purge)
+        if command -v update-initramfs >/dev/null 2>&1; then
+            update-initramfs -u || true
+        fi
+        if command -v dconf >/dev/null 2>&1; then
+            dconf update || true
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

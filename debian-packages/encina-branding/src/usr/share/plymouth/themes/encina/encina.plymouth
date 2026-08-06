@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Encina OS
+Description=Tema de arranque de Encina OS
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/encina
+ScriptFile=/usr/share/plymouth/themes/encina/encina.script

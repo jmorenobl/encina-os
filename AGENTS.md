@@ -1,0 +1,276 @@
+# Encina OS — Instrucciones de implementación para el agente
+
+**Alcance de este documento:** únicamente dos paquetes, `encina-branding` y
+`encina-firefox-native`. Todo lo demás (AutoFirma, DNIe, locale, imagen ISO)
+queda **fuera de alcance** y no debe implementarse ni preparse aún.
+
+**Cómo usar este documento:** las reglas de la sección 2 son invariantes. Si una
+tarea parece exigir violar una de ellas, **detente y pregunta** en lugar de
+buscar un atajo. Cada paquete tiene una «Definición de terminado» verificable:
+no declares una tarea completa sin ejecutar esas comprobaciones.
+
+---
+
+## 1. Contexto mínimo
+
+Encina OS es un conjunto de paquetes `.deb` sobre Ubuntu LTS. **No es un fork.**
+El producto es la paquetería; la imagen ISO es un envase opcional posterior.
+
+Objetivo de estos dos paquetes: identidad visual propia y Firefox instalado de
+forma nativa (no Snap) y en español.
+
+El motivo técnico de lo segundo, para que se entienda la prioridad: los
+navegadores instalados vía Snap o Flatpak aíslan el almacén de certificados NSS
+mediante sandbox, lo que impide el funcionamiento de la firma electrónica
+española. Resolver esto ahora elimina por adelantado el obstáculo principal de
+fases futuras.
+
+---
+
+## 2. Reglas duras (invariantes)
+
+| # | Regla |
+|---|---|
+| R1 | **Nada de `/etc/skel`.** Toda configuración por defecto se aplica con `gschema.override` o perfiles de dconf. `/etc/skel` solo afecta a usuarios creados después y no se puede actualizar. |
+| R2 | **No llamar a `glib-compile-schemas`** desde ningún script. `libglib2.0-0` tiene un disparador de dpkg sobre `/usr/share/glib-2.0/schemas` que lo hace automáticamente. |
+| R3 | **No llamar a `apt`, `apt-get`, `dpkg` ni `snap` desde un script de mantenedor** (`preinst`, `postinst`, `prerm`, `postrm`). dpkg mantiene el bloqueo y provocaría un interbloqueo. |
+| R4 | **No eliminar el Snap de Firefox desde el paquete.** Es una acción destructiva (marcadores, sesiones del usuario). La eliminación pertenece a la receta de imagen, no a la paquetería. |
+| R5 | **No sobrescribir ficheros de configuración propiedad de otros paquetes.** `/etc/default/grub` se edita in situ con `sed`; `/etc/os-release` requiere `dpkg-divert` y está fuera de alcance. |
+| R6 | **El tema de Plymouth debe basarse en `spinner`, nunca en `bgrt`.** `bgrt` muestra el logotipo del firmware del fabricante, por lo que el logotipo propio no aparecería nunca. |
+| R7 | **Tras instalar un tema de Plymouth hay que ejecutar `update-initramfs -u`.** El tema se copia dentro del initramfs; sin regenerarlo no se observa ningún cambio y el fallo es silencioso. |
+| R8 | **No incluir activos de terceros.** Ni logotipos de Canonical/Ubuntu, ni tipografía San Francisco de Apple, ni iconos que imiten macOS. Solo activos propios o con licencia libre explícita, declarada en `debian/copyright`. |
+| R9 | **Idempotencia.** Instalar, reinstalar y actualizar cualquier paquete cinco veces seguidas debe dejar el sistema en estado idéntico. |
+| R10 | **Sin dependencias circulares de repositorio.** Un paquete que configura un repositorio de terceros no puede declarar `Depends:` sobre paquetes de ese mismo repositorio. |
+
+---
+
+## 3. Convenciones
+
+- **Identificador técnico:** `encina` (minúsculas, sin acentos).
+- **Nombre visible:** `Encina OS`.
+- **Prefijo de paquetes:** `encina-<función>`.
+- **Estructura de cada paquete:**
+
+```
+debian-packages/encina-<x>/
+├── debian/
+│   ├── changelog        # gestionar con dch, nunca a mano
+│   ├── control
+│   ├── copyright        # formato DEP-5
+│   ├── rules
+│   └── postinst, prerm, postrm   (solo si son necesarios)
+└── src/                 # árbol que se copia tal cual a la raíz del sistema
+```
+
+- `debian/rules` usa `debhelper-compat (= 13)` y el patrón:
+
+```make
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_install:
+	cp -a src/. debian/encina-<x>/
+```
+
+- **Versionado:** semántico, `MAJOR.MINOR.PATCH`. Actualizar el changelog con
+  `dch -v <versión>`. La suite del changelog es el codename de Ubuntu destino.
+- **Arquitectura:** `all` en ambos paquetes. No hay binarios compilados.
+- **Lintian es una puerta de calidad:** `lintian` sin errores es requisito.
+  Los avisos deben justificarse o corregirse, no ignorarse en silencio.
+
+---
+
+## 4. Paquete `encina-branding`
+
+### 4.1 Contenido
+
+| Ruta | Propósito |
+|---|---|
+| `usr/share/backgrounds/encina/encina.jpg` | Fondo claro |
+| `usr/share/backgrounds/encina/encina-dark.jpg` | Fondo oscuro |
+| `usr/share/backgrounds/encina/logo.png` | Logotipo para Plymouth, PNG con transparencia |
+| `usr/share/gnome-background-properties/encina.xml` | Hace que el fondo aparezca en Ajustes → Apariencia |
+| `usr/share/glib-2.0/schemas/99-encina-branding.gschema.override` | Predeterminados de fondo y salvapantallas |
+| `usr/share/icons/hicolor/scalable/apps/encina-logo.svg` | Logotipo del sistema |
+| `usr/share/plymouth/themes/encina/encina.plymouth` | Definición del tema |
+| `usr/share/plymouth/themes/encina/encina.script` | Script del tema |
+| `etc/dconf/db/gdm.d/99-encina` | Logotipo y mensaje en la pantalla de inicio de sesión |
+
+### 4.2 Requisitos concretos
+
+**Fondos claro y oscuro.** Desde GNOME 42 existen `picture-uri` y
+`picture-uri-dark`. Deben definirse ambos; si falta el oscuro, el usuario en modo
+oscuro verá el fondo claro.
+
+**GDM usa su propia base de datos de dconf**, no `gschema.override`. Por eso el
+perfil va en `/etc/dconf/db/gdm.d/` y el `postinst` debe ejecutar `dconf update`.
+
+**El campo `logo` de GDM sí acepta una ruta absoluta.** (En `os-release`, en
+cambio, `LOGO` espera un *nombre de icono*; irrelevante aquí porque `os-release`
+está fuera de alcance.)
+
+**El script de Plymouth debe implementar el callback de contraseña.** Sin él, en
+equipos con disco cifrado (LUKS) el arranque se queda en negro sin solicitar la
+frase de paso. Es un fallo que solo se manifiesta en máquinas cifradas:
+
+```
+fun display_password_callback(prompt, bullets) { ... }
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+```
+
+### 4.3 `postinst` — acciones requeridas, en este orden
+
+1. `update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth <ruta>.plymouth 200`
+2. `update-initramfs -u` (ver R7), condicionado a que el binario exista
+3. `dconf update`, condicionado a que el binario exista
+4. `GRUB_DISTRIBUTOR="Encina OS"` en `/etc/default/grub` mediante `sed`
+   (sustituir si la línea existe, añadir si no), seguido de `update-grub || true`
+
+`prerm` debe hacer `update-alternatives --remove`. `postrm` debe regenerar
+initramfs y dconf. Todas las invocaciones externas con guarda `|| true` donde un
+fallo no deba abortar la desinstalación.
+
+### 4.4 Definición de terminado
+
+Ejecutar en una VM Ubuntu **virgen**:
+
+- [ ] `dpkg-buildpackage -us -uc -b` termina sin error
+- [ ] `lintian ../encina-branding_*.deb` sin errores
+- [ ] `sudo apt install ./encina-branding_*.deb` sin error
+- [ ] `update-alternatives --display default.plymouth` muestra el tema `encina` como activo
+- [ ] Tras reiniciar: logotipo propio en el arranque
+- [ ] Logotipo y mensaje propios en la pantalla de GDM
+- [ ] Fondo propio en el escritorio
+- [ ] **Crear un usuario nuevo después de instalar** (`sudo useradd -m -s /bin/bash prueba`), iniciar sesión con él, y comprobar que hereda el fondo. Si no lo hereda, el override no funciona (probable violación de R1 o R2)
+- [ ] Reinstalar cinco veces: sin cambios de estado ni errores (R9)
+- [ ] `sudo apt purge encina-branding` restaura el tema de arranque original
+
+---
+
+## 5. Paquete `encina-firefox-native`
+
+### 5.1 Qué hace y qué NO hace
+
+**Hace:** configurar el repositorio APT oficial de Mozilla, su clave y el
+anclaje de prioridad (*pinning*).
+
+**No hace:** instalar Firefox, ni instalar el paquete de idioma, ni eliminar el
+Snap. Ver R3, R4 y R10.
+
+El motivo de R10 aquí es concreto: los paquetes `firefox` y
+`firefox-l10n-es-es` viven en el repositorio de Mozilla, que no existe en el
+sistema hasta que **este** paquete se instala. Declararlos como `Depends:`
+produciría una dependencia irresoluble. La instalación de Firefox pertenece al
+metapaquete `encina-meta` o a la receta de imagen, en un paso posterior.
+
+### 5.2 Contenido
+
+**Clave de firma:** `usr/share/keyrings/packages.mozilla.org.asc`
+
+Descargada de `https://packages.mozilla.org/apt/repo-signing-key.gpg` y
+**verificada** contra la huella:
+
+```
+35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3
+```
+
+Si la huella no coincide, **detenerse y avisar**. No continuar.
+
+**Definición del repositorio**, formato deb822 (nunca `apt-key`, obsoleto):
+`etc/apt/sources.list.d/mozilla.sources`
+
+```
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /usr/share/keyrings/packages.mozilla.org.asc
+```
+
+**Anclaje de prioridad:** `etc/apt/preferences.d/encina-mozilla`
+
+```
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000
+```
+
+Sin el anclaje, apt reinstalará el Snap de Ubuntu en la primera actualización.
+Es la causa de fallo más habitual de este paquete.
+
+### 5.3 Verificación del nombre del paquete de idioma
+
+El paquete de idioma español de España es, previsiblemente,
+`firefox-l10n-es-es`. **Confírmalo** antes de referenciarlo en cualquier sitio:
+
+```
+sudo apt update
+apt-cache search firefox-l10n | grep -i 'es-es\|spanish'
+```
+
+Si el nombre difiere, usar el real y anotarlo en el README.
+
+### 5.4 Documentar el orden de instalación
+
+Este paquete no es autosuficiente por diseño. El README debe indicar la
+secuencia:
+
+```
+sudo apt install ./encina-firefox-native_*.deb
+sudo apt update
+sudo apt install firefox firefox-l10n-es-es
+```
+
+### 5.5 Definición de terminado
+
+- [ ] `lintian` sin errores
+- [ ] Tras instalar y `apt update`, `apt policy firefox` muestra el candidato con
+      origen `packages.mozilla.org` y prioridad 1000
+- [ ] `apt install firefox firefox-l10n-es-es` funciona
+- [ ] Firefox arranca **en español** (si arranca en inglés, falta el paquete de idioma)
+- [ ] `snap list | grep firefox` no devuelve nada, o si lo devuelve, se documenta
+      que la eliminación corresponde a la receta de imagen (R4)
+- [ ] **`sudo apt full-upgrade` ejecutado dos veces no reintroduce el Snap ni
+      degrada Firefox a la versión de Ubuntu.** Es la comprobación crítica del anclaje
+- [ ] `apt purge` deja el sistema con la configuración de repositorios original
+
+---
+
+## 6. Integración continua
+
+Crear `.github/workflows/build.yml`:
+
+- Disparadores: `push`, `pull_request`
+- Runner: `ubuntu-latest` (amd64)
+- Matriz por paquete
+- Pasos: instalar `devscripts debhelper lintian` → `dpkg-buildpackage -us -uc -b`
+  → `lintian` → subir los `.deb` como artefactos
+- **La firma del repositorio APT no se hace en CI en esta fase.** La clave de
+  firma de Encina no debe existir en el runner. La publicación del repositorio
+  está fuera de alcance por ahora.
+
+---
+
+## 7. Fuera de alcance — no implementar
+
+- AutoFirma, certificados FNMT, DNIe, `opensc`, PKCS#11, NSS
+- Paquete `encina-locale-es`
+- `encina-keyring`, `encina-meta`, repositorio APT propio, `aptly`
+- Modificación de `/etc/os-release` (requiere `dpkg-divert`; paquete separado futuro)
+- Construcción de imagen ISO, `live-build`, `debos`, Cubic
+- Temas de GTK o de iconos, incluidos los de estética macOS
+- Cualquier interfaz gráfica
+
+Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
+
+---
+
+## 8. Ante la duda
+
+- Si un nombre de paquete, ruta o clave de dconf no se puede verificar con un
+  comando, **no lo inventes**: indícalo y pregunta.
+- Si una comprobación de la «Definición de terminado» falla, no la marques como
+  hecha ni la reformules: reporta el fallo con la salida literal del comando.
+- Preferir la solución declarativa aunque sea más larga. Un `sed` en un
+  `postinst` es aceptable solo donde el fichero pertenece a otro paquete (R5).

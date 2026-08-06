@@ -1,0 +1,8 @@
+#!/usr/bin/make -f
+# Todo el arbol de src/ se copia tal cual a la raiz del sistema.
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	cp -a src/. debian/encina-branding/

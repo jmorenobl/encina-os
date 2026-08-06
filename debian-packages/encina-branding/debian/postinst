@@ -1,0 +1,49 @@
+#!/bin/sh
+# postinst de encina-branding.
+#
+# Orden obligatorio (AGENTS.md 4.3). No se llama a apt, dpkg ni snap desde
+# aqui (R3): dpkg mantiene el bloqueo y provocaria un interbloqueo.
+# Tampoco se llama a glib-compile-schemas (R2): lo hace el disparador de
+# dpkg de libglib2.0-0.
+set -e
+
+TEMA=/usr/share/plymouth/themes/encina/encina.plymouth
+
+case "$1" in
+    configure)
+        # 1. Registrar el tema de arranque como alternativa.
+        update-alternatives --install \
+            /usr/share/plymouth/themes/default.plymouth \
+            default.plymouth "$TEMA" 200
+
+        # 2. El tema viaja DENTRO del initramfs (R7). Sin esto no se
+        #    observa ningun cambio al arrancar, y el fallo es silencioso.
+        if command -v update-initramfs >/dev/null 2>&1; then
+            update-initramfs -u || true
+        fi
+
+        # 3. GDM usa su propia base de datos de dconf, no gschema.override.
+        if command -v dconf >/dev/null 2>&1; then
+            dconf update || true
+        fi
+
+        # 4. /etc/default/grub pertenece a grub-common: se edita in situ
+        #    con sed, nunca se sobrescribe (R5). Sustituir si la linea
+        #    existe, anadir si no: de lo contrario se duplicaria en cada
+        #    reinstalacion y se romperia la idempotencia (R9).
+        if [ -f /etc/default/grub ]; then
+            if grep -q '^GRUB_DISTRIBUTOR=' /etc/default/grub; then
+                sed -i 's|^GRUB_DISTRIBUTOR=.*|GRUB_DISTRIBUTOR="Encina OS"|' \
+                    /etc/default/grub
+            else
+                echo 'GRUB_DISTRIBUTOR="Encina OS"' >> /etc/default/grub
+            fi
+            if command -v update-grub >/dev/null 2>&1; then
+                update-grub || true
+            fi
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

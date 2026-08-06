@@ -1,0 +1,15 @@
+# GDM no lee gschema.override: usa su propia base de datos de dconf.
+# Por eso este perfil vive aqui y el postinst ejecuta 'dconf update'.
+#
+# A diferencia del campo LOGO de os-release, que espera un NOMBRE de icono,
+# aqui 'logo' si acepta una ruta absoluta.
+
+[org/gnome/login-screen]
+logo='/usr/share/backgrounds/encina/logo.png'
+banner-message-enable=true
+banner-message-text='Encina OS'
+disable-user-list=false
+
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+picture-options='zoom'

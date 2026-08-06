@@ -1,0 +1,23 @@
+Source: encina-branding
+Section: x11
+Priority: optional
+Maintainer: CAMBIA ESTO <cambia@esto.example>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: encina-branding
+Architecture: all
+Depends: ${misc:Depends},
+         dconf-cli,
+         plymouth,
+         plymouth-themes
+Description: Identidad visual de Encina OS
+ Aplica la identidad visual de Encina OS al sistema: fondos de escritorio
+ claro y oscuro, logotipo, tema de arranque de Plymouth y personalizacion
+ de la pantalla de inicio de sesion de GDM.
+ .
+ Todos los valores se instalan como predeterminados del sistema mediante
+ gschema.override y perfiles de dconf, de modo que los usuarios creados
+ despues de la instalacion tambien los heredan y cualquier usuario puede
+ sobrescribirlos.

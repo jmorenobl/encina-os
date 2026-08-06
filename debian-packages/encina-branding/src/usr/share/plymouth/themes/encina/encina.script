@@ -1,0 +1,78 @@
+# Tema de arranque de Encina OS.
+#
+# Sigue el modelo de 'spinner', NUNCA el de 'bgrt' (R6): bgrt muestra el
+# logotipo del firmware del fabricante y el logotipo propio no apareceria.
+
+Window.SetBackgroundTopColor(0.18, 0.25, 0.20);
+Window.SetBackgroundBottomColor(0.05, 0.07, 0.06);
+
+ancho = Window.GetWidth();
+alto  = Window.GetHeight();
+
+# ------------------------------------------------------------- logotipo -----
+logo.image  = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+logo.x = ancho / 2 - logo.image.GetWidth()  / 2;
+logo.y = alto  / 2 - logo.image.GetHeight() / 2;
+logo.sprite.SetPosition(logo.x, logo.y, 0);
+
+# Latido suave, para que se vea que el sistema sigue vivo.
+paso = 0;
+fun refresh_callback() {
+    paso++;
+    logo.sprite.SetOpacity(0.80 + 0.20 * Math.Sin(paso / 24));
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+# -------------------------------------------------------------- mensajes ----
+mensaje.sprite = Sprite();
+fun display_message_callback(texto) {
+    mensaje.image = Image.Text(texto, 0.9, 0.9, 0.9);
+    mensaje.sprite.SetImage(mensaje.image);
+    mensaje.sprite.SetPosition(ancho / 2 - mensaje.image.GetWidth() / 2,
+                               logo.y + logo.image.GetHeight() + 40, 1);
+}
+fun hide_message_callback(texto) {
+    mensaje.sprite.SetImage(NULL);
+}
+Plymouth.SetDisplayMessageFunction(display_message_callback);
+Plymouth.SetHideMessageFunction(hide_message_callback);
+
+# ------------------------------------------------ contrasena de disco LUKS ---
+# SIN ESTO, en un equipo con disco cifrado el arranque se queda en negro y
+# no pide la frase de paso. Solo se manifiesta en maquinas cifradas: no se
+# reproduce en una VM sin LUKS.
+aviso.sprite = Sprite();
+puntos.sprite = Sprite();
+
+fun display_password_callback(prompt, bullets) {
+    logo.sprite.SetOpacity(1);
+
+    aviso.image = Image.Text(prompt, 0.9, 0.9, 0.9);
+    aviso.sprite.SetImage(aviso.image);
+    aviso.sprite.SetPosition(ancho / 2 - aviso.image.GetWidth() / 2,
+                             logo.y + logo.image.GetHeight() + 40, 1);
+
+    cadena = "";
+    for (i = 0; i < bullets; i++) {
+        cadena += "*";
+    }
+    puntos.image = Image.Text(cadena, 0.9, 0.9, 0.9);
+    puntos.sprite.SetImage(puntos.image);
+    puntos.sprite.SetPosition(ancho / 2 - puntos.image.GetWidth() / 2,
+                              logo.y + logo.image.GetHeight() + 80, 1);
+}
+
+fun display_normal_callback() {
+    aviso.sprite.SetImage(NULL);
+    puntos.sprite.SetImage(NULL);
+}
+
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+# ----------------------------------------------------------------- salida ---
+fun quit_callback() {
+    logo.sprite.SetOpacity(1);
+}
+Plymouth.SetQuitFunction(quit_callback);

@@ -1,0 +1,20 @@
+# Predeterminados de Encina OS.
+#
+# Esto NO es /etc/skel (R1): alcanza a todos los usuarios, incluidos los
+# creados despues de instalar el paquete, y sigue permitiendo que cada
+# usuario cambie el valor por su cuenta.
+#
+# No hay que llamar a glib-compile-schemas (R2): libglib2.0-0 tiene un
+# disparador de dpkg sobre este directorio.
+
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/encina/encina.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+picture-options='zoom'
+primary-color='#2F4033'
+secondary-color='#2F4033'
+
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+picture-options='zoom'
+primary-color='#2F4033'

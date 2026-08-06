@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+TEMA=/usr/share/plymouth/themes/encina/encina.plymouth
+
+case "$1" in
+    remove|deconfigure)
+        update-alternatives --remove default.plymouth "$TEMA" || true
+        ;;
+esac
+
+#DEBHELPER#
+exit 0
