@@ -1,0 +1,9 @@
+# Artefactos de construcción. El código y los activos SÍ se versionan.
+debian-packages/*.deb
+debian-packages/*.buildinfo
+debian-packages/*.changes
+debian-packages/*/debian/encina-*/
+debian-packages/*/debian/files
+debian-packages/*/debian/*.substvars
+debian-packages/*/debian/*.debhelper
+debian-packages/*/debian/debhelper-build-stamp
