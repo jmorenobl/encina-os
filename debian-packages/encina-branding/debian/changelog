@@ -1,3 +1,24 @@
+encina-branding (0.1.6) noble; urgency=medium
+
+  * Anadir barra de progreso al splash y hacer perceptible el latido del
+    logotipo. El latido anterior recorria de 0,80 a 1,00, imperceptible
+    sobre un logotipo verde oscuro contra fondo verde oscuro; ahora va
+    de 0,35 a 1,00 con el mismo calculo que el tema de referencia de
+    Plymouth. Se corrige tambien el comentario introducido en 0.1.5:
+    Math.Cos y Math.Sin si existen en el plugin de script.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Fri, 07 Aug 2026 00:01:33 +0200
+
+encina-branding (0.1.5) noble; urgency=medium
+
+  * Sustituir Math.Sin por una onda triangular en el latido del logotipo
+    del splash. El plugin de script de Plymouth solo expone Math.Random
+    y Math.Sqrt: la llamada a Math.Sin devolvia un valor vacio y
+    SetOpacity no hacia nada, con lo que el logotipo quedaba estatico
+    sin dar ningun error.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Thu, 06 Aug 2026 23:56:29 +0200
+
 encina-branding (0.1.4) noble; urgency=medium
 
   * Instalar logo.png dentro del directorio del tema de Plymouth. El

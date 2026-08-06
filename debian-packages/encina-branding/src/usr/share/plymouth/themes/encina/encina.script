@@ -16,13 +16,53 @@ logo.x = ancho / 2 - logo.image.GetWidth()  / 2;
 logo.y = alto  / 2 - logo.image.GetHeight() / 2;
 logo.sprite.SetPosition(logo.x, logo.y, 0);
 
-# Latido suave, para que se vea que el sistema sigue vivo.
-paso = 0;
+# Latido del logotipo, para que se vea que el sistema sigue vivo.
+#
+# El calculo es el del tema de referencia de Plymouth
+# (/usr/share/plymouth/themes/script/script.script): el angulo avanza a 0,5 Hz
+# suponiendo un refresco de 50 fps.
+#
+# OJO con el RANGO. Un latido de 0,80 a 1,00 es imperceptible sobre un
+# logotipo verde oscuro contra un fondo verde oscuro: parece una imagen
+# estatica. Hace falta un recorrido amplio, como el 0,30-1,00 del tema de
+# referencia. Si algun dia se cambia el logotipo por uno de mas contraste,
+# este rango se puede estrechar.
+logo.angulo = 0;
 fun refresh_callback() {
-    paso++;
-    logo.sprite.SetOpacity(0.80 + 0.20 * Math.Sin(paso / 24));
+    logo.angulo = logo.angulo + ((2 * 3.14) / 50) * 0.5;
+    opacidad = (Math.Cos(logo.angulo) + 1) / 2;   # 0,00 .. 1,00
+    logo.sprite.SetOpacity(0.35 + opacidad * 0.65);
 }
 Plymouth.SetRefreshFunction(refresh_callback);
+
+# ------------------------------------------------------ barra de progreso ---
+# Un latido solo dice "sigo vivo". La barra dice ademas "voy por aqui", que es
+# lo que espera cualquiera mirando un arranque.
+#
+# Se hace escalando una imagen solida, que es como lo resuelve el tema de
+# referencia: Image.Scale() devuelve una imagen nueva y se le asigna al sprite.
+barra.fondo_imagen = Image("barra-fondo.png");
+barra.fondo_sprite = Sprite(barra.fondo_imagen);
+barra.x = ancho / 2 - barra.fondo_imagen.GetWidth() / 2;
+barra.y = logo.y + logo.image.GetHeight() + 60;
+barra.fondo_sprite.SetPosition(barra.x, barra.y, 1);
+
+barra.imagen  = Image("barra.png");
+barra.sprite  = Sprite();
+barra.sprite.SetPosition(barra.x, barra.y, 2);
+barra.ancho_previo = -1;
+
+fun progress_callback(duracion, progreso) {
+    nuevo = Math.Int(barra.imagen.GetWidth() * progreso);
+    if (nuevo < 1) nuevo = 1;
+    # Solo se reescala cuando cambia el ancho en pixeles enteros: reescalar en
+    # cada refresco desperdicia trabajo durante todo el arranque.
+    if (nuevo != barra.ancho_previo) {
+        barra.ancho_previo = nuevo;
+        barra.sprite.SetImage(barra.imagen.Scale(nuevo, barra.imagen.GetHeight()));
+    }
+}
+Plymouth.SetBootProgressFunction(progress_callback);
 
 # -------------------------------------------------------------- mensajes ----
 mensaje.sprite = Sprite();
