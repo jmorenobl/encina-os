@@ -185,7 +185,7 @@ de seguridad la da GitHub en la sesión 7.
    ```
    find ~/encina/debian-packages/encina-branding -type f | sort
    ```
-   Contrástalo con la tabla 4.1 de AGENTS-encina.md. Deben estar los ocho
+   Contrástalo con la tabla 4.1 de AGENTS.md. Deben estar los ocho
    ficheros de `src/` más `debian/{control,changelog,copyright,rules,postinst,prerm,postrm}`.
    **Si falta algo, párate aquí y pregúntame.** No lo improvises de madrugada.
 

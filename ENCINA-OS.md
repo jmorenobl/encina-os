@@ -3,19 +3,27 @@
 **Punto de entrada único del proyecto.** Si no sabes por dónde seguir, lee la
 sección 7 («Empieza aquí») y nada más.
 
-Fecha: 25 de julio de 2026
+Última actualización: 7 de agosto de 2026
 
 ---
 
-## 0. Los tres documentos y para qué sirve cada uno
+## 0. Los documentos y para qué sirve cada uno
 
 | Documento | Papel | Cuándo abrirlo |
 |---|---|---|
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
-| `AGENTS-encina.md` | Instrucciones ejecutables para el agente de desarrollo | Al lanzar trabajo con Claude Code |
-| `especificacion-proyecto.md` | Detalle largo de las etapas futuras (AutoFirma, DNIe, GUI) | Cuando llegues a la Etapa B |
+| `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de los paquetes | Al lanzar trabajo con Claude Code |
+| `README.md` | Qué es el proyecto y en qué estado está, para quien llega de fuera | Al enseñar el repositorio |
+| `SCRIPTS.md` | Qué hace cada script de `scripts/` y en qué orden | Antes de ejecutar nada en la VM |
+| `RECETA-A1-encina-branding.md` | Guía por sesiones de la fase A1 | Histórico: A1 ya está terminada |
+| `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
 
-Si los tres se contradicen, **manda este**.
+Si se contradicen, **manda este**.
+
+El `especificacion-proyecto.md` que citaban versiones anteriores de este
+documento **no existe en el repositorio**, ni tampoco `AGENTS-encina.md`, que
+hoy es `AGENTS.md`. El detalle largo de la Etapa B está sin escribir; se
+escribirá al llegar a ella.
 
 ---
 
@@ -63,15 +71,18 @@ No volver a discutirlas sin motivo nuevo.
 
 | Artefacto | Estado |
 |---|---|
-| `encina-branding/` (esqueleto de paquete) | **Escrito, sin construir ni probar** |
-| `AGENTS-encina.md` | Escrito, cubre branding + firefox-native |
-| `especificacion-proyecto.md` | Escrito, cubre todas las etapas |
+| `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
+| `encina-firefox-native` | Especificado en `AGENTS.md` §5. **Sin empezar** |
+| Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
+| Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`. Verde, comprobada por `workflow_dispatch`; **el disparo por `push` está pendiente de confirmar** |
+| Scripts de construcción y verificación | Ocho, en `scripts/`, versionados con el repositorio |
+| `AGENTS.md` | Escrito, cubre branding + firefox-native |
 | Nombre y convenciones | Cerrado (D1) |
-| Repositorio git | **No creado** |
-| Cualquier `.deb` construido | **Ninguno** |
+| Licencia | EUPL-1.2 elegida; `LICENSE` es todavía un **marcador de posición**, falta el texto oficial |
 
-**Conclusión: no hay nada construido todavía.** Ese es el motivo de que la imagen
-no pueda ser el primer paso.
+**Conclusión: la Etapa A tiene su primer paquete real y la cadena de
+construcción en marcha.** Lo que sigue es A2, no la imagen: una receta de imagen
+instala paquetes, y con uno solo no hay casi nada que instalar.
 
 ### 3.1 Verificaciones pendientes sobre el nombre
 
@@ -154,9 +165,9 @@ Marcada la posición actual.
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| A0 | Nombre, licencia, repositorio git inicializado | **← AQUÍ** |
-| A1 | `encina-branding` construido, probado, en CI | Esqueleto escrito |
-| A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | Especificado |
+| A0 | Nombre, licencia, repositorio git inicializado | Hecho. Falta el texto oficial de la EUPL-1.2 en `LICENSE` |
+| A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6). Falta confirmar que la CI se dispara por `push` |
+| A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **← AQUÍ.** Especificado, sin empezar |
 | A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | Especificado |
 | A4 | `encina-meta` + repo APT firmado + `encina-keyring` | Especificado |
 | A5 | `autoinstall.yaml` sobre ISO oficial de Ubuntu | Especificado |
@@ -194,70 +205,37 @@ el seed) sin gestión de claves GPG. La receta que se escriba así es la definit
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-### Objetivo: construir e instalar `encina-branding` en una VM limpia
+### Objetivo: `encina-firefox-native` (fase A2)
 
-**Paso 1 — Repositorio git**
+Configurar el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
+de prioridad. **No** instala Firefox, ni el paquete de idioma, ni elimina el
+Snap: ver R3, R4 y R10.
 
-```
-mkdir encina && cd encina && git init
-mkdir -p debian-packages .github/workflows
-# copiar el esqueleto encina-branding a debian-packages/
-```
+La especificación completa está en `AGENTS.md` §5 —contenido exacto de cada
+fichero, huella de la clave que hay que verificar antes de usarla, orden de
+instalación que el README del paquete debe documentar, y definición de
+terminado—. No la dupliques aquí.
 
-Licencia: EUPL v1.2 (la del proyecto; GPLv2+ solo aplicaría si en el futuro se
-deriva código de AutoFirma).
+El camino es el mismo que en A1: escribir el paquete, `./scripts/03-construir.sh`
+para reglas duras + build + `lintian`, y probarlo en la VM. La comprobación
+crítica de este paquete es que `sudo apt full-upgrade` ejecutado **dos veces** no
+reintroduzca el Snap ni degrade Firefox a la versión de Ubuntu: lo que se está
+verificando es el anclaje, y su ausencia es la causa de fallo más habitual.
 
-**Paso 2 — Activos mínimos**
-
-Sustituir los marcadores de posición. No hace falta que sean buenos, hace falta
-que existen:
-
-- `encina.jpg` y `encina-dark.jpg` — dos fondos, aunque sean un color plano
-- `logo.png` — PNG con transparencia, ~200 px
-- `encina-logo.svg` — el SVG de la hoja de encina ya incluido sirve de partida
-
-**Paso 3 — Construir**
-
-```
-sudo apt install devscripts debhelper lintian
-cd debian-packages/encina-branding
-dpkg-buildpackage -us -uc -b
-lintian ../encina-branding_*.deb
-```
-
-**Paso 4 — Probar en VM Ubuntu arm64 virgen en UTM**
-
-```
-sudo apt install ./encina-branding_*.deb
-update-alternatives --display default.plymouth
-sudo reboot
-```
-
-**Paso 5 — La comprobación que de verdad importa**
-
-```
-sudo useradd -m -s /bin/bash prueba && sudo passwd prueba
-```
-
-Iniciar sesión con ese usuario y comprobar que hereda el fondo. Si no lo hereda,
-el `gschema.override` no está funcionando (probable R1 o R2).
-
-**Paso 6 — CI**
-
-`.github/workflows/build.yml` en `ubuntu-latest`: instalar dependencias,
-`dpkg-buildpackage`, `lintian`, subir el `.deb` como artefacto. Sin firma: la
-clave de Encina no debe existir en el runner.
+Antes de referenciar `firefox-l10n-es-es` en ningún sitio, confirma el nombre
+real con `apt-cache search firefox-l10n` (AGENTS.md §5.3). Es previsible, no
+verificado.
 
 ### Terminado cuando
 
-- [ ] `lintian` sin errores
-- [ ] Logotipo propio en arranque, GDM y escritorio
-- [ ] Usuario creado *después* de instalar hereda el fondo
-- [ ] Cinco reinstalaciones sin cambio de estado
-- [ ] `apt purge` restaura el tema de arranque original
-- [ ] CI verde en GitHub Actions
+Las siete casillas de `AGENTS.md` §5.5. Ninguna se marca sin ejecutar el comando.
 
-Entonces, y solo entonces, pasa a A2 (`encina-firefox-native`).
+### Pendiente de A0 y A1
+
+No bloquea A2. Cuando tengas cinco minutos:
+
+- [ ] Sustituir `LICENSE` por el texto oficial de la EUPL-1.2, de joinup.ec.europa.eu
+- [ ] Confirmar que la CI se dispara por `push`, no solo por `workflow_dispatch`
 
 ---
 

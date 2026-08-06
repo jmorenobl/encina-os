@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 01-repo.sh — Crea ~/encina, coloca el esqueleto de encina-branding dentro
-# y verifica que el árbol de ficheros es el que exige AGENTS-encina.md §4.1.
+# y verifica que el árbol de ficheros es el que exige AGENTS.md §4.1.
 #
 # Uso:  ./scripts/01-repo.sh [ruta/a/encina-branding.tar.gz]
 #
