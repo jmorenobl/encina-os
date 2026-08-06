@@ -298,8 +298,13 @@ Crear `.github/workflows/build.yml`:
 - Disparadores: `push`, `pull_request`
 - Runner: `ubuntu-latest` (amd64)
 - Matriz por paquete
-- Pasos: instalar `devscripts debhelper lintian` → `dpkg-buildpackage -us -uc -b`
-  → `lintian` → subir los `.deb` como artefactos
+- Pasos: instalar `build-essential devscripts debhelper lintian` →
+  `dpkg-buildpackage -us -uc -b` → `lintian` → subir los `.deb` como artefactos
+- **`build-essential` es obligatorio y fácil de olvidar.** Es dependencia de
+  construcción implícita de todo paquete Debian, así que `dpkg-checkbuilddeps`
+  aborta sin él con `Unmet build dependencies: build-essential:native`. En una
+  VM de desarrollo suele estar ya instalado porque `devscripts` lo recomienda,
+  de modo que el fallo **solo aparece en el runner**
 - **La firma del repositorio APT no se hace en CI en esta fase.** La clave de
   firma de Encina no debe existir en el runner. La publicación del repositorio
   está fuera de alcance por ahora.
