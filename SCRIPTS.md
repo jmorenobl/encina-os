@@ -70,7 +70,14 @@ export ENCINA_REPO=/ruta/a/tu/repo
 
 ## Comprobado
 
-Los nueve ficheros pasan `shellcheck` sin avisos, y las comprobaciones de reglas
+Los nueve ficheros pasan `bash -n`. **`shellcheck` sí devuelve avisos**, al
+contrario de lo que decía antes este documento: cuatro `SC2164` sobre `cd` y el
+resto de nivel `info`/`style`. Los `SC2164` son falsos positivos —`lib.sh` fija
+`set -euo pipefail`, de modo que un `cd` fallido ya aborta el script, pero
+`shellcheck` no lo detecta porque no resuelve el `source` de ruta dinámica ni
+siquiera con `-x`. Se dejan como están a propósito.
+
+Las comprobaciones de reglas
 duras se han validado saboteando un paquete a propósito: detectan violaciones de
 R1, R2, R3, R6, R7, la falta del callback de LUKS, la falta de `picture-uri-dark`
 y la línea duplicada de `GRUB_DISTRIBUTOR`.

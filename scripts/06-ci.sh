@@ -21,7 +21,14 @@ mkdir -p "$(dirname "$FLUJO")"
 cat > "$FLUJO" << 'EOF'
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # Disparo manual. Ademas de ser comodo para relanzar sin tocar el codigo,
+  # es la unica via cuando GitHub tiene throttled los webhooks: durante la
+  # incidencia de Actions del 2026-08-06 los push no creaban ejecuciones y
+  # workflow_dispatch si.
+  workflow_dispatch:
 
 jobs:
   build:
@@ -37,7 +44,12 @@ jobs:
       - name: Instalar dependencias de construcción
         run: |
           sudo apt-get update
-          sudo apt-get install -y devscripts debhelper lintian
+          # build-essential es dependencia de construccion implicita de todo
+          # paquete Debian: sin el, dpkg-checkbuilddeps aborta con
+          # "Unmet build dependencies: build-essential:native". En una VM de
+          # desarrollo suele estar ya puesto porque devscripts lo recomienda,
+          # asi que este fallo SOLO se manifiesta en el runner.
+          sudo apt-get install -y build-essential devscripts debhelper lintian
 
       - name: Comprobar las reglas duras
         run: |

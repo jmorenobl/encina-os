@@ -85,6 +85,9 @@ debian-packages/*/debian/files
 debian-packages/*/debian/*.substvars
 debian-packages/*/debian/*.debhelper
 debian-packages/*/debian/debhelper-build-stamp
+
+# Ajustes locales de la herramienta, propios de cada maquina.
+.claude/settings.local.json
 EOF
 ok ".gitignore escrito"
 
