@@ -74,7 +74,7 @@ No volver a discutirlas sin motivo nuevo.
 | `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
 | `encina-firefox-native` | Especificado en `AGENTS.md` §5. **Sin empezar** |
 | Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
-| Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`. Verde, comprobada por `workflow_dispatch`; **el disparo por `push` está pendiente de confirmar** |
+| Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
 | Scripts de construcción y verificación | Ocho, en `scripts/`, versionados con el repositorio |
 | `AGENTS.md` | Escrito, cubre branding + firefox-native |
 | Nombre y convenciones | Cerrado (D1) |
@@ -166,7 +166,7 @@ Marcada la posición actual.
 | Fase | Contenido | Estado |
 |---|---|---|
 | A0 | Nombre, licencia, repositorio git inicializado | Hecho. Falta el texto oficial de la EUPL-1.2 en `LICENSE` |
-| A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6). Falta confirmar que la CI se dispara por `push` |
+| A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6), con la CI verde por `push` |
 | A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **← AQUÍ.** Especificado, sin empezar |
 | A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | Especificado |
 | A4 | `encina-meta` + repo APT firmado + `encina-keyring` | Especificado |
@@ -230,12 +230,11 @@ verificado.
 
 Las siete casillas de `AGENTS.md` §5.5. Ninguna se marca sin ejecutar el comando.
 
-### Pendiente de A0 y A1
+### Pendiente de A0
 
 No bloquea A2. Cuando tengas cinco minutos:
 
 - [ ] Sustituir `LICENSE` por el texto oficial de la EUPL-1.2, de joinup.ec.europa.eu
-- [ ] Confirmar que la CI se dispara por `push`, no solo por `workflow_dispatch`
 
 ---
 

@@ -98,10 +98,15 @@ ejecutando el mismo `scripts/03-construir.sh` que se usa en local, y sube el
 `.deb` como artefacto. No hay firma de repositorio: la clave de Encina no debe
 existir en el runner.
 
-Estado: **verde**, comprobado mediante `workflow_dispatch`. **El disparo por
-`push` está pendiente de confirmar**: el 2026-08-06 hubo una incidencia de
-GitHub Actions con los webhooks throttled, durante la cual los push no creaban
-ejecuciones.
+Estado: **verde por `push` y por `workflow_dispatch`**, comprobado sobre
+`9a673b8`.
+
+El disparo por `push` funciona, pero su entrega fue irregular durante la
+incidencia de GitHub Actions del 2026-08-06 (webhooks throttled): la ejecución
+del push de `9a673b8` tardó **doce minutos** en crearse, y el push de `ffbb7fd`
+no llegó a generar ninguna. Si tras un push no aparece ejecución, el flujo
+probablemente no tiene nada roto: espera y, si hace falta, lánzalo a mano con
+`workflow_dispatch`.
 
 El repositorio (`jmorenobl/encina-os`) es **privado**.
 
