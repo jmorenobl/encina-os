@@ -1,3 +1,12 @@
+encina-branding (0.1.1) noble; urgency=medium
+
+  * Instalar etc/dconf/profile/gdm. Sin el, el perfil de gdm.d/ se
+    compila pero el saludador no lo lee en Debian/Ubuntu, porque el
+    perfil de gdm3 no incluye system-db:gdm, y la pantalla de inicio de
+    sesion seguia con el logotipo de Ubuntu.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Thu, 06 Aug 2026 23:03:39 +0200
+
 encina-branding (0.1.0) noble; urgency=medium
 
   * Version inicial: fondos claro y oscuro, tema de Plymouth, logotipo

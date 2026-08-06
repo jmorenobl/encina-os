@@ -1,0 +1,25 @@
+# Perfil de dconf del saludador de GDM.
+#
+# Por que hace falta este fichero: en Debian y Ubuntu, gdm3 instala su perfil
+# en /usr/share/dconf/profile/gdm y ese perfil NO incluye 'system-db:gdm'.
+# Solo lleva la base de datos del usuario y la de Debian. Resultado: el
+# fichero /etc/dconf/db/gdm.d/99-encina se compila correctamente, pero el
+# saludador no lo abre nunca y sigue saliendo el logotipo de Ubuntu, que
+# 10_ubuntu-settings.gschema.override fija como valor por defecto.
+#
+# (La convencion de /etc/dconf/db/gdm.d/ a secas es la de Fedora y la de GDM
+# upstream, donde el perfil de serie si trae system-db:gdm.)
+#
+# Esto no viola R5: gdm3 instala su perfil en /usr/share, no en /etc, asi que
+# no sobrescribimos ningun fichero ajeno. dconf busca primero en /etc, de modo
+# que este sustituye al suyo dejandolo intacto.
+#
+# El orden es de mayor a menor prioridad:
+#   1. lo que haya fijado el usuario
+#   2. nuestra base de datos (etc/dconf/db/gdm.d/)
+#   3. los valores por defecto de Debian, que se conservan a proposito para no
+#      romper lo que Ubuntu ya configura en el saludador
+
+user-db:user
+system-db:gdm
+file-db:/var/lib/gdm3/greeter-dconf-defaults

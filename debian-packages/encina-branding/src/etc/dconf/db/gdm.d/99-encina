@@ -1,6 +1,12 @@
 # GDM no lee gschema.override: usa su propia base de datos de dconf.
 # Por eso este perfil vive aqui y el postinst ejecuta 'dconf update'.
 #
+# OJO: en Debian y Ubuntu esto no basta por si solo. El perfil que trae gdm3
+# no incluye 'system-db:gdm', asi que este fichero se compila pero nunca se
+# lee. Lo que lo activa es etc/dconf/profile/gdm, que instala este mismo
+# paquete. Si alguien quita ese fichero, esto deja de tener efecto en
+# silencio.
+#
 # A diferencia del campo LOGO de os-release, que espera un NOMBRE de icono,
 # aqui 'logo' si acepta una ruta absoluta.
 
