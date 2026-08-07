@@ -110,15 +110,21 @@ definición de terminado ([AGENTS.md](AGENTS.md) §5.5). La séptima —que Fire
 arranque en español— no la puede comprobar ningún script y está pendiente de
 mirar la pantalla.
 
-⚠️ **El icono del dock puede seguir abriendo el Snap.** Conviven dos lanzadores
-llamados «Firefox» y ninguno pisa al otro; Ubuntu ancló el del Snap al instalar
-el sistema. Los valores por defecto del sistema sí apuntan al nativo. Para ver
-el Firefox nativo hay que lanzarlo desde una terminal con `/usr/bin/firefox` y
-comprobar `Binario de la aplicación` en `about:support`. Que la interfaz salga
-en español no demuestra nada por sí solo: el Snap también está en español.
-Cambiar el icono anclado no es cosa de este paquete —no es configurar un
-repositorio, y borrar el Snap está prohibido (R4)—, sino de `encina-meta` o de
-la receta de imagen.
+**El paquete también hace que el icono abra el Firefox correcto**, y esa parte
+no estaba en la especificación original. Instalar el repositorio y Firefox
+nativo dejaba el sistema perfecto y el usuario seguía abriendo el Snap, porque
+conviven dos lanzadores llamados «Firefox» con identificadores distintos y
+Ubuntu ancla al dock el del Snap. Y no se notaba: el Snap también está en
+español, así que la pantalla parecía la correcta.
+
+R4 delegaba esto en la receta de imagen, y para una máquina instalada desde una
+imagen es correcto —allí el Snap no existe—. Pero **D3 dice que el producto es
+la paquetería**, y quien instala el `.deb` sobre su Ubuntu ya tiene el Snap y no
+va a ejecutar ninguna receta de imagen. Se resuelve sombreando el lanzador del
+Snap con otro del mismo identificador que redirige al nativo, ganando por
+precedencia de `XDG_DATA_DIRS`. **No se elimina nada:** el Snap sigue instalado,
+su perfil intacto, y `apt purge` devuelve su lanzador —cosa que
+`09-firefox-verificar.sh` comprueba explícitamente—.
 
 La comprobación crítica es el anclaje, porque su fallo es silencioso: sin él,
 apt reinstala el Snap en la primera actualización y no te enteras hasta

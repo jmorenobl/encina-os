@@ -27,6 +27,8 @@ HUELLA_MOZILLA="35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3"
 CLAVE="$PKG/src/usr/share/keyrings/packages.mozilla.org.asc"
 FUENTES="$PKG/src/etc/apt/sources.list.d/mozilla.sources"
 ANCLAJE="$PKG/src/etc/apt/preferences.d/encina-mozilla"
+SOMBRA="$PKG/src/usr/share/applications/firefox_firefox.desktop"
+OVERRIDE="$PKG/src/usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override"
 MANT=("$PKG/debian/preinst" "$PKG/debian/postinst" "$PKG/debian/prerm" "$PKG/debian/postrm")
 
 # ============================================================================
@@ -117,6 +119,34 @@ Es una acción destructiva: se lleva por delante marcadores y sesiones del
 usuario. Corresponde a la receta de imagen, no a la paquetería."
 else
     ok "R4 — el paquete no elimina el Snap de Firefox"
+fi
+
+# --- R1: nada de /etc/skel -------------------------------------------------
+# Aplica desde que el paquete toca predeterminados del escritorio: la tentación
+# de dejar caer un fichero en /etc/skel para «configurar el dock» es real, y
+# solo alcanzaría a los usuarios creados después.
+if [[ -d "$PKG/src/etc/skel" ]]; then
+    fallo "R1 — el paquete instala ficheros en /etc/skel" \
+"$(find "$PKG/src/etc/skel" -type f 2>/dev/null)
+/etc/skel solo afecta a usuarios creados después y no se puede actualizar.
+Los predeterminados van en gschema.override."
+else
+    ok "R1 — no se usa /etc/skel"
+fi
+
+# --- R2: no llamar a glib-compile-schemas ----------------------------------
+R2_PRUEBAS=""
+for m in "${MANT[@]}"; do
+    [[ -f "$m" ]] || continue
+    linea=$(grep -nE '^[^#]*glib-compile-schemas' "$m" 2>/dev/null || true)
+    [[ -n "$linea" ]] && R2_PRUEBAS+="$m:$linea"$'\n'
+done
+if [[ -n "$R2_PRUEBAS" ]]; then
+    fallo "R2 — un script de mantenedor llama a glib-compile-schemas" \
+"$R2_PRUEBAS
+libglib2.0-0 tiene un disparador de dpkg que ya lo hace. Quítalo."
+else
+    ok "R2 — no se llama a glib-compile-schemas"
 fi
 
 # --- apt-key está obsoleto -------------------------------------------------
@@ -217,6 +247,121 @@ else
     ok "El anclaje tiene un nombre que apt lee ($BASE_ANCLAJE)"
 fi
 
+# ============================================================================
+titulo "3b. Que el icono abra el Firefox correcto"
+
+# --- La sombra del lanzador del Snap ---------------------------------------
+if [[ -f "$SOMBRA" ]]; then
+    ok "Existe la sombra del lanzador del Snap ($(basename "$SOMBRA"))"
+
+    # El nombre TIENE que ser exactamente el del Snap: es lo que hace que gane
+    # por identificador. Cualquier otro nombre crea un tercer lanzador en vez
+    # de sustituir al segundo.
+    if [[ "$(basename "$SOMBRA")" == "firefox_firefox.desktop" ]]; then
+        ok "El identificador coincide con el del Snap (por eso lo sustituye)"
+    else
+        fallo "La sombra no se llama firefox_firefox.desktop" \
+"$(basename "$SOMBRA")
+La sustitución es por identificador de fichero .desktop. Con otro nombre no
+sustituye nada: añade un tercer lanzador."
+    fi
+
+    # TryExec es obligatorio porque este paquete NO instala Firefox (R10).
+    if grep -q '^TryExec=/usr/bin/firefox' "$SOMBRA"; then
+        ok "Lleva TryExec=/usr/bin/firefox"
+    else
+        fallo "La sombra no lleva TryExec=/usr/bin/firefox" \
+"Este paquete no instala Firefox (R10), así que entre instalarlo e instalar
+Firefox el binario no existe. Sin TryExec el icono abriría la nada, y sería
+peor que no haber hecho nada."
+    fi
+    # NoDisplay tiene que estar AUSENTE, y esto no es una preferencia estética:
+    # con NoDisplay=true, instalar el paquete en una sesión ya iniciada hace
+    # DESAPARECER el icono del dock. GNOME Shell vigila /usr/share/applications
+    # por inotify y retira el icono al instante, pero los favoritos por defecto
+    # solo los relee al iniciar sesión, así que el override que lo repone no
+    # actúa hasta entonces. Se entera de lo que quita el icono, no de lo que lo
+    # repone. Comprobado en la VM: el lanzador desapareció.
+    if grep -q '^NoDisplay=true' "$SOMBRA"; then
+        fallo "La sombra lleva NoDisplay=true" \
+"Con NoDisplay, instalar el paquete en una sesión abierta deja al usuario sin
+icono de Firefox hasta que cierre sesión, porque GNOME Shell se entera por
+inotify de que la entrada deja de mostrarse pero no relee los favoritos por
+defecto hasta el siguiente inicio de sesión.
+
+Sin NoDisplay salen dos «Firefox» en el buscador, y es feo, pero los dos
+abren /usr/bin/firefox: ya no hay elección equivocada posible."
+    else
+        ok "No lleva NoDisplay: el icono anclado sigue vivo y pasa a abrir el nativo"
+    fi
+    if grep -qE '^Exec=/usr/bin/firefox' "$SOMBRA"; then
+        ok "Redirige a /usr/bin/firefox, no al Snap"
+    else
+        fallo "La sombra no redirige a /usr/bin/firefox" "$(grep '^Exec=' "$SOMBRA" || echo 'sin Exec')"
+    fi
+    if grep -qE '^Exec=.*(/snap/|snap run)' "$SOMBRA"; then
+        fallo "La sombra sigue apuntando al Snap" "$(grep '^Exec=' "$SOMBRA")"
+    fi
+else
+    fallo "No existe la sombra del lanzador del Snap" \
+"falta $SOMBRA
+Sin ella, el icono del dock sigue abriendo el Snap con todo lo demás bien
+instalado, y no se nota porque el Snap también está en español."
+fi
+
+# --- El override de los favoritos ------------------------------------------
+if [[ -f "$OVERRIDE" ]]; then
+    ok "Existe el gschema.override de los favoritos"
+
+    # LA comprobación de este bloque, y la que costó cuatro versiones en A1.
+    if grep -q '^\[org.gnome.shell:ubuntu\]' "$OVERRIDE"; then
+        ok "El override duplica la sección con el sufijo :ubuntu (§4.2)"
+    else
+        fallo "Al override le falta la sección [org.gnome.shell:ubuntu]" \
+"$(grep '^\[' "$OVERRIDE" || echo 'sin secciones')
+La sesión corre con XDG_CURRENT_DESKTOP=ubuntu:GNOME y Ubuntu define
+favorite-apps en [org.gnome.shell:ubuntu]. Esa sección gana sea cual sea el
+número del fichero: un 99- genérico NO le gana.
+
+Y el fallo es traicionero: 'gsettings get' desde una terminal no tiene esa
+variable y te devolvería el valor genérico, dando la falsa impresión de que
+funciona. Es exactamente el fallo de encina-branding 0.1.2."
+    fi
+    if grep -q '^\[org.gnome.shell\]' "$OVERRIDE"; then
+        ok "El override define también la sección genérica"
+    else
+        aviso "El override no define [org.gnome.shell]; en sesiones no-Ubuntu no se aplicaría"
+    fi
+
+    # Se miran SOLO las líneas efectivas. Los comentarios de este fichero
+    # citan 'firefox_firefox.desktop' para explicar por qué se deja de anclar,
+    # y un grep sobre el fichero entero da FALLO con el override correcto.
+    # (Es la tercera vez que esta familia de falso negativo aparece en A2:
+    # explicar algo en un comentario no es hacerlo.)
+    EFECTIVO=$(grep -vE '^[[:space:]]*#' "$OVERRIDE" || true)
+
+    N_SEC=$(grep -c '^favorite-apps' <<<"$EFECTIVO" || true)
+    N_NATIVO=$(grep -c "'firefox\.desktop'" <<<"$EFECTIVO" || true)
+    if [[ "$N_SEC" == "$N_NATIVO" && "$N_SEC" -ge 2 ]]; then
+        ok "Las $N_SEC secciones anclan firefox.desktop"
+    else
+        fallo "No todas las secciones anclan firefox.desktop" \
+"$N_SEC definiciones de favorite-apps, $N_NATIVO con firefox.desktop
+$(grep -n 'favorite-apps' <<<"$EFECTIVO")"
+    fi
+    if grep -q "'firefox_firefox\.desktop'" <<<"$EFECTIVO"; then
+        fallo "El override sigue anclando el lanzador del Snap" \
+"$(grep -n 'firefox_firefox.desktop' <<<"$EFECTIVO")
+Ese es justo el que hay que dejar de anclar."
+    else
+        ok "El override ya no ancla firefox_firefox.desktop"
+    fi
+else
+    fallo "No existe el gschema.override de los favoritos" \
+"falta $OVERRIDE
+Sin él, el icono anclado seguiría siendo el del Snap."
+fi
+
 # --- Higiene del empaquetado -----------------------------------------------
 grep -qs "^Format:" "$PKG/debian/copyright" \
     && ok "debian/copyright tiene formato DEP-5" \
@@ -277,7 +422,9 @@ echo "$CONTENIDO" | awk '{print $6}' | grep -v '/$' | sed 's/^/  /'
 for esperado in \
     "etc/apt/sources.list.d/mozilla.sources" \
     "etc/apt/preferences.d/encina-mozilla" \
-    "usr/share/keyrings/packages.mozilla.org.asc"
+    "usr/share/keyrings/packages.mozilla.org.asc" \
+    "usr/share/applications/firefox_firefox.desktop" \
+    "usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override"
 do
     if grep -q "$esperado" <<<"$CONTENIDO"; then
         ok "Incluye $esperado"

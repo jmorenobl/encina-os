@@ -207,10 +207,41 @@ Ejecutar en una VM Ubuntu **virgen**:
 ### 5.1 Qué hace y qué NO hace
 
 **Hace:** configurar el repositorio APT oficial de Mozilla, su clave y el
-anclaje de prioridad (*pinning*).
+anclaje de prioridad (*pinning*), **y hacer que el Firefox que se abre al hacer
+clic sea el nativo y no el Snap.**
 
 **No hace:** instalar Firefox, ni instalar el paquete de idioma, ni eliminar el
 Snap. Ver R3, R4 y R10.
+
+**Por qué se añadió lo segundo.** La redacción original dejaba el problema del
+Snap a la receta de imagen (R4), y para una máquina instalada desde una imagen
+de Encina es correcto: allí el Snap no existe nunca. Pero **D3 dice que el
+producto es la paquetería, no la ISO**, y quien instala el `.deb` sobre su
+Ubuntu ya tiene el Snap y no va a ejecutar ninguna receta de imagen. Para esa
+persona —el caso de uso principal— «corresponde a la receta de imagen»
+significa «nunca».
+
+El síntoma es que instalar el repositorio, Firefox nativo y el idioma deja el
+sistema perfecto y el usuario sigue abriendo el Snap, porque Ubuntu tiene
+anclado al dock `firefox_firefox.desktop`. Y no se nota: el Snap también está
+en español. Solo lo delata `about:support`, con `Binario de la aplicación` bajo
+`/snap/firefox/`.
+
+**Esto no relaja R4.** R4 prohíbe *eliminar* el Snap por destructivo, y aquí no
+se elimina nada: el Snap sigue instalado, con su perfil intacto, y arranca con
+`snap run firefox`. Lo que se cambia es qué abre el icono. Desinstalarlo desde
+el paquete sería además imposible por R3: dpkg mantiene el bloqueo mientras
+corre un script de mantenedor, así que `snap remove` desde el `postinst` es un
+interbloqueo.
+
+**Queda sin resolver, y es deliberado:** los marcadores y sesiones del usuario
+viven en `~/snap/firefox/common/.mozilla/firefox/` y el Firefox nativo usa
+`~/.config/mozilla/firefox/`, así que **no los verá**. Migrar el perfil es un
+problema aparte, no es configurar un repositorio APT, y no se aborda en A2.
+
+Ojo con la ruta del nativo: **no es `~/.mozilla/firefox/`**, que es lo que uno
+supone y no existe. El `.deb` de Mozilla usa la ubicación XDG. Verificado en
+`about:support` → `Directorio de perfil`.
 
 El motivo de R10 aquí es concreto: los paquetes `firefox` y
 `firefox-l10n-es-es` viven en el repositorio de Mozilla, que no existe en el
@@ -253,6 +284,42 @@ Pin-Priority: 1000
 Sin el anclaje, apt reinstalará el Snap de Ubuntu en la primera actualización.
 Es la causa de fallo más habitual de este paquete.
 
+Cuidado con `Pin: origin`: casa con el **nombre de máquina** del repositorio, no
+con el campo `Origin:` del fichero `Release`, que aquí vale
+`namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla`. Para casar con
+ese campo habría que escribir `Pin: release o=...`. Confundirlos deja el anclaje
+sin efecto, y el fallo es silencioso.
+
+**Sombra del lanzador del Snap:** `usr/share/applications/firefox_firefox.desktop`
+
+Mismo identificador que el lanzador del Snap, en un directorio que va **antes**
+en `XDG_DATA_DIRS` de la sesión (`/usr/share/` precede a
+`/var/lib/snapd/desktop`), de modo que lo sustituye sin tocarlo. Es el mismo
+mecanismo que `encina-branding` usa para `/etc/dconf/profile/gdm`: no se
+sobrescribe ningún fichero ajeno y R5 se respeta.
+
+Debe llevar `TryExec=/usr/bin/firefox`, porque este paquete **no** instala
+Firefox (R10): entre instalar el paquete e instalar Firefox el binario no
+existe, y sin `TryExec` el icono abriría la nada. Y `NoDisplay=true`, para que
+no aparezcan dos «Firefox» idénticos en el buscador.
+
+**Predeterminados del escritorio:**
+`usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override`
+
+Cambia `favorite-apps` para anclar `firefox.desktop` en lugar de
+`firefox_firefox.desktop`. **Debe duplicar la sección con el sufijo `:ubuntu`**,
+por el mismo motivo explicado en §4.2: Ubuntu define `favorite-apps` en
+`[org.gnome.shell]` y en `[org.gnome.shell:ubuntu]`, con listas distintas entre
+sí, y la de `:ubuntu` gana sea cual sea el número del fichero. La comprobación
+válida es:
+
+```
+XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps
+```
+
+Sin la variable, `gsettings` devuelve la sección genérica y da la falsa
+impresión de que funciona.
+
 ### 5.3 Verificación del nombre del paquete de idioma
 
 El paquete de idioma español de España es, previsiblemente,
@@ -286,8 +353,18 @@ sudo apt install firefox firefox-l10n-es-es
 - [ ] `snap list | grep firefox` no devuelve nada, o si lo devuelve, se documenta
       que la eliminación corresponde a la receta de imagen (R4)
 - [ ] **`sudo apt full-upgrade` ejecutado dos veces no reintroduce el Snap ni
-      degrada Firefox a la versión de Ubuntu.** Es la comprobación crítica del anclaje
+      degrada Firefox a la versión de Ubuntu.** Es la comprobación crítica del anclaje.
+      Si esas dos vueltas no mueven ningún paquete, la prueba no ha probado nada:
+      hay que forzar una vuelta con `-o APT::Get::Always-Include-Phased-Updates=true`
 - [ ] `apt purge` deja el sistema con la configuración de repositorios original
+- [ ] `XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps`
+      contiene `firefox.desktop` y **no** `firefox_firefox.desktop`. Sin la variable
+      la comprobación no vale (§4.2)
+- [ ] **Tras reiniciar la sesión, el icono del dock abre Firefox nativo.** En
+      `about:support`, `Binario de la aplicación` debe ser `/usr/lib/firefox/firefox`
+      y el `ID de distribución` no debe ser `canonical-*`. Que la interfaz salga en
+      español **no demuestra nada por sí solo**: el Snap también está en español, así
+      que primero se confirma el binario y después el idioma
 
 ---
 

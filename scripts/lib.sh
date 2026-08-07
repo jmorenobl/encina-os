@@ -129,6 +129,42 @@ raiz_repo() {
     echo "$d"
 }
 
+# XDG_DATA_DIRS tal como lo ve la sesión gráfica.
+#
+# Hace falta para resolver identificadores .desktop, y no es un detalle: una
+# sesión ssh NO tiene esa variable, y el valor por defecto de la especificación
+# —/usr/local/share:/usr/share— NO incluye /var/lib/snapd/desktop. Resolver un
+# identificador sin ella da un resultado que parece correcto y no demuestra
+# nada, porque el fichero del Snap ni siquiera está en el camino.
+#
+# Se lee del proceso gnome-shell que esté corriendo. Si no hay sesión gráfica,
+# se usa el orden documentado de Ubuntu 24.04 y quien llama debe decirlo.
+xdg_data_dirs_sesion() {
+    local pid dirs=""
+    pid=$(pgrep -u "$(id -un)" -x gnome-shell 2>/dev/null | head -1 || true)
+    if [[ -n "$pid" && -r "/proc/$pid/environ" ]]; then
+        dirs=$(tr '\0' '\n' < "/proc/$pid/environ" \
+               | grep -m1 '^XDG_DATA_DIRS=' | cut -d= -f2- || true)
+    fi
+    echo "${dirs:-/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop}"
+}
+
+# resolver_desktop <identificador.desktop>
+# Imprime la orden Exec a la que resuelve ese identificador, o NINGUNA si no
+# resuelve a nada (ocultado, o descartado por TryExec), o ? si no se ha podido
+# averiguar. Se le pregunta a la misma biblioteca que usa el escritorio, en vez
+# de deducirlo leyendo ficheros: la precedencia la resuelve GIO, no nosotros.
+resolver_desktop() {
+    XDG_DATA_DIRS="$(xdg_data_dirs_sesion)" XDG_CURRENT_DESKTOP=ubuntu:GNOME \
+    python3 - "$1" <<'PY' 2>/dev/null || echo "?"
+import sys, gi
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio
+a = Gio.DesktopAppInfo.new(sys.argv[1])
+print(a.get_commandline() if a else "NINGUNA")
+PY
+}
+
 # PKG_DIR [nombre-del-paquete]
 # Sin argumento devuelve encina-branding, que es lo que esperan 03, 04 y 05:
 # así el flujo de A1 sigue funcionando exactamente igual sin tocar esos tres

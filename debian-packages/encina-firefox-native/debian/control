@@ -12,7 +12,8 @@ Depends: ${misc:Depends}
 Description: Repositorio APT de Mozilla para Firefox nativo
  Configura el repositorio APT oficial de Mozilla, su clave de firma y el
  anclaje de prioridad, para que Firefox se pueda instalar como paquete deb
- nativo en lugar de como Snap.
+ nativo en lugar de como Snap, y hace que el icono del escritorio abra el
+ nativo.
  .
  El motivo no es estetico: los navegadores instalados via Snap o Flatpak
  aislan el almacen de certificados NSS mediante sandbox, lo que impide el
@@ -28,6 +29,13 @@ Description: Repositorio APT de Mozilla para Firefox nativo
    sudo apt update
    sudo apt install firefox firefox-l10n-es-es
  .
- La eliminacion del Snap de Firefox corresponde a la receta de imagen, no a
- la paqueteria: es una accion destructiva que se lleva por delante
- marcadores y sesiones del usuario.
+ El Snap sigue instalado y su perfil intacto: eliminarlo es destructivo y
+ corresponde a la receta de imagen. Lo que cambia es que su lanzador queda
+ sustituido por otro con el mismo identificador que abre el Firefox nativo,
+ y que el icono anclado al dock pasa a ser el del paquete deb. Sin eso, el
+ sistema queda perfectamente configurado y el usuario sigue abriendo el
+ Snap sin enterarse, porque el Snap tambien esta en espanol.
+ .
+ Los marcadores y sesiones guardados en el Snap viven en otro directorio y
+ el Firefox nativo no los vera. Migrar el perfil es un problema aparte que
+ este paquete no aborda.

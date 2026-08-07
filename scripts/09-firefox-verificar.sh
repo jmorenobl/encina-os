@@ -193,9 +193,12 @@ titulo "2. Idempotencia: cinco instalaciones seguidas (R9)"
 instantanea() {
     md5sum /etc/apt/sources.list.d/mozilla.sources \
            /etc/apt/preferences.d/encina-mozilla \
-           /usr/share/keyrings/packages.mozilla.org.asc 2>&1
+           /usr/share/keyrings/packages.mozilla.org.asc \
+           /usr/share/applications/firefox_firefox.desktop \
+           /usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override 2>&1
     dpkg -l "$PAQUETE" 2>/dev/null | tail -1
     ls -1 /etc/apt/sources.list.d/ /etc/apt/preferences.d/ 2>&1
+    XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps 2>/dev/null || true
 }
 
 IDEM_ANTES=$(instantanea)
@@ -247,13 +250,45 @@ fi
 
 for f in /etc/apt/sources.list.d/mozilla.sources \
          /etc/apt/preferences.d/encina-mozilla \
-         /usr/share/keyrings/packages.mozilla.org.asc; do
+         /usr/share/keyrings/packages.mozilla.org.asc \
+         /usr/share/applications/firefox_firefox.desktop \
+         /usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override; do
     if [[ -e "$f" ]]; then
         fallo "Tras purgar sigue existiendo $f" "$(ls -l "$f")"
     else
         ok "Eliminado: $f"
     fi
 done
+
+# El Snap tiene que RECUPERAR su lanzador. Es lo que sostiene que ocultarlo no
+# sea eliminarlo: si tras purgar el identificador vuelve a resolver al Snap,
+# nunca se destruyó nada, solo se tapó mientras el paquete estaba puesto.
+if [[ -f /var/lib/snapd/desktop/applications/firefox_firefox.desktop ]]; then
+    # resolver_desktop usa el XDG_DATA_DIRS de la sesión gráfica. Sin eso, esta
+    # comprobación daba «?» y acusaba al paquete de no ser reversible: una
+    # sesión ssh no tiene esa variable, y el valor por defecto de la
+    # especificación ni siquiera incluye /var/lib/snapd/desktop, de modo que el
+    # fichero del Snap no estaba en el camino.
+    VUELVE=$(resolver_desktop firefox_firefox.desktop)
+    if [[ "$VUELVE" == *snap* ]]; then
+        ok "Tras purgar, el lanzador del Snap vuelve a resolver a: $VUELVE"
+        echo "         Es la prueba de que ocultarlo no era eliminarlo (R4): nada se"
+        echo "         destruyó, solo quedó tapado mientras el paquete estaba puesto."
+    else
+        fallo "Tras purgar, el lanzador del Snap no ha vuelto" \
+"resuelve a: $VUELVE
+Debería volver a apuntar al Snap. Si no vuelve, la operación no era
+reversible y el argumento de que no viola R4 se cae."
+    fi
+    # Y el Snap en sí, que nunca se tocó.
+    if snap list firefox >/dev/null 2>&1; then
+        ok "El Snap sigue instalado tras toda la prueba (nunca se tocó)"
+    else
+        fallo "El Snap ya no está instalado" "$(snap list 2>&1 | grep -i firefox || echo 'no aparece')"
+    fi
+else
+    omitido "No hay Snap de Firefox en esta máquina: no se puede probar la reversibilidad"
+fi
 
 sudo apt-get update >/dev/null 2>&1 || true
 POL_PURGA=$(LC_ALL=C apt-cache policy firefox 2>&1)
@@ -294,9 +329,16 @@ RES=$?
 
 echo
 titulo "Pendiente de tus ojos (no lo doy por bueno yo)"
-pendiente_visual "Abre Firefox y confirma que sigue arrancando y EN ESPAÑOL tras los full-upgrade"
-pendiente_visual "En about:support, 'Application Binary' no debe estar bajo /snap"
+pendiente_visual "Haz clic en el icono de Firefox del dock, como un usuario cualquiera"
+pendiente_visual "En about:support, confirma DOS filas antes de mirar el idioma:"
+echo "            · 'Binario de la aplicación' -> /usr/lib/firefox/firefox-bin"
+echo "              (si pone /snap/firefox/... es el Snap: no vale)"
+echo "            · 'ID de distribución' -> mozilla-deb, nunca canonical-*"
+pendiente_visual "Y entonces sí, que la interfaz esté EN ESPAÑOL"
+echo "            En ese orden: el Snap también está en español, así que ver"
+echo "            español antes de confirmar el binario no demuestra nada."
 echo
+VER_ACTUAL=$(dpkg-query -W -f='${Version}' "$PAQUETE" 2>/dev/null || echo "?")
 echo "Cuando eso pase:"
-echo "    ./scripts/diario.sh \"A2 verificado: encina-firefox-native 0.1.0\""
+echo "    ./scripts/diario.sh \"A2 verificado: $PAQUETE $VER_ACTUAL\""
 exit $RES

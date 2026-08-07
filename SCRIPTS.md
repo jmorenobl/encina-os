@@ -115,11 +115,11 @@ duras se han validado saboteando un paquete a propósito: detectan violaciones d
 R1, R2, R3, R6, R7, la falta del callback de LUKS, la falta de `picture-uri-dark`
 y la línea duplicada de `GRUB_DISTRIBUTOR`.
 
-## Dos trampas de estos scripts, por si escribes más
+## Cuatro trampas de estos scripts, por si escribes más
 
-Las dos aparecieron en A2 y las dos dan **falsos negativos**: el script dice
-`[FALLO]` con la cosa comprobada funcionando perfectamente. Es el peor modo de
-fallo posible para una herramienta de verificación, porque cuesta horas
+Las cuatro aparecieron en A2 y las cuatro dan **falsos negativos**: el script
+dice `[FALLO]` con la cosa comprobada funcionando perfectamente. Es el peor modo
+de fallo posible para una herramienta de verificación, porque cuesta horas
 persiguiendo un problema que no existe.
 
 **1. `comando | grep -q` con `pipefail`.** `grep -q` termina en cuanto encuentra
@@ -138,3 +138,30 @@ crea proceso escritor.
 **2. La salida de apt está traducida.** En una VM en español `Candidate:` se
 llama `Candidato:`, así que cualquier comprobación que busque la palabra en
 inglés falla siempre. Todo lo que consulte a apt va con `LC_ALL=C`.
+
+**3. El `grep` casa con tus propios comentarios.** Tres veces en A2. Un fichero
+que explica *por qué no* se usa `apt-key`, o *por qué* se deja de anclar
+`firefox_firefox.desktop`, contiene esas cadenas, y la comprobación las
+encuentra y acusa al fichero de hacer justo lo que documenta que no hace. Las
+comprobaciones se anclan con `^` o filtran comentarios antes de mirar:
+
+```
+EFECTIVO=$(grep -vE '^[[:space:]]*#' "$FICHERO")
+grep -q "lo que sea" <<<"$EFECTIVO"
+```
+
+**4. El entorno de una sesión ssh no es el de la sesión gráfica.** Dos
+variables muerden:
+
+- `XDG_CURRENT_DESKTOP` no está definida, así que `gsettings get` devuelve la
+  sección genérica del override y no la `:ubuntu`, que es la que aplica de
+  verdad. Es el fallo que costó cuatro versiones en A1.
+- `XDG_DATA_DIRS` tampoco, y su valor por defecto **no incluye**
+  `/var/lib/snapd/desktop`. Una comprobación de precedencia de lanzadores
+  `.desktop` hecha sin ella no prueba nada: el fichero del Snap ni siquiera
+  está en el camino. `lib.sh` tiene `xdg_data_dirs_sesion` y `resolver_desktop`
+  para eso, que leen el valor real del proceso `gnome-shell`.
+
+La moraleja común de las cuatro: **una comprobación que pasa no vale nada si no
+sabes contra qué ha pasado.** Cuando una dé `[OK]`, comprueba que habría dado
+`[FALLO]` de haber estado mal.

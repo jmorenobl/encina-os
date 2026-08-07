@@ -67,37 +67,113 @@ arriba no necesita la opcion.
 Si Firefox arranca en ingles, falta el paquete de idioma o el locale del
 sistema no es espanol; Firefox elige el idioma a partir del locale de la sesion.
 
-## El icono del escritorio puede seguir abriendo el Snap
+## Que el icono abra el Firefox correcto
 
-Esto sorprende y conviene saberlo antes de tropezar. Con el paquete instalado,
-Firefox nativo instalado y todo funcionando, **hacer clic en el icono del dock
-puede seguir abriendo el Snap.** No es un fallo del paquete: es que conviven dos
-lanzadores llamados «Firefox» y ninguno pisa al otro.
+Instalar el repositorio y Firefox nativo **no basta**, y esta es la parte que
+mas sorprende. Con todo correctamente instalado, hacer clic en el icono del dock
+seguia abriendo el Snap, porque conviven dos lanzadores llamados «Firefox» con
+identificadores distintos y ninguno pisa al otro:
 
 | Fichero | `Exec=` | Quien lo pone |
 |---|---|---|
 | `/usr/share/applications/firefox.desktop` | `firefox %u` → `/usr/lib/firefox/firefox` | el deb de Mozilla |
 | `/var/lib/snapd/desktop/applications/firefox_firefox.desktop` | `/snap/bin/firefox %u` | el Snap |
 
-Los valores por defecto del sistema si apuntan al nativo: `xdg-settings get
-default-web-browser` devuelve `firefox.desktop` y la alternativa
-`x-www-browser` apunta a `/usr/bin/firefox`. Lo que queda apuntando al Snap es
-el icono **anclado** al dock, porque Ubuntu lo fijo al instalar el sistema por
-el identificador del Snap:
+Ubuntu ancla al dock **el segundo**. Y el fallo no se nota, porque el Snap
+tambien esta en espanol: la pantalla parece la correcta. Solo lo delata
+`about:support`, con `Binario de la aplicacion` bajo `/snap/firefox/`.
 
-    $ gsettings get org.gnome.shell favorite-apps
-    [..., 'firefox_firefox.desktop', ...]
+Eso importa porque es justo lo que el proyecto quiere evitar: el sandbox del
+Snap aisla el almacen NSS y la firma electronica no funciona. Un paquete que
+instala Firefox nativo y deja que el usuario siga abriendo el Snap no ha
+resuelto el problema.
 
-Este paquete no lo cambia, y no por descuido: modificar los favoritos del
-escritorio no es configurar un repositorio APT, y eliminar el Snap esta
-prohibido (R4). Corresponde a `encina-meta` o a la receta de imagen.
+### Como se arregla, sin tocar el Snap
 
-**Consecuencia practica al verificar:** para mirar el Firefox nativo hay que
-lanzarlo a mano desde una terminal.
+**1. Una sombra del lanzador del Snap.** El paquete instala
+`/usr/share/applications/firefox_firefox.desktop`, con el mismo identificador
+que el del Snap, en un directorio que va **antes** en el `XDG_DATA_DIRS` de la
+sesion:
 
-    /usr/bin/firefox
+    /usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+                                                          ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+                                                            gana            pierde
 
-Y en `about:support`, comprobar dos filas, no una:
+Asi que lo sustituye sin tocarlo. Es el mismo mecanismo que `encina-branding`
+usa para `/etc/dconf/profile/gdm`: no se sobrescribe ningun fichero ajeno, se
+gana por precedencia, y R5 se respeta.
+
+No se limita a ocultarlo: **redirige a `/usr/bin/firefox`**, de modo que a quien
+tuviera anclado el Firefox del Snap por decision propia el icono le sigue
+funcionando, y ademas abre el correcto. Lleva `TryExec=/usr/bin/firefox` porque
+este paquete no instala Firefox (R10): entre instalar el paquete e instalar
+Firefox el binario no existe, y sin `TryExec` el icono abriria la nada.
+`NoDisplay=true` evita que aparezcan dos «Firefox» identicos en el buscador.
+
+**2. Un `gschema.override` que ancla el nativo al dock**, en
+`/usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override`. Cambia
+`favorite-apps` para anclar `firefox.desktop`, y **duplica la seccion con el
+sufijo `:ubuntu`**, que es la que manda. Sin esa duplicacion no funciona, y
+`gsettings get` desde una terminal te diria que si. Es el mismo fallo que costo
+cuatro versiones en `encina-branding`. La comprobacion valida:
+
+    XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps
+
+### Por que esto no viola R4
+
+R4 prohibe **eliminar** el Snap por destructivo. Aqui no se elimina nada:
+
+- El Snap sigue instalado y su perfil intacto. Arranca con `snap run firefox`.
+- `apt purge encina-firefox-native` devuelve el lanzador del Snap, y el
+  identificador vuelve a resolver a `/snap/bin/firefox`. `09-firefox-verificar.sh`
+  lo comprueba explicitamente: es lo que demuestra que la operacion es
+  reversible y que nunca se destruyo nada.
+
+Desinstalar el Snap desde el paquete seria ademas **imposible** por R3: dpkg
+mantiene el bloqueo mientras corre un script de mantenedor, asi que `snap
+remove` desde el `postinst` es un interbloqueo. La eliminacion de verdad sigue
+correspondiendo a la receta de imagen.
+
+### El coste: dos «Firefox» en el buscador
+
+La sombra **no** lleva `NoDisplay`, asi que aparece en el buscador de
+aplicaciones junto a `firefox.desktop`: dos entradas llamadas «Firefox». Es feo
+y es deliberado.
+
+La primera version si llevaba `NoDisplay=true`, y al instalarla en una sesion ya
+iniciada **el icono del dock desaparecio**. GNOME Shell vigila
+`/usr/share/applications` por inotify y retira el icono al instante, pero los
+favoritos por defecto solo los relee al iniciar sesion: recompilar los esquemas
+no notifica a un proceso vivo el cambio de un valor por *defecto*. Se entera de
+lo que quita el icono y no de lo que lo repone, asi que el usuario se queda sin
+lanzador de Firefox hasta cerrar sesion. Para quien instala esto sobre su Ubuntu
+eso se lee como «me han roto el equipo».
+
+Con el duplicado no hay eleccion equivocada posible: **los dos abren
+`/usr/bin/firefox`**. El problema original nunca fue que hubiera dos iconos, era
+que uno de ellos abria el Snap.
+
+`07-firefox-construir.sh` falla si alguien vuelve a poner `NoDisplay`, y
+`08-firefox-instalar.sh` comprueba que la entrada se sigue mostrando: apuntar
+al sitio correcto no basta si el icono desaparece.
+
+### Lo que queda sin resolver
+
+Los marcadores, el historial y las sesiones guardados en el Snap viven en
+`~/snap/firefox/common/.mozilla/firefox/`, y el Firefox nativo usa
+`~/.config/mozilla/firefox/`. **No los vera.** Migrar el perfil es un problema
+aparte, no es configurar un repositorio APT, y este paquete no lo aborda.
+
+Cuidado con esa ruta: **no es `~/.mozilla/firefox/`**, que es lo que uno supone
+y ni siquiera existe. El `.deb` de Mozilla usa la ubicacion XDG. Comprobado en
+`about:support` → `Directorio de perfil`:
+
+    /home/USUARIO/.config/mozilla/firefox/cmnc3cx7.default-release
+
+### Al verificar
+
+GNOME Shell lee los favoritos al arrancar la sesion: **hay que cerrar sesion y
+volver a entrar** antes de mirar el icono. Y en `about:support`, dos filas:
 
     Binario de la aplicacion   /usr/lib/firefox/firefox     <- correcto
                                /snap/firefox/8735/...       <- es el Snap
@@ -106,8 +182,6 @@ Y en `about:support`, comprobar dos filas, no una:
 
 Que la interfaz salga en espanol **no demuestra nada por si solo**: el Snap
 tambien esta en espanol. Primero se confirma el binario, despues el idioma.
-
-`08-firefox-instalar.sh` detecta esta situacion y avisa.
 
 ## Contenido
 

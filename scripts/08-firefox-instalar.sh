@@ -303,21 +303,72 @@ titulo "7. Qué Firefox se abre de verdad al hacer clic"
 DESK_DEB="/usr/share/applications/firefox.desktop"
 DESK_SNAP="/var/lib/snapd/desktop/applications/firefox_firefox.desktop"
 
-if [[ -f "$DESK_SNAP" ]]; then
-    aviso "Conviven dos lanzadores llamados «Firefox» y ninguno pisa al otro:"
-    echo "         deb:  $DESK_DEB  ->  $(grep -m1 '^Exec=' "$DESK_DEB" 2>/dev/null || echo '?')"
-    echo "         snap: $DESK_SNAP  ->  $(grep -m1 '^Exec=' "$DESK_SNAP" 2>/dev/null || echo '?')"
-fi
+DESK_SOMBRA="/usr/share/applications/firefox_firefox.desktop"
 
 if [[ -f "$DESK_DEB" ]]; then
     DUENO=$(dpkg -S "$DESK_DEB" 2>/dev/null | cut -d: -f1 || echo "?")
     if [[ "$DUENO" == "firefox" ]]; then
-        ok "El lanzador $DESK_DEB lo instala el deb de Mozilla"
+        ok "El lanzador visible $DESK_DEB lo instala el deb de Mozilla"
     else
         aviso "El lanzador $DESK_DEB pertenece a '$DUENO', no al deb de firefox"
     fi
 else
     fallo "El deb no ha instalado ningún lanzador de escritorio" "falta $DESK_DEB"
+fi
+
+# --- La sombra: ¿gana de verdad, o solo sobre el papel? ---------------------
+# Esto no se deduce leyendo los ficheros, se resuelve por precedencia de
+# XDG_DATA_DIRS en la sesión. Se le pregunta a la biblioteca que lo resuelve.
+if [[ -f "$DESK_SOMBRA" ]]; then
+    ok "La sombra está instalada en $DESK_SOMBRA"
+    if [[ -f "$DESK_SNAP" ]]; then
+        echo "    XDG_DATA_DIRS usado: $(xdg_data_dirs_sesion)"
+        GANADOR=$(resolver_desktop firefox_firefox.desktop)
+        case "$GANADOR" in
+            /usr/bin/firefox*)
+                ok "El identificador firefox_firefox.desktop resuelve a: $GANADOR"
+                echo "         La sombra gana al del Snap por precedencia de XDG_DATA_DIRS."
+                ;;
+            *snap*)
+                fallo "El identificador del Snap sigue resolviendo al Snap" \
+"resuelve a: $GANADOR
+La sombra no está ganando. Comprueba el orden de XDG_DATA_DIRS de la sesión:
+/usr/share/ debe ir ANTES que /var/lib/snapd/desktop."
+                ;;
+            NINGUNA)
+                aviso "El identificador no resuelve a nada: TryExec está descartando la entrada"
+                echo "         Es lo previsto si Firefox nativo todavía no está instalado."
+                ;;
+            *)
+                omitido "No se ha podido resolver firefox_firefox.desktop (¿falta python3-gi?)"
+                ;;
+        esac
+
+        # Que el icono anclado siga VIVO importa tanto como a dónde apunta.
+        # Con NoDisplay=true apuntaba bien y desaparecía del dock igualmente.
+        VISIBLE=$(XDG_DATA_DIRS="$(xdg_data_dirs_sesion)" XDG_CURRENT_DESKTOP=ubuntu:GNOME \
+                  python3 - firefox_firefox.desktop <<'PY' 2>/dev/null || echo "?"
+import sys, gi
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio
+a = Gio.DesktopAppInfo.new(sys.argv[1])
+print(a.should_show() if a else "NINGUNA")
+PY
+)
+        if [[ "$VISIBLE" == "True" ]]; then
+            ok "La entrada se sigue mostrando: el icono anclado no desaparece"
+        else
+            fallo "La entrada no se muestra (should_show=$VISIBLE)" \
+"Quien instale el paquete con la sesión abierta se queda SIN icono de Firefox
+hasta que cierre sesión: GNOME Shell retira el icono al instante por inotify,
+pero no relee los favoritos por defecto hasta el siguiente inicio de sesión.
+Quita NoDisplay de la sombra."
+        fi
+    else
+        ok "No hay lanzador del Snap que sombrear (sistema sin el Snap)"
+    fi
+else
+    fallo "No se ha instalado la sombra del lanzador del Snap" "falta $DESK_SOMBRA"
 fi
 
 # Los valores por defecto del sistema.
@@ -334,23 +385,34 @@ else
     aviso "x-www-browser apunta a '${ALT_NAV:-?}'"
 fi
 
-# Y el icono anclado, que es por donde se abre en la práctica y el que falló.
-FAVS=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+# --- El icono anclado -------------------------------------------------------
+# LA comprobación tiene que llevar XDG_CURRENT_DESKTOP. Sin ella se lee la
+# sección genérica del override y no la [org.gnome.shell:ubuntu], que es la que
+# aplica de verdad en la sesión. Es el fallo que costó cuatro versiones en A1,
+# y aquí se leen las dos para que la diferencia quede a la vista.
+FAVS_GEN=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+FAVS=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+
 if [[ -z "$FAVS" ]]; then
     omitido "No se han podido leer los favoritos del escritorio"
-elif grep -q "firefox_firefox.desktop" <<<"$FAVS"; then
-    aviso "El icono anclado al dock sigue siendo el del SNAP (firefox_firefox.desktop)"
-    echo "         Al hacer clic se abre el Snap, no Firefox nativo, aunque todo lo"
-    echo "         demás esté bien. No lo arregla este paquete: cambiar los favoritos"
-    echo "         del escritorio no es configurar un repositorio, y borrar el Snap"
-    echo "         está prohibido (R4). Para comprobar el nativo, ejecuta a mano:"
-    echo "             /usr/bin/firefox"
-    echo "         y mira 'Binario de la aplicación' en about:support."
-    echo "         Corresponde a encina-meta o a la receta de imagen."
-elif grep -q "firefox.desktop" <<<"$FAVS"; then
-    ok "El icono anclado al dock es el del deb nativo"
 else
-    aviso "No hay ningún Firefox anclado al dock"
+    if [[ "$FAVS" != "$FAVS_GEN" ]]; then
+        echo "    (las dos secciones difieren, como es de esperar en Ubuntu:)"
+        echo "      sin XDG_CURRENT_DESKTOP: $FAVS_GEN"
+        echo "      con XDG_CURRENT_DESKTOP: $FAVS"
+    fi
+    if grep -q "'firefox_firefox\.desktop'" <<<"$FAVS"; then
+        fallo "El icono anclado al dock sigue siendo el del SNAP" \
+"$FAVS
+El gschema.override no está haciendo efecto en la sección que manda. Si sin
+XDG_CURRENT_DESKTOP sí sale bien, es que falta la sección
+[org.gnome.shell:ubuntu] en el override: esa gana sea cual sea el número del
+fichero."
+    elif grep -q "'firefox\.desktop'" <<<"$FAVS"; then
+        ok "El icono anclado al dock es el del deb nativo (comprobado con XDG_CURRENT_DESKTOP)"
+    else
+        aviso "No hay ningún Firefox anclado al dock: $FAVS"
+    fi
 fi
 
 # ============================================================================
@@ -380,9 +442,13 @@ RES=$?
 
 echo
 titulo "Lo que solo pueden verificar tus ojos"
-pendiente_visual "Abre Firefox ejecutando /usr/bin/firefox EN UNA TERMINAL, no desde el icono"
-echo "            El icono del dock puede ser el del Snap, y entonces estarías"
-echo "            mirando el Snap en lugar del paquete que acabas de instalar."
+pendiente_visual "CIERRA LA SESIÓN Y VUELVE A ENTRAR antes de mirar nada"
+echo "            GNOME Shell lee los favoritos al arrancar la sesión. Hasta que"
+echo "            no reinicies sesión seguirás viendo el icono anterior, y no"
+echo "            será un fallo del paquete sino que aún no se ha releído."
+pendiente_visual "Después, haz clic en el icono de Firefox del dock, como un usuario"
+echo "            Es lo que de verdad hay que probar. Si quieres comprobarlo"
+echo "            sin depender del icono, ejecuta /usr/bin/firefox en una terminal."
 pendiente_visual "Con él abierto, ve a  about:support  y comprueba DOS filas:"
 echo "            · 'Binario de la aplicación' -> /usr/lib/firefox/firefox"
 echo "              (si pone /snap/firefox/... es el Snap: no vale)"

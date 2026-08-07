@@ -24,6 +24,23 @@
 #   y se emite siempre. Se anulan los dos juntos en vez de renombrar el paquete
 #   para no tener el nombre a medias entre dos convenciones.
 #
+# desktop-command-not-in-package usr/bin/firefox
+#
+#   El lanzador apunta a /usr/bin/firefox y este paquete no lo instala. Es
+#   correcto y deliberado: R10 prohibe declarar Depends sobre firefox, porque
+#   firefox vive en el repositorio que configura ESTE paquete y no existe en el
+#   sistema hasta que este paquete esta instalado. La dependencia seria
+#   irresoluble.
+#
+#   Por eso el lanzador lleva TryExec=/usr/bin/firefox: mientras Firefox no
+#   este instalado, la entrada se ignora en vez de abrir la nada. El aviso de
+#   lintian describe una situacion real y prevista, no un descuido.
+#
+#   Se anula para que la seccion de avisos quede vacia y un aviso NUEVO se vea
+#   a la primera. Un aviso conocido repitiendose en cada construccion es la
+#   forma mas segura de que nadie lea los avisos.
+encina-firefox-native: desktop-command-not-in-package usr/bin/firefox [usr/share/applications/firefox_firefox.desktop]
+
 # Siguen viendose con:  lintian --show-overrides
 encina-firefox-native: package-installs-apt-preferences [etc/apt/preferences.d/encina-mozilla]
 encina-firefox-native: package-installs-apt-sources [etc/apt/sources.list.d/mozilla.sources]

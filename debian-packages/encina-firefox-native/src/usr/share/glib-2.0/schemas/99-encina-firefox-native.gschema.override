@@ -1,0 +1,48 @@
+# Ancla al dock el Firefox nativo en lugar del Snap.
+#
+# Ubuntu deja anclado 'firefox_firefox.desktop', que es el lanzador del Snap.
+# Este fichero cambia ese valor por defecto a 'firefox.desktop', que es el que
+# instala el deb de Mozilla. Lo unico que cambia de la lista de Ubuntu es esa
+# entrada; el resto se conserva tal cual para no decidir por el usuario cosas
+# que no nos incumben.
+#
+# LAS DOS SECCIONES SON OBLIGATORIAS, Y ESTE ES EL PUNTO DELICADO.
+#
+# GSettings admite overrides por escritorio: una seccion [esquema:escritorio]
+# solo se aplica cuando XDG_CURRENT_DESKTOP contiene ese nombre, y TIENE
+# PRIORIDAD SOBRE LA GENERICA SEA CUAL SEA EL NUMERO DEL FICHERO. Ubuntu define
+# favorite-apps en las dos, y lo dice en su propio comentario:
+#
+#     /usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override
+#     [org.gnome.shell]
+#     # This is overriden for the Ubuntu session later
+#     ...
+#     [org.gnome.shell:ubuntu]
+#
+# La sesion corre con XDG_CURRENT_DESKTOP=ubuntu:GNOME, asi que la que manda es
+# la de abajo. Un 99- generico NO le gana: no compiten en la misma categoria.
+#
+# Y la comprobacion enganosa: 'gsettings get' desde una terminal ssh no tiene
+# esa variable y devuelve el valor de la seccion generica, dando la falsa
+# impresion de que funciona. Lo que hay que ejecutar es:
+#
+#     XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.shell favorite-apps
+#
+# Es el mismo fallo que costo cuatro versiones en encina-branding (AGENTS.md
+# 4.2). Las dos listas de Ubuntu NO son iguales entre si: la generica lleva
+# Evolution y la de :ubuntu lleva Thunderbird. Cada seccion copia la suya.
+#
+# Nota de mantenimiento: esto fija la lista completa de favoritos de Ubuntu
+# 24.04. Si Ubuntu la cambia en una version posterior, aqui se queda la vieja.
+# Es el precio de que GSettings no permita sustituir un solo elemento.
+#
+# No se llama a glib-compile-schemas desde ningun sitio (R2): lo hace el
+# disparador de dpkg de libglib2.0-0. En una maquina sin GNOME, un override de
+# un esquema que no existe se ignora en silencio y sale con codigo 0, incluso
+# con --strict, asi que este fichero no rompe nada donde no haya escritorio.
+
+[org.gnome.shell]
+favorite-apps = [ 'ubuntu-desktop-bootstrap_ubuntu-desktop-bootstrap.desktop', 'firefox.desktop', 'org.gnome.Evolution.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Rhythmbox3.desktop', 'libreoffice-writer.desktop', 'snap-store_snap-store.desktop', 'yelp.desktop' ]
+
+[org.gnome.shell:ubuntu]
+favorite-apps = [ 'ubuntu-desktop-bootstrap_ubuntu-desktop-bootstrap.desktop', 'firefox.desktop', 'thunderbird_thunderbird.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Rhythmbox3.desktop', 'libreoffice-writer.desktop', 'snap-store_snap-store.desktop', 'yelp.desktop' ]

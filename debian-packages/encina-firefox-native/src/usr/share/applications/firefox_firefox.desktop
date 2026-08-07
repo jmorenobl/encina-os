@@ -1,0 +1,80 @@
+# Este fichero existe para que el icono del Snap deje de abrir el Snap.
+#
+# EL PROBLEMA. Instalar Firefox nativo no quita el lanzador del Snap: conviven
+# dos entradas llamadas «Firefox» y ninguna pisa a la otra, porque tienen
+# identificadores distintos:
+#
+#     /usr/share/applications/firefox.desktop                     (el deb)
+#     /var/lib/snapd/desktop/applications/firefox_firefox.desktop (el Snap)
+#
+# Ubuntu ancla al dock la SEGUNDA, asi que el usuario hace clic y abre el Snap,
+# con todo lo demas correctamente instalado. Y el fallo no se nota: el Snap
+# tambien esta en espanol, asi que la pantalla parece la correcta. Solo lo
+# delata about:support, con «Binario de la aplicacion» bajo /snap/firefox/.
+#
+# Eso importa porque es exactamente lo que el proyecto quiere evitar: el
+# sandbox del Snap aisla el almacen de certificados NSS y la firma electronica
+# no funciona.
+#
+# COMO SE ARREGLA. Este fichero tiene el mismo identificador que el del Snap,
+# firefox_firefox.desktop, y vive en un directorio que va ANTES en
+# XDG_DATA_DIRS de la sesion:
+#
+#     /usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+#      ...                                                  ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+#      este                                                  gana        pierde
+#
+# Asi que sustituye al del Snap sin tocarlo. Es el mismo mecanismo que
+# encina-branding usa para /etc/dconf/profile/gdm: no se sobrescribe ningun
+# fichero ajeno, se gana por precedencia, y R5 se respeta.
+#
+# POR QUE NO SE DESINSTALA EL SNAP, QUE SERIA LO LOGICO. Por R3: dpkg mantiene
+# el bloqueo mientras corre un script de mantenedor, asi que llamar a `snap
+# remove` desde el postinst provoca un interbloqueo. Es tecnicamente imposible
+# desde el paquete. Y por R4: eliminarlo es destructivo y corresponde a la
+# receta de imagen. El Snap sigue instalado, con su perfil intacto, y arranca
+# con `snap run firefox`.
+#
+# POR QUE REDIRIGE EN LUGAR DE OCULTARSE, Y POR QUE NO LLEVA NoDisplay.
+#
+# La primera version llevaba NoDisplay=true, para que no aparecieran dos
+# «Firefox» en el buscador. Fue un error, y se vio en cuanto se probo: al
+# instalar el paquete en una sesion ya iniciada, EL ICONO DEL DOCK DESAPARECIO.
+#
+# El motivo es una asimetria de GNOME Shell:
+#
+#   - Vigila /usr/share/applications por inotify, asi que se entera AL INSTANTE
+#     de que este fichero pasa a NoDisplay, y retira el icono anclado.
+#   - Los favoritos por defecto los lee UNA VEZ, al arrancar la sesion.
+#     Recompilar los esquemas no notifica a un proceso en marcha el cambio de
+#     un valor por DEFECTO, asi que el gschema.override que repone el icono no
+#     surte efecto hasta el siguiente inicio de sesion.
+#
+# Es decir: se entera de lo que quita el icono, no de lo que lo repone. El
+# usuario se queda sin lanzador de Firefox hasta que cierra sesion, y para
+# quien instala esto sobre su Ubuntu eso se lee como «me han roto el equipo».
+#
+# Sin NoDisplay, ese mismo inotify juega a favor: el icono anclado sigue
+# existiendo y pasa a abrir Firefox nativo en el acto, sin reiniciar sesion.
+#
+# EL COSTE, dicho claramente: en el buscador de aplicaciones aparecen dos
+# «Firefox», este y firefox.desktop. Es feo, pero ya no hay eleccion
+# equivocada posible: LOS DOS abren /usr/bin/firefox. El problema original no
+# era que hubiera dos iconos, era que uno de ellos abria el Snap.
+#
+# TryExec hace que la entrada se ignore si /usr/bin/firefox no existe. Hace
+# falta porque este paquete NO instala Firefox (R10): entre instalar el
+# paquete y instalar Firefox hay un rato en el que el binario no esta, y sin
+# TryExec el icono abriria la nada.
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Firefox
+Comment=Navegar por la web
+Exec=/usr/bin/firefox %u
+TryExec=/usr/bin/firefox
+Icon=firefox
+Terminal=false
+Categories=Network;WebBrowser;
+StartupNotify=true
+StartupWMClass=firefox

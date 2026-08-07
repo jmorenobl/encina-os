@@ -1,3 +1,21 @@
+encina-firefox-native (0.2.0) noble; urgency=medium
+
+  * Hacer que el icono del escritorio abra Firefox nativo y no el Snap.
+    Instalar el repositorio dejaba el sistema correcto y el usuario
+    seguia abriendo el Snap, porque Ubuntu ancla al dock
+    firefox_firefox.desktop y el deb instala firefox.desktop: dos
+    lanzadores que no se pisan. No se notaba porque el Snap tambien esta
+    en espanol; solo lo delataba about:support. Se anade una sombra del
+    lanzador del Snap con el mismo identificador en
+    /usr/share/applications, que gana por precedencia de XDG_DATA_DIRS y
+    redirige a /usr/bin/firefox con TryExec, y un gschema.override que
+    ancla firefox.desktop al dock, duplicado con el sufijo :ubuntu
+    porque esa seccion gana sobre la generica. No se elimina el Snap ni
+    se toca su perfil (R4), ni se llama a snap desde ningun script (R3):
+    sigue instalado y arranca con snap run firefox.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Fri, 07 Aug 2026 02:14:30 +0200
+
 encina-firefox-native (0.1.0) noble; urgency=medium
 
   * Primera version. Configura el repositorio APT oficial de Mozilla, su
