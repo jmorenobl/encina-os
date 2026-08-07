@@ -257,6 +257,34 @@ sistema hasta que **este** paquete se instala. Declararlos como `Depends:`
 produciría una dependencia irresoluble. La instalación de Firefox pertenece al
 metapaquete `encina-meta` o a la receta de imagen, en un paso posterior.
 
+**Y tampoco hace que AutoFirma funcione. Léelo antes de añadir aquí una
+preferencia de Firefox (D13).**
+
+Esto no llegará como «voy a implementar AutoFirma» —eso ya lo para §7—. Llegará
+como «añado una preferencia a `encina-firefox-native`», que suena a A2 y no
+dispara ninguna alarma. Es la tentación concreta, y está medida en
+`ENCINA-OS.md` §4.1:
+
+- **Barrera 1.** Firefox de Mozilla no lee `/etc/firefox/pref/`, donde AutoFirma
+  deja `Autofirma.js`, así que el esquema `afirma:` no existe para él y AutoFirma
+  no llega a arrancar. **Esto sí cabría aquí**: un `policies.json` o un fichero de
+  preferencias en `/usr/lib/firefox/distribution/` lo cierra, es declarativo, es
+  del sistema y no toca `/etc/skel`. Pasaría lintian. Media hora.
+- **Barrera 2.** El socket de AutoFirma es TLS (`CN=127.0.0.1` emitido por
+  `CN=Autofirma ROOT`) y el Firefox nativo no tiene esa CA. **Esto no cabe aquí de
+  ninguna manera**: la CA la genera el `postinst` de AutoFirma, es distinta en cada
+  máquina y en cada reinstalación, y vive en el perfil del usuario. Escribirla
+  desde un `.deb` es exactamente el patrón que R1 prohíbe.
+
+**Cerrar solo la 1 es peor que no cerrar ninguna.** Hoy el usuario ve un diálogo
+—desorientador, pero un síntoma—. Si se cierra la 1, AutoFirma arrancará, abrirá
+su socket, el navegador rechazará el certificado, y el usuario se quedará sin
+firmar **y sin el aviso**. Se cambia un fallo con síntoma por uno sin él, que en
+un proyecto cuyo producto es el diagnóstico es un retroceso.
+
+Si una tarea pide añadir aquí cualquier cosa relacionada con `afirma:`,
+certificados, NSS o el socket local: **detente y remite a D13.**
+
 ### 5.2 Contenido
 
 **Clave de firma:** `usr/share/keyrings/packages.mozilla.org.asc`
@@ -398,7 +426,10 @@ Crear `.github/workflows/build.yml`:
 
 ## 7. Fuera de alcance — no implementar
 
-- AutoFirma, certificados FNMT, DNIe, `opensc`, PKCS#11, NSS
+- AutoFirma, certificados FNMT, DNIe, `opensc`, PKCS#11, NSS. **Esto incluye
+  arreglarlo desde `encina-firefox-native` (D13).** Una de las dos barreras
+  medidas cabría en ese paquete y pasaría lintian; cerrarla sola deja el sistema
+  sin firmar y sin el aviso que hoy da. Detalle en §5.1 y en `ENCINA-OS.md` §4.1
 - Paquete `encina-locale-es`. **Suprimido definitivamente el 2026-08-07 (D12).**
   No es «todavía no»: es que no existe nada que empaquetar.
   `check-language-support -l es` devuelve vacío en una Ubuntu 24.04 instalada en

@@ -66,6 +66,7 @@ No volver a discutirlas sin motivo nuevo.
 | D10 | No comprar máquina física | SoftHSM2 cubre PKCS#11 sin lector; Hetzner por horas cubre amd64 de escritorio |
 | D11 | Los dos lanzadores «Firefox» se resuelven quitando el Snap en la ISO propia, no ocultando entradas | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada, §8 prohíbe cualquier GUI. Se vive como «me han roto el equipo» |
 | D12 | **No habrá `encina-locale-es`.** Lo poco que queda va como `Depends:` de `encina-meta` | Medido el 2026-08-07: `check-language-support -l es` sale vacío y el instalador de Ubuntu ya ejecuta ese mismo comando y actúa. El paquete tendría cero ficheros, y tocar locale o teclado chocaría con R5 (§6.1) |
+| D13 | **Ninguna de las dos barreras de §4.1 se arregla desde `encina-firefox-native`.** Corresponden a B1/B2 | La segunda es estado por usuario y por perfil generado en tiempo de ejecución: ningún `.deb` la toca sin violar R1. Y cerrar solo la primera —que **sí** cabría en un paquete— deja el sistema sin firmar **y sin el diálogo que hoy avisa**: cambia un fallo con síntoma por uno sin él, que en un proyecto cuyo producto es el diagnóstico es un retroceso |
 
 ---
 
@@ -258,6 +259,13 @@ Esto importa para el diseño de B1 más que ningún otro dato de esta sección:
 **hay dos barreras, medidas por separado, y arreglar la primera destapa la
 segunda.** Un diagnóstico que solo registre el esquema `afirma:` producirá un
 sistema que sigue sin firmar, y esta vez sin ningún síntoma nuevo que seguir.
+
+Y hay una asimetría que conviene tener delante, porque es la que fija **D13**:
+la primera barrera **sí** es empaquetable —un `policies.json` o un fichero de
+preferencias en `/usr/lib/firefox/distribution/` la cierra, declarativo y del
+sistema—, y la segunda **no lo es en absoluto**: la CA se genera en el `postinst`
+de AutoFirma, es distinta en cada máquina y en cada reinstalación, y vive en el
+perfil del usuario. Por eso la mitad barata es la peligrosa.
 
 **Lo demás que NO se midió, y no se da por bueno:** el `SEC_ERROR_ADDING_CERT`
 de #459 (no reproducido); y Chrome o Chromium, que no están instalados en la VM.
@@ -521,7 +529,9 @@ Dos matices sobre esta lista:
   merece existir (§7, §10). **Hecho el 2026-08-07; resultado en §4.1.** Que esté
   medido no abre nada: AutoFirma sigue en esta lista hasta que se abra B1.
   Los dos fallos medidos tienen remedio conocido y declarativo, y **ese remedio
-  no se escribe, ni se esboza, ni se deja preparado** hasta entonces.
+  no se escribe, ni se esboza, ni se deja preparado** hasta entonces. Uno de los
+  dos cabría en `encina-firefox-native` en media hora: **D13 dice que tampoco
+  ahí**, y el motivo no es de alcance sino de daño.
 
 ---
 
