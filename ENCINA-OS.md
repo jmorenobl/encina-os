@@ -64,6 +64,7 @@ No volver a discutirlas sin motivo nuevo.
 | D8 | Certificado software FNMT antes que DNIe con lector | Cubre el 90% de trámites y no requiere hardware |
 | D9 | Desarrollo en Mac M3; imágenes arm64 en la Etapa A | Son para UTM del autor: nativas y rápidas. amd64 solo cuando el destino son terceros |
 | D10 | No comprar máquina física | SoftHSM2 cubre PKCS#11 sin lector; Hetzner por horas cubre amd64 de escritorio |
+| D11 | Los dos lanzadores «Firefox» se resuelven quitando el Snap en la ISO propia, no ocultando entradas | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada, §8 prohíbe cualquier GUI. Se vive como «me han roto el equipo» |
 
 ---
 
@@ -72,17 +73,21 @@ No volver a discutirlas sin motivo nuevo.
 | Artefacto | Estado |
 |---|---|
 | `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
-| `encina-firefox-native` | Especificado en `AGENTS.md` §5. **Sin empezar** |
+| `encina-firefox-native` | **Construido, instalado y probado.** v0.2.0, las siete casillas de la definición de terminado en VM Ubuntu 24.04 arm64, la última mirada en pantalla |
 | Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
-| Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
-| Scripts de construcción y verificación | Ocho, en `scripts/`, versionados con el repositorio |
-| `AGENTS.md` | Escrito, cubre branding + firefox-native |
+| Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`, **una entrada de matriz por paquete**. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
+| Scripts de construcción y verificación | Once, en `scripts/`, versionados con el repositorio. 00–06 comunes y de A1; 07–09 de A2 |
+| `AGENTS.md` | Escrito, cubre branding + firefox-native. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
 | Nombre y convenciones | Cerrado (D1) |
 | Licencia | EUPL-1.2 elegida; `LICENSE` es todavía un **marcador de posición**, falta el texto oficial |
 
-**Conclusión: la Etapa A tiene su primer paquete real y la cadena de
-construcción en marcha.** Lo que sigue es A2, no la imagen: una receta de imagen
-instala paquetes, y con uno solo no hay casi nada que instalar.
+**Conclusión: la Etapa A tiene dos paquetes reales y la cadena de construcción
+en marcha.** Con `encina-firefox-native` queda resuelto por adelantado el
+obstáculo principal de la Etapa B: Firefox nativo, no en Snap, y por tanto sin
+sandbox aislando el almacén NSS.
+
+Sigue sin tocar la imagen: una receta de imagen instala paquetes, y con dos aún
+no hay casi nada que instalar.
 
 ### 3.1 Verificaciones pendientes sobre el nombre
 
@@ -147,7 +152,7 @@ Invariantes. Si algo parece exigir violarlas, parar y replantear.
 | R1 | Nada de `/etc/skel`. Configuración por defecto con `gschema.override` o perfiles de dconf |
 | R2 | No llamar a `glib-compile-schemas`: `libglib2.0-0` tiene un disparador de dpkg que lo hace |
 | R3 | No llamar a `apt`, `apt-get`, `dpkg` ni `snap` desde scripts de mantenedor (bloqueo de dpkg) |
-| R4 | No eliminar el Snap de Firefox desde un paquete; es destructivo. Corresponde a la receta de imagen |
+| R4 | No eliminar el Snap de Firefox desde un paquete; es destructivo. Corresponde a la receta de imagen. **Sustituir su lanzador no es eliminarlo** y sí está permitido: el Snap sigue instalado, su perfil intacto, y `apt purge` lo devuelve todo (ver `AGENTS.md` §5.1) |
 | R5 | No sobrescribir conffiles de otros paquetes: `/etc/default/grub` con `sed`; `os-release` con `dpkg-divert` |
 | R6 | Tema de Plymouth basado en `spinner`, nunca en `bgrt` (bgrt muestra el logo del fabricante) |
 | R7 | Tras instalar un tema de Plymouth, `update-initramfs -u`. El tema va dentro del initramfs |
@@ -167,8 +172,8 @@ Marcada la posición actual.
 |---|---|---|
 | A0 | Nombre, licencia, repositorio git inicializado | Hecho. Falta el texto oficial de la EUPL-1.2 en `LICENSE` |
 | A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6), con la CI verde por `push` |
-| A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **← AQUÍ.** Especificado, sin empezar |
-| A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | Especificado |
+| A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **Hecho** (v0.2.0), 7/7 de la definición de terminado |
+| A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | **← AQUÍ.** Especificado, sin empezar. Sigue listado en §8 hasta que lo abras |
 | A4 | `encina-meta` + repo APT firmado + `encina-keyring` | Especificado |
 | A5 | `autoinstall.yaml` sobre ISO oficial de Ubuntu | Especificado |
 | A6 | Imagen propia con `live-build` o `debos` | Opcional, al final |
@@ -205,34 +210,36 @@ el seed) sin gestión de claves GPG. La receta que se escriba así es la definit
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-### Objetivo: `encina-firefox-native` (fase A2)
+### A2 está terminada
 
-Configurar el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
-de prioridad. **No** instala Firefox, ni el paquete de idioma, ni elimina el
-Snap: ver R3, R4 y R10.
+`encina-firefox-native` 0.2.0, las siete casillas de `AGENTS.md` §5.5 verificadas
+en VM Ubuntu 24.04 arm64. Configura el repositorio de Mozilla, su clave y el
+anclaje, y hace que el icono del escritorio abra Firefox nativo.
 
-La especificación completa está en `AGENTS.md` §5 —contenido exacto de cada
-fichero, huella de la clave que hay que verificar antes de usarla, orden de
-instalación que el README del paquete debe documentar, y definición de
-terminado—. No la dupliques aquí.
+Lo aprendido en la fase, para no repetirlo:
 
-El camino es el mismo que en A1: escribir el paquete, `./scripts/03-construir.sh`
-para reglas duras + build + `lintian`, y probarlo en la VM. La comprobación
-crítica de este paquete es que `sudo apt full-upgrade` ejecutado **dos veces** no
-reintroduzca el Snap ni degrade Firefox a la versión de Ubuntu: lo que se está
-verificando es el anclaje, y su ausencia es la causa de fallo más habitual.
+- **El anclaje no se comprueba solo instalando.** `apt full-upgrade` dos veces
+  puede pasar en verde sin haber probado nada, si el sistema ya estaba al día.
+  Hay que mirar cuántos paquetes ha movido y forzar las actualizaciones por
+  fases si fueron cero.
+- **La prueba concluyente del anclaje es el A/B de la purga:** con el paquete,
+  el candidato de `firefox` sale de Mozilla; sin él, vuelve solo al deb de
+  transición de Ubuntu. La diferencia entre las dos situaciones es el paquete.
+- **Todo lo verificable sin pantalla no bastó.** Con las siete comprobaciones
+  automáticas en verde, el icono del escritorio seguía abriendo el Snap. Se vio
+  mirando `about:support`. Y estaba en español, así que parecía correcto.
 
-Antes de referenciar `firefox-l10n-es-es` en ningún sitio, confirma el nombre
-real con `apt-cache search firefox-l10n` (AGENTS.md §5.3). Es previsible, no
-verificado.
+### Siguiente: decidir si se abre A3
 
-### Terminado cuando
-
-Las siete casillas de `AGENTS.md` §5.5. Ninguna se marca sin ejecutar el comando.
+La hoja de ruta pone `encina-locale-es` como A3, pero **sigue listado en §8 como
+fuera de alcance**. Esa contradicción es deliberada: abrir una fase es una
+decisión, no un automatismo. Antes de empezarla hay que sacarla de §8 y escribir
+su especificación en `AGENTS.md`, que hoy solo cubre `encina-branding` y
+`encina-firefox-native`.
 
 ### Pendiente de A0
 
-No bloquea A2. Cuando tengas cinco minutos:
+No bloquea nada. Cuando tengas cinco minutos:
 
 - [ ] Sustituir `LICENSE` por el texto oficial de la EUPL-1.2, de joinup.ec.europa.eu
 
@@ -261,6 +268,12 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | Fondo no se aplica a usuarios nuevos | Solo funciona para el usuario original | Se usó `/etc/skel` en lugar de `gschema.override` |
 | Snap de Firefox reaparece | Vuelve tras `apt full-upgrade` | Falta el anclaje `Pin-Priority` sobre `packages.mozilla.org` |
 | Firefox nativo arranca en inglés | Interfaz en en-US | El paquete de idioma es aparte: `firefox-l10n-es-es` |
+| **El icono sigue abriendo el Snap** | Todo instalado y correcto, y `about:support` dice `/snap/firefox/...`. Y está en español, así que parece bien | Conviven dos lanzadores con identificadores distintos y Ubuntu ancla el del Snap. Se sombrea el suyo desde `/usr/share/applications` |
+| **Desaparece el icono de Firefox** | Se pierde el lanzador al instalar, en una sesión ya abierta | `NoDisplay=true` en la sombra. GNOME Shell retira el icono al instante por inotify pero no relee los favoritos por defecto hasta iniciar sesión (D11) |
+| **`apt install firefox` se niega** | «se utilizó -y sin --allow-downgrades» | El deb de transición de Ubuntu lleva epoch `1:`, así que la versión real de Mozilla es *menor*. Interactivamente basta responder que sí |
+| **El anclaje se comprueba en vacío** | `full-upgrade` ×2 en verde sin mover un paquete | El sistema ya estaba al día. Sin contar los paquetes movidos, la prueba parece más fuerte de lo que fue |
+| **El perfil nativo no está donde parece** | Los marcadores «no aparecen» | El deb de Mozilla usa `~/.config/mozilla/firefox/`, no `~/.mozilla/firefox/`, que ni existe. El del Snap está en `~/snap/firefox/common/.mozilla/` |
+| **Una comprobación pasa sin comprobar nada** | `[OK]` con la cosa rota, o `[FALLO]` con la cosa bien | Una sesión ssh no tiene `XDG_CURRENT_DESKTOP` ni `XDG_DATA_DIRS`, la salida de apt está traducida, y `comando \| grep -q` con `pipefail` muere de SIGPIPE. Detalle en `SCRIPTS.md` |
 | Firma electrónica falla sin explicación | Error que no menciona el sandbox | Navegador en Snap/Flatpak aísla el almacén NSS |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |

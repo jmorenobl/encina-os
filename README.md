@@ -66,7 +66,7 @@ paquetes son de arquitectura `all`.
 |---|---|---|
 | A0 | Nombre, licencia, repositorio git | Hecho, salvo el texto de la licencia (ver [Licencia](#licencia)) |
 | A1 | `encina-branding` construido, probado y en CI | **Hecho** — v0.1.6 verificada en VM el 2026-08-07 |
-| A2 | `encina-firefox-native` (repo de Mozilla + clave + anclaje) | **Hecho** — v0.1.0, 6 de 7 comprobaciones verificadas en VM el 2026-08-07; la séptima es visual |
+| A2 | `encina-firefox-native` (repo de Mozilla + clave + anclaje) | **Hecho** — v0.2.0, 7/7 verificadas en VM el 2026-08-07, la última mirando la pantalla |
 | A3–A6 | `encina-locale-es`, `encina-meta` y repo APT propio, `autoinstall.yaml`, imagen propia | Fuera de alcance ahora ([AGENTS.md](AGENTS.md) §7). Nada de esto existe |
 
 Todo lo listado en [AGENTS.md](AGENTS.md) §7 —AutoFirma, DNIe, PKCS#11,
@@ -92,7 +92,7 @@ real.
 Detalle de uso del paquete:
 [debian-packages/encina-branding/README.md](debian-packages/encina-branding/README.md).
 
-### `encina-firefox-native` 0.1.0
+### `encina-firefox-native` 0.2.0
 
 Configura el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
 de prioridad, para que Firefox se instale como `.deb` nativo y no como Snap. Es
@@ -105,10 +105,12 @@ porque ese paquete vive en el repositorio que configura este, que no existe
 hasta que este se instala (R10); y borrar el Snap se lleva por delante
 marcadores y sesiones, así que corresponde a la receta de imagen (R4).
 
-Verificado en VM Ubuntu 24.04 arm64: **6 de las 7 comprobaciones** de la
-definición de terminado ([AGENTS.md](AGENTS.md) §5.5). La séptima —que Firefox
-arranque en español— no la puede comprobar ningún script y está pendiente de
-mirar la pantalla.
+Verificado en VM Ubuntu 24.04 arm64: **7/7 comprobaciones** de la definición de
+terminado ([AGENTS.md](AGENTS.md) §5.5). La última —que Firefox arranque en
+español— no la puede comprobar ningún script, y se confirmó en `about:support`
+mirando el binario (`/usr/lib/firefox/firefox-bin`) y el ID de distribución
+(`mozilla-deb`) **antes** que el idioma: el Snap también está en español, así
+que ver la interfaz traducida no demuestra nada por sí solo.
 
 **El paquete también hace que el icono abra el Firefox correcto**, y esa parte
 no estaba en la especificación original. Instalar el repositorio y Firefox

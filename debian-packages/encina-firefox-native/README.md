@@ -275,6 +275,10 @@ conviertan en un error olvidado.
 
 Con `dch`, nunca a mano. La suite es el codename de Ubuntu destino (`noble`):
 
+    dch -v 0.2.1 --distribution noble "Lo que cambia"
+
+La primera entrada se creo con:
+
     dch --create --package encina-firefox-native -v 0.1.0 --distribution noble
 
 Cuidado en sesiones ssh no interactivas: sin `DEBEMAIL` y `DEBFULLNAME`
