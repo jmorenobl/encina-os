@@ -281,11 +281,12 @@ versionan. El código y los activos sí.
 
 ## Licencia
 
-EUPL-1.2.
+EUPL-1.2. El fichero [LICENSE](LICENSE) contiene el **texto oficial completo**:
+los quince artículos y el Apéndice de licencias compatibles.
 
-⚠️ El fichero [LICENSE](LICENSE) es **un marcador de posición**: contiene el
-identificador y una nota, no el texto oficial. Falta sustituirlo por el texto de
-la European Union Public Licence v1.2 publicado en joinup.ec.europa.eu.
+Verificado carácter a carácter contra la publicación de la Unión Europea en
+EUR-Lex —la EUPL v1.2 es el anexo de la Decisión de Ejecución (UE) 2017/863—
+ignorando solo espaciado y comillas tipográficas: 10.956 caracteres idénticos.
 
 Ningún activo gráfico de terceros forma parte del proyecto: ni marca de Canonical
 o Ubuntu, ni tipografías propietarias, ni iconos que imiten a otros sistemas (R8).

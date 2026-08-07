@@ -79,7 +79,7 @@ No volver a discutirlas sin motivo nuevo.
 | Scripts de construcción y verificación | Once, en `scripts/`, versionados con el repositorio. 00–06 comunes y de A1; 07–09 de A2 |
 | `AGENTS.md` | Escrito, cubre branding + firefox-native. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
 | Nombre y convenciones | Cerrado (D1) |
-| Licencia | EUPL-1.2 elegida; `LICENSE` es todavía un **marcador de posición**, falta el texto oficial |
+| Licencia | EUPL-1.2. `LICENSE` tiene el **texto oficial completo**, verificado carácter a carácter contra EUR-Lex (Decisión de Ejecución (UE) 2017/863) |
 
 **Conclusión: la Etapa A tiene dos paquetes reales y la cadena de construcción
 en marcha.** Con `encina-firefox-native` queda resuelto por adelantado el
@@ -170,7 +170,7 @@ Marcada la posición actual.
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| A0 | Nombre, licencia, repositorio git inicializado | Hecho. Falta el texto oficial de la EUPL-1.2 en `LICENSE` |
+| A0 | Nombre, licencia, repositorio git inicializado | **Hecho**, con el texto oficial de la EUPL-1.2 en `LICENSE` |
 | A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6), con la CI verde por `push` |
 | A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **Hecho** (v0.2.0), 7/7 de la definición de terminado |
 | A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | **← AQUÍ.** Especificado, sin empezar. Sigue listado en §8 hasta que lo abras |
@@ -239,9 +239,9 @@ su especificación en `AGENTS.md`, que hoy solo cubre `encina-branding` y
 
 ### Pendiente de A0
 
-No bloquea nada. Cuando tengas cinco minutos:
-
-- [ ] Sustituir `LICENSE` por el texto oficial de la EUPL-1.2, de joinup.ec.europa.eu
+Ninguno. `LICENSE` ya tiene el texto oficial de la EUPL-1.2, verificado contra
+EUR-Lex. Quedan solo las comprobaciones de nombre de §3.1, que no bloquean nada
+y no son técnicas.
 
 ---
 
