@@ -514,6 +514,7 @@ y 2 haga que la firma salga. Sigue sin existir ningún positivo de extremo a
 extremo, y `encina-snap-fabrica` ha demostrado que **no puede darlo**: allí B3
 es infranqueable. El positivo, si llega, tiene que salir de una máquina con
 Firefox nativo.
+
 ### 4.5 Qué está arreglado ya y qué no, revisado el 2026-08-07
 
 Contrastado contra el código, no contra los README.
