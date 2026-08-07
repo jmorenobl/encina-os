@@ -45,13 +45,27 @@ averiguar por qué. El estado del arte —recogido en [ENCINA-OS.md](ENCINA-OS.m
 §4— es que existen empaquetados alternativos de AutoFirma, todos con un solo
 mantenedor, y **ninguna herramienta de diagnóstico**.
 
+Eso dejó de ser una hipótesis el 2026-08-07. Se instaló el `.deb` oficial de
+AutoFirma 1.9 en una VM propia y se intentó firmar en una sede real. Resultado:
+**cinco fallos encadenados**, ninguno con un mensaje útil en pantalla; el remedio
+obvio (instalar Java, que el paquete no declara por culpa de una errata en
+`debian/control`) no repara nada; y el remedio que propone el propio fabricante
+responde que todo está bien y sale con código 0 sobre un sistema roto. Salidas
+literales en [ENCINA-OS.md](ENCINA-OS.md) §4.1.
+
 Encina OS ataca eso en dos etapas:
 
 - **Etapa A** (actual) — sistema base, identidad propia y cadena de construcción
-  reproducible. Incluye instalar Firefox de forma nativa, no en Snap, lo que
-  elimina por adelantado el obstáculo principal de la etapa siguiente.
+  reproducible. Incluye instalar Firefox de forma nativa, no en Snap.
 - **Etapa B** (futura) — integración con la administración española: AutoFirma,
   certificados FNMT, DNIe.
+
+**Un matiz medido, y cuesta reconocerlo:** instalar Firefox nativo no elimina el
+obstáculo de la Etapa B, lo **desplaza**. Sigue siendo la decisión correcta —sin
+sandbox no hay aislamiento del almacén NSS—, pero AutoFirma 1.9 no sabe encontrar
+el perfil de Firefox nativo ni lee su ruta de preferencias, así que sobre un
+sistema así falla *más* que sobre una Ubuntu de fábrica. La Etapa B no es un
+extra: es la consecuencia necesaria de la Etapa A.
 
 ---
 
@@ -105,8 +119,15 @@ Detalle de uso del paquete:
 
 Configura el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
 de prioridad, para que Firefox se instale como `.deb` nativo y no como Snap. Es
-lo que desbloquea la Etapa B: el sandbox del Snap es lo que impide que funcione
-la firma electrónica.
+condición necesaria para la Etapa B: el sandbox del Snap aísla el almacén NSS e
+impide que funcione la firma electrónica.
+
+**Necesaria, pero no suficiente**, y está medido (§4.1 de
+[ENCINA-OS.md](ENCINA-OS.md)): AutoFirma 1.9 no reconoce el perfil del Firefox
+nativo —que vive en `~/.config/mozilla/firefox/`, no en `~/.mozilla/firefox/`— ni
+lee `/etc/firefox/pref/`, donde deja sus preferencias. Quitar el Snap, que es lo
+que hará la imagen propia, lo deja sin ningún perfil que reconocer. Cerrar ese
+hueco es trabajo de la Etapa B, no de este paquete.
 
 **No instala Firefox, no instala el paquete de idioma y no elimina el Snap.**
 Ninguna de las tres cosas es un olvido. No declara `Depends:` sobre `firefox`

@@ -22,8 +22,16 @@ forma nativa (no Snap) y en español.
 El motivo técnico de lo segundo, para que se entienda la prioridad: los
 navegadores instalados vía Snap o Flatpak aíslan el almacén de certificados NSS
 mediante sandbox, lo que impide el funcionamiento de la firma electrónica
-española. Resolver esto ahora elimina por adelantado el obstáculo principal de
-fases futuras.
+española. Resolver esto ahora es **condición necesaria** para las fases futuras.
+
+**Corrección medida el 2026-08-07.** Este documento decía «elimina por adelantado
+el obstáculo principal de fases futuras». Es falso, y se comprobó instalando el
+`.deb` oficial de AutoFirma 1.9 en la VM: no lo elimina, **lo desplaza**.
+AutoFirma no reconoce el perfil del Firefox nativo (`~/.config/mozilla/firefox/`)
+ni lee `/etc/firefox/pref/`, así que sobre un sistema con Firefox nativo falla
+*más* que sobre una Ubuntu de fábrica. Salidas literales en `ENCINA-OS.md` §4.1.
+No cambia nada de lo que hay que implementar aquí: AutoFirma sigue fuera de
+alcance (§7).
 
 ---
 
