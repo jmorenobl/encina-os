@@ -131,202 +131,6 @@ Resumen de lo ya averiguado, para no repetir el trabajo.
   mantenedor. **Revisado el 2026-08-07 (§4.5): ya corrige dos de los cinco fallos
   de §4.1 y tiene `debian/patches/`.** Último empuje 2025-12-22, tres estrellas.
 
-### 4.5 Qué está arreglado ya y qué no, revisado el 2026-08-07
-
-Contrastado contra el código, no contra los README.
-
-**Upstream acepta PRs externas, pero despacio.** 34 fusionadas, 25 abiertas. La
-mediana de 2 días es de `dependabot`; las humanas son otra cosa: la #497
-—**una sola línea**, `+1 −0`— tardó **87 días**, el README de la #481 tardó 23, y
-las siete de seguridad de `reatlat` del 2026-07-13 siguen abiertas. No es un
-repositorio muerto; es uno lento.
-
-**La barrera 2 NO está arreglada en ninguna versión publicada.** El fichero que
-instala la CA del socket, `ConfiguratorFirefoxLinux.java`, es **idéntico byte a
-byte (15995) en `v1.9`, `v1.9.1` y `v1.9.2`**, y no menciona `.config/mozilla`
-en ninguna. Solo conoce dos rutas, y en este orden:
-
-```java
-PROFILES_INI_RELATIVE_PATH_UBUNTU_22 = "snap/firefox/common/.mozilla/firefox/profiles.ini"
-PROFILES_INI_RELATIVE_PATH           = ".mozilla/firefox/profiles.ini"
-```
-
-Es un `if/else`: si existe la del Snap la usa, **si no** cae a `~/.mozilla/`, que
-en un sistema con el `.deb` de Mozilla **no existe**. Ni una ni otra es
-`~/.config/mozilla/firefox/`. Esto explica exactamente lo medido en §4.2 y
-convierte la barrera 2 en un **bug upstream concreto, vivo y pequeño**.
-
-**Y el arreglo XDG que sí existe está en otro sitio y se perdió.**
-`MozillaKeyStoreUtilities.java` —que busca los certificados **de firma** del
-usuario, no instala la CA— sí conoce la ruta XDG. Entró en `v1.9.1` (2026-04-29,
-35016 bytes) y **`v1.9.2` (2026-05-12) vuelve a los 34562 bytes exactos de `v1.9`
-y a cero apariciones**. Medido sobre los tres tags; la causa (¿rama que no
-incluyó el cambio?) no se ha investigado.
-
-**El `.deb` oficial va un año por detrás de su propio código fuente:** está
-construido sobre `v1.9` (2025-05-21) y upstream está en `v1.9.2` (2026-05-12).
-
-**Lo que `albfernandez` ya corrige**, leído en su `debian/`:
-
-| Fallo de §4.1 | ¿Corregido? |
-|---|---|
-| 1. JRE no declarado (`Recomends:`) | **Sí** — `Depends: java-runtime, libnss3-tools, openssl, ca-certificates` |
-| 2. `postinst` sin `set -e`, éxito con todo roto | **Sí** — el `postinst` empieza con `set -e` |
-| B2 — perfil equivocado | **No.** Su changelog cita un ajuste XDG, pero es un salto de versión de upstream (`1.9.202507.1`→`.4`), no un parche suyo, y no toca el configurador |
-| B1 — preferencia en `/etc/firefox/pref/` | **No, y no le hace falta**: empaqueta para Debian, cuyo `firefox-esr` **sí** lee ese directorio. B1 solo existe con la compilación de Mozilla |
-
-### 4.6 La estrategia: fork del oficial, no de un tercero
-
-Decidido el 2026-08-07, y corrige una recomendación previa de este documento que
-proponía partir de `albfernandez`. **Los parches van al repositorio oficial**, que
-es el único sitio desde el que llegan a todo el mundo. Arreglar el repositorio de
-un tercero deja el fallo intacto donde importa.
-
-`albfernandez` **no es la base: es una fuente de la que copiar** lo que ya tiene
-resuelto —el `debian/control` con `java-runtime`, el `postinst` con `set -e`, la
-construcción desde fuentes y el parche de NSS compartida—. Copiar de él ahorra
-trabajo; contribuirle no lleva la corrección a ninguna parte.
-
-**El empaquetado Debian está DENTRO del repositorio oficial**, así que los tres
-fallos de empaquetado de §4.1 son PRs upstream y no problemas de Encina.
-Verificado en `HEAD` el 2026-08-07, en
-`afirma-simple-installer/linux/instalador_deb/src/DEBIAN/`:
-
-```
-control:   Depends: libnss3-tools
-           Recomends: openjdk-17-jre        <- la errata, viva en HEAD
-postinst:  #!/bin/sh, sin set -e, con exit 0 final
-```
-
-Idénticos en `v1.9` y `v1.9.2`. **No hay CLA, ni `CONTRIBUTING.md`, ni plantilla
-de PR**, así que no hay traba formal para contribuir.
-
-**Las cuatro PRs, de menor a mayor riesgo de rechazo:**
-
-| | Qué | Tamaño | Nota |
-|---|---|---|---|
-| 1 | `Recomends:` → `Recommends:` | una palabra | Issue #302 lleva años abierto. Es la más fácil de aceptar |
-| 2 | `ConfiguratorFirefoxLinux`: añadir la ruta XDG a `getMozillaProfilesIniPaths` | un método | **La importante (B2).** Se defiende sola: `MozillaKeyStoreUtilities` **ya** hace esa comprobación en el mismo repositorio, así que es coherencia interna, no una función nueva |
-| 3 | Preferencias donde la compilación de Mozilla las lee (B1) | pequeña | Beneficia a cualquiera que use el `.deb` o el `.tar.bz2` de Mozilla, no solo a Encina |
-| 4 | `postinst` que no declare éxito con todo roto | pequeña | **La más delicada:** un `set -e` a secas convierte instalaciones que hoy pasan en verde en instalaciones que fallan. Es lo correcto, pero conviene presentarlo como gestión de errores explícita y no como una línea suelta, o lo rechazan por regresión |
-
-**Y el argumento de la PR 2 es mejor de lo previsto: upstream ya arregló esto, en
-uno de tres sitios.** Hay **tres implementaciones independientes** de la misma
-búsqueda, leídas en `HEAD` el 2026-08-07, y no se comportan igual:
-
-| Clase | Para qué | Snap | `.config/mozilla` | `~/.mozilla` |
-|---|---|---|---|---|
-| `MozillaKeyStoreUtilities` | encontrar los certificados **de firma** del usuario | sí | **sí** | sí |
-| `RestoreConfigFirefox` | *Herramientas → Restaurar instalación* | sí | **no** | sí |
-| `ConfiguratorFirefoxLinux` | el `postinst`: **instalar la CA del socket** | sí | **no** | sí |
-
-Y la que sí lo hace lleva el motivo escrito al lado:
-
-```java
-// Directorio de Firefox 147 y superiores
-if (new File(Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini").isFile()) {
-    return Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini";
-}
-```
-
-**La PR no pide una función nueva: pide terminar una que ya está empezada.** En
-`ConfiguratorFirefoxLinux` es insertar una rama `else if` en un `if/else` de seis
-líneas, copiando el comentario incluido.
-
-**Un detalle del `if/else` que conviene entender antes de tocarlo:** es
-excluyente. Si existe el `profiles.ini` del Snap, **no se mira ninguna otra
-ruta**. Como R4 deja el Snap instalado en las máquinas Encina, el configurador se
-queda siempre con el perfil del Snap y **nunca llega a considerar el nativo**.
-Por eso `cmnc3cx7.default-release` tenía cero certificados (§4.2). El arreglo
-correcto no es sustituir una ruta por otra: es **recorrerlas todas**, porque en
-una máquina puede haber a la vez perfil de Snap y perfil nativo.
-
-**Hipótesis refutada, y queda un cabo suelto.** Se supuso que la CA que apareció
-en `~/.config/mozilla/firefox/ev2eu1nn.default` (§4.2) la había puesto
-«Restaurar instalación». **Es falso: esa clase tampoco conoce la ruta XDG.**
-Ninguna de las dos que escriben la CA puede llegar ahí, así que su origen sigue
-sin explicar. No bloquea nada —la divergencia está medida y la PR se sostiene
-sola—, pero no se da por bueno.
-
-Y un **issue**, no una PR: `v1.9.2` (2026-05-12) devuelve
-`MozillaKeyStoreUtilities.java` a los 34562 bytes exactos de `v1.9`, perdiendo el
-arreglo XDG que había entrado en `v1.9.1`. Es un aviso de rama mal fusionada, y no
-es nuestro para arreglarlo.
-
-**Y no se espera a que las acepten.** La #497, de una sola línea, tardó 87 días.
-El paquete propio sale del fork y se usa en Encina mientras tanto; cada PR que
-entre se retira del fork.
-
-### 4.7 ¿El `.deb` corregido hace innecesario el Firefox nativo? No
-
-Pregunta razonable al decidir el fork, y la respuesta está **medida**, no
-deducida: es el experimento de §4.4. Se cerró la barrera 1 a mano sobre
-`encina-snap-fabrica`, con la barrera 2 ya cerrada de fábrica, **y la firma
-siguió fallando**. Un `.deb` corregido no habría hecho más que eso.
-
-El motivo es que **B3 no la puede arreglar AutoFirma**, por mucho que se corrija:
-las rutas de preferencias que la compilación de Mozilla lee dentro del Snap están
-en un `squashfs` de solo lectura, y el `afirma.desktop` y el `/usr/bin/autofirma`
-que AutoFirma instala en el host **no existen dentro del confinamiento**. No hay
-nada que un paquete `.deb` pueda escribir para hacerse visible ahí.
-
-**Ninguna de las dos piezas basta sola, y las dos juntas sí:**
-
-| | B1 | B2 | B3 | ¿Firma? |
-|---|---|---|---|---|
-| `.deb` oficial + Snap (hoy, de fábrica) | sí | no | **sí** | no |
-| `.deb` oficial + Firefox nativo (Encina hoy) | **sí** | **sí** | no | no |
-| `.deb` **corregido** + Snap | no | no | **sí** | **no** |
-| `.deb` **corregido** + Firefox nativo | no | no | no | **debería** |
-
-La última fila es la que hay que comprobar, y **sigue sin comprobarse**: no existe
-todavía ningún positivo de extremo a extremo (§4.4).
-
-**Esto no reabre A2: la confirma, y le cambia el fundamento.** A2 se justificaba
-con que «el Snap aísla el almacén NSS», que era heredado y **falso** —el almacén
-NSS del Snap funciona perfectamente (§4.3)—. Se sostiene por otro motivo, este sí
-medido: **el Snap esconde el manejador de protocolo.** Misma conclusión, cimiento
-distinto.
-
-**Y hay una consecuencia para el parche.** R4 deja el Snap instalado en una
-máquina Encina, así que conviven los dos perfiles. Como el `if/else` del
-configurador es excluyente y el Snap va primero, el `.deb` corregido **tiene que
-recorrer todas las rutas**, no elegir una: si solo se le añade una rama `else if`,
-en una máquina Encina seguirá configurando el perfil del Snap y dejando el nativo
-—el que el usuario usa— sin la CA. Es el fallo medido en §4.2, sin cambios.
-- openSUSE: paquete comunitario en el repo personal de Antonio Larrosa; sin
-  paquete oficial para Leap 15.6.
-- AUR: `autofirma`, `autofirma-bin`, y un `autofirmaja` cuyo mantenedor declara
-  abiertamente que no puede sostenerlo.
-
-**Licencia:** AutoFirma es software libre, GPL 2+ y EUPL 1.1, código en la forja
-del CTT. **Es redistribuible.**
-
-**Los issues upstream, contrastados contra medición propia (ver §4.1):**
-
-- Issue #302 (`openjdk-11-jre` no declarado): **confirmado, y es peor de lo que
-  dice.** No es un olvido: el `control` del `.deb` 1.9 escribe `Recomends:` en
-  lugar de `Recommends:`. Al no ser un campo Debian válido, dpkg lo arrastra como
-  campo de usuario y no actúa. El JRE no queda declarado por ninguna vía, ni
-  siquiera con `apt install --install-recommends`. **Corrección del 2026-08-07:**
-  este documento venía escribiendo la errata como `Recoments:`; el campo real es
-  `Recomends:`, remedido con `dpkg -s autofirma`. Importa porque una comprobación
-  escrita contra la cadena equivocada no habría disparado nunca.
-- Issue #459 (`certutil: SEC_ERROR_ADDING_CERT` durante la instalación):
-  **NO reproducido.** Cinco instalaciones en VM propia y dos intentos de
-  provocarlo a mano no lo produjeron. No darlo por bueno. Quien lo reportó dice
-  además que la aplicación le firma igualmente, así que puede ser el menor de los
-  problemas. Lo que sí apareció, en el `prerm`, fue `SEC_ERROR_BAD_DATABASE`.
-
-**El hueco real:** no existe ninguna herramienta de diagnóstico. Todo lo que hay
-es o un paquete o un tutorial. Nadie itera sobre perfiles de navegador, nadie
-detecta sandbox, y nadie se dirige al usuario individual no técnico. **Y la
-herramienta de reparación del propio fabricante declara sano un sistema roto**
-(§4.1).
-
-**Riesgo del sector, aplicable a ti:** todos estos proyectos mueren por
-agotamiento de una sola persona. De ahí D5 y el alcance mínimo.
-
 ### 4.1 Medición propia de AutoFirma 1.9 (2026-08-07)
 
 La hipótesis central de la Etapa B **está comprobada en máquina propia**. Deja de
@@ -710,6 +514,252 @@ y 2 haga que la firma salga. Sigue sin existir ningún positivo de extremo a
 extremo, y `encina-snap-fabrica` ha demostrado que **no puede darlo**: allí B3
 es infranqueable. El positivo, si llega, tiene que salir de una máquina con
 Firefox nativo.
+### 4.5 Qué está arreglado ya y qué no, revisado el 2026-08-07
+
+Contrastado contra el código, no contra los README.
+
+**Upstream acepta PRs externas, pero despacio.** 34 fusionadas, 25 abiertas. La
+mediana de 2 días es de `dependabot`; las humanas son otra cosa: la #497
+—**una sola línea**, `+1 −0`— tardó **87 días**, el README de la #481 tardó 23, y
+las siete de seguridad de `reatlat` del 2026-07-13 siguen abiertas. No es un
+repositorio muerto; es uno lento.
+
+**La barrera 2 NO está arreglada en ninguna versión publicada.** El fichero que
+instala la CA del socket, `ConfiguratorFirefoxLinux.java`, es **idéntico byte a
+byte (15995) en `v1.9`, `v1.9.1` y `v1.9.2`**, y no menciona `.config/mozilla`
+en ninguna. Solo conoce dos rutas, y en este orden:
+
+```java
+PROFILES_INI_RELATIVE_PATH_UBUNTU_22 = "snap/firefox/common/.mozilla/firefox/profiles.ini"
+PROFILES_INI_RELATIVE_PATH           = ".mozilla/firefox/profiles.ini"
+```
+
+Es un `if/else`: si existe la del Snap la usa, **si no** cae a `~/.mozilla/`, que
+en un sistema con el `.deb` de Mozilla **no existe**. Ni una ni otra es
+`~/.config/mozilla/firefox/`. Esto explica exactamente lo medido en §4.2 y
+convierte la barrera 2 en un **bug upstream concreto, vivo y pequeño**.
+
+**Y el arreglo XDG que sí existe está en otro sitio y se perdió.**
+`MozillaKeyStoreUtilities.java` —que busca los certificados **de firma** del
+usuario, no instala la CA— sí conoce la ruta XDG. Entró en `v1.9.1` (2026-04-29,
+35016 bytes) y **`v1.9.2` (2026-05-12) vuelve a los 34562 bytes exactos de `v1.9`
+y a cero apariciones**. Medido sobre los tres tags; la causa (¿rama que no
+incluyó el cambio?) no se ha investigado.
+
+**El `.deb` oficial va un año por detrás de su propio código fuente:** está
+construido sobre `v1.9` (2025-05-21) y upstream está en `v1.9.2` (2026-05-12).
+
+**Lo que `albfernandez` ya corrige**, leído en su `debian/`:
+
+| Fallo de §4.1 | ¿Corregido? |
+|---|---|
+| 1. JRE no declarado (`Recomends:`) | **Sí** — `Depends: java-runtime, libnss3-tools, openssl, ca-certificates` |
+| 2. `postinst` sin `set -e`, éxito con todo roto | **Sí** — el `postinst` empieza con `set -e` |
+| B2 — perfil equivocado | **No.** Su changelog cita un ajuste XDG, pero es un salto de versión de upstream (`1.9.202507.1`→`.4`), no un parche suyo, y no toca el configurador |
+| B1 — preferencia en `/etc/firefox/pref/` | **No, y no le hace falta**: empaqueta para Debian, cuyo `firefox-esr` **sí** lee ese directorio. B1 solo existe con la compilación de Mozilla |
+
+### 4.6 La estrategia: fork del oficial, no de un tercero
+
+Decidido el 2026-08-07, y corrige una recomendación previa de este documento que
+proponía partir de `albfernandez`. **Los parches van al repositorio oficial**, que
+es el único sitio desde el que llegan a todo el mundo. Arreglar el repositorio de
+un tercero deja el fallo intacto donde importa.
+
+`albfernandez` **no es la base: es una fuente de la que copiar** lo que ya tiene
+resuelto —el `debian/control` con `java-runtime`, el `postinst` con `set -e`, la
+construcción desde fuentes y el parche de NSS compartida—. Copiar de él ahorra
+trabajo; contribuirle no lleva la corrección a ninguna parte.
+
+**El empaquetado Debian está DENTRO del repositorio oficial**, así que los tres
+fallos de empaquetado de §4.1 son PRs upstream y no problemas de Encina.
+Verificado en `HEAD` el 2026-08-07, en
+`afirma-simple-installer/linux/instalador_deb/src/DEBIAN/`:
+
+```
+control:   Depends: libnss3-tools
+           Recomends: openjdk-17-jre        <- la errata, viva en HEAD
+postinst:  #!/bin/sh, sin set -e, con exit 0 final
+```
+
+Idénticos en `v1.9` y `v1.9.2`. **No hay CLA, ni `CONTRIBUTING.md`, ni plantilla
+de PR**, así que no hay traba formal para contribuir.
+
+**Las cuatro PRs, de menor a mayor riesgo de rechazo:**
+
+| | Qué | Tamaño | Nota |
+|---|---|---|---|
+| 1 | `Recomends:` → `Recommends:` | una palabra | Issue #302 lleva años abierto. Es la más fácil de aceptar |
+| 2 | `ConfiguratorFirefoxLinux`: añadir la ruta XDG a `getMozillaProfilesIniPaths` | un método | **La importante (B2).** Se defiende sola: `MozillaKeyStoreUtilities` **ya** hace esa comprobación en el mismo repositorio, así que es coherencia interna, no una función nueva |
+| 3 | Preferencias donde la compilación de Mozilla las lee (B1) | pequeña | Beneficia a cualquiera que use el `.deb` o el `.tar.bz2` de Mozilla, no solo a Encina |
+| 4 | `postinst` que no declare éxito con todo roto | pequeña | **La más delicada:** un `set -e` a secas convierte instalaciones que hoy pasan en verde en instalaciones que fallan. Es lo correcto, pero conviene presentarlo como gestión de errores explícita y no como una línea suelta, o lo rechazan por regresión |
+
+**Y el argumento de la PR 2 es mejor de lo previsto: upstream ya arregló esto, en
+uno de tres sitios.** Hay **tres implementaciones independientes** de la misma
+búsqueda, leídas en `HEAD` el 2026-08-07, y no se comportan igual:
+
+| Clase | Para qué | Snap | `.config/mozilla` | `~/.mozilla` |
+|---|---|---|---|---|
+| `MozillaKeyStoreUtilities` | encontrar los certificados **de firma** del usuario | sí | **sí** | sí |
+| `RestoreConfigFirefox` | *Herramientas → Restaurar instalación* | sí | **no** | sí |
+| `ConfiguratorFirefoxLinux` | el `postinst`: **instalar la CA del socket** | sí | **no** | sí |
+
+Y la que sí lo hace lleva el motivo escrito al lado:
+
+```java
+// Directorio de Firefox 147 y superiores
+if (new File(Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini").isFile()) {
+    return Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini";
+}
+```
+
+**La PR no pide una función nueva: pide terminar una que ya está empezada.** En
+`ConfiguratorFirefoxLinux` es insertar una rama `else if` en un `if/else` de seis
+líneas, copiando el comentario incluido.
+
+**Un detalle del `if/else` que conviene entender antes de tocarlo:** es
+excluyente. Si existe el `profiles.ini` del Snap, **no se mira ninguna otra
+ruta**. Como R4 deja el Snap instalado en las máquinas Encina, el configurador se
+queda siempre con el perfil del Snap y **nunca llega a considerar el nativo**.
+Por eso `cmnc3cx7.default-release` tenía cero certificados (§4.2). El arreglo
+correcto no es sustituir una ruta por otra: es **recorrerlas todas**, porque en
+una máquina puede haber a la vez perfil de Snap y perfil nativo.
+
+**Hipótesis refutada, y queda un cabo suelto.** Se supuso que la CA que apareció
+en `~/.config/mozilla/firefox/ev2eu1nn.default` (§4.2) la había puesto
+«Restaurar instalación». **Es falso: esa clase tampoco conoce la ruta XDG.**
+Ninguna de las dos que escriben la CA puede llegar ahí, así que su origen sigue
+sin explicar. No bloquea nada —la divergencia está medida y la PR se sostiene
+sola—, pero no se da por bueno.
+
+Y un **issue**, no una PR: `v1.9.2` (2026-05-12) devuelve
+`MozillaKeyStoreUtilities.java` a los 34562 bytes exactos de `v1.9`, perdiendo el
+arreglo XDG que había entrado en `v1.9.1`. Es un aviso de rama mal fusionada, y no
+es nuestro para arreglarlo.
+
+**Y no se espera a que las acepten.** La #497, de una sola línea, tardó 87 días.
+El paquete propio sale del fork y se usa en Encina mientras tanto; cada PR que
+entre se retira del fork.
+
+### 4.7 ¿El `.deb` corregido hace innecesario el Firefox nativo? No
+
+Pregunta razonable al decidir el fork, y la respuesta está **medida**, no
+deducida: es el experimento de §4.4. Se cerró la barrera 1 a mano sobre
+`encina-snap-fabrica`, con la barrera 2 ya cerrada de fábrica, **y la firma
+siguió fallando**. Un `.deb` corregido no habría hecho más que eso.
+
+El motivo es que **B3 no la puede arreglar AutoFirma**, por mucho que se corrija:
+las rutas de preferencias que la compilación de Mozilla lee dentro del Snap están
+en un `squashfs` de solo lectura, y el `afirma.desktop` y el `/usr/bin/autofirma`
+que AutoFirma instala en el host **no existen dentro del confinamiento**. No hay
+nada que un paquete `.deb` pueda escribir para hacerse visible ahí.
+
+**Ninguna de las dos piezas basta sola, y las dos juntas sí:**
+
+| | B1 | B2 | B3 | ¿Firma? |
+|---|---|---|---|---|
+| `.deb` oficial + Snap (hoy, de fábrica) | sí | no | **sí** | no |
+| `.deb` oficial + Firefox nativo (Encina hoy) | **sí** | **sí** | no | no |
+| `.deb` **corregido** + Snap | no | no | **sí** | **no** |
+| `.deb` **corregido** + Firefox nativo | no | no | no | **debería** |
+
+La última fila es la que hay que comprobar, y **sigue sin comprobarse**: no existe
+todavía ningún positivo de extremo a extremo (§4.4).
+
+**Esto no reabre A2: la confirma, y le cambia el fundamento.** A2 se justificaba
+con que «el Snap aísla el almacén NSS», que era heredado y **falso** —el almacén
+NSS del Snap funciona perfectamente (§4.3)—. Se sostiene por otro motivo, este sí
+medido: **el Snap esconde el manejador de protocolo.** Misma conclusión, cimiento
+distinto.
+
+**Y hay una consecuencia para el parche.** R4 deja el Snap instalado en una
+máquina Encina, así que conviven los dos perfiles. Como el `if/else` del
+configurador es excluyente y el Snap va primero, el `.deb` corregido **tiene que
+recorrer todas las rutas**, no elegir una: si solo se le añade una rama `else if`,
+en una máquina Encina seguirá configurando el perfil del Snap y dejando el nativo
+—el que el usuario usa— sin la CA. Es el fallo medido en §4.2, sin cambios.
+- openSUSE: paquete comunitario en el repo personal de Antonio Larrosa; sin
+  paquete oficial para Leap 15.6.
+- AUR: `autofirma`, `autofirma-bin`, y un `autofirmaja` cuyo mantenedor declara
+  abiertamente que no puede sostenerlo.
+
+**Licencia:** AutoFirma es software libre, GPL 2+ y EUPL 1.1, código en la forja
+del CTT. **Es redistribuible.**
+
+**Los issues upstream, contrastados contra medición propia (ver §4.1):**
+
+- Issue #302 (`openjdk-11-jre` no declarado): **confirmado, y es peor de lo que
+  dice.** No es un olvido: el `control` del `.deb` 1.9 escribe `Recomends:` en
+  lugar de `Recommends:`. Al no ser un campo Debian válido, dpkg lo arrastra como
+  campo de usuario y no actúa. El JRE no queda declarado por ninguna vía, ni
+  siquiera con `apt install --install-recommends`. **Corrección del 2026-08-07:**
+  este documento venía escribiendo la errata como `Recoments:`; el campo real es
+  `Recomends:`, remedido con `dpkg -s autofirma`. Importa porque una comprobación
+  escrita contra la cadena equivocada no habría disparado nunca.
+- Issue #459 (`certutil: SEC_ERROR_ADDING_CERT` durante la instalación):
+  **NO reproducido.** Cinco instalaciones en VM propia y dos intentos de
+  provocarlo a mano no lo produjeron. No darlo por bueno. Quien lo reportó dice
+  además que la aplicación le firma igualmente, así que puede ser el menor de los
+  problemas. Lo que sí apareció, en el `prerm`, fue `SEC_ERROR_BAD_DATABASE`.
+
+**El hueco real:** no existe ninguna herramienta de diagnóstico. Todo lo que hay
+es o un paquete o un tutorial. Nadie itera sobre perfiles de navegador, nadie
+detecta sandbox, y nadie se dirige al usuario individual no técnico. **Y la
+herramienta de reparación del propio fabricante declara sano un sistema roto**
+(§4.1).
+
+**Riesgo del sector, aplicable a ti:** todos estos proyectos mueren por
+agotamiento de una sola persona. De ahí D5 y el alcance mínimo.
+
+### 4.8 Forma del fork: tres repositorios, y el empaquetado aparte
+
+Medido el 2026-08-07. **AutoFirma no se construye desde un repositorio, sino
+desde tres**, todos vivos en la organización oficial:
+
+```
+ctt-gob-es/clienteafirma            594 620 KB   (~580 MB)   push 2026-08-05
+ctt-gob-es/jmulticard                 7 033 KB               push 2026-04-29
+ctt-gob-es/clienteafirma-external    11 796 KB               push 2026-04-29
+```
+
+`albfernandez` **forkea los tres** y los compila con Maven en cadena
+(`jmulticard` → `clienteafirma-external` → `clienteafirma`), y guarda su
+empaquetado en un **cuarto repositorio de 110 KB**,
+`clienteafirma-deb-package`, que no contiene código de AutoFirma: solo un
+`debian/` y un script que descarga los tags y llama a `dpkg-buildpackage`.
+
+**Y su `master` no tiene ni un commit propio:** `ahead_by=0, behind_by=182`
+frente al oficial. No parchea el Java; todo su trabajo está en el `debian/`.
+Su `debian/` **sustituye** al empaquetado de upstream —que es un `DEBIAN/`
+hecho a mano y no un `debian/` en regla—, así que los dos fallos de
+empaquetado de §4.1 **no le afectan**: no usa esos ficheros.
+
+**Consecuencia para las PRs, y conviene tenerla clara:** las PRs 1 y 4
+(`Recomends:` y el `postinst`) arreglan **el `.deb` oficial que se descarga la
+gente**, no el paquete propio, que llevará su propio `debian/`. Siguen mereciendo
+la pena —son el `.deb` que usa todo el mundo— pero no desbloquean nada de Encina.
+Las que sí lo desbloquean son la 2 y la 3, que son Java.
+
+**Por qué NO va como submódulo de `encina-os`.** No es una preferencia de estilo,
+son los números: `encina-os` pesa **176 KB** y el árbol de AutoFirma **580 MB**,
+tres mil veces más, y no sería un submódulo sino tres. Cada clonación del
+repositorio y **cada trabajo de la CI** —incluidos los dos que construyen
+`encina-branding` y `encina-firefox-native` en segundos— arrastrarían ese peso.
+Un submódulo fija un commit, sí; pero una variable de versión en el script de
+construcción lo fija igual, que es lo que hace albfernandez y funciona. Y de
+propina evita mezclar en un mismo árbol la EUPL-1.2 de Encina con la GPL-2+ /
+EUPL-1.1 de AutoFirma.
+
+**La forma, entonces:** tres forks del oficial —uno por repositorio— con una rama
+por corrección, de donde salen las PRs; y el empaquetado como un paquete más de
+`debian-packages/`, con los tres tags anclados en el script de construcción.
+`encina-os` sigue pesando kilobytes.
+
+**Aviso de coste, una vez y sin insistir:** esto añade a un repositorio que hoy
+construye dos paquetes triviales en segundos una cadena de tres proyectos Maven.
+Es donde §4 dice que estos proyectos mueren. Conviene que la CI de AutoFirma sea
+un flujo aparte y no una entrada más de la matriz, para que un fallo de Maven no
+tape el estado de A1 y A2.
+
 
 ---
 
