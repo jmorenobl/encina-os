@@ -256,6 +256,44 @@ es nuestro para arreglarlo.
 **Y no se espera a que las acepten.** La #497, de una sola línea, tardó 87 días.
 El paquete propio sale del fork y se usa en Encina mientras tanto; cada PR que
 entre se retira del fork.
+
+### 4.7 ¿El `.deb` corregido hace innecesario el Firefox nativo? No
+
+Pregunta razonable al decidir el fork, y la respuesta está **medida**, no
+deducida: es el experimento de §4.4. Se cerró la barrera 1 a mano sobre
+`encina-snap-fabrica`, con la barrera 2 ya cerrada de fábrica, **y la firma
+siguió fallando**. Un `.deb` corregido no habría hecho más que eso.
+
+El motivo es que **B3 no la puede arreglar AutoFirma**, por mucho que se corrija:
+las rutas de preferencias que la compilación de Mozilla lee dentro del Snap están
+en un `squashfs` de solo lectura, y el `afirma.desktop` y el `/usr/bin/autofirma`
+que AutoFirma instala en el host **no existen dentro del confinamiento**. No hay
+nada que un paquete `.deb` pueda escribir para hacerse visible ahí.
+
+**Ninguna de las dos piezas basta sola, y las dos juntas sí:**
+
+| | B1 | B2 | B3 | ¿Firma? |
+|---|---|---|---|---|
+| `.deb` oficial + Snap (hoy, de fábrica) | sí | no | **sí** | no |
+| `.deb` oficial + Firefox nativo (Encina hoy) | **sí** | **sí** | no | no |
+| `.deb` **corregido** + Snap | no | no | **sí** | **no** |
+| `.deb` **corregido** + Firefox nativo | no | no | no | **debería** |
+
+La última fila es la que hay que comprobar, y **sigue sin comprobarse**: no existe
+todavía ningún positivo de extremo a extremo (§4.4).
+
+**Esto no reabre A2: la confirma, y le cambia el fundamento.** A2 se justificaba
+con que «el Snap aísla el almacén NSS», que era heredado y **falso** —el almacén
+NSS del Snap funciona perfectamente (§4.3)—. Se sostiene por otro motivo, este sí
+medido: **el Snap esconde el manejador de protocolo.** Misma conclusión, cimiento
+distinto.
+
+**Y hay una consecuencia para el parche.** R4 deja el Snap instalado en una
+máquina Encina, así que conviven los dos perfiles. Como el `if/else` del
+configurador es excluyente y el Snap va primero, el `.deb` corregido **tiene que
+recorrer todas las rutas**, no elegir una: si solo se le añade una rama `else if`,
+en una máquina Encina seguirá configurando el perfil del Snap y dejando el nativo
+—el que el usuario usa— sin la CA. Es el fallo medido en §4.2, sin cambios.
 - openSUSE: paquete comunitario en el repo personal de Antonio Larrosa; sin
   paquete oficial para Leap 15.6.
 - AUR: `autofirma`, `autofirma-bin`, y un `autofirmaja` cuyo mantenedor declara
