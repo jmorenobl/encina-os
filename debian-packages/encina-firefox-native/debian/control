@@ -1,0 +1,33 @@
+Source: encina-firefox-native
+Section: admin
+Priority: optional
+Maintainer: Jorge MB <jmorenobl@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: encina-firefox-native
+Architecture: all
+Depends: ${misc:Depends}
+Description: Repositorio APT de Mozilla para Firefox nativo
+ Configura el repositorio APT oficial de Mozilla, su clave de firma y el
+ anclaje de prioridad, para que Firefox se pueda instalar como paquete deb
+ nativo en lugar de como Snap.
+ .
+ El motivo no es estetico: los navegadores instalados via Snap o Flatpak
+ aislan el almacen de certificados NSS mediante sandbox, lo que impide el
+ funcionamiento de la firma electronica espanola.
+ .
+ Este paquete NO instala Firefox, ni el paquete de idioma, ni elimina el
+ Snap existente. Solo deja el sistema en condiciones de instalarlos. No
+ declara dependencia sobre firefox ni sobre firefox-l10n-es-es a proposito:
+ esos paquetes viven en el repositorio que configura este, que no existe en
+ el sistema hasta que este paquete esta instalado, de modo que la
+ dependencia seria irresoluble. Despues de instalarlo:
+ .
+   sudo apt update
+   sudo apt install firefox firefox-l10n-es-es
+ .
+ La eliminacion del Snap de Firefox corresponde a la receta de imagen, no a
+ la paqueteria: es una accion destructiva que se lleva por delante
+ marcadores y sesiones del usuario.

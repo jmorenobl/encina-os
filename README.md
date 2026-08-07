@@ -3,8 +3,9 @@
 Paquetería `.deb` sobre Ubuntu LTS para que un usuario español use su escritorio
 con la mínima fricción.
 
-Proyecto en desarrollo temprano. Hoy existe **un solo paquete construido y
-probado**: `encina-branding`. Lo demás está especificado, no implementado.
+Proyecto en desarrollo temprano. Hoy existen **dos paquetes construidos y
+probados**: `encina-branding` y `encina-firefox-native`. Lo demás está
+especificado, no implementado.
 
 ---
 
@@ -65,7 +66,7 @@ paquetes son de arquitectura `all`.
 |---|---|---|
 | A0 | Nombre, licencia, repositorio git | Hecho, salvo el texto de la licencia (ver [Licencia](#licencia)) |
 | A1 | `encina-branding` construido, probado y en CI | **Hecho** — v0.1.6 verificada en VM el 2026-08-07 |
-| A2 | `encina-firefox-native` (repo de Mozilla + clave + anclaje) | Especificado en [AGENTS.md](AGENTS.md) §5. **Sin empezar** |
+| A2 | `encina-firefox-native` (repo de Mozilla + clave + anclaje) | **Hecho** — v0.1.0, 6 de 7 comprobaciones verificadas en VM el 2026-08-07; la séptima es visual |
 | A3–A6 | `encina-locale-es`, `encina-meta` y repo APT propio, `autoinstall.yaml`, imagen propia | Fuera de alcance ahora ([AGENTS.md](AGENTS.md) §7). Nada de esto existe |
 
 Todo lo listado en [AGENTS.md](AGENTS.md) §7 —AutoFirma, DNIe, PKCS#11,
@@ -91,12 +92,55 @@ real.
 Detalle de uso del paquete:
 [debian-packages/encina-branding/README.md](debian-packages/encina-branding/README.md).
 
+### `encina-firefox-native` 0.1.0
+
+Configura el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
+de prioridad, para que Firefox se instale como `.deb` nativo y no como Snap. Es
+lo que desbloquea la Etapa B: el sandbox del Snap es lo que impide que funcione
+la firma electrónica.
+
+**No instala Firefox, no instala el paquete de idioma y no elimina el Snap.**
+Ninguna de las tres cosas es un olvido. No declara `Depends:` sobre `firefox`
+porque ese paquete vive en el repositorio que configura este, que no existe
+hasta que este se instala (R10); y borrar el Snap se lleva por delante
+marcadores y sesiones, así que corresponde a la receta de imagen (R4).
+
+Verificado en VM Ubuntu 24.04 arm64: **6 de las 7 comprobaciones** de la
+definición de terminado ([AGENTS.md](AGENTS.md) §5.5). La séptima —que Firefox
+arranque en español— no la puede comprobar ningún script y está pendiente de
+mirar la pantalla.
+
+⚠️ **El icono del dock puede seguir abriendo el Snap.** Conviven dos lanzadores
+llamados «Firefox» y ninguno pisa al otro; Ubuntu ancló el del Snap al instalar
+el sistema. Los valores por defecto del sistema sí apuntan al nativo. Para ver
+el Firefox nativo hay que lanzarlo desde una terminal con `/usr/bin/firefox` y
+comprobar `Binario de la aplicación` en `about:support`. Que la interfaz salga
+en español no demuestra nada por sí solo: el Snap también está en español.
+Cambiar el icono anclado no es cosa de este paquete —no es configurar un
+repositorio, y borrar el Snap está prohibido (R4)—, sino de `encina-meta` o de
+la receta de imagen.
+
+La comprobación crítica es el anclaje, porque su fallo es silencioso: sin él,
+apt reinstala el Snap en la primera actualización y no te enteras hasta
+entonces. Dos resultados la sostienen:
+
+- `apt full-upgrade` ejecutado hasta que **movió 15 paquetes de verdad**, sin
+  tocar Firefox. Las dos primeras vueltas no movieron ninguno porque el sistema
+  ya estaba al día, y el script lo dice en vez de dar el `[OK]` por bueno.
+- Al purgar el paquete, el candidato de `firefox` vuelve solo al deb de
+  transición de Ubuntu (`1:1snap1-0ubuntu5`, el que instala el Snap). La única
+  diferencia entre las dos situaciones es este paquete.
+
+Detalle de uso:
+[debian-packages/encina-firefox-native/README.md](debian-packages/encina-firefox-native/README.md).
+
 ### Integración continua
 
-`.github/workflows/build.yml` construye y valida el paquete en `ubuntu-latest`,
-ejecutando el mismo `scripts/03-construir.sh` que se usa en local, y sube el
-`.deb` como artefacto. No hay firma de repositorio: la clave de Encina no debe
-existir en el runner.
+`.github/workflows/build.yml` construye y valida **los dos paquetes** en
+`ubuntu-latest`, con una entrada de matriz por paquete que ejecuta el mismo
+script que se usa en local (`03-construir.sh` y `07-firefox-construir.sh`), y
+sube cada `.deb` como artefacto. No hay firma de repositorio: la clave de Encina
+no debe existir en el runner.
 
 Estado: **verde por `push` y por `workflow_dispatch`**, comprobado sobre
 `9a673b8`.
@@ -129,7 +173,7 @@ ssh USUARIO@IP-DE-TU-VM "cd /mnt/encina && ENCINA_REPO=/mnt/encina ./scripts/03-
 
 ### Scripts
 
-Ocho scripts, en orden. Cada uno termina diciendo cuál viene después y
+Once scripts, en orden. Cada uno termina diciendo cuál viene después y
 ninguno da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
 
 | Script | Qué hace |
@@ -141,7 +185,14 @@ ninguno da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
 | `04-instalar.sh` | Instala y comprueba todo lo verificable sin reiniciar |
 | `05-verificar.sh` | Usuario nuevo, idempotencia ×5, purga |
 | `06-ci.sh` | Flujo de GitHub Actions y repositorio remoto |
+| `07-firefox-construir.sh` | Huella de la clave de Mozilla, reglas duras, `.deb` y `lintian` |
+| `08-firefox-instalar.sh` | Instala, `apt update`, anclaje, idioma y Firefox nativo |
+| `09-firefox-verificar.sh` | `full-upgrade` ×2, idempotencia ×5, purga |
 | `diario.sh "texto"` | Añade una entrada fechada a `DIARIO.md` y hace commit |
+
+Del 00 al 06 son de A1 y de uso común; del 07 al 09, de A2. Los de A2 son
+scripts aparte y no una generalización de 03/04/05 a propósito: aquellos están
+validados contra `encina-branding` y no se tocan.
 
 Ruta corta, con el entorno ya preparado:
 
@@ -150,6 +201,10 @@ Ruta corta, con el entorno ya preparado:
 ./scripts/04-instalar.sh      # instalar y comprobar en caliente
 sudo reboot
 ./scripts/05-verificar.sh     # las pruebas que de verdad importan
+
+./scripts/07-firefox-construir.sh
+./scripts/08-firefox-instalar.sh
+./scripts/09-firefox-verificar.sh    # full-upgrade x2: la prueba del anclaje
 ```
 
 Todos son idempotentes. `02-activos.sh` no sobrescribe activos existentes salvo
@@ -168,7 +223,7 @@ script.
 
 Un solo `[FALLO]` hace que el script salga con código distinto de cero. Las
 marcas `[OJOS]` no cuentan como aprobadas: el splash de arranque, el logotipo de
-GDM y el fondo del escritorio hay que mirarlos.
+GDM, el fondo del escritorio y que Firefox arranque en español hay que mirarlos.
 
 ### Reglas duras
 
@@ -180,6 +235,11 @@ duplicada de `GRUB_DISTRIBUTOR`— antes de dejar construir nada. Son justo los
 fallos que en caliente resultan invisibles y solo aparecen al reiniciar, o solo
 en máquinas con disco cifrado.
 
+`07-firefox-construir.sh` hace lo propio con las que aplican a A2 —R3, R4, R10—
+y añade la que puede detener la fase entera: la huella de la clave de firma de
+Mozilla. Si no coincide con `35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3`, no
+construye nada y manda avisar.
+
 ---
 
 ## Estructura del repositorio
@@ -190,7 +250,11 @@ debian-packages/
     debian/       # changelog (con dch, nunca a mano), control, copyright,
                   # rules, postinst, prerm, postrm
     src/          # árbol que se copia tal cual a la raíz del sistema
-scripts/          # los ocho scripts + lib.sh
+  encina-firefox-native/
+    debian/       # changelog, control, copyright, rules, lintian-overrides
+                  # (sin scripts de mantenedor: no hay nada que ejecutar)
+    src/          # mozilla.sources, encina-mozilla y la clave de firma
+scripts/          # los once scripts + lib.sh
 .github/workflows/build.yml
 ```
 
@@ -215,5 +279,12 @@ EUPL-1.2.
 identificador y una nota, no el texto oficial. Falta sustituirlo por el texto de
 la European Union Public Licence v1.2 publicado en joinup.ec.europa.eu.
 
-Ningún activo de terceros forma parte del proyecto: ni marca de Canonical o
-Ubuntu, ni tipografías propietarias, ni iconos que imiten a otros sistemas (R8).
+Ningún activo gráfico de terceros forma parte del proyecto: ni marca de Canonical
+o Ubuntu, ni tipografías propietarias, ni iconos que imiten a otros sistemas (R8).
+
+El único fichero de terceros que se distribuye es la **clave pública de firma
+del repositorio APT de Mozilla**, dentro de `encina-firefox-native`. Se incluye
+íntegra y sin modificar, verificada contra su huella, y está declarada como tal
+en el `debian/copyright` de ese paquete, que es lo que R8 exige. Una clave
+pública se publica precisamente para ser copiada: es el único modo de que sirva
+para verificar firmas.

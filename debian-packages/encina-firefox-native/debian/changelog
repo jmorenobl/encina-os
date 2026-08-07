@@ -1,0 +1,10 @@
+encina-firefox-native (0.1.0) noble; urgency=medium
+
+  * Primera version. Configura el repositorio APT oficial de Mozilla, su
+    clave de firma verificada contra la huella
+    35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3, y el anclaje de prioridad
+    que impide que apt reinstale el Snap de Ubuntu en la primera
+    actualizacion. No instala Firefox ni el paquete de idioma ni elimina
+    el Snap (R3, R4, R10).
+
+ -- Jorge MB <jmorenobl@gmail.com>  Fri, 07 Aug 2026 01:12:40 +0200

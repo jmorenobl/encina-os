@@ -1,0 +1,18 @@
+# Repositorio APT oficial de Mozilla. Lo instala encina-firefox-native.
+#
+# Formato deb822 (.sources), nunca apt-key: apt-key esta obsoleto y deposita
+# la clave en un llavero global de confianza, de modo que esa clave firmaria
+# como valido cualquier repositorio del sistema. Signed-By ata la clave a
+# este repositorio y solo a este.
+#
+# La clave se verifica contra la huella 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3
+# antes de entrar en el paquete. El uid dice "Artifact Registry Repository
+# Signer <artifact-registry-repository-signer@google.com>" y no Mozilla porque
+# Mozilla sirve el repositorio desde Google Artifact Registry: es lo esperado.
+#
+# Este fichero no instala Firefox. Solo declara de donde puede venir.
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /usr/share/keyrings/packages.mozilla.org.asc

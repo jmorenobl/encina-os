@@ -35,8 +35,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # Cada paquete tiene su propio script de construccion, asi que la matriz
+      # lleva las dos cosas emparejadas. Antes solo listaba el nombre y no lo
+      # usaba en ningun sitio: el paso ejecutaba siempre 03-construir.sh y
+      # subia debian-packages/*.deb, de modo que anadir una entrada mas habria
+      # construido encina-branding dos veces sin que se notara.
       matrix:
-        package: [encina-branding]
+        include:
+          - package: encina-branding
+            script: scripts/03-construir.sh
+          - package: encina-firefox-native
+            script: scripts/07-firefox-construir.sh
 
     steps:
       - uses: actions/checkout@v4
@@ -49,18 +58,21 @@ jobs:
           # "Unmet build dependencies: build-essential:native". En una VM de
           # desarrollo suele estar ya puesto porque devscripts lo recomienda,
           # asi que este fallo SOLO se manifiesta en el runner.
-          sudo apt-get install -y build-essential devscripts debhelper lintian
+          #
+          # gnupg lo necesita 07-firefox-construir.sh para verificar la huella
+          # de la clave de firma de Mozilla.
+          sudo apt-get install -y build-essential devscripts debhelper lintian gnupg
 
-      - name: Comprobar las reglas duras
+      - name: Construir y validar ${{ matrix.package }}
         run: |
           chmod +x scripts/*.sh
-          ENCINA_REPO="$GITHUB_WORKSPACE" ./scripts/03-construir.sh
+          ENCINA_REPO="$GITHUB_WORKSPACE" ./${{ matrix.script }}
 
       - name: Subir el paquete como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package }}-deb
-          path: debian-packages/*.deb
+          path: debian-packages/${{ matrix.package }}_*.deb
           if-no-files-found: error
 EOF
 ok "Flujo escrito en .github/workflows/build.yml"
@@ -79,7 +91,7 @@ echo "  es de la fase A4."
 # ---------------------------------------------------------------- commit ----
 cd "$REPO"
 if [[ -n "$(git status --porcelain)" ]]; then
-    if git add -A && git commit -q -m "CI: construir y validar encina-branding en cada push"; then
+    if git add -A && git commit -q -m "CI: construir y validar los paquetes de encina en cada push"; then
         ok "Commit creado: $(git log -1 --oneline)"
     else
         fallo "No se ha podido crear el commit" ""

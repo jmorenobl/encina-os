@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+# Todo el arbol de src/ se copia tal cual a la raiz del sistema.
+#
+# El paquete no lleva postinst, prerm ni postrm, y no es un descuido:
+#
+#   - No hay nada que ejecutar. Los tres ficheros son declarativos y apt los
+#     lee solo en el siguiente 'apt update'.
+#   - No se puede ejecutar nada util aqui aunque se quisiera: llamar a apt
+#     desde un script de mantenedor provoca un interbloqueo, porque dpkg
+#     mantiene el bloqueo mientras corre el script (R3).
+#
+# Por eso 'apt update' lo tiene que lanzar la persona que instala, y por eso
+# el README documenta el orden de instalacion.
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	cp -a src/. debian/encina-firefox-native/

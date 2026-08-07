@@ -1,0 +1,22 @@
+# Anclaje de prioridad del repositorio de Mozilla.
+#
+# Sin este fichero apt reinstala el Snap de Ubuntu en la primera
+# actualizacion. Es la causa de fallo mas habitual de este paquete y no se
+# nota en el momento: la instalacion sale bien, Firefox nativo funciona, y
+# semanas despues un apt upgrade lo sustituye por el Snap sin avisar.
+#
+# El motivo es que el paquete 'firefox' de Ubuntu es un deb de transicion
+# cuya unica funcion es instalar el Snap, y lleva epoch (1:...), lo que lo
+# hace VERSION MAS ALTA que cualquier version real de Mozilla. Comparando
+# solo versiones, Ubuntu gana siempre. La prioridad 1000 decide por origen
+# en vez de por version, y ademas permite el cambio aunque suponga bajar de
+# numero de version: por debajo de 1000 apt no haria ese cambio.
+#
+# 'Pin: origin <host>' casa con el NOMBRE DE MAQUINA del repositorio, no con
+# el campo Origin: del fichero Release (que aqui vale
+# "namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla"). Para
+# casar con ese campo habria que escribir 'Pin: release o=...'. Es una
+# confusion facil y deja el anclaje sin efecto.
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000

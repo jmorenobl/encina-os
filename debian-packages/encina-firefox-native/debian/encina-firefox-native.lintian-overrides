@@ -1,0 +1,29 @@
+# Los dos errores que se anulan aqui son correctos en general y no aplican a
+# este paquete. Justificacion, para que nadie tenga que reconstruirla:
+#
+# package-installs-apt-sources / package-installs-apt-preferences
+#
+#   lintian los emite porque la eleccion de repositorios y de prioridades es
+#   territorio del administrador y un paquete no deberia decidir por el. La
+#   regla es buena. Pero este paquete no hace ninguna otra cosa: configurar el
+#   repositorio de Mozilla y su anclaje ES su unico contenido. Sin esos dos
+#   ficheros el .deb queda vacio.
+#
+#   El administrador conserva la ultima palabra por dos vias: instala este
+#   paquete porque quiere, y los dos ficheros son conffiles, de modo que dpkg
+#   respeta cualquier edicion local y 'apt purge' los retira y devuelve el
+#   sistema a su configuracion de repositorios original.
+#
+#   El anclaje ademas no se puede poner en ningun otro sitio: apt solo lee
+#   /etc/apt/preferences y /etc/apt/preferences.d/. No es que se prefiera esa
+#   ruta, es que es la unica que existe.
+#
+#   Detalle comprobado en /usr/share/lintian/lib/Lintian/Check/Apt.pm (lintian
+#   2.117): el tag de sources se puede evitar renombrando el paquete binario a
+#   algo acabado en -apt-source, pero el del anclaje no tiene excepcion alguna
+#   y se emite siempre. Se anulan los dos juntos en vez de renombrar el paquete
+#   para no tener el nombre a medias entre dos convenciones.
+#
+# Siguen viendose con:  lintian --show-overrides
+encina-firefox-native: package-installs-apt-preferences [etc/apt/preferences.d/encina-mozilla]
+encina-firefox-native: package-installs-apt-sources [etc/apt/sources.list.d/mozilla.sources]

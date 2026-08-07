@@ -1,0 +1,39 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: encina-firefox-native
+Source: https://github.com/jmorenobl/encina-os
+
+Files: *
+Copyright: 2026 Jorge MB <jmorenobl@gmail.com>
+License: EUPL-1.2
+
+Files: src/usr/share/keyrings/packages.mozilla.org.asc
+Copyright: 2021 Mozilla Corporation
+License: public-signing-key
+Comment: Clave publica de firma del repositorio APT de Mozilla, incluida sin
+ modificar. Descargada de https://packages.mozilla.org/apt/repo-signing-key.gpg
+ y verificada contra la huella
+ 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3.
+ .
+ El identificador de usuario de la clave es "Artifact Registry Repository
+ Signer <artifact-registry-repository-signer@google.com>" y no Mozilla porque
+ Mozilla sirve el repositorio desde Google Artifact Registry. Es lo esperado:
+ lo que se verifica es la huella, no el nombre.
+
+License: public-signing-key
+ Una clave publica de firma se publica precisamente para ser copiada y
+ redistribuida: es el unico modo de que sirva para verificar firmas. Se
+ incluye integra y sin modificar, tal como la publica Mozilla.
+
+License: EUPL-1.2
+ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
+ the European Commission - subsequent versions of the EUPL (the "Licence").
+ You may not use this work except in compliance with the Licence.
+ .
+ You may obtain a copy of the Licence at:
+ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the Licence is distributed on an "AS IS" basis, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ Licence for the specific language governing permissions and limitations
+ under the Licence.

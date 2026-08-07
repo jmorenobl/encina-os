@@ -129,4 +129,8 @@ raiz_repo() {
     echo "$d"
 }
 
-PKG_DIR() { echo "$(raiz_repo)/debian-packages/encina-branding"; }
+# PKG_DIR [nombre-del-paquete]
+# Sin argumento devuelve encina-branding, que es lo que esperan 03, 04 y 05:
+# así el flujo de A1 sigue funcionando exactamente igual sin tocar esos tres
+# scripts. Los de A2 (07, 08, 09) pasan su nombre.
+PKG_DIR() { echo "$(raiz_repo)/debian-packages/${1:-encina-branding}"; }
