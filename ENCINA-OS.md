@@ -210,6 +210,44 @@ de PR**, así que no hay traba formal para contribuir.
 | 3 | Preferencias donde la compilación de Mozilla las lee (B1) | pequeña | Beneficia a cualquiera que use el `.deb` o el `.tar.bz2` de Mozilla, no solo a Encina |
 | 4 | `postinst` que no declare éxito con todo roto | pequeña | **La más delicada:** un `set -e` a secas convierte instalaciones que hoy pasan en verde en instalaciones que fallan. Es lo correcto, pero conviene presentarlo como gestión de errores explícita y no como una línea suelta, o lo rechazan por regresión |
 
+**Y el argumento de la PR 2 es mejor de lo previsto: upstream ya arregló esto, en
+uno de tres sitios.** Hay **tres implementaciones independientes** de la misma
+búsqueda, leídas en `HEAD` el 2026-08-07, y no se comportan igual:
+
+| Clase | Para qué | Snap | `.config/mozilla` | `~/.mozilla` |
+|---|---|---|---|---|
+| `MozillaKeyStoreUtilities` | encontrar los certificados **de firma** del usuario | sí | **sí** | sí |
+| `RestoreConfigFirefox` | *Herramientas → Restaurar instalación* | sí | **no** | sí |
+| `ConfiguratorFirefoxLinux` | el `postinst`: **instalar la CA del socket** | sí | **no** | sí |
+
+Y la que sí lo hace lleva el motivo escrito al lado:
+
+```java
+// Directorio de Firefox 147 y superiores
+if (new File(Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini").isFile()) {
+    return Platform.getUserHome() + "/.config/mozilla/firefox/profiles.ini";
+}
+```
+
+**La PR no pide una función nueva: pide terminar una que ya está empezada.** En
+`ConfiguratorFirefoxLinux` es insertar una rama `else if` en un `if/else` de seis
+líneas, copiando el comentario incluido.
+
+**Un detalle del `if/else` que conviene entender antes de tocarlo:** es
+excluyente. Si existe el `profiles.ini` del Snap, **no se mira ninguna otra
+ruta**. Como R4 deja el Snap instalado en las máquinas Encina, el configurador se
+queda siempre con el perfil del Snap y **nunca llega a considerar el nativo**.
+Por eso `cmnc3cx7.default-release` tenía cero certificados (§4.2). El arreglo
+correcto no es sustituir una ruta por otra: es **recorrerlas todas**, porque en
+una máquina puede haber a la vez perfil de Snap y perfil nativo.
+
+**Hipótesis refutada, y queda un cabo suelto.** Se supuso que la CA que apareció
+en `~/.config/mozilla/firefox/ev2eu1nn.default` (§4.2) la había puesto
+«Restaurar instalación». **Es falso: esa clase tampoco conoce la ruta XDG.**
+Ninguna de las dos que escriben la CA puede llegar ahí, así que su origen sigue
+sin explicar. No bloquea nada —la divergencia está medida y la PR se sostiene
+sola—, pero no se da por bueno.
+
 Y un **issue**, no una PR: `v1.9.2` (2026-05-12) devuelve
 `MozillaKeyStoreUtilities.java` a los 34562 bytes exactos de `v1.9`, perdiendo el
 arreglo XDG que había entrado en `v1.9.1`. Es un aviso de rama mal fusionada, y no
