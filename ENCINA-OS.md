@@ -20,6 +20,12 @@ sección 7 («Empieza aquí») y nada más.
 
 Si se contradicen, **manda este**.
 
+**Hay un segundo repositorio desde el 2026-08-07:** `~/Projects/encina-autofirma`
+(`jmorenobl/encina-autofirma`), con el `.deb` corregido de AutoFirma y los tres
+forks de los que salen las PRs al oficial. Es la fase B∥ y va en paralelo a B1.
+**Este documento sigue siendo el punto de entrada de los dos:** lo que allí se
+mida sobre las barreras se anota aquí, en §4. Detalle de la forma en §4.8.
+
 El `especificacion-proyecto.md` que citaban versiones anteriores de este
 documento **no existe en el repositorio**, ni tampoco `AGENTS-encina.md`, que
 hoy es `AGENTS.md`. El detalle largo de la Etapa B está sin escribir; se
@@ -77,6 +83,8 @@ No volver a discutirlas sin motivo nuevo.
 | `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
 | `encina-firefox-native` | **Construido, instalado y probado.** v0.2.0, las siete casillas de la definición de terminado en VM Ubuntu 24.04 arm64, la última mirada en pantalla |
 | Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
+| `jmorenobl/encina-autofirma` | **Repositorio aparte, privado, creado el 2026-08-07.** El `.deb` corregido de AutoFirma (B∥). En el Mac, `~/Projects/encina-autofirma`. Lo que se decida allí sobre las barreras se anota **aquí**, en §4 |
+| Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`, de `ctt-gob-es`. Una rama por corrección; de ahí salen las PRs (§4.6) |
 | Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`, **una entrada de matriz por paquete**. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
 | Scripts de construcción y verificación | Once, en `scripts/`, versionados con el repositorio. 00–06 comunes y de A1; 07–09 de A2 |
 | `AGENTS.md` | Escrito, cubre branding + firefox-native + **`encina-doctor` (§6, B1, especificado y sin construir)**. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
@@ -750,16 +758,35 @@ construcción lo fija igual, que es lo que hace albfernandez y funciona. Y de
 propina evita mezclar en un mismo árbol la EUPL-1.2 de Encina con la GPL-2+ /
 EUPL-1.1 de AutoFirma.
 
-**La forma, entonces:** tres forks del oficial —uno por repositorio— con una rama
-por corrección, de donde salen las PRs; y el empaquetado como un paquete más de
-`debian-packages/`, con los tres tags anclados en el script de construcción.
-`encina-os` sigue pesando kilobytes.
+**La forma, decidida y ya creada el 2026-08-07:**
 
-**Aviso de coste, una vez y sin insistir:** esto añade a un repositorio que hoy
-construye dos paquetes triviales en segundos una cadena de tres proyectos Maven.
-Es donde §4 dice que estos proyectos mueren. Conviene que la CI de AutoFirma sea
-un flujo aparte y no una entrada más de la matriz, para que un fallo de Maven no
-tape el estado de A1 y A2.
+```
+jmorenobl/clienteafirma            \
+jmorenobl/jmulticard                > forks del oficial, una rama por corrección.
+jmorenobl/clienteafirma-external   /  De aquí salen las PRs.
+
+jmorenobl/encina-autofirma            repositorio APARTE, privado (D5).
+                                      Solo debian/ + script de construcción con
+                                      los tres tags anclados. En el Mac,
+                                      ~/Projects/encina-autofirma
+```
+
+**El empaquetado va en un repositorio aparte y NO en `debian-packages/` de
+`encina-os`**, que es lo que este documento proponía en una redacción anterior.
+El motivo es el aviso de coste de aquí abajo: si vive aquí, comparte CI con A1 y
+A2. El árbol de AutoFirma no se versiona en ninguno de los dos: va a `build/`,
+ignorado. `encina-os` sigue pesando kilobytes.
+
+**Aviso de coste, una vez y sin insistir:** esto añade una cadena de tres
+proyectos Maven a un proyecto que hoy construye dos paquetes triviales en
+segundos. Es donde §4 dice que estos proyectos mueren por agotamiento de una sola
+persona. De ahí el repositorio aparte: un fallo de Maven no debe tapar el estado
+de A1 y A2, ni al revés.
+
+**Lo primero que hay que medir allí, antes de escribir ningún parche:** cuánto
+tarda la cadena completa en compilar y si sale limpia en arm64. Si tarda cuarenta
+minutos, condiciona cómo se monta la CI, y eso se sabe el primer día o no se sabe.
+Es la lección de A3 aplicada aquí: **¿qué comando demuestra que esto es viable?**
 
 
 ---
@@ -866,7 +893,7 @@ el único motivo nuevo que reabriría esta discusión.
 | B2 | `encina configure` + `autofirma-fix` | Sin abrir. Es donde vive el remedio. D13 sigue vigente hasta entonces |
 | B3 | GUI GTK4 | Sin abrir |
 | B4 | DNIe con lector físico | Sin abrir |
-| B∥ | **Fork de `ctt-gob-es/clienteafirma`**: PRs al oficial, y paquete propio mientras no las incorporen | Sin abrir, pero §4.5 y §4.6 lo han convertido en la vía más corta |
+| B∥ | **Fork de `ctt-gob-es/clienteafirma`**: PRs al oficial, y paquete propio mientras no las incorporen | **ABIERTA el 2026-08-07.** Tres forks creados y `jmorenobl/encina-autofirma` en marcha (§4.8). Corre en paralelo a B1 y en **otro repositorio**: `~/Projects/encina-autofirma` |
 
 **El alcance de B1 es estrecho a propósito.** Detectar y reparar se separan
 porque son fases con criterios de éxito distintos: una comprobación se valida
