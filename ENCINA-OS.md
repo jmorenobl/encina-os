@@ -84,7 +84,8 @@ No volver a discutirlas sin motivo nuevo.
 | `encina-firefox-native` | **Construido, instalado y probado.** v0.2.0, las siete casillas de la definición de terminado en VM Ubuntu 24.04 arm64, la última mirada en pantalla |
 | Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
 | `jmorenobl/encina-autofirma` | **Repositorio aparte, privado, creado el 2026-08-07.** El `.deb` corregido de AutoFirma (B∥). En el Mac, `~/Projects/encina-autofirma`. Lo que se decida allí sobre las barreras se anota **aquí**, en §4 |
-| Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`, de `ctt-gob-es`. Una rama por corrección; de ahí salen las PRs (§4.6) |
+| Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`, de `ctt-gob-es`. Una rama por corrección; de ahí salen las PRs (§4.6). **Cuatro ramas escritas el 2026-08-07, ninguna subida** |
+| `.deb` propio de AutoFirma | **Construido y probado. `autofirma 1.9.1+encina1`, anclado en `v1.9.1`.** Con él salió el primer positivo de extremo a extremo del proyecto (§4.9) |
 | Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`, **una entrada de matriz por paquete**. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
 | Scripts de construcción y verificación | Once, en `scripts/`, versionados con el repositorio. 00–06 comunes y de A1; 07–09 de A2 |
 | `AGENTS.md` | Escrito, cubre branding + firefox-native + **`encina-doctor` (§6, B1, especificado y sin construir)**. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
@@ -523,6 +524,14 @@ extremo, y `encina-snap-fabrica` ha demostrado que **no puede darlo**: allí B3
 es infranqueable. El positivo, si llega, tiene que salir de una máquina con
 Firefox nativo.
 
+> **Medido el 2026-08-07, y con más barreras de las que aquí se contaban: el
+> positivo existe (§4.9).** Cerrar 1 y 2 no bastaba; hacían falta también B4 —el
+> perfil donde AutoFirma busca el certificado del usuario— y B6 —NSS no se
+> encuentra en arm64—. Y esta prueba se hizo en `sededgsfp.gob.es`, que §4.9(b)
+> demuestra incapaz de dar un positivo en Firefox de escritorio por su propia
+> CSP: la conclusión sobre B3 se sostiene por la medición del `XDG_DATA_DIRS`,
+> no por esta prueba de firma.
+
 ### 4.5 Qué está arreglado ya y qué no, revisado el 2026-08-07
 
 Contrastado contra el código, no contra los README.
@@ -669,10 +678,12 @@ nada que un paquete `.deb` pueda escribir para hacerse visible ahí.
 | `.deb` oficial + Snap (hoy, de fábrica) | sí | no | **sí** | no |
 | `.deb` oficial + Firefox nativo (Encina hoy) | **sí** | **sí** | no | no |
 | `.deb` **corregido** + Snap | no | no | **sí** | **no** |
-| `.deb` **corregido** + Firefox nativo | no | no | no | **debería** |
+| `.deb` **corregido** + Firefox nativo | no | no | no | **SÍ, medido el 2026-08-07** |
 
-La última fila es la que hay que comprobar, y **sigue sin comprobarse**: no existe
-todavía ningún positivo de extremo a extremo (§4.4).
+La última fila **ya está comprobada**: «Fichero firmado correctamente» en
+`valide.redsara.es`, con certificado real de la FNMT y Firefox nativo. Detalle en
+§4.9. La tabla se quedaba corta: hacían falta además B4 y B6, que entonces no se
+conocían.
 
 **Esto no reabre A2: la confirma, y le cambia el fundamento.** A2 se justificaba
 con que «el Snap aísla el almacén NSS», que era heredado y **falso** —el almacén
@@ -788,6 +799,103 @@ tarda la cadena completa en compilar y si sale limpia en arm64. Si tarda cuarent
 minutos, condiciona cómo se monta la CI, y eso se sabe el primer día o no se sabe.
 Es la lección de A3 aplicada aquí: **¿qué comando demuestra que esto es viable?**
 
+**Medido el 2026-08-07: 83 segundos con la caché de Maven vacía**, en Ubuntu
+24.04 arm64. La CI no está condicionada. El `.deb` completo con
+`dpkg-buildpackage` son 120 s más, así que una CI desde cero es de tres minutos
+y medio. Detalle en `MEDICIONES.md` M1 del repositorio `encina-autofirma`.
+
+### 4.9 EL PRIMER POSITIVO DE EXTREMO A EXTREMO (2026-08-07)
+
+**«Fichero firmado correctamente», mirado en pantalla.** En
+`valide.redsara.es/valide/firmar/ejecutar.html`, con Firefox 153.0.3 **nativo**
+de Mozilla y un certificado **real de la FNMT** (`AC FNMT Usuarios`, válido
+09/05/2025–09/05/2029), sobre un clon de `encina-autofirma-rota` y con el `.deb`
+propio `autofirma 1.9.1+encina1`.
+
+Es lo que §4.7 pedía y §4.4 daba por inexistente. **Y lo hizo el paquete, no el
+laboratorio:** `dpkg -V autofirma` sale sin una sola diferencia, así que ningún
+parche aplicado a mano durante el diagnóstico sobrevivía.
+
+La cadena, medida en directo mientras se pulsaba «Firmar»:
+
+```
+19s  java=1  escucha=0.0.0.0:65429
+21s  java=1  conexion=127.0.0.1:60278<->127.0.0.1:65429
+```
+
+El handshake `wss://` completo prueba que **el navegador confió en la CA de
+AutoFirma**: la barrera 2, cerrada en producción.
+
+**No eran dos barreras, ni tres. Son seis, y solo cuatro las cierra el paquete:**
+
+| # | Qué | ¿Quién la cierra? |
+|---|---|---|
+| B1a | Preferencias del esquema en `/etc/firefox/pref/`, que la compilación de Mozilla no lee | El paquete: las instala además en `/usr/lib/firefox/defaults/pref/` |
+| B1b | **`network.protocol-handler.app` ya no existe en Firefox 153** | El paquete: `expose.afirma=false` |
+| B2 | La CA del socket en el perfil equivocado | Parche de Java al configurador |
+| B3 | El manejador invisible dentro del Snap | **Nadie.** Se evita con Firefox nativo |
+| B4 | El perfil donde AutoFirma busca el certificado **del usuario**: el Snap primero | El lanzador, con `AFIRMA_NSS_PROFILES_INI` |
+| B5 | La CSP de la sede bloquea el iframe de `autoscript.js` | **Nadie desde el equipo** |
+| B6 | **NSS no se encuentra en arm64** | El lanzador, con `AFIRMA_NSS_HOME_ENV` |
+
+**Cuatro correcciones a lo que este documento venía afirmando:**
+
+**a) La barrera 1 no era solo una cuestión de ruta.** §4.1 concluyó que el
+fichero estaba donde nadie lo lee. Es cierto y se queda corto: **aunque
+estuviera en la ruta correcta tampoco funcionaría**, porque la preferencia con
+la que AutoFirma dice «ejecuta `/usr/bin/autofirma`» ha desaparecido del motor.
+Medido con `strings` sobre `libxul` de Firefox 153, con control negativo:
+
+```
+network.protocol-handler.app               0     <- INEXISTENTE
+network.protocol-handler.external          5
+network.protocol-handler.expose            2
+network.protocol-handler.warn-external     2
+INVENTADA.no.existe                        0     <- control
+```
+
+**b) La sede de la DGSFP no puede dar un positivo en Firefox de escritorio.**
+`sededgsfp.gob.es` es la que usaron §4.1, §4.3 y §4.4. Su propia
+Content-Security-Policy bloquea el iframe con el que `autoscript.js` invoca el
+esquema en Firefox de escritorio:
+
+```
+frame-src 'self' blob: https://*.sededgsfp.gob.es https://www.google.com/recaptcha/ …
+```
+
+`afirma:` no figura. **Ninguna de aquellas tres pruebas de firma podía salir
+positiva**, midieran lo que midieran. No invalida B3, que tiene prueba propia
+—el `XDG_DATA_DIRS` del snap—, pero sí significa que aquella prueba no
+discriminaba lo que se creía, y que el criterio de éxito de §4.7 estaba anclado
+a una sede incapaz de darlo. **La sede válida para el criterio es
+`valide.redsara.es`**, que no envía CSP.
+
+**c) D9 sí muerde, por un camino que no se había mirado.** `Architecture: all`
+sigue siendo correcto —el paquete no lleva binarios de ninguna arquitectura—
+pero el **código** sí depende de ella: `MozillaKeyStoreUtilitiesUnix` lleva
+escritas a mano `/usr/lib/x86_64-linux-gnu` y `/usr/lib/i386-linux-gnu`, y
+ninguna `aarch64`. Sin proveedor NSS el almacén no se inicializa y el diálogo
+dice «No se han encontrado certificados válidos en el almacén» **teniendo el
+certificado delante**. El síntoma no menciona NSS por ninguna parte.
+
+**d) `git` a través del hook de `rtk` devuelve commits que no son.** Se le pide
+uno concreto y contesta otro, con su asunto, sin fallar ni avisar. `rev-parse
+--short HEAD` sí coincide, así que una comprobación rápida lo declara sano.
+**Cualquier medición sobre git de este proyecto debe tomarse con `/usr/bin/git`
+o con `rtk proxy`.** Las conclusiones de §4.5 y §4.6 que se apoyen en hashes o
+fechas conviene rehacerlas.
+
+**Las PRs, ahora cuatro, escritas y sin abrir:** la errata `Recomends:`, las
+preferencias del esquema, los perfiles XDG del configurador y las rutas NSS
+multiarch. Se descartó una quinta —hacer que Firefox de escritorio use
+`document.location` en lugar del iframe— porque el único A/B disponible la
+contradice: el iframe **sí** lanza AutoFirma y `document.location` no. Sin
+medición que la respalde, no se propone.
+
+**Lo que sigue sin medirse:** amd64 (todo esto es arm64, y B6 no aparecería
+allí); Ubuntu de fábrica con Snap, donde B3 sigue siendo infranqueable; y si el
+paquete sobrevive a una actualización de Firefox de Mozilla.
+
 
 ---
 
@@ -893,7 +1001,7 @@ el único motivo nuevo que reabriría esta discusión.
 | B2 | `encina configure` + `autofirma-fix` | Sin abrir. Es donde vive el remedio. D13 sigue vigente hasta entonces |
 | B3 | GUI GTK4 | Sin abrir |
 | B4 | DNIe con lector físico | Sin abrir |
-| B∥ | **Fork de `ctt-gob-es/clienteafirma`**: PRs al oficial, y paquete propio mientras no las incorporen | **ABIERTA el 2026-08-07.** Tres forks creados y `jmorenobl/encina-autofirma` en marcha (§4.8). Corre en paralelo a B1 y en **otro repositorio**: `~/Projects/encina-autofirma` |
+| B∥ | **Fork de `ctt-gob-es/clienteafirma`**: PRs al oficial, y paquete propio mientras no las incorporen | **ABIERTA el 2026-08-07, y con el paquete FUNCIONANDO.** `autofirma 1.9.1+encina1` construido, probado y con el primer positivo de extremo a extremo del proyecto (§4.9). Cuatro PRs escritas, ninguna abierta. Corre en paralelo a B1 y en **otro repositorio**: `~/Projects/encina-autofirma` |
 
 **El alcance de B1 es estrecho a propósito.** Detectar y reparar se separan
 porque son fases con criterios de éxito distintos: una comprobación se valida
@@ -906,6 +1014,11 @@ cualquier fichero de preferencias de Firefox, cualquier certificado instalado po
 un paquete, y cualquier línea de salida que signifique «puedes firmar». Lo último
 no es prudencia: es que **no existe ninguna máquina donde se haya visto
 funcionar**, así que la afirmación no está respaldada por ninguna medición.
+
+> **Enmendado el 2026-08-07: ya existe (§4.9).** Eso no reabre el alcance de B1
+> —`encina doctor` sigue diagnosticando y no reparando— pero sí le da algo que
+> antes no tenía: un estado bueno conocido contra el que comparar, y dos
+> comprobaciones nuevas que hacer, B4 y B6.
 
 **Por qué la imagen no va antes:** una receta de imagen instala paquetes. Sin
 paquetes construidos no hay nada que instalar, y sin repo del que servirlos la
@@ -1155,6 +1268,10 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **El control negativo no es negativo** | `openssl verify` sin almacén de confianza responde `OK` | OpenSSL 3.x tiene un tercer origen, `-CAstore`, activo por defecto, que lee `/etc/ssl/certs` — donde el `postinst` de AutoFirma dejó su CA. Hace falta `-no-CAstore`, o mejor, verificar contra una CA *equivocada*, que falla por el motivo correcto |
 | **`grep` de una subcadena que no existe** | Una comprobación de ausencia sale siempre «ausente» | `grep -i afirma` **no** casa con `SocketAutoFirma`: antes de la `F` hay una `o`, así que la subcadena es `oFirma`. Familia de la trampa 3 de `SCRIPTS.md` |
 | **`certutil` crea lo que iba a inspeccionar** | Un diagnóstico deja bases de datos NSS nuevas por los perfiles | `certutil -A` crea `cert9.db` si no existe; `-L` no (falla con `SEC_ERROR_BAD_DATABASE`, rc=255, sin tocar nada). Una herramienta de diagnóstico solo usa `-L`, y trata ese error como «sin almacén», no como fallo |
+| **La preferencia del navegador ya no existe** | Se pone el fichero en la ruta correcta y sigue sin pasar nada al pulsar «Firmar» | `network.protocol-handler.app.<esquema>` **ha desaparecido** de Firefox (0 apariciones en `libxul` de la 153). Hace falta `expose.<esquema>=false`, que es lo que le dice a Firefox que el esquema no le corresponde. Sin ella `expose-all` vale `true` y el navegador se queda el URI (§4.9a) |
+| **«No se han encontrado certificados válidos» con el certificado delante** | `certutil -L` lo ve en el perfil y AutoFirma no | AutoFirma no encuentra las bibliotecas NSS: solo busca en `/usr/lib/x86_64-linux-gnu` y `/usr/lib/i386-linux-gnu`. En arm64 falla con «No se ha podido determinar la localizacion de NSS en UNIX», y el diálogo no menciona NSS por ninguna parte (§4.9c) |
+| **La sede se bloquea a sí misma** | Todo correcto en la máquina y la firma no arranca; nada en pantalla | La CSP de la sede no incluye `afirma:` en `frame-src`, y `autoscript.js` invoca el esquema por iframe en Firefox de escritorio. Solo se ve en la consola del navegador (§4.9b) |
+| **`git` contesta un commit que no es** | Se pide un hash y devuelve otro, con su asunto | El hook de `rtk` filtra la salida de `git`. No falla ni avisa, y `rev-parse --short HEAD` sí coincide. Medir con `/usr/bin/git` o `rtk proxy` (§4.9d) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
@@ -1202,3 +1319,9 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
   herramienta existente sabe decir.
 - **Vía upstream:** si el PR a `clienteafirma` entra rápido, replantear el alcance
   en lugar de continuar por inercia.
+
+- **B∥ ha cumplido su criterio (2026-08-07).** El paquete propio estaba
+  terminado cuando saliera una firma real en una sede real, mirada en pantalla.
+  Salió (§4.9). Lo que queda de B∥ no es construir, es sostener: abrir las
+  cuatro PRs, y comprobar amd64 y la supervivencia a una actualización de
+  Firefox.
