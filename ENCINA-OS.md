@@ -426,9 +426,36 @@ Esto no debilita `encina doctor`: lo refuerza. **El remedio correcto depende de
 qué máquina es, y hoy no hay nada que las distinga.** Eso es exactamente lo que
 un diagnóstico hace y un tutorial no.
 
-**Lo que NO se midió aquí, y no se da por bueno:** la firma real de extremo a
-extremo sobre el Snap. Requiere sede y pantalla. La predicción, a partir de la
-barrera 1, es que falla igual que §4.1; **predicción, no medición.**
+**Prueba de firma real, medida el mismo día en `sededgsfp.gob.es`** (TEST
+AUTOFIRMA, Firefox Snap 147, mirada en pantalla): sale **el mismo diálogo** que en
+§4.1, *«No es posible conectar con Autofirma debido a un problema de comunicación
+o de instalación del cliente»*. Y se comprobó que falla **por la misma causa**, no
+solo con el mismo síntoma:
+
+```
+$ ps -eo args | grep -iE "java|autofirma"      # NINGUNO
+$ ss -ltn | grep -E ":6[0-9]{4}"               # NADA escuchando
+$ ls ~/.afirma/
+ls: no se puede acceder a '/home/jorge/.afirma/': No existe el archivo o el directorio
+```
+
+El directorio de log de AutoFirma **ni siquiera existe**: no se ha ejecutado
+nunca en esa máquina. Es la barrera 1, sola, y basta para romper la firma.
+
+**Lo que esto deja demostrado, y es el resultado limpio del día:** en la Ubuntu de
+fábrica la barrera 2 está **cerrada y medida** —la CA correcta, en el perfil
+correcto, y la hoja del socket valida contra ella— **y la firma falla igualmente**.
+Cada barrera basta por sí sola. Es la mitad complementaria de §4.1, que midió la
+máquina donde están las dos.
+
+**Lo que sigue sin medirse:** que cerrar la barrera 1 en esta máquina haga que la
+firma funcione. Es ahora una predicción **mucho** más fuerte —es el único
+obstáculo que queda medido en pie— pero sigue siendo predicción. Sería el primer
+positivo de extremo a extremo del proyecto, y el positivo real que le falta a C5
+(`AGENTS.md` §6.4). Hay además una incógnita propia del Snap: un Firefox
+confinado no ejecuta `/usr/bin/autofirma` directamente, sino a través del portal
+del escritorio, así que puede haber ahí una barrera **específica del Snap** que en
+el Firefox nativo no existiría.
 
 ---
 
