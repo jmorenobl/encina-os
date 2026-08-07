@@ -391,7 +391,16 @@ Crear `.github/workflows/build.yml`:
 ## 7. Fuera de alcance — no implementar
 
 - AutoFirma, certificados FNMT, DNIe, `opensc`, PKCS#11, NSS
-- Paquete `encina-locale-es`
+- Paquete `encina-locale-es`. **Suprimido definitivamente el 2026-08-07 (D12).**
+  No es «todavía no»: es que no existe nada que empaquetar.
+  `check-language-support -l es` devuelve vacío en una Ubuntu 24.04 instalada en
+  español, y lo que devolvería lo instala el propio instalador ejecutando ese
+  mismo comando. Lo poco que Ubuntu no cubre —la l10n de aplicaciones instaladas
+  después del sistema— son tres `Depends:` de `encina-meta`, no un paquete.
+  Además, tocar `/etc/default/keyboard`, `/etc/locale.gen` o `/etc/default/locale`
+  violaría R5: no son conffiles de nadie, los genera debconf. Salidas literales
+  en `ENCINA-OS.md` §6.1. **Si esta tarea reaparece en un encargo, no la
+  implementes: remite a D12.**
 - `encina-keyring`, `encina-meta`, repositorio APT propio, `aptly`
 - Modificación de `/etc/os-release` (requiere `dpkg-divert`; paquete separado futuro)
 - Construcción de imagen ISO, `live-build`, `debos`, Cubic

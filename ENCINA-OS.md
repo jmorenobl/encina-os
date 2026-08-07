@@ -65,6 +65,7 @@ No volver a discutirlas sin motivo nuevo.
 | D9 | Desarrollo en Mac M3; imágenes arm64 en la Etapa A | Son para UTM del autor: nativas y rápidas. amd64 solo cuando el destino son terceros |
 | D10 | No comprar máquina física | SoftHSM2 cubre PKCS#11 sin lector; Hetzner por horas cubre amd64 de escritorio |
 | D11 | Los dos lanzadores «Firefox» se resuelven quitando el Snap en la ISO propia, no ocultando entradas | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada, §8 prohíbe cualquier GUI. Se vive como «me han roto el equipo» |
+| D12 | **No habrá `encina-locale-es`.** Lo poco que queda va como `Depends:` de `encina-meta` | Medido el 2026-08-07: `check-language-support -l es` sale vacío y el instalador de Ubuntu ya ejecuta ese mismo comando y actúa. El paquete tendría cero ficheros, y tocar locale o teclado chocaría con R5 (§6.1) |
 
 ---
 
@@ -173,10 +174,69 @@ Marcada la posición actual.
 | A0 | Nombre, licencia, repositorio git inicializado | **Hecho**, con el texto oficial de la EUPL-1.2 en `LICENSE` |
 | A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6), con la CI verde por `push` |
 | A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **Hecho** (v0.2.0), 7/7 de la definición de terminado |
-| A3 | `encina-locale-es` (solo lo que delate `check-language-support -l es`) | **← AQUÍ.** Especificado, sin empezar. Sigue listado en §8 hasta que lo abras |
-| A4 | `encina-meta` + repo APT firmado + `encina-keyring` | Especificado |
+| A3 | ~~`encina-locale-es`~~ | **Suprimida el 2026-08-07** tras medirla. No había nada que hacer. Su residuo lo absorbe A4. Ver §6.1 |
+| A4 | `encina-meta` + repo APT firmado + `encina-keyring` | **← POSICIÓN ACTUAL, sin abrir.** §7 la plantea como decisión, y aconseja partirla: `encina-meta` sí, repo firmado y keyring no todavía. Hereda el residuo de A3 (§6.1) |
 | A5 | `autoinstall.yaml` sobre ISO oficial de Ubuntu | Especificado |
 | A6 | Imagen propia con `live-build` o `debos` | Opcional, al final |
+
+### 6.1 Por qué se suprimió A3 (`encina-locale-es`)
+
+Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,
+con `encina-branding` 0.1.6 y `encina-firefox-native` 0.2.0 instalados:
+
+```
+$ check-language-support -l es
+                                    # vacío: no falta nada
+
+$ check-language-support -l es --show-installed
+fonts-noto-core gnome-user-docs-es hunspell-es language-pack-es
+language-pack-gnome-es poppler-data wspanish
+                                    # los siete, instalados
+```
+
+Locale (`es_ES.UTF-8` en las 13 categorías), teclado (`XKBLAYOUT="es"`,
+`input-sources = [('xkb', 'es')]`), diccionarios (`hunspell-es` con `es_ES.dic`
+y las 21 variantes americanas), fuentes y zona horaria: correctos sin tocar nada.
+
+**El motivo es que Ubuntu ya hace exactamente lo que A3 proponía hacer**, con el
+mismo comando. En `/var/log/installer/subiquity-server-debug.log`:
+
+```
+19:20:02 start: .../postinstall/get_target_packages: calculating extra packages
+19:20:02 arun_command called: ['chroot', '/target', 'check-language-support', '-l', 'es_ES']
+19:20:03 start: .../postinstall/install_hunspell-es: installing hunspell-es
+19:20:08 start: .../postinstall/install_wspanish: installing wspanish
+```
+
+Y en `/usr/share/language-selector/data/pkg_depends`, la **única** regla
+específica de español en 184 líneas es `wa:es::wspanish`. El resto son genéricas
+o condicionadas a que otro paquete esté instalado (`language_support_pkgs.py:80`).
+
+**El residuo, que pasa a A4.** Lo único que Ubuntu no cubre es que las
+aplicaciones instaladas *después* del sistema no reciben su l10n español: no hay
+hook de apt, ni disparador de dpkg, ni aviso de `update-notifier` que reejecute
+la comprobación. Verificado con `apt-get -s install libreoffice-writer`, que no
+arrastra `libreoffice-l10n-es` ni `hyphen-es` ni `mythes-es`. Son tres líneas en
+el `debian/control` de `encina-meta`, no un paquete:
+
+```
+Depends: ..., hunspell-es, language-pack-es, language-pack-gnome-es
+Recommends: ..., libreoffice-l10n-es, hyphen-es, mythes-es, thunderbird-locale-es
+```
+
+`libreoffice-l10n-es` depende de `libreoffice-common`, así que va en `Depends:`
+solo si Encina incluye LibreOffice de serie; si no, en `Recommends:`.
+
+**Y además chocaba con R5.** `/etc/default/keyboard`, `/etc/locale.gen` y
+`/etc/default/locale` **no son conffiles de nadie**: los genera debconf
+(`keyboard-configuration`, `locales`). Escribirlos desde un paquete es el patrón
+que R5 prohíbe, sin la salida airosa que `os-release` tiene con `dpkg-divert`.
+
+**Lo que NO se midió, y no se da por bueno:** que una instalación *completa* (no
+`ubuntu-desktop-minimal`) en español reciba `libreoffice-l10n-es`; y que el
+instalador interactivo se comporte como el `autoinstall` que se usó aquí. Ambas
+requerirían una VM virgen. Si alguna vez se comprueba y sale un hueco real, es
+el único motivo nuevo que reabriría esta discusión.
 
 ### Etapa B
 
@@ -229,13 +289,47 @@ Lo aprendido en la fase, para no repetirlo:
   automáticas en verde, el icono del escritorio seguía abriendo el Snap. Se vio
   mirando `about:support`. Y estaba en español, así que parecía correcto.
 
-### Siguiente: decidir si se abre A3
+### A3 está suprimida
 
-La hoja de ruta pone `encina-locale-es` como A3, pero **sigue listado en §8 como
-fuera de alcance**. Esa contradicción es deliberada: abrir una fase es una
-decisión, no un automatismo. Antes de empezarla hay que sacarla de §8 y escribir
-su especificación en `AGENTS.md`, que hoy solo cubre `encina-branding` y
-`encina-firefox-native`.
+Se midió antes de abrirla y no había nada que hacer: `check-language-support -l es`
+devuelve vacío, y lo que devolvería lo instala el propio instalador de Ubuntu con
+ese mismo comando. Detalle y salidas literales en §6.1. `encina-locale-es` se
+queda en §8 **de forma permanente**, no «hasta que lo abras».
+
+La lección va más allá de A3: llevaba meses en la hoja de ruta y bastó una hora
+de comandos para demostrar que no existía. Sobrevivió porque nadie había
+ejecutado el comando que la propia casilla proponía como criterio. **Antes de
+abrir cualquier fase que quede, la pregunta es: ¿qué comando demuestra que este
+problema existe?** Si no lo hay, la fase es una suposición. Aplicar sobre todo a
+A5 y A6, donde la nota de §6 ya avisa de que es donde la gente abandona.
+
+### Siguiente: una decisión entre dos
+
+Igual que con A3, abrir una fase es una decisión, no un automatismo.
+
+1. **`encina-meta` (A4 reducida).** Un día de trabajo. Convierte dos `.deb`
+   sueltos en algo instalable y es donde aterrizan las tres líneas de §6.1.
+   **El repo APT firmado y `encina-keyring` conviene separarlos y aplazarlos:**
+   la nota de §6 ya dice que A5 puede ir con un repo local sin firmar y
+   `[trusted=yes]`, y que esa receta sería la definitiva. Un repo firmado que
+   nadie consume da cero funcionalidad y compra custodia de clave, rotación y
+   alojamiento a perpetuidad. D5 dice además que no se publica en la Etapa A.
+
+2. **Comprobar la hipótesis de la Etapa B, ya.** Todo lo que queda de la Etapa A
+   es andamio cuyo valor depende de que la Etapa B sea real, y la hipótesis
+   central —que AutoFirma falla de formas que solo un diagnóstico desenreda—
+   **sigue sin comprobarse en máquina propia**: hay issues de terceros (§4), no
+   una ejecución. §10 ya tiene el criterio escrito, pero esperando al final de
+   B1, después de haberla construido. Se puede comprar esa información ahora por
+   media tarde: instalar el `.deb` oficial 1.9 de AutoFirma en la VM, que está en
+   el estado exacto para ello (Firefox **nativo**, sin sandbox aislando NSS, que
+   es justo lo que A2 eliminó por adelantado). Si falla, el andamio queda
+   justificado y `encina doctor` deja de ser una cita para ser un dato propio. Si
+   no falla, sobran A4, A5, A6 y la Etapa B entera.
+
+Existe un clon `encina-A2-verificada` en UTM con el estado bueno de A2, hecho el
+2026-08-07 antes de tocar nada. No arrancarlo a la vez que el original: comparten
+hostname e IP.
 
 ### Pendiente de A0
 
@@ -249,10 +343,20 @@ y no son técnicas.
 
 No implementar, no preparar, no dejar «ganchos para el futuro»:
 
-AutoFirma, FNMT, DNIe, `opensc`, PKCS#11, NSS · `encina-locale-es` ·
+AutoFirma, FNMT, DNIe, `opensc`, PKCS#11, NSS · **`encina-locale-es`** ·
 `encina-meta`, `encina-keyring`, repo APT, `aptly` · `os-release` y `dpkg-divert` ·
 ISO, `live-build`, `debos`, Cubic, `autoinstall.yaml` · temas de GTK o iconos ·
 cualquier GUI.
+
+Dos matices sobre esta lista:
+
+- **`encina-locale-es` está aquí de forma permanente**, no en espera de turno. Se
+  midió el 2026-08-07 y no había paquete que escribir (§6.1). El resto de la lista
+  sí espera turno: sale de aquí cuando se abra su fase.
+- **Medir no es implementar.** Instalar el `.deb` oficial de AutoFirma en una VM
+  para ver si falla no viola esta sección: no crea código, ni paquete, ni gancho.
+  Es lo contrario de un gancho — es la comprobación que decide si la Etapa B
+  merece existir (§7, §10).
 
 ---
 
