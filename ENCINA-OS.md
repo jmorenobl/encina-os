@@ -128,7 +128,52 @@ Resumen de lo ya averiguado, para no repetir el trabajo.
 - `albfernandez/clienteafirma-deb-package` — mejor ingeniería: `debian/` correcto,
   compila desde fuentes, no cierra los navegadores al instalar, elimina las
   librerías nativas de Windows y Mac de los jars. **Mejor base candidata.** Un solo
-  mantenedor.
+  mantenedor. **Revisado el 2026-08-07 (§4.5): ya corrige dos de los cinco fallos
+  de §4.1 y tiene `debian/patches/`.** Último empuje 2025-12-22, tres estrellas.
+
+### 4.5 Qué está arreglado ya y qué no, revisado el 2026-08-07
+
+Contrastado contra el código, no contra los README.
+
+**Upstream acepta PRs externas, pero despacio.** 34 fusionadas, 25 abiertas. La
+mediana de 2 días es de `dependabot`; las humanas son otra cosa: la #497
+—**una sola línea**, `+1 −0`— tardó **87 días**, el README de la #481 tardó 23, y
+las siete de seguridad de `reatlat` del 2026-07-13 siguen abiertas. No es un
+repositorio muerto; es uno lento.
+
+**La barrera 2 NO está arreglada en ninguna versión publicada.** El fichero que
+instala la CA del socket, `ConfiguratorFirefoxLinux.java`, es **idéntico byte a
+byte (15995) en `v1.9`, `v1.9.1` y `v1.9.2`**, y no menciona `.config/mozilla`
+en ninguna. Solo conoce dos rutas, y en este orden:
+
+```java
+PROFILES_INI_RELATIVE_PATH_UBUNTU_22 = "snap/firefox/common/.mozilla/firefox/profiles.ini"
+PROFILES_INI_RELATIVE_PATH           = ".mozilla/firefox/profiles.ini"
+```
+
+Es un `if/else`: si existe la del Snap la usa, **si no** cae a `~/.mozilla/`, que
+en un sistema con el `.deb` de Mozilla **no existe**. Ni una ni otra es
+`~/.config/mozilla/firefox/`. Esto explica exactamente lo medido en §4.2 y
+convierte la barrera 2 en un **bug upstream concreto, vivo y pequeño**.
+
+**Y el arreglo XDG que sí existe está en otro sitio y se perdió.**
+`MozillaKeyStoreUtilities.java` —que busca los certificados **de firma** del
+usuario, no instala la CA— sí conoce la ruta XDG. Entró en `v1.9.1` (2026-04-29,
+35016 bytes) y **`v1.9.2` (2026-05-12) vuelve a los 34562 bytes exactos de `v1.9`
+y a cero apariciones**. Medido sobre los tres tags; la causa (¿rama que no
+incluyó el cambio?) no se ha investigado.
+
+**El `.deb` oficial va un año por detrás de su propio código fuente:** está
+construido sobre `v1.9` (2025-05-21) y upstream está en `v1.9.2` (2026-05-12).
+
+**Lo que `albfernandez` ya corrige**, leído en su `debian/`:
+
+| Fallo de §4.1 | ¿Corregido? |
+|---|---|
+| 1. JRE no declarado (`Recomends:`) | **Sí** — `Depends: java-runtime, libnss3-tools, openssl, ca-certificates` |
+| 2. `postinst` sin `set -e`, éxito con todo roto | **Sí** — el `postinst` empieza con `set -e` |
+| B2 — perfil equivocado | **No.** Su changelog cita un ajuste XDG, pero es un salto de versión de upstream (`1.9.202507.1`→`.4`), no un parche suyo, y no toca el configurador |
+| B1 — preferencia en `/etc/firefox/pref/` | **No, y no le hace falta**: empaqueta para Debian, cuyo `firefox-esr` **sí** lee ese directorio. B1 solo existe con la compilación de Mozilla |
 - openSUSE: paquete comunitario en el repo personal de Antonio Larrosa; sin
   paquete oficial para Leap 15.6.
 - AUR: `autofirma`, `autofirma-bin`, y un `autofirmaja` cuyo mantenedor declara
@@ -650,7 +695,7 @@ el único motivo nuevo que reabriría esta discusión.
 | B2 | `encina configure` + `autofirma-fix` | Sin abrir. Es donde vive el remedio. D13 sigue vigente hasta entonces |
 | B3 | GUI GTK4 | Sin abrir |
 | B4 | DNIe con lector físico | Sin abrir |
-| B∥ | Vía paralela: PR upstream a `ctt-gob-es/clienteafirma` | Sin abrir. §4.2 ha añadido munición: el configurador elige el perfil por `Default=1` de `profiles.ini` y Firefox obedece a `installs.ini` |
+| B∥ | Vía paralela: PR upstream a `ctt-gob-es/clienteafirma` **y paquete propio corregido** | Sin abrir, pero §4.5 lo ha convertido en la vía más corta. La barrera 2 es un bug localizado en un método de `ConfiguratorFirefoxLinux.java`, sin tocar desde `v1.9`. **El paquete corregido no se forkea desde cero: se parte de `albfernandez`**, que ya arregla dos de los cinco fallos y tiene `debian/patches/`. La PR va en paralelo y sin esperarla: la #497, de una línea, tardó 87 días |
 
 **El alcance de B1 es estrecho a propósito.** Detectar y reparar se separan
 porque son fases con criterios de éxito distintos: una comprobación se valida
