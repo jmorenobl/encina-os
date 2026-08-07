@@ -448,14 +448,103 @@ correcto, y la hoja del socket valida contra ella— **y la firma falla igualmen
 Cada barrera basta por sí sola. Es la mitad complementaria de §4.1, que midió la
 máquina donde están las dos.
 
-**Lo que sigue sin medirse:** que cerrar la barrera 1 en esta máquina haga que la
-firma funcione. Es ahora una predicción **mucho** más fuerte —es el único
-obstáculo que queda medido en pie— pero sigue siendo predicción. Sería el primer
-positivo de extremo a extremo del proyecto, y el positivo real que le falta a C5
-(`AGENTS.md` §6.4). Hay además una incógnita propia del Snap: un Firefox
-confinado no ejecuta `/usr/bin/autofirma` directamente, sino a través del portal
-del escritorio, así que puede haber ahí una barrera **específica del Snap** que en
-el Firefox nativo no existiría.
+### 4.4 Hay una TERCERA barrera, y es del Snap (2026-08-07)
+
+Se cerró la barrera 1 a mano sobre `encina-snap-fabrica` para ver si la firma
+salía: un `user.js` de usar y tirar en el perfil, con las tres preferencias que
+AutoFirma deja en `/etc/firefox/pref/`. **No es el remedio** —un `user.js` en el
+perfil del usuario es justo lo que R1 y D13 prohíben empaquetar—, es un
+experimento reversible.
+
+**Firefox las leyó, y registró el esquema.** Medido, no supuesto:
+
+```
+$ grep afirma prefs.js
+user_pref("network.protocol-handler.app.afirma", "/usr/bin/autofirma");
+user_pref("network.protocol-handler.external.afirma", true);
+user_pref("network.protocol-handler.warn-external.afirma", false);
+
+$ python3 -c '...' handlers.json
+esquemas registrados: ['afirma', 'mailto']
+afirma: {"action": 4}                    # 4 = useSystemDefault
+```
+
+**Y la firma siguió fallando, con AutoFirma sin arrancar**: ni proceso `java`, ni
+socket, ni `~/.afirma`. Dos veces, mirado en pantalla.
+
+**El motivo, medido con control positivo y negativo en la misma máquina:**
+
+```
+DENTRO del snap                          |  FUERA, en el host
+-----------------------------------------|---------------------------------
+$ ls /usr/share/applications/            |  $ xdg-mime query default \
+mimeapps.list  python3.10.desktop        |        x-scheme-handler/afirma
+vim.desktop    xdg-open.desktop          |  afirma.desktop
+   4 ficheros                            |  $ ls /usr/share/applications | wc -l
+$ ls /usr/share/applications/afirma.desktop |  94
+   No such file or directory             |  $ ls /usr/bin/autofirma
+$ ls /usr/bin/autofirma                  |  (existe)
+   No such file or directory             |
+$ echo $XDG_DATA_DIRS                    |
+/snap/firefox/7764/... (solo rutas del snap, ninguna del host)
+```
+
+**Firefox dentro del Snap no ve `afirma.desktop` ni `/usr/bin/autofirma`.** Su
+`XDG_DATA_DIRS` no incluye `/usr/share` del host. Cuando resuelve
+`useSystemDefault` no encuentra nada y **no falla: no hace nada.** Sin diálogo,
+sin error, y sin una sola línea en el journal ni una denegación de AppArmor —
+comprobado.
+
+**Y el sistema sí puede hacerlo**, lo que descarta que sea una prohibición de
+snapd:
+
+```
+$ snap run --shell firefox -c 'xdg-open "afirma://websocket?v=3&idsession=…&ports=63117"'
+rc=0
+$ pgrep -a java
+9098 java … -jar /usr/lib/Autofirma/autofirma.jar afirma://websocket?v=3&…
+```
+
+`xdg-open` dentro del snap es un shim de 38 bytes (`exec snapctl user-open "$@"`)
+que cruza la frontera del sandbox y se lo pide al host. **Firefox no pasa por
+ahí.** Que use GIO en su espacio de nombres confinado es la explicación
+razonable, pero eso es **deducción**: lo medido es que el manejador es invisible
+dentro y que nada arranca.
+
+**Las tres barreras, y quién las tiene:**
+
+| | B1 esquema `afirma:` | B2 CA del socket | B3 manejador invisible |
+|---|---|---|---|
+| Ubuntu de fábrica + Snap | presente | **ausente** | **presente** |
+| Encina (Firefox nativo) | presente | presente | ausente |
+
+**Esto corrige dos cosas que este documento llegó a afirmar hoy mismo.**
+
+1. **A2 no «añadió» una barrera: quitó una que no tiene arreglo.** §4.3 concluyó
+   que la barrera 2 la introduce el Firefox nativo, y es cierto, pero se quedaba
+   ahí. Con B3 medida, el balance se invierte: en el Snap hay un obstáculo que
+   **ningún `.deb` puede tocar** —no se añaden ficheros al `XDG_DATA_DIRS` de un
+   snap desde fuera—, y el Firefox nativo lo elimina de raíz a cambio de una
+   barrera que sí es reparable. **A2 deja de ser una preferencia y pasa a ser
+   condición necesaria**, ahora sí medido y no supuesto.
+2. **D13 no tiene la excepción que se le apuntó.** Se escribió que en Ubuntu de
+   fábrica «cerrar solo la barrera 1 haría que la firma funcionase». **Medido:
+   es falso.** Se cerró, y no funciona, porque detrás está B3. La regla de D13
+   —cerrar una barrera sola no arregla nada y quita el síntoma— **se sostiene en
+   las dos máquinas.** El motivo cambia según cuál; la conclusión no.
+
+**Y corrige la suposición fundacional del proyecto sobre el sandbox.** §9 y
+`AGENTS.md` §1 vienen diciendo que el navegador en Snap rompe la firma porque
+**aísla el almacén NSS**. Medido hoy: el almacén NSS del Snap está **perfecto**
+—AutoFirma le instala la CA correcta, §4.3—. Lo que el sandbox rompe es la
+**visibilidad del manejador de protocolo**. La conclusión de siempre era
+correcta; el mecanismo que se le atribuía, no.
+
+**Lo que sigue sin medirse:** que en el Firefox **nativo** cerrar las barreras 1
+y 2 haga que la firma salga. Sigue sin existir ningún positivo de extremo a
+extremo, y `encina-snap-fabrica` ha demostrado que **no puede darlo**: allí B3
+es infranqueable. El positivo, si llega, tiene que salir de una máquina con
+Firefox nativo.
 
 ---
 
@@ -715,11 +804,20 @@ Las dos que estaban sin documentar, **identificadas el 2026-08-07** arrancándol
 de una en una. Las dos sirven, y una resultó ser justo lo que hacía falta:
 
 - `encina-snap-fabrica` — **clon de `encina-limpia-respaldo`, creado el
-  2026-08-07 para la medición de §4.3.** Ubuntu de fábrica + Snap Firefox 147 +
-  AutoFirma 1.9 + `openjdk-17-jre`. **Es el caso positivo de la comprobación C4**
-  (`AGENTS.md` §6.4): el único sitio conocido donde AutoFirma instala la CA
-  correcta en el perfil correcto. **No borrarla ni reinstalar AutoFirma en ella**:
-  cada reinstalación genera un par de claves nuevo y el estado bueno se pierde.
+  2026-08-07 para las mediciones de §4.3 y §4.4.** Ubuntu de fábrica + Snap
+  Firefox 147 + AutoFirma 1.9 + `openjdk-17-jre`. **Es el caso positivo de C4**
+  (`AGENTS.md` §6.4), el único sitio conocido donde AutoFirma instala la CA
+  correcta en el perfil correcto (huella `B9:3B:A5:A1:…:9D:74:6F:73`), **y el
+  caso de prueba de C8**, la barrera del confinamiento. **No reinstalar AutoFirma
+  en ella:** cada reinstalación genera un par nuevo y el estado bueno se pierde.
+
+  **Residuo del experimento de §4.4, y no es virgen.** Se retiró el `user.js`
+  pero el perfil del Snap **conserva** las tres `network.protocol-handler.*.afirma`
+  en `prefs.js` y el esquema registrado en `handlers.json`
+  (`afirma: {"action": 4}`). Deshacerlo requiere editar los dos ficheros a mano.
+  Que esté así **es útil**: es una máquina con la barrera 1 cerrada y la firma
+  fallando igualmente, que es la prueba de que B3 existe. Si algún día hace falta
+  una Ubuntu de fábrica limpia, se clona otra vez `encina-limpia-respaldo`.
 - `encina-limpia-respaldo` — **Ubuntu 24.04.4 arm64 de fábrica.** Instalada el
   2026-08-06, cuatro arranques. **Ningún paquete de Encina**, ni AutoFirma, ni
   Java. Firefox es el Snap de Ubuntu (147.0.3, `firefox 1:1snap1-0ubuntu5` como
@@ -802,7 +900,7 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **El anclaje se comprueba en vacío** | `full-upgrade` ×2 en verde sin mover un paquete | El sistema ya estaba al día. Sin contar los paquetes movidos, la prueba parece más fuerte de lo que fue |
 | **El perfil nativo no está donde parece** | Los marcadores «no aparecen» | El deb de Mozilla usa `~/.config/mozilla/firefox/`, no `~/.mozilla/firefox/`, que ni existe. El del Snap está en `~/snap/firefox/common/.mozilla/` |
 | **Una comprobación pasa sin comprobar nada** | `[OK]` con la cosa rota, o `[FALLO]` con la cosa bien | Una sesión ssh no tiene `XDG_CURRENT_DESKTOP` ni `XDG_DATA_DIRS`, la salida de apt está traducida, y `comando \| grep -q` con `pipefail` muere de SIGPIPE. Detalle en `SCRIPTS.md` |
-| Firma electrónica falla sin explicación | Error que no menciona el sandbox | Navegador en Snap/Flatpak aísla el almacén NSS. **Heredado de la investigación previa y NUNCA medido**, y lo medido lo matiza: un `certutil` de fuera sí escribe en el `cert9.db` del perfil del Snap (§4.2). No construir nada encima hasta medirlo |
+| **Firma electrónica falla sin explicación en un navegador de Snap** | Todo instalado, la CA correcta en el perfil, y al pulsar «Firmar» no pasa **nada**: sin diálogo, sin error, sin AutoFirma, sin nada en el journal | **NO es el almacén NSS**, como venía diciendo este documento sin medirlo. El `cert9.db` del Snap es correcto (§4.3). Lo que el confinamiento rompe es que **Firefox no ve `afirma.desktop` ni `/usr/bin/autofirma`**: su `XDG_DATA_DIRS` no incluye `/usr/share` del host, así que `useSystemDefault` no encuentra manejador y no hace nada (§4.4). Ningún `.deb` lo arregla |
 | **AutoFirma no arranca al pulsar «Firmar»** | La sede dice «No es posible conectar con Autofirma»; no hay ningún proceso `java` ni nada escuchando en el socket, y **no sale ningún diálogo de «abrir con»** | El `.deb` deja sus preferencias en `/etc/firefox/pref/Autofirma.js`, ruta de los Firefox de Debian/Ubuntu. **La compilación oficial de Mozilla no la lee**: las tres `network.protocol-handler.*.afirma` no existen. El handler del sistema (`xdg-open`) sí funciona: el eslabón roto es solo Firefox (§4.1) |
 | **Arreglar el esquema `afirma:` no basta** | Ya arranca AutoFirma y la firma sigue sin ir | Son **dos barreras independientes**. El socket de AutoFirma es TLS (`CN=127.0.0.1` emitido por `CN=Autofirma ROOT`), así que el navegador también tiene que confiar en esa CA, y el Firefox nativo no la tiene. La primera barrera escondía la segunda (§4.1) |
 | **AutoFirma configura el navegador equivocado** | Todo instalado y «correcto», y la firma falla | Su configurador encuentra el perfil del **Snap** y no el del Firefox nativo, que está en `~/.config/mozilla/firefox/`. Con el Snap quitado no encuentra **ninguno** y lo dice solo en un log que nadie lee |
@@ -845,15 +943,19 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
   salida verde** (§6.5), B1 no ha construido un diagnóstico sino una lista de
   sospechas, y hay que parar antes de B2.
 
-  **Resultado del 2026-08-07 (§4.3), y es media respuesta a la pregunta
-  original.** El problema **sí es menor de lo estimado, pero no desaparece**: de
-  las dos barreras, en la máquina mayoritaria solo hay **una**, y es la
-  empaquetable. La otra la añade Encina con su propio Firefox nativo. Eso mueve
-  trabajo de B2 hacia A2 —replantear cómo convive el perfil nativo con un
-  configurador que no sabe encontrarlo— y **no** cancela B1: al contrario, es lo
-  que le da su razón de ser, porque el remedio correcto ya depende de qué máquina
-  es y hoy no hay nada que las distinga. Lo que sí queda tocado es el argumento
-  de D13, que asume que detrás de la barrera 1 siempre espera la 2. En fábrica no
-  espera.
+  **Resultado del 2026-08-07 (§4.3 y §4.4).** La respuesta es **no**: el problema
+  no es menor. Hubo un momento del día en que lo pareció —§4.3 midió que en la
+  máquina mayoritaria falta la barrera 2— y duró lo que tardó en medirse la
+  tercera. Hay **tres** barreras, no dos, y ninguna máquina tiene menos de dos:
+
+  - Ubuntu de fábrica + Snap: B1 y **B3**, y B3 **no la arregla ningún paquete**.
+  - Encina con Firefox nativo: B1 y B2, las dos reparables.
+
+  Eso **no** mueve trabajo a A2 para replantearla, como llegó a escribirse aquí:
+  la confirma. A2 cambia dos barreras por dos barreras, pero cambia una
+  infranqueable por una reparable. Y refuerza B1 por partida doble: el remedio
+  correcto depende de qué máquina es, y en una de las dos el remedio **no es un
+  remedio sino un consejo** —cambiar de navegador—, que es justo lo que ninguna
+  herramienta existente sabe decir.
 - **Vía upstream:** si el PR a `clienteafirma` entra rápido, replantear el alcance
   en lugar de continuar por inercia.

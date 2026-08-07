@@ -30,13 +30,18 @@ navegadores instalados vía Snap o Flatpak aíslan el almacén de certificados N
 mediante sandbox, lo que impide el funcionamiento de la firma electrónica
 española. Resolver esto ahora es **condición necesaria** para las fases futuras.
 
-**Ese último párrafo es heredado y NO está medido.** Se arrastra desde la
-investigación previa y nunca se comprobó en máquina propia. Lo medido el
-2026-08-07 lo matiza: un `certutil` ejecutado fuera del sandbox **sí** escribe en
-el `cert9.db` del perfil del Snap (`~/snap/firefox/common/.mozilla/firefox/`), y
-de hecho hay una CA de AutoFirma dentro. Lo que el confinamiento impida leer
-*desde dentro* del Snap es otra afirmación, distinta y sin medir. Está en la lista
-de §6.8; hasta que se mida, no se construye nada encima.
+**Ese último párrafo tenía razón en la conclusión y se equivocaba en el
+mecanismo. Medido el 2026-08-07** (`ENCINA-OS.md` §4.3 y §4.4): el almacén NSS
+del Snap **no** es el problema —AutoFirma le instala la CA correcta, con la
+huella del socket vivo, y `openssl verify` la valida—. Lo que el confinamiento
+rompe es que **Firefox dentro del Snap no ve `afirma.desktop` ni
+`/usr/bin/autofirma`**: su `XDG_DATA_DIRS` solo tiene rutas del snap, así que al
+resolver el manejador del esquema `afirma:` no encuentra nada y **no hace nada**,
+sin error y sin log.
+
+Eso **sí** hace de A2 una condición necesaria, y ahora medida: es un obstáculo
+que **ningún `.deb` puede tocar** —no se añaden ficheros al `XDG_DATA_DIRS` de un
+snap desde fuera— y que el Firefox nativo elimina de raíz.
 
 **Corrección medida el 2026-08-07.** Este documento decía «elimina por adelantado
 el obstáculo principal de fases futuras». Es falso, y se comprobó instalando el
@@ -566,10 +571,19 @@ la comprobación.
 | C5 | ¿Firefox ve el esquema `afirma:`? | ¿está `network.protocol-handler.external.afirma` en `/usr/lib/firefox/defaults/pref/*.js`, `distribution/policies.json`, `distribution.ini` o el `prefs.js`/`user.js` del perfil de C3? | presente en una de esas | presente **solo** en `/etc/firefox/pref/Autofirma.js`, que esta build no lee → `[FALLO]` | C |
 | C6 | ¿El manejador del sistema está puesto? | `xdg-mime query default x-scheme-handler/afirma`, y que el `.desktop` y su `Exec` existan | un `.desktop` existente | `afirma.desktop` → **`[OK]` hoy** | M |
 | C7 | ¿Hay CA huérfanas de AutoFirma? | certs con `Subject == Issuer == CN=Autofirma ROOT` y huella **distinta** de la de C4 | ninguna | dos, huella `E8:6F:D6:…`, una en un perfil que Firefox nunca abrió | M |
+| C8 | ¿El navegador **ve** el manejador de `afirma:`? | si el perfil de C3 está bajo `~/snap/` o `~/.var/app/`, comprobar que `afirma.desktop` y el binario del `Exec` son visibles **dentro** del confinamiento (`snap run --shell <snap> -c 'ls …'`) | visibles (caso del Firefox nativo: `/usr/share/applications/afirma.desktop` existe y `xdg-mime` lo devuelve) | dentro del Snap solo hay 4 `.desktop` y `afirma.desktop` no está; `/usr/bin/autofirma` tampoco → `[FALLO]` **irreparable desde un `.deb`** | M |
 
 **C6 sale verde, y por eso no se puede omitir.** Un diagnóstico que solo imprima
 fallos borra el dato que separa las dos mitades del problema: el sistema operativo
 entrega el URI y el navegador no. §4.1 tardó una sesión en establecerlo.
+
+**C8 es la única cuyo `[FALLO]` no tiene remedio, y eso cambia lo que doctor
+imprime.** Las demás describen algo reparable en B2. C8 no: si el navegador está
+confinado, ningún paquete puede hacerle visible el manejador. La línea tiene que
+decir **qué hacer**, y lo que hay que hacer es cambiar de navegador —que es
+exactamente lo que instala `encina-firefox-native`—. Es el único sitio de B1
+donde el diagnóstico apunta a una acción del usuario y no a una futura reparación
+automática.
 
 **C4 tiene una trampa de efectos secundarios.** `certutil -A` **crea** el
 `cert9.db` si no existe: así es como `ev2eu1nn.default` acabó con una base de
