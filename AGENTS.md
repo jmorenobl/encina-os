@@ -562,7 +562,7 @@ la comprobación.
 | C1 | ¿Está AutoFirma instalado? | `dpkg-query -W -f='${Status}' autofirma` | `install ok installed` | rc≠0 → **todo lo demás pasa a `[OMIT]`, no a `[FALLO]`** | M |
 | C2 | ¿Hay un JRE, y AutoFirma lo declara? | Dos líneas distintas. (a) `readlink -f "$(command -v java)"`. (b) `LC_ALL=C apt-cache depends autofirma` | (a) una ruta. (b) un JRE en la lista | (a) `openjdk 17.0.19` → `[OK]`. (b) solo `Depends: libnss3-tools` → `[FALLO]` | M |
 | C3 | ¿Cuál es el perfil que Firefox usa **de verdad**? | Por evidencia de uso, **no** por `Default=1`: existe `compatibility.ini` **y** `times.json` tiene `firstUse` no nulo | exactamente uno por instalación | `cmnc3cx7.default-release` usado; `ev2eu1nn.default` con `firstUse: null` y sin `compatibility.ini` | M |
-| C4 | ¿El perfil de C3 confía en la CA que el socket usará **hoy**? | huella SHA-256 de `/usr/lib/Autofirma/Autofirma_ROOT.cer` **==** huella de algún cert del `cert9.db`. Nunca por apodo | huellas iguales | perfil activo con 0 certificados → `[FALLO]` | C |
+| C4 | ¿El perfil de C3 confía en la CA que el socket usará **hoy**? | huella SHA-256 de `/usr/lib/Autofirma/Autofirma_ROOT.cer` **==** huella de algún cert del `cert9.db`. Nunca por apodo | huellas iguales y `openssl verify` de la hoja → `OK`. **Medido en `encina-snap-fabrica`** (`ENCINA-OS.md` §4.3) | perfil activo con 0 certificados → `[FALLO]` | M |
 | C5 | ¿Firefox ve el esquema `afirma:`? | ¿está `network.protocol-handler.external.afirma` en `/usr/lib/firefox/defaults/pref/*.js`, `distribution/policies.json`, `distribution.ini` o el `prefs.js`/`user.js` del perfil de C3? | presente en una de esas | presente **solo** en `/etc/firefox/pref/Autofirma.js`, que esta build no lee → `[FALLO]` | C |
 | C6 | ¿El manejador del sistema está puesto? | `xdg-mime query default x-scheme-handler/afirma`, y que el `.desktop` y su `Exec` existan | un `.desktop` existente | `afirma.desktop` → **`[OK]` hoy** | M |
 | C7 | ¿Hay CA huérfanas de AutoFirma? | certs con `Subject == Issuer == CN=Autofirma ROOT` y huella **distinta** de la de C4 | ninguna | dos, huella `E8:6F:D6:…`, una en un perfil que Firefox nunca abrió | M |
@@ -787,14 +787,22 @@ Ejecutar en VM. La primera casilla es la que decide si la fase vale.
 
 Ninguna de estas se da por buena, y las tres primeras bloquean su comprobación.
 
-- **La salida sana de C4 y de C5.** Son las dos marcadas `C` en §6.4: hay que
-  producirlas con los controles de §6.5 y grabarlas **antes** de escribir la
-  comprobación, no después.
+- **La salida sana de C5.** Es la única que queda marcada `C` en §6.4. **C4 ya no
+  lo está:** su positivo real se midió el 2026-08-07 en `encina-snap-fabrica`, una
+  Ubuntu de fábrica donde AutoFirma instala la CA correcta en el perfil correcto
+  (`ENCINA-OS.md` §4.3). Esa VM es el caso positivo de C4 y hay que conservarla.
 - **Que Firefox lea de verdad `/usr/lib/firefox/defaults/pref/`.** Está deducido
   de cómo se construye el paquete de Mozilla, **no medido**. §4.1 midió lo
   contrario —que **no** lee `/etc/firefox/pref/`— sobre un Firefox vivo, y esa
   medición no se traslada. Mientras no se mida, C5 puede dar `[FALLO]` con
-  fundamento pero **no puede dar `[OK]`**.
+  fundamento pero **no puede dar `[OK]`**. §4.3 aporta un dato estático a favor
+  (`libxul.so` del Snap tiene **cero** apariciones de `etc/firefox`, y sí
+  `defaults/pref/*.js` y `distribution.ini`), pero es una lectura del binario, no
+  una observación en ejecución.
+- **La firma real de extremo a extremo sobre el Snap.** §4.3 midió las dos
+  barreras por separado y **no** llegó a firmar: hace falta sede y pantalla. La
+  predicción es que falla por la barrera 1, igual que §4.1. Predicción, no
+  medición.
 - **Que `installs.ini` gane a `Default=1` de `profiles.ini`.** C3 no depende de
   ello —decide por evidencia de uso, que es un hecho observable— pero el informe
   no debe **explicar** el fallo con una regla que nadie ha comprobado.

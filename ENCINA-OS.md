@@ -351,6 +351,85 @@ aislamiento NSS del Snap, que este documento afirma en §9 y **nadie ha medido**
 y lo medido lo matiza, porque un `certutil` de fuera sí escribe en el `cert9.db`
 del Snap. Lista completa en `AGENTS.md` §6.8.
 
+### 4.3 La VM del Snap: las dos barreras NO son las dos universales (2026-08-07)
+
+Medido sobre `encina-snap-fabrica`, clon de `encina-limpia-respaldo`: **Ubuntu
+24.04.4 arm64 de fábrica, Firefox Snap 147.0.3, ningún paquete de Encina.** Es la
+máquina mayoritaria (D3: quien instala los `.deb` sobre su Ubuntu tiene el Snap).
+Mismo artefacto que §4.1, verificado antes de instalar:
+
+```
+sha256 del zip:  c29c251f2ee9f00dfc87f9582677dbd436a83565986ab0417ff065ceae716798
+sha256 del deb:  2667d8262eb0a18f371b015dc8a8fef06465dd981db9198faf3d91f96e84acee
+```
+
+**Etapa A, instalar el `.deb` solo: idéntico a §4.1.** `Recomends:` sin declarar,
+`java: not found`, ocho órdenes fallidas, y aun así imprime `Instalacion del
+certificado CA en el almacenamiento del sistema` y apt lo da por bueno. Nada
+generado, cero certificados en el perfil.
+
+**Etapa B, con Java y reinstalando: aquí se separan las dos máquinas.**
+
+```
+-- CA viva en disco:        serial=-6E3BE0F8  sha256 B9:3B:A5:A1:…:9D:74:6F:73
+-- CA en el perfil del Snap: serial=-6E3BE0F8  sha256 B9:3B:A5:A1:…:9D:74:6F:73
+-- ¿valida la hoja del socket contra la CA del perfil?
+   /tmp/hoja.pem: OK
+```
+
+**La barrera 2 no existe en Ubuntu de fábrica.** No es que «acierte con el
+perfil»: es que instala **la CA correcta, la del socket vivo, con la huella
+correcta y la confianza correcta (`C,,`)**, en el único perfil que hay. Y el
+desinstalador que se genera **funciona** —107 bytes, apuntando a ese perfil con
+el apodo correcto—, frente a los 0 bytes de la VM nativa. §4.1 dedujo que en
+fábrica «al menos acierta con el perfil del Snap»: la deducción era correcta y se
+quedaba corta.
+
+**La barrera 1 sí sigue ahí.** El Snap es la compilación de Mozilla, y no lee
+`/etc/firefox/pref/` —donde AutoFirma deja `Autofirma.js`— igual que no la lee el
+`.deb` nativo:
+
+```
+$ strings -a /snap/firefox/current/usr/lib/firefox/libxul.so | grep -c "etc/firefox"
+0
+$ strings -a … | grep -E "^(defaults/pref|distribution)"
+defaults/preferences/*.js
+defaults/pref/*.js
+distribution.ini
+```
+
+Y no hay ninguna preferencia `afirma` en el `prefs.js` del perfil. El manejador
+del sistema, igual que en §4.1, sí está: `xdg-mime` devuelve `afirma.desktop`.
+
+**Lo que esto significa, y es lo más importante que ha salido del día:**
+
+| | Barrera 1 (esquema `afirma:`) | Barrera 2 (CA del socket) |
+|---|---|---|
+| Ubuntu de fábrica + Snap | **presente** | **ausente** |
+| Encina (Firefox nativo) | **presente** | **presente** |
+
+**La barrera 2 no es un fallo de AutoFirma: es consecuencia de A2.** El
+configurador funciona correctamente cuando encuentra el perfil que el navegador
+usa; lo que no sabe es dónde vive el perfil del Firefox nativo de Mozilla, ni
+resolver la contradicción `profiles.ini` / `installs.ini` (§4.2a). §3 decía que
+A2 «desplazó» el obstáculo. Medido: **A2 añadió uno que en fábrica no estaba.**
+
+**Y hay un matiz sobre D13 que hay que mirar de frente.** El motivo de D13 es que
+«cerrar solo la barrera 1 deja el sistema sin firmar y sin el aviso que hoy da».
+Eso es cierto **en una máquina Encina**, donde la barrera 2 espera detrás. En una
+Ubuntu de fábrica **es falso**: allí la barrera 2 no existe, así que cerrar la 1
+haría que la firma funcionase. **El mismo remedio tiene efectos opuestos en las
+dos máquinas.** No se toca D13 aquí; se anota que su justificación tiene una
+excepción medida, y que decidirla es una conversación aparte.
+
+Esto no debilita `encina doctor`: lo refuerza. **El remedio correcto depende de
+qué máquina es, y hoy no hay nada que las distinga.** Eso es exactamente lo que
+un diagnóstico hace y un tutorial no.
+
+**Lo que NO se midió aquí, y no se da por bueno:** la firma real de extremo a
+extremo sobre el Snap. Requiere sede y pantalla. La predicción, a partir de la
+barrera 1, es que falla igual que §4.1; **predicción, no medición.**
+
 ---
 
 ## 5. Reglas duras
@@ -605,11 +684,35 @@ publica en la Etapa A.
   AutoFirma en el almacén del sistema y otra huérfana en el perfil del Snap.
   **Ya no es el estado de A2.**
 
-Hay además `encina-dev` y `encina-limpia-respaldo`, anteriores a este trabajo y
-**sin documentar aquí**: si alguna sigue sirviendo, anotar para qué; si no,
-borrarlas, porque cinco VMs que comparten hostname e IP son una trampa esperando.
+Las dos que estaban sin documentar, **identificadas el 2026-08-07** arrancándolas
+de una en una. Las dos sirven, y una resultó ser justo lo que hacía falta:
 
-No arrancar dos a la vez: comparten hostname e IP.
+- `encina-snap-fabrica` — **clon de `encina-limpia-respaldo`, creado el
+  2026-08-07 para la medición de §4.3.** Ubuntu de fábrica + Snap Firefox 147 +
+  AutoFirma 1.9 + `openjdk-17-jre`. **Es el caso positivo de la comprobación C4**
+  (`AGENTS.md` §6.4): el único sitio conocido donde AutoFirma instala la CA
+  correcta en el perfil correcto. **No borrarla ni reinstalar AutoFirma en ella**:
+  cada reinstalación genera un par de claves nuevo y el estado bueno se pierde.
+- `encina-limpia-respaldo` — **Ubuntu 24.04.4 arm64 de fábrica.** Instalada el
+  2026-08-06, cuatro arranques. **Ningún paquete de Encina**, ni AutoFirma, ni
+  Java. Firefox es el Snap de Ubuntu (147.0.3, `firefox 1:1snap1-0ubuntu5` como
+  deb de transición), sin repositorio de Mozilla y sin anclaje. **Firefox no se
+  ha abierto nunca**: no existe `~/snap/firefox/common/.mozilla/firefox`. Es la
+  línea base virgen del proyecto y **no se instala nada en ella**: cuando haga
+  falta una Ubuntu de fábrica, se clona.
+- `encina-dev` — **el banco de A1.** Instalada el 2026-08-06, 23 arranques.
+  Lleva `encina-branding` 0.1.6 y **no** `encina-firefox-native`. Firefox es el
+  Snap (153.0.3) **con perfil creado**, y está el usuario `prueba` de la
+  definición de terminado de A1. Sirve para reverificar A1 y para cualquier
+  prueba que necesite branding sin Firefox nativo.
+
+Las cinco tienen el **mismo hostname (`encina-dev`) y la misma IP
+(192.168.64.3)**, incluidas las clonadas: el hostname no distingue nada y no
+sirve para saber en cuál estás. Para identificar una VM a ciegas, lo que
+funciona es el conjunto «paquetes instalados + versión del Snap de Firefox +
+qué perfiles existen».
+
+No arrancar dos a la vez.
 
 ### Pendiente de A0
 
@@ -706,16 +809,24 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 
   | VM | Qué decide de verdad | ¿Hace falta para B1? |
   |---|---|---|
-  | **Snap (Ubuntu de fábrica)** | Si existe **alguna** máquina donde AutoFirma acierte. §4.1 afirma que en Ubuntu de fábrica «al menos acierta con el perfil del Snap»: eso está **deducido, no medido**, y §4.2 lo pone en duda —la CA del perfil del Snap es residuo de otra instalación—. Si acierta, es el **único caso positivo de extremo a extremo que existiría**, y `AGENTS.md` §6.5 dejaría de necesitar controles construidos | **Sí, y es la primera.** Es la máquina mayoritaria (D3: quien instala los `.deb` sobre su Ubuntu tiene el Snap) y la única que puede aportar un positivo real |
-  | **Debian limpio** | Si la barrera 1 es específica de la build de Mozilla. Un Firefox empaquetado por Debian **sí** lee `/etc/firefox/pref/`, así que ahí el esquema `afirma:` debería existir. Sería el positivo de la barrera 1, y de paso confirmaría el diagnóstico por contraste | **No bloquea.** `AGENTS.md` §6.5(b) obtiene un positivo equivalente sin VM, apuntando la comprobación a una preferencia que Firefox sí lee hoy. Útil, no necesaria |
+  | **Snap (Ubuntu de fábrica)** | Si existe alguna máquina donde AutoFirma acierte | **HECHA el 2026-08-07 (§4.3). Sí acierta.** La barrera 2 **no existe** en fábrica: la CA del perfil tiene la huella del socket vivo y la hoja valida. Es el **caso positivo real de C4**, y no hace falta construirlo |
+  | **Debian limpio** | Si la barrera 1 es específica de la build de Mozilla. Un Firefox empaquetado por Debian **sí** lee `/etc/firefox/pref/`, así que ahí el esquema `afirma:` debería existir: sería el positivo real de C5 | **No bloquea, pero ha subido de valor.** §4.3 midió que el Snap tampoco lee `/etc/firefox/pref/`, así que las dos compilaciones que hay son negativas y C5 sigue sin positivo real. `AGENTS.md` §6.5(b) da uno equivalente sin VM |
   | **Flatpak** | Una ruta más de perfil (`~/.var/app/org.mozilla.firefox/…`). No es una clase nueva de fallo | **No.** No es el navegador por defecto de ningún sistema destino. Se cubre con un `[OMIT] Flatpak: no instalado`, que es honrado y cuesta cero |
 
   **Criterio de parada de B1, en su forma nueva:** si al terminar las siete
   comprobaciones de `AGENTS.md` §6.4 resulta que **dos o más no pueden producir su
   salida verde** (§6.5), B1 no ha construido un diagnóstico sino una lista de
-  sospechas, y hay que parar antes de B2. Y si la VM del Snap demuestra que en
-  Ubuntu de fábrica AutoFirma funciona sin ayuda, entonces el problema **es** menor
-  de lo estimado: lo que Encina habría roto es su propia decisión de Firefox
-  nativo, y eso se replantea en A2, no se parchea en B2.
+  sospechas, y hay que parar antes de B2.
+
+  **Resultado del 2026-08-07 (§4.3), y es media respuesta a la pregunta
+  original.** El problema **sí es menor de lo estimado, pero no desaparece**: de
+  las dos barreras, en la máquina mayoritaria solo hay **una**, y es la
+  empaquetable. La otra la añade Encina con su propio Firefox nativo. Eso mueve
+  trabajo de B2 hacia A2 —replantear cómo convive el perfil nativo con un
+  configurador que no sabe encontrarlo— y **no** cancela B1: al contrario, es lo
+  que le da su razón de ser, porque el remedio correcto ya depende de qué máquina
+  es y hoy no hay nada que las distinga. Lo que sí queda tocado es el argumento
+  de D13, que asume que detrás de la barrera 1 siempre espera la 2. En fábrica no
+  espera.
 - **Vía upstream:** si el PR a `clienteafirma` entra rápido, replantear el alcance
   en lugar de continuar por inercia.
