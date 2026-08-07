@@ -174,6 +174,50 @@ construido sobre `v1.9` (2025-05-21) y upstream está en `v1.9.2` (2026-05-12).
 | 2. `postinst` sin `set -e`, éxito con todo roto | **Sí** — el `postinst` empieza con `set -e` |
 | B2 — perfil equivocado | **No.** Su changelog cita un ajuste XDG, pero es un salto de versión de upstream (`1.9.202507.1`→`.4`), no un parche suyo, y no toca el configurador |
 | B1 — preferencia en `/etc/firefox/pref/` | **No, y no le hace falta**: empaqueta para Debian, cuyo `firefox-esr` **sí** lee ese directorio. B1 solo existe con la compilación de Mozilla |
+
+### 4.6 La estrategia: fork del oficial, no de un tercero
+
+Decidido el 2026-08-07, y corrige una recomendación previa de este documento que
+proponía partir de `albfernandez`. **Los parches van al repositorio oficial**, que
+es el único sitio desde el que llegan a todo el mundo. Arreglar el repositorio de
+un tercero deja el fallo intacto donde importa.
+
+`albfernandez` **no es la base: es una fuente de la que copiar** lo que ya tiene
+resuelto —el `debian/control` con `java-runtime`, el `postinst` con `set -e`, la
+construcción desde fuentes y el parche de NSS compartida—. Copiar de él ahorra
+trabajo; contribuirle no lleva la corrección a ninguna parte.
+
+**El empaquetado Debian está DENTRO del repositorio oficial**, así que los tres
+fallos de empaquetado de §4.1 son PRs upstream y no problemas de Encina.
+Verificado en `HEAD` el 2026-08-07, en
+`afirma-simple-installer/linux/instalador_deb/src/DEBIAN/`:
+
+```
+control:   Depends: libnss3-tools
+           Recomends: openjdk-17-jre        <- la errata, viva en HEAD
+postinst:  #!/bin/sh, sin set -e, con exit 0 final
+```
+
+Idénticos en `v1.9` y `v1.9.2`. **No hay CLA, ni `CONTRIBUTING.md`, ni plantilla
+de PR**, así que no hay traba formal para contribuir.
+
+**Las cuatro PRs, de menor a mayor riesgo de rechazo:**
+
+| | Qué | Tamaño | Nota |
+|---|---|---|---|
+| 1 | `Recomends:` → `Recommends:` | una palabra | Issue #302 lleva años abierto. Es la más fácil de aceptar |
+| 2 | `ConfiguratorFirefoxLinux`: añadir la ruta XDG a `getMozillaProfilesIniPaths` | un método | **La importante (B2).** Se defiende sola: `MozillaKeyStoreUtilities` **ya** hace esa comprobación en el mismo repositorio, así que es coherencia interna, no una función nueva |
+| 3 | Preferencias donde la compilación de Mozilla las lee (B1) | pequeña | Beneficia a cualquiera que use el `.deb` o el `.tar.bz2` de Mozilla, no solo a Encina |
+| 4 | `postinst` que no declare éxito con todo roto | pequeña | **La más delicada:** un `set -e` a secas convierte instalaciones que hoy pasan en verde en instalaciones que fallan. Es lo correcto, pero conviene presentarlo como gestión de errores explícita y no como una línea suelta, o lo rechazan por regresión |
+
+Y un **issue**, no una PR: `v1.9.2` (2026-05-12) devuelve
+`MozillaKeyStoreUtilities.java` a los 34562 bytes exactos de `v1.9`, perdiendo el
+arreglo XDG que había entrado en `v1.9.1`. Es un aviso de rama mal fusionada, y no
+es nuestro para arreglarlo.
+
+**Y no se espera a que las acepten.** La #497, de una sola línea, tardó 87 días.
+El paquete propio sale del fork y se usa en Encina mientras tanto; cada PR que
+entre se retira del fork.
 - openSUSE: paquete comunitario en el repo personal de Antonio Larrosa; sin
   paquete oficial para Leap 15.6.
 - AUR: `autofirma`, `autofirma-bin`, y un `autofirmaja` cuyo mantenedor declara
@@ -695,7 +739,7 @@ el único motivo nuevo que reabriría esta discusión.
 | B2 | `encina configure` + `autofirma-fix` | Sin abrir. Es donde vive el remedio. D13 sigue vigente hasta entonces |
 | B3 | GUI GTK4 | Sin abrir |
 | B4 | DNIe con lector físico | Sin abrir |
-| B∥ | Vía paralela: PR upstream a `ctt-gob-es/clienteafirma` **y paquete propio corregido** | Sin abrir, pero §4.5 lo ha convertido en la vía más corta. La barrera 2 es un bug localizado en un método de `ConfiguratorFirefoxLinux.java`, sin tocar desde `v1.9`. **El paquete corregido no se forkea desde cero: se parte de `albfernandez`**, que ya arregla dos de los cinco fallos y tiene `debian/patches/`. La PR va en paralelo y sin esperarla: la #497, de una línea, tardó 87 días |
+| B∥ | **Fork de `ctt-gob-es/clienteafirma`**: PRs al oficial, y paquete propio mientras no las incorporen | Sin abrir, pero §4.5 y §4.6 lo han convertido en la vía más corta |
 
 **El alcance de B1 es estrecho a propósito.** Detectar y reparar se separan
 porque son fases con criterios de éxito distintos: una comprobación se valida
