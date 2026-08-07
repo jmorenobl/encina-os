@@ -165,3 +165,35 @@ variables muerden:
 La moraleja común de las cuatro: **una comprobación que pasa no vale nada si no
 sabes contra qué ha pasado.** Cuando una dé `[OK]`, comprueba que habría dado
 `[FALLO]` de haber estado mal.
+
+## Tres más, encontradas al especificar B1 (2026-08-07)
+
+Aparecieron midiendo AutoFirma para `AGENTS.md` §6. Ninguna es de A1 ni de A2,
+pero son de la misma familia y el sitio de leerlas es este.
+
+**5. Una subcadena que creías que estaba.** `grep -i afirma` **no** casa con
+`SocketAutoFirma`: antes de la `F` hay una `o`, así que la subcadena real es
+`oFirma`. La comprobación no falla ni avisa — responde «ausente» siempre, en un
+sistema sano y en uno roto. Es peor que un falso negativo: es una comprobación
+que no comprueba. Se detecta con la misma disciplina de siempre, comprobando que
+sabe decir `[OK]` alguna vez.
+
+**6. El control negativo tampoco es gratis.** Verificar un certificado sin
+almacén de confianza debería fallar, y no falla:
+
+```
+$ openssl verify -no-CAfile -no-CApath <hoja>
+OK
+$ openssl verify -no-CAfile -no-CApath -no-CAstore <hoja>
+error 20 at 0 depth lookup: unable to get local issuer certificate
+```
+
+OpenSSL 3.x tiene un tercer origen de confianza, `-CAstore`, activo por defecto,
+que lee `/etc/ssl/certs`. **Si validas una comprobación con un control negativo,
+comprueba también el control.**
+
+**7. La herramienta de inspección modifica lo inspeccionado.** `certutil -A` crea
+`cert9.db` si no existe. `certutil -L` no —falla con `SEC_ERROR_BAD_DATABASE` y
+rc=255 dejando el directorio intacto—, pero ese rc≠0 parece un fallo del sistema
+y es un «aquí no hay almacén». Cualquier script que recorra perfiles de navegador
+solo usa `-L`, y trata ese error como `[OMIT]`, no como `[FALLO]`.

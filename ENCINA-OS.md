@@ -12,7 +12,7 @@ sección 7 («Empieza aquí») y nada más.
 | Documento | Papel | Cuándo abrirlo |
 |---|---|---|
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
-| `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de los paquetes | Al lanzar trabajo con Claude Code |
+| `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de los paquetes (§4 branding, §5 firefox-native, **§6 `encina-doctor`**) | Al lanzar trabajo con Claude Code |
 | `README.md` | Qué es el proyecto y en qué estado está, para quien llega de fuera | Al enseñar el repositorio |
 | `SCRIPTS.md` | Qué hace cada script de `scripts/` y en qué orden | Antes de ejecutar nada en la VM |
 | `RECETA-A1-encina-branding.md` | Guía por sesiones de la fase A1 | Histórico: A1 ya está terminada |
@@ -79,7 +79,8 @@ No volver a discutirlas sin motivo nuevo.
 | Repositorio git | Creado: `jmorenobl/encina-os`, **privado** (D5) |
 | Integración continua | `.github/workflows/build.yml` en `ubuntu-latest`, **una entrada de matriz por paquete**. **Verde por `push` y por `workflow_dispatch`**, comprobada sobre `9a673b8`. La entrega de los push fue irregular durante la incidencia de Actions del 2026-08-06 |
 | Scripts de construcción y verificación | Once, en `scripts/`, versionados con el repositorio. 00–06 comunes y de A1; 07–09 de A2 |
-| `AGENTS.md` | Escrito, cubre branding + firefox-native. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
+| `AGENTS.md` | Escrito, cubre branding + firefox-native + **`encina-doctor` (§6, B1, especificado y sin construir)**. §5.1 enmendado en A2: el paquete también hace que el icono abra el nativo, por D3 |
+| `encina-doctor` | **Especificado, no construido.** Contrato en `AGENTS.md` §6. Siete comprobaciones, cada una con sus dos salidas; ninguna se publica sin el par grabado (§6.5) |
 | Nombre y convenciones | Cerrado (D1) |
 | Licencia | EUPL-1.2. `LICENSE` tiene el **texto oficial completo**, verificado carácter a carácter contra EUR-Lex (Decisión de Ejecución (UE) 2017/863) |
 
@@ -139,10 +140,13 @@ del CTT. **Es redistribuible.**
 **Los issues upstream, contrastados contra medición propia (ver §4.1):**
 
 - Issue #302 (`openjdk-11-jre` no declarado): **confirmado, y es peor de lo que
-  dice.** No es un olvido: el `control` del `.deb` 1.9 escribe `Recoments:` en
+  dice.** No es un olvido: el `control` del `.deb` 1.9 escribe `Recomends:` en
   lugar de `Recommends:`. Al no ser un campo Debian válido, dpkg lo arrastra como
   campo de usuario y no actúa. El JRE no queda declarado por ninguna vía, ni
-  siquiera con `apt install --install-recommends`.
+  siquiera con `apt install --install-recommends`. **Corrección del 2026-08-07:**
+  este documento venía escribiendo la errata como `Recoments:`; el campo real es
+  `Recomends:`, remedido con `dpkg -s autofirma`. Importa porque una comprobación
+  escrita contra la cadena equivocada no habría disparado nunca.
 - Issue #459 (`certutil: SEC_ERROR_ADDING_CERT` durante la instalación):
   **NO reproducido.** Cinco instalaciones en VM propia y dos intentos de
   provocarlo a mano no lo produjeron. No darlo por bueno. Quien lo reportó dice
@@ -188,10 +192,11 @@ HTTPS.
    sistema` justo después de haber fallado al instalarlo.
 3. **Instalar Java después no repara nada.** El `postinst` ya corrió y nada lo
    vuelve a lanzar: no se generan los certificados y no queda ningún mensaje.
-4. **Con Java presente, la CA del socket va al navegador equivocado.** Se instala
-   en el perfil del **Snap** (`~/snap/firefox/common/.mozilla/firefox/`) y no en
-   el del Firefox **nativo** (`~/.config/mozilla/firefox/`, §9). Lo confirma el
-   propio desinstalador que AutoFirma se genera, que apunta solo al Snap.
+4. **Con Java presente, la CA del socket va al perfil equivocado.** Se instala en
+   el perfil del **Snap** (`~/snap/firefox/common/.mozilla/firefox/`) y no en el
+   que Firefox usa de verdad. **Enmendado el 2026-08-07 al remedirlo (§4.2):** la
+   redacción original decía «y no en el del Firefox nativo», y eso es falso.
+   Sí escribió en un perfil nativo — en uno que Firefox no ha abierto jamás.
 5. **Firefox de Mozilla no lee `/etc/firefox/pref/`**, que es donde el paquete
    deja `Autofirma.js`. Medido en ejecución sobre un Firefox 153 vivo: las tres
    preferencias `network.protocol-handler.*.afirma` **no existen**. Tampoco vale
@@ -271,6 +276,81 @@ perfil del usuario. Por eso la mitad barata es la peligrosa.
 de #459 (no reproducido); y Chrome o Chromium, que no están instalados en la VM.
 Nada de lo medido depende de la arquitectura: el `.deb` es `Architecture: all`.
 
+### 4.2 Remedición al abrir B1 (2026-08-07)
+
+Antes de especificar `encina doctor` se volvió a medir §4.1 sobre
+`encina-dev-firefox` (hoy en el mismo estado que `encina-autofirma-rota`; Ubuntu
+24.04.4 arm64, AutoFirma 1.9.0, `openjdk-17-jre`, Firefox 153.0.3 nativo). **Lo
+esencial se confirma. Tres cosas no, y las tres cambian una comprobación.**
+
+**a) No hay «el perfil». Hay tres, y la CA está en los dos que no valen.**
+
+```
+~/.config/mozilla/firefox/cmnc3cx7.default-release   0 certificados   <- el que Firefox usa
+~/.config/mozilla/firefox/ev2eu1nn.default           SocketAutoFirma  C,,
+~/snap/firefox/common/.mozilla/firefox/297le6kh.default   SocketAutoFirma  C,,
+```
+
+`ev2eu1nn.default` tiene cuatro ficheros, `"firstUse": null`, `"source":
+"legacy"` y **ningún `compatibility.ini`**: Firefox no lo ha abierto nunca. El
+que sí usa lleva `LastPlatformDir=/usr/lib/firefox`. La causa es que los dos
+ficheros de control se contradicen:
+
+```
+profiles.ini:  [Profile1] Path=ev2eu1nn.default  Default=1
+installs.ini:  [4F96D1932A9F858E] Default=cmnc3cx7.default-release  Locked=1
+```
+
+AutoFirma cree al primero, Firefox obedece al segundo. **Un diagnóstico que
+resuelva «el perfil» por `Default=1` reproduce el fallo que está diagnosticando.**
+
+**b) La CA de los perfiles no es la del socket. Es residuo.** Los dos
+certificados se llaman `CN=Autofirma ROOT` y los dos tienen el apodo
+`SocketAutoFirma`, pero son distintos:
+
+```
+en los perfiles:  serial -21749C55  notBefore Aug  7 08:58:41  sha256 E8:6F:D6:…
+en disco:         serial -6D0BCF1F  notBefore Aug  7 08:59:50  sha256 4A:9F:CC:…
+```
+
+Y el log del configurador de la última ejecución dice que no instaló nada:
+
+```
+No se encuentran fichero de perfil de Mozilla, por lo que no se instalaran certificados
+No se ha detectado un perfil de Mozilla Firefox en el que instalar el certificado
+```
+
+**Consecuencia:** preguntar «¿hay un certificado llamado `SocketAutoFirma`?»
+responde **sí** sobre un perfil que no puede validar el socket. Se compara por
+huella o no se compara.
+
+**c) La barrera 2 se puede medir sin arrancar AutoFirma.** El `openssl s_client`
+de §4.1 se reproduce estáticamente, con las dos salidas —verde y roja— en la
+misma máquina rota:
+
+```
+$ openssl pkcs12 -in /usr/lib/Autofirma/autofirma.pfx -nokeys -passin pass:654321
+subject=CN = 127.0.0.1   issuer=CN = Autofirma ROOT   notBefore=Aug  7 08:59:50 2026
+
+$ openssl verify -CAfile <CA del disco>    <hoja>   ->  OK
+$ openssl verify -CAfile <CA del perfil>   <hoja>   ->  error 20: unable to get local issuer
+```
+
+Esto es lo que hace que B1 sea escribible: el diagnóstico entero es estáticamente
+decidible, sin sesión gráfica, sin lanzar nada y sin abrir ningún socket.
+
+**Y un `SEC_ERROR_BAD_DATABASE` explicado de propina.** `certutil -L` sobre un
+directorio sin `cert9.db` falla con ese error y rc=255 **sin crear nada**; es
+`certutil -A` el que crea la base de datos. Explica a la vez el error que §4.1 vio
+en el `prerm` de AutoFirma y cómo `ev2eu1nn.default` acabó teniendo un `cert9.db`.
+
+**Lo que sigue sin medirse tras esta tanda:** que Firefox lea de verdad
+`/usr/lib/firefox/defaults/pref/` (deducido de cómo se construye el paquete de
+Mozilla, no medido); que `installs.ini` gane a `Default=1` (deducido); y el
+aislamiento NSS del Snap, que este documento afirma en §9 y **nadie ha medido** —
+y lo medido lo matiza, porque un `certutil` de fuera sí escribe en el `cert9.db`
+del Snap. Lista completa en `AGENTS.md` §6.8.
+
 ---
 
 ## 5. Reglas duras
@@ -304,7 +384,7 @@ Marcada la posición actual.
 | A1 | `encina-branding` construido, probado, en CI | **Hecho** (v0.1.6), con la CI verde por `push` |
 | A2 | `encina-firefox-native` (repo Mozilla + pinning + clave) | **Hecho** (v0.2.0), 7/7 de la definición de terminado |
 | A3 | ~~`encina-locale-es`~~ | **Suprimida el 2026-08-07** tras medirla. No había nada que hacer. Su residuo lo absorbe A4. Ver §6.1 |
-| A4 | `encina-meta` + repo APT firmado + `encina-keyring` | **← POSICIÓN ACTUAL, sin abrir.** §7 la plantea como decisión, y aconseja partirla: `encina-meta` sí, repo firmado y keyring no todavía. Hereda el residuo de A3 (§6.1) |
+| A4 | `encina-meta` + repo APT firmado + `encina-keyring` | **Sin abrir.** §7 aconseja partirla: `encina-meta` sí, repo firmado y keyring no todavía. Hereda el residuo de A3 (§6.1). Es un día de trabajo que no compite con nada; se hará cuando haga falta empaquetar algo |
 | A5 | `autoinstall.yaml` sobre ISO oficial de Ubuntu | Especificado |
 | A6 | Imagen propia con `live-build` o `debos` | Opcional, al final |
 
@@ -369,13 +449,25 @@ el único motivo nuevo que reabriría esta discusión.
 
 ### Etapa B
 
-| Fase | Contenido |
-|---|---|
-| B1 | Núcleo de detección (perfiles, NSS, sandbox) + `encina doctor` |
-| B2 | `encina configure` + `autofirma-fix` |
-| B3 | GUI GTK4 |
-| B4 | DNIe con lector físico |
-| B∥ | Vía paralela: PR upstream a `ctt-gob-es/clienteafirma`. Arrancar al empezar la Etapa B |
+| Fase | Contenido | Estado |
+|---|---|---|
+| B1 | Núcleo de detección (perfiles, NSS) + `encina doctor` | **← POSICIÓN ACTUAL. Abierta el 2026-08-07.** Especificada en `AGENTS.md` §6, sin escribir una línea de código. Diagnostica y **no repara** |
+| B2 | `encina configure` + `autofirma-fix` | Sin abrir. Es donde vive el remedio. D13 sigue vigente hasta entonces |
+| B3 | GUI GTK4 | Sin abrir |
+| B4 | DNIe con lector físico | Sin abrir |
+| B∥ | Vía paralela: PR upstream a `ctt-gob-es/clienteafirma` | Sin abrir. §4.2 ha añadido munición: el configurador elige el perfil por `Default=1` de `profiles.ini` y Firefox obedece a `installs.ini` |
+
+**El alcance de B1 es estrecho a propósito.** Detectar y reparar se separan
+porque son fases con criterios de éxito distintos: una comprobación se valida
+enseñando sus dos salidas (§4.2, `AGENTS.md` §6.5), y un remedio se valida
+enseñando una firma que antes no salía y ahora sí. Mezclarlos produce una
+herramienta que repara lo que cree ver.
+
+**Lo que B1 quita del alcance de B1**, y conviene tenerlo escrito: `--fix`,
+cualquier fichero de preferencias de Firefox, cualquier certificado instalado por
+un paquete, y cualquier línea de salida que signifique «puedes firmar». Lo último
+no es prudencia: es que **no existe ninguna máquina donde se haya visto
+funcionar**, así que la afirmación no está respaldada por ninguna medición.
 
 **Por qué la imagen no va antes:** una receta de imagen instala paquetes. Sin
 paquetes construidos no hay nada que instalar, y sin repo del que servirlos la
@@ -466,13 +558,31 @@ Dos lecciones de método, que es lo que sobrevive a la fase:
   que todo está bien. Distinguir «falla en silencio» de «falla con un mensaje que
   desorienta» es la diferencia entre no necesitar diagnóstico y necesitarlo mucho.
 
-### Siguiente: qué fase se abre
+### B1 está abierta, y solo especificada
 
-Sigue siendo una decisión, no un automatismo. Con §4.1 medido, `encina-meta`
-(A4 reducida) ya no es la pregunta interesante: es un día de trabajo que no
-compite con nada y que se puede hacer cuando haga falta empaquetar algo. Lo que
-la medición ha desbloqueado es **B1**, y el criterio de §10 sigue en pie para
-ella.
+Abierta el 2026-08-07. **No se ha escrito una línea de código**, a propósito: en
+este proyecto se ha suprimido una fase entera (A3) por medirla antes de abrirla,
+y se han perdido días por comprobaciones que aprobaban sin comprobar nada. Lo que
+existe es el contrato: `AGENTS.md` §6, con las siete comprobaciones, sus dos
+salidas cada una, y la puerta que decide si sirven.
+
+Al especificarla se remidió §4.1 y salieron tres correcciones (§4.2), las tres
+del mismo tipo: **una comprobación que parecía obvia y habría dado la respuesta
+equivocada.** Buscar la errata `Recoments:` no habría disparado nunca porque el
+campo es `Recomends:`. Resolver «el perfil» por `Default=1` reproduce el bug de
+AutoFirma. Y buscar un certificado llamado `SocketAutoFirma` dice que sí sobre un
+perfil que no puede validar el socket. Ninguna de las tres se habría visto sin
+volver a la máquina.
+
+La siguiente acción **no es escribir código**: es la VM del Snap (§10). Es la
+única que puede aportar un caso positivo real, y si lo aporta cambia tanto §6.5
+como el alcance de toda la Etapa B.
+
+### Sobre A4, cuando toque
+
+Sigue siendo una decisión, no un automatismo. `encina-meta` (A4 reducida) no es
+la pregunta interesante: es un día de trabajo que no compite con nada y que se
+puede hacer cuando haga falta empaquetar algo.
 
 Si se abre A4, el aviso de este documento se mantiene: **el repo APT firmado y
 `encina-keyring` conviene separarlos y aplazarlos.** La nota de §6 ya dice que A5
@@ -513,10 +623,18 @@ y no son técnicas.
 
 No implementar, no preparar, no dejar «ganchos para el futuro»:
 
-AutoFirma, FNMT, DNIe, `opensc`, PKCS#11, NSS · **`encina-locale-es`** ·
-`encina-meta`, `encina-keyring`, repo APT, `aptly` · `os-release` y `dpkg-divert` ·
-ISO, `live-build`, `debos`, Cubic, `autoinstall.yaml` · temas de GTK o iconos ·
+**Reparar** AutoFirma (B2: `encina configure`, `autofirma-fix`, preferencias de
+Firefox, `policies.json`, certificados instalados por un paquete) · FNMT, DNIe,
+`opensc`, PKCS#11 como funcionalidad · **`encina-locale-es`** · `encina-meta`,
+`encina-keyring`, repo APT, `aptly` · `os-release` y `dpkg-divert` · ISO,
+`live-build`, `debos`, Cubic, `autoinstall.yaml` · temas de GTK o iconos ·
 cualquier GUI.
+
+**Lo que ha salido de esta lista el 2026-08-07: diagnosticar AutoFirma, y solo
+eso.** Es la fase B1, especificada en `AGENTS.md` §6. `encina doctor` lee y no
+escribe. **Reparar sigue dentro de la lista**, y D13 sigue vigente palabra por
+palabra: ninguna de las dos barreras se cierra desde `encina-firefox-native`, ni
+desde `encina-doctor`, ni desde ningún otro paquete, hasta que se abra B2.
 
 Dos matices sobre esta lista:
 
@@ -526,12 +644,13 @@ Dos matices sobre esta lista:
 - **Medir no es implementar.** Instalar el `.deb` oficial de AutoFirma en una VM
   para ver si falla no viola esta sección: no crea código, ni paquete, ni gancho.
   Es lo contrario de un gancho — es la comprobación que decide si la Etapa B
-  merece existir (§7, §10). **Hecho el 2026-08-07; resultado en §4.1.** Que esté
-  medido no abre nada: AutoFirma sigue en esta lista hasta que se abra B1.
+  merece existir (§7, §10). **Hecho el 2026-08-07; resultado en §4.1 y §4.2.**
   Los dos fallos medidos tienen remedio conocido y declarativo, y **ese remedio
-  no se escribe, ni se esboza, ni se deja preparado** hasta entonces. Uno de los
-  dos cabría en `encina-firefox-native` en media hora: **D13 dice que tampoco
-  ahí**, y el motivo no es de alcance sino de daño.
+  no se escribe, ni se esboza, ni se deja preparado** hasta que se abra B2. Uno
+  de los dos cabría en `encina-firefox-native` en media hora: **D13 dice que
+  tampoco ahí**, y el motivo no es de alcance sino de daño. Con B1 abierta la
+  tentación cambia de forma pero no desaparece: ahora llegará como «ya que doctor
+  detecta la barrera 1, que la arregle». La respuesta es la misma y está en D13.
 
 ---
 
@@ -553,13 +672,18 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **El anclaje se comprueba en vacío** | `full-upgrade` ×2 en verde sin mover un paquete | El sistema ya estaba al día. Sin contar los paquetes movidos, la prueba parece más fuerte de lo que fue |
 | **El perfil nativo no está donde parece** | Los marcadores «no aparecen» | El deb de Mozilla usa `~/.config/mozilla/firefox/`, no `~/.mozilla/firefox/`, que ni existe. El del Snap está en `~/snap/firefox/common/.mozilla/` |
 | **Una comprobación pasa sin comprobar nada** | `[OK]` con la cosa rota, o `[FALLO]` con la cosa bien | Una sesión ssh no tiene `XDG_CURRENT_DESKTOP` ni `XDG_DATA_DIRS`, la salida de apt está traducida, y `comando \| grep -q` con `pipefail` muere de SIGPIPE. Detalle en `SCRIPTS.md` |
-| Firma electrónica falla sin explicación | Error que no menciona el sandbox | Navegador en Snap/Flatpak aísla el almacén NSS |
+| Firma electrónica falla sin explicación | Error que no menciona el sandbox | Navegador en Snap/Flatpak aísla el almacén NSS. **Heredado de la investigación previa y NUNCA medido**, y lo medido lo matiza: un `certutil` de fuera sí escribe en el `cert9.db` del perfil del Snap (§4.2). No construir nada encima hasta medirlo |
 | **AutoFirma no arranca al pulsar «Firmar»** | La sede dice «No es posible conectar con Autofirma»; no hay ningún proceso `java` ni nada escuchando en el socket, y **no sale ningún diálogo de «abrir con»** | El `.deb` deja sus preferencias en `/etc/firefox/pref/Autofirma.js`, ruta de los Firefox de Debian/Ubuntu. **La compilación oficial de Mozilla no la lee**: las tres `network.protocol-handler.*.afirma` no existen. El handler del sistema (`xdg-open`) sí funciona: el eslabón roto es solo Firefox (§4.1) |
 | **Arreglar el esquema `afirma:` no basta** | Ya arranca AutoFirma y la firma sigue sin ir | Son **dos barreras independientes**. El socket de AutoFirma es TLS (`CN=127.0.0.1` emitido por `CN=Autofirma ROOT`), así que el navegador también tiene que confiar en esa CA, y el Firefox nativo no la tiene. La primera barrera escondía la segunda (§4.1) |
 | **AutoFirma configura el navegador equivocado** | Todo instalado y «correcto», y la firma falla | Su configurador encuentra el perfil del **Snap** y no el del Firefox nativo, que está en `~/.config/mozilla/firefox/`. Con el Snap quitado no encuentra **ninguno** y lo dice solo en un log que nadie lee |
 | **«Restaurar instalación» de AutoFirma no repara nada** | Responde que ya está todo bien y sale con código 0 | Comprueba que exista un fichero en `/usr/lib/Autofirma`, no que el navegador tenga la CA. El usuario hace justo lo que el error le dice y el sistema le contesta que está sano |
 | **Un `.deb` que se instala «con éxito» roto entero** | `install ok installed`, código 0, y nada funciona | `postinst` con `#!/bin/sh` **sin `set -e`** y `exit 0` incondicional. Los mensajes de éxito se imprimen aunque el comando anterior haya fallado. No es exclusivo de AutoFirma: es el patrón que hay que buscar |
 | **Añadir el almacén del sistema no sirve para Firefox** | `update-ca-certificates` dice `1 added` y Firefox sigue sin confiar | Firefox no lee `/etc/ssl/certs` aunque `security.enterprise_roots.enabled` esté en `true`. Medido: 167 certificados visibles, ninguno el añadido |
+| **El perfil «por defecto» no es el que Firefox abre** | Se mira un perfil, se toca un perfil, y Firefox usa otro | `profiles.ini` marca `Default=1` en uno e `installs.ini` apunta a otro con `Locked=1`. Es el fallo de AutoFirma (§4.2a). Se resuelve por evidencia de uso: `compatibility.ini` presente y `times.json` con `firstUse` no nulo |
+| **Un certificado con el nombre correcto y la clave equivocada** | El perfil «tiene» `SocketAutoFirma` y el socket sigue sin validar | Cada reinstalación genera un par nuevo; la CA vieja se queda. Mismo `CN`, mismo apodo, distinta huella (§4.2b). **Se compara por huella SHA-256, nunca por nombre** |
+| **El control negativo no es negativo** | `openssl verify` sin almacén de confianza responde `OK` | OpenSSL 3.x tiene un tercer origen, `-CAstore`, activo por defecto, que lee `/etc/ssl/certs` — donde el `postinst` de AutoFirma dejó su CA. Hace falta `-no-CAstore`, o mejor, verificar contra una CA *equivocada*, que falla por el motivo correcto |
+| **`grep` de una subcadena que no existe** | Una comprobación de ausencia sale siempre «ausente» | `grep -i afirma` **no** casa con `SocketAutoFirma`: antes de la `F` hay una `o`, así que la subcadena es `oFirma`. Familia de la trampa 3 de `SCRIPTS.md` |
+| **`certutil` crea lo que iba a inspeccionar** | Un diagnóstico deja bases de datos NSS nuevas por los perfiles | `certutil -A` crea `cert9.db` si no existe; `-L` no (falla con `SEC_ERROR_BAD_DATABASE`, rc=255, sin tocar nada). Una herramienta de diagnóstico solo usa `-L`, y trata ese error como «sin almacén», no como fallo |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
@@ -570,12 +694,28 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 
 - **Fin de Etapa A:** si no se logra un build con `.manifest` reproducible, no
   avanzar a la imagen propia. Los paquetes siguen siendo válidos por separado.
-- **Fase B1:** si `encina doctor` no encuentra fallos reales en cuatro VMs
-  (Firefox nativo, Snap, Flatpak, Debian limpio), el problema es menor de lo
-  estimado y no justifica B2–B4. **Matiz del 2026-08-07:** este criterio mide
-  *cuánta cobertura necesita B1*, no *si el problema existe*. Lo segundo ya está
-  resuelto en §4.1 sobre la VM de Firefox nativo, que era el caso favorable, así
-  que la primera de las cuatro ya está hecha y salió que sí. Las otras tres siguen
-  siendo el criterio de parada de B1.
+- **Fase B1:** el criterio original decía «si `encina doctor` no encuentra fallos
+  reales en cuatro VMs (Firefox nativo, Snap, Flatpak, Debian limpio), el problema
+  es menor de lo estimado y no justifica B2–B4».
+
+  **Reescrito el 2026-08-07 al abrir B1, porque en su forma original ya no puede
+  decidir nada.** La VM de Firefox nativo encontró dos barreras medidas; las otras
+  tres no van a *desencontrarlas*. El criterio se había convertido en una casilla
+  que solo puede salir a favor, que es exactamente lo que le pasó a A3 durante
+  meses. Lo que las tres VMs restantes sí deciden, cada una una cosa distinta:
+
+  | VM | Qué decide de verdad | ¿Hace falta para B1? |
+  |---|---|---|
+  | **Snap (Ubuntu de fábrica)** | Si existe **alguna** máquina donde AutoFirma acierte. §4.1 afirma que en Ubuntu de fábrica «al menos acierta con el perfil del Snap»: eso está **deducido, no medido**, y §4.2 lo pone en duda —la CA del perfil del Snap es residuo de otra instalación—. Si acierta, es el **único caso positivo de extremo a extremo que existiría**, y `AGENTS.md` §6.5 dejaría de necesitar controles construidos | **Sí, y es la primera.** Es la máquina mayoritaria (D3: quien instala los `.deb` sobre su Ubuntu tiene el Snap) y la única que puede aportar un positivo real |
+  | **Debian limpio** | Si la barrera 1 es específica de la build de Mozilla. Un Firefox empaquetado por Debian **sí** lee `/etc/firefox/pref/`, así que ahí el esquema `afirma:` debería existir. Sería el positivo de la barrera 1, y de paso confirmaría el diagnóstico por contraste | **No bloquea.** `AGENTS.md` §6.5(b) obtiene un positivo equivalente sin VM, apuntando la comprobación a una preferencia que Firefox sí lee hoy. Útil, no necesaria |
+  | **Flatpak** | Una ruta más de perfil (`~/.var/app/org.mozilla.firefox/…`). No es una clase nueva de fallo | **No.** No es el navegador por defecto de ningún sistema destino. Se cubre con un `[OMIT] Flatpak: no instalado`, que es honrado y cuesta cero |
+
+  **Criterio de parada de B1, en su forma nueva:** si al terminar las siete
+  comprobaciones de `AGENTS.md` §6.4 resulta que **dos o más no pueden producir su
+  salida verde** (§6.5), B1 no ha construido un diagnóstico sino una lista de
+  sospechas, y hay que parar antes de B2. Y si la VM del Snap demuestra que en
+  Ubuntu de fábrica AutoFirma funciona sin ayuda, entonces el problema **es** menor
+  de lo estimado: lo que Encina habría roto es su propia decisión de Firefox
+  nativo, y eso se replantea en A2, no se parchea en B2.
 - **Vía upstream:** si el PR a `clienteafirma` entra rápido, replantear el alcance
   en lugar de continuar por inercia.

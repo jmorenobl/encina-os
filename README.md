@@ -82,7 +82,8 @@ paquetes son de arquitectura `all`.
 | A1 | `encina-branding` construido, probado y en CI | **Hecho** — v0.1.6 verificada en VM el 2026-08-07 |
 | A2 | `encina-firefox-native` (repo de Mozilla + clave + anclaje) | **Hecho** — v0.2.0, 7/7 verificadas en VM el 2026-08-07, la última mirando la pantalla |
 | A3 | ~~`encina-locale-es`~~ | **Suprimida el 2026-08-07.** Se midió antes de abrirla y no había paquete que escribir (ver abajo) |
-| A4–A6 | `encina-meta` y repo APT propio, `autoinstall.yaml`, imagen propia | Fuera de alcance ahora ([AGENTS.md](AGENTS.md) §7). Nada de esto existe |
+| A4–A6 | `encina-meta` y repo APT propio, `autoinstall.yaml`, imagen propia | Fuera de alcance ahora ([AGENTS.md](AGENTS.md) §8). Nada de esto existe |
+| B1 | `encina-doctor` — diagnóstico de la firma electrónica | **Abierta el 2026-08-07, solo especificada.** Contrato en [AGENTS.md](AGENTS.md) §6. **No hay código**, y es deliberado |
 
 **Por qué no habrá `encina-locale-es`.** En una Ubuntu 24.04 instalada en español,
 `check-language-support -l es` devuelve vacío: locale, teclado, diccionarios,
@@ -92,10 +93,15 @@ El paquete habría tenido cero ficheros. Lo poco que Ubuntu no cubre (la l10n de
 aplicaciones instaladas *después*) son tres `Depends:` de `encina-meta`. Detalle
 y salidas literales en [ENCINA-OS.md](ENCINA-OS.md) §6.1; decisión cerrada D12.
 
-Todo lo listado en [AGENTS.md](AGENTS.md) §7 —AutoFirma, DNIe, PKCS#11,
-`encina-meta`, imagen ISO, temas de GTK o iconos, cualquier GUI— **no está
-implementado ni debe prepararse**. Si una tarea parece exigirlo, la instrucción
-es detenerse y preguntar.
+Todo lo listado en [AGENTS.md](AGENTS.md) §8 —**reparar** AutoFirma, DNIe,
+PKCS#11, `encina-meta`, imagen ISO, temas de GTK o iconos, cualquier GUI— **no
+está implementado ni debe prepararse**. Si una tarea parece exigirlo, la
+instrucción es detenerse y preguntar.
+
+La única excepción, desde el 2026-08-07, es **diagnosticar** AutoFirma: es la
+fase B1, y `encina doctor` lee y no escribe. La decisión D13 sigue vigente sin
+cambios — ninguna de las dos barreras medidas se arregla desde un paquete de la
+Etapa A, ni desde el propio `encina-doctor`.
 
 ### `encina-branding` 0.1.6
 
