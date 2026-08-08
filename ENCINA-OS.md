@@ -337,25 +337,26 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 |---|---|---|---|
 | `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | `gpu-pci` | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
 | `encina-E1-meta` | **Banco de E1.** Clon virgen instalado por la secuencia, con los cuatro paquetes y `encina-meta` 0.1.1. **Sin ningún certificado, a propósito** | `gpu-pci` | **En uso.** Aquí se ejecutó la definición de terminado de E1, y el 2026-08-08 el experimento de la tarjeta: nació `ramfb-gl` y **se cambió** (§4.12b) |
-| `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `ramfb-gl` | Se queda: línea base virgen, y de ella se clona |
+| `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `gpu-pci` | Se queda: línea base virgen, y de ella se clona. **Cambiada el 2026-08-08** para que los clones no nazcan con AutoFirma invisible (§4.12g) |
 | `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | `gpu-pci` | Se queda: es la mitad roja de las mediciones, y la base del positivo de §4.9 |
 | `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Redundante.** Candidata a borrar |
-| `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | `ramfb-gl` | Sus mediciones están grabadas y la imagen no llevará Snap. **Candidata** |
+| `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | `ramfb-gl` | **Ya no es candidata a borrar, y no por el Snap:** es el **único testigo de `ramfb-gl`** que queda, o sea el único sitio donde se puede reproducir que AutoFirma no se dibuja (§4.12g) |
 | `encina-A2-verificada` | Red de seguridad de A2 | `gpu-pci` | A2 está en git y en CI verde. **Candidata** |
 | ~~`encina-firma-efimera`~~ | El positivo de E1, sobre máquina virgen | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
 
-**La columna de vídeo es nueva y no es decorativa.** Medido el 2026-08-08
-(`MEDICIONES.md` §4.12c): las VMs no son comparables entre sí, y el diff completo
-de sus configuraciones de UTM da **esa única diferencia**. Las `gpu-pci` son las
-máquinas viejas, donde se validó A1, A2 y el primer positivo; la línea base
-virgen y sus clones nacen `ramfb-gl`. **Un resultado visual medido en una familia
-no vale automáticamente en la otra.**
+**La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de
+AutoFirma no se dibuja.** Medido el 2026-08-08 en la misma VM cambiando solo la
+tarjeta (`MEDICIONES.md` §4.12b): `colores=1` con `ramfb-gl` y `colores=3858` con
+`gpu-pci`, sin ninguna variable de entorno. Antes de saberlo, las VMs no eran
+comparables entre sí y el diff completo de sus configuraciones de UTM daba **esa
+única diferencia** (§4.12c): un resultado visual medido en una familia no valía
+automáticamente en la otra.
 
-**Y ya se sabe qué cambia esa columna: con `ramfb-gl`, la interfaz de AutoFirma no
-se dibuja.** Medido en la misma VM cambiando solo la tarjeta (§4.12b): `colores=1`
-con `ramfb-gl`, `colores=3858` con `gpu-pci`. Por eso `encina-E1-meta` está ya en
-`gpu-pci`. **`encina-limpia-respaldo` sigue en `ramfb-gl`, y de ella se clona**:
-hay una propuesta razonada de cambiarla, pendiente de decisión, en §4.12g.
+**Ese mismo día se igualaron**, para que ningún clon nuevo vuelva a nacer con
+AutoFirma invisible: `encina-E1-meta` y `encina-limpia-respaldo` pasaron a
+`gpu-pci`. **`encina-snap-fabrica` se dejó a propósito en `ramfb-gl`**, porque
+igualarlas todas escondería un fallo que un usuario final puede sufrir y hace
+falta un sitio donde reproducirlo (§4.12g).
 
 **Para saber qué tarjeta tienes puesta, `lspci` no sirve** — devuelve
 `Virtio 1.0 GPU (rev 01)` con las dos. La que discrimina, validada contra los dos

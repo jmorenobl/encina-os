@@ -212,10 +212,15 @@ virtio-ramfb-gl   encina-limpia-respaldo, encina-snap-fabrica, y todo clon suyo
 ```
 
 Las cuatro de arriba son las máquinas viejas, donde se validó A1, A2 y el primer
-positivo. La línea base virgen de la que salen los clones nuevos es de la otra
+positivo. La línea base virgen de la que salían los clones nuevos era de la otra
 familia. **Un resultado visual medido en una no vale automáticamente en la otra**,
 y eso mira hacia atrás: el `[OMIT]` del splash de Plymouth se midió en
 `encina-dev`, que es `virtio-gpu-pci`.
+
+**Ese reparto es el del día en que se descubrió, y explica las mediciones
+anteriores; no es el de hoy.** Ese mismo día se igualaron casi todas, dejando
+`encina-snap-fabrica` como único testigo de `virtio-ramfb-gl`. **El reparto
+vigente está en `ENCINA-OS.md` §9**, que es donde hay que mirarlo.
 
 **Y ojo con cómo se comprueba qué tarjeta hay puesta**, que aquí ya hubo una
 comprobación inútil: `lspci` devuelve `Virtio 1.0 GPU (rev 01)` **con las dos**.

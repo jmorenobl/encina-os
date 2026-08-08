@@ -1372,11 +1372,17 @@ virtio-ramfb-gl   encina-limpia-respaldo, encina-snap-fabrica, y todo clon de la
 ```
 
 Las cuatro de arriba son las máquinas viejas, donde se validó A1, A2 y el
-positivo de §4.9. La línea base virgen de la que sale todo lo nuevo tiene otra
+positivo de §4.9. La línea base virgen de la que sale todo lo nuevo tenía otra
 tarjeta. El diff completo de las dos configuraciones de UTM da **exactamente una
 diferencia**, esa. **Un resultado visual medido en una familia no vale
 automáticamente en la otra**, y eso afecta hacia atrás: el `[OMIT]` del splash de
 Plymouth se midió en `encina-dev`, que es de la otra familia.
+
+**Ese reparto es el del descubrimiento y se deja escrito tal cual, porque es el
+que explica las mediciones anteriores a esta fecha.** El reparto de hoy es otro:
+(b) y (g) mueven `encina-E1-meta` y `encina-limpia-respaldo` a `virtio-gpu-pci`, y
+**`encina-snap-fabrica` queda como único testigo de `virtio-ramfb-gl`**. El de hoy
+está en `ENCINA-OS.md` §9, que es donde se mira; este de aquí es historia.
 
 **d) Cómo se miró la pantalla sin ojos, que sirve para el futuro.** La captura por
 DBus de GNOME está prohibida (`Screenshot is not allowed`) y `org.gnome.Shell.Eval`
@@ -1448,22 +1454,36 @@ familias tienen un dispositivo DRM listo antes de que Plymouth arranque**
 modo que nada apunta a que la tarjeta decida aquí. El experimento que lo cerraría
 es del anfitrión: capturar la ventana de UTM durante el arranque.
 
-**g) Qué hacer con `encina-limpia-respaldo`. Propuesta, no ejecutada.** De ella
-salen todos los clones nuevos, y hoy es `virtio-ramfb-gl`: **cada clon nace con la
-interfaz de AutoFirma invisible**, y quien lo herede volverá a perseguirlo.
-Recomendación: **ponerla en `virtio-gpu-pci`**, desde la interfaz de UTM, y
-comprobarlo con (e). Razones y objeción, para que se decida con las dos delante:
+**g) `encina-limpia-respaldo` pasa a `virtio-gpu-pci`. Propuesto y hecho el mismo
+día.** De ella salen todos los clones nuevos, y era `virtio-ramfb-gl`: **cada clon
+nacía con la interfaz de AutoFirma invisible**, y quien lo heredara habría vuelto
+a perseguirlo. Cambiada desde la interfaz de UTM:
 
-- A favor: iguala las siete VMs, retira una variable que ya ha estropeado dos
+```
+encina-limpia-respaldo   17112b5e... ramfb-gl  ->  80d291f5... gpu-pci
+encina-snap-fabrica      4e1125f1... ramfb-gl  ->  4e1125f1... sin tocar
+```
+
+**La comprobación de (e) sobre esta VM está pendiente a propósito**, y no es un
+descuido: arrancarla le escribe journal y es la línea base virgen. Se hará en el
+próximo clon, que es donde el resultado importa, con
+`sudo dmesg | grep '\[drm\] features:'` — debe decir `-virgl`. Lo que sí está
+verificado es que **un cambio hecho por la interfaz de UTM llega al invitado**:
+se midió en (b) sobre `encina-E1-meta`, plist y `dmesg` de acuerdo.
+
+Razones y objeción, que se decidieron con las dos delante:
+
+- A favor: iguala las VMs, retira una variable que ya ha estropeado dos
   mediciones, y **no toca el disco** — es configuración del emulador, no del
   sistema instalado, así que ningún resultado de paquetes o de apt cambia.
 - La objeción seria: **el defecto es real y el usuario final puede tenerlo.** Si
   Encina se instala algún día sobre una máquina con una pila gráfica parecida a
-  `ramfb`+virgl, AutoFirma se verá negra. Igualar las VMs **esconde ese caso**.
-  Por eso la recomendación va con una condición: dejar `encina-snap-fabrica` en
-  `virtio-ramfb-gl` como testigo de la familia, ya que sus mediciones están
-  grabadas y es candidata a borrar de todos modos. Sale gratis conservar un caso
-  reproducible del fallo.
+  `ramfb`+virgl, AutoFirma se verá negra. Igualar las VMs **escondería ese caso**.
+  Por eso el cambio fue con condición, y la condición se cumplió:
+  **`encina-snap-fabrica` se queda en `virtio-ramfb-gl` como testigo de la
+  familia**, y por eso **deja de ser candidata a borrar** por ahora. Sale gratis
+  conservar un caso reproducible del fallo, y sin él la única prueba de que
+  `ramfb-gl` rompe AutoFirma sería este texto.
 - Lo que **no** hay que hacer es meter `_JAVA_OPTIONS` en ningún paquete para
   tapar esto: el remedio del laboratorio no pertenece al producto.
 
