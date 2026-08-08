@@ -740,10 +740,17 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       automáticas**, que es lo que hará el repo local de E2. Con `.deb` sueltos
       al lado, no. Las marcas se devolvieron a manual y `encina-meta` quedó
       reinstalado
-- [ ] Una entrada de matriz nueva en `build.yml`, verde.
-      **Escrita y commiteada junto al `changelog`, como exige `SCRIPTS.md`; sin
-      ejecutar.** La CI no se ha visto verde porque los commits de E1 siguen sin
-      empujar: `origin/main` está en `9d89ea3`
+- [x] Una entrada de matriz nueva en `build.yml`, verde.
+      **Verde el 2026-08-08**, ejecución `31252036419` sobre `ed86a45`, con las
+      tres entradas de la matriz en `success`. La de `encina-meta` da las mismas
+      **14 correctas, 0 fallos, 0 avisos** que en la VM, `encina-meta_0.1.1_all.deb`
+      de 3402 bytes, y —lo que importaba— **`lintian 2.117.0ubuntu1.5` en el
+      runner tampoco dice nada**, igual que el de la VM. La entrada entró en el
+      mismo commit que el `changelog`, porque sin él `10-meta-construir.sh` se
+      detiene y la CI habría salido roja a sabiendas.
+      *Aviso, no fallo:* GitHub anota que `actions/checkout@v4` y
+      `actions/upload-artifact@v4` van sobre Node 20, ya obsoleto, y los fuerza a
+      Node 24. Afecta a todo el workflow, no a este paquete
 - [x] **[OJOS] Firefox arranca en español.** No lo puede comprobar ningún script,
       y **que salga en español no demuestra por sí solo que sea el nativo**: el
       Snap también está en español. Primero el binario (casilla anterior),
