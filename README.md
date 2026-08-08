@@ -89,7 +89,7 @@ Las salidas literales de todas estas mediciones están en
 | `encina-branding` | **Terminado.** v0.1.6, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
 | `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
 | `autofirma 1.9.1+encina1` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **En curso.** Un solo nombre que instale todo |
+| `encina-meta` | **En curso.** Un solo nombre que declara el conjunto. Escrito y construido; pendiente de verificar en VM. Un nombre no es una sola orden: la instalación son tres órdenes, y el motivo está medido (`MEDICIONES.md` §4.10) |
 | Instalación desatendida | Sin abrir |
 | Imagen | Sin abrir |
 
@@ -132,8 +132,8 @@ ssh USUARIO@IP-DE-TU-VM "cd /mnt/encina && ENCINA_REPO=/mnt/encina ./scripts/03-
 
 ### Scripts
 
-Once scripts, en orden. Cada uno termina diciendo cuál viene después y ninguno
-da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
+Catorce scripts, en orden. Cada uno termina diciendo cuál viene después y
+ninguno da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
 
 | Script | Qué hace |
 |---|---|
@@ -147,11 +147,15 @@ da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
 | `07-firefox-construir.sh` | Huella de la clave de Mozilla, reglas duras, `.deb` y `lintian` |
 | `08-firefox-instalar.sh` | Instala, `apt update`, anclaje, idioma y Firefox nativo |
 | `09-firefox-verificar.sh` | `full-upgrade` ×2, idempotencia ×5, purga |
+| `10-meta-construir.sh` | Reglas duras de `encina-meta`, `.deb` y `lintian` |
+| `11-meta-instalar.sh` | La secuencia de tres órdenes, comprobada paso a paso |
+| `12-meta-verificar.sh` | Idempotencia ×5, purga y `autoremove` |
 | `diario.sh "texto"` | Añade una entrada fechada a `DIARIO.md` y hace commit |
 
 Del 00 al 06 sirven para `encina-branding` y son de uso común; del 07 al 09, para
-`encina-firefox-native`. Estos últimos son scripts aparte y no una generalización
-de 03/04/05 a propósito: aquellos están validados y no se tocan.
+`encina-firefox-native`; del 10 al 12, para `encina-meta`. Los seis últimos son
+scripts aparte y no una generalización de 03/04/05 a propósito: aquellos están
+validados y no se tocan.
 
 Ruta corta, con el entorno ya preparado:
 
@@ -164,6 +168,10 @@ sudo reboot
 ./scripts/07-firefox-construir.sh
 ./scripts/08-firefox-instalar.sh
 ./scripts/09-firefox-verificar.sh    # full-upgrade x2: la prueba del anclaje
+
+./scripts/10-meta-construir.sh
+./scripts/11-meta-instalar.sh        # las tres ordenes, comprobadas una a una
+./scripts/12-meta-verificar.sh
 ```
 
 Todos son idempotentes. `02-activos.sh` no sobrescribe activos existentes salvo
@@ -220,7 +228,11 @@ debian-packages/
     debian/       # changelog, control, copyright, rules, lintian-overrides
                   # (sin scripts de mantenedor: no hay nada que ejecutar)
     src/          # mozilla.sources, encina-mozilla y la clave de firma
-scripts/          # los once scripts + lib.sh
+  encina-meta/
+    debian/       # solo control, rules, copyright y changelog.
+                  # Ni src/, ni scripts de mantenedor, ni overrides de lintian:
+                  # un metapaquete con contenido son dos paquetes mal separados
+scripts/          # los catorce scripts + lib.sh
 .github/workflows/build.yml
 ```
 

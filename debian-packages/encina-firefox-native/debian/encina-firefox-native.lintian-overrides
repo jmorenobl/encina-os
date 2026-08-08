@@ -28,9 +28,15 @@
 #
 #   El lanzador apunta a /usr/bin/firefox y este paquete no lo instala. Es
 #   correcto y deliberado: R10 prohibe declarar Depends sobre firefox, porque
-#   firefox vive en el repositorio que configura ESTE paquete y no existe en el
-#   sistema hasta que este paquete esta instalado. La dependencia seria
-#   irresoluble.
+#   firefox vive en el repositorio que configura ESTE paquete y no esta en los
+#   indices de apt cuando apt resuelve las dependencias.
+#
+#   Este comentario decia "la dependencia seria irresoluble", y es FALSO,
+#   medido el 2026-08-08 (MEDICIONES.md 4.10e): el nombre firefox existe
+#   tambien en el indice de Ubuntu, como paquete de transicion al Snap. Asi que
+#   declararlo no falla, que es peor: en un escritorio de fabrica lo satisface
+#   el que ya esta instalado y la maquina se queda en el Snap con apt saliendo
+#   con 0, y en una base sin Firefox apt instala snapd y el Snap.
 #
 #   Por eso el lanzador lleva TryExec=/usr/bin/firefox: mientras Firefox no
 #   este instalado, la entrada se ignora en vez de abrir la nada. El aviso de

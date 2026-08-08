@@ -2,9 +2,9 @@
 
 **Alcance de este documento:** tres paquetes, `encina-branding` (§4),
 `encina-firefox-native` (§5) y `encina-meta` (§6, incremento E1, **abierto el
-2026-08-08**). Todo lo demás —DNIe, locale, imagen ISO, cualquier herramienta de
-diagnóstico— queda **fuera de alcance** (§8) y no debe implementarse ni
-prepararse aún.
+2026-08-08** y con R10 medida antes de escribirlo: `MEDICIONES.md` §4.10). Todo
+lo demás —DNIe, locale, imagen ISO, cualquier herramienta de diagnóstico— queda
+**fuera de alcance** (§8) y no debe implementarse ni prepararse aún.
 
 **El cuarto paquete del producto, `autofirma 1.9.1+encina1`, no se especifica
 aquí:** vive en `~/Projects/encina-autofirma`, con su propio `MEDICIONES.md`. Es
@@ -36,8 +36,10 @@ las VMs del autor, y a partir de ahí incrementos que dejen un sistema usable ca
 uno (D15). amd64 es un límite de alcance declarado, no deuda (D9).
 
 Objetivo de los paquetes de este documento: identidad visual propia, Firefox
-instalado de forma nativa (no Snap) y en español, y un solo nombre que lo instale
-todo.
+instalado de forma nativa (no Snap) y en español, y **un solo nombre de Encina**
+que declare el conjunto. Un nombre, no una sola orden: medido el 2026-08-08, la
+instalación son tres órdenes documentadas y el motivo es R10 (`AGENTS.md` §6.3,
+`MEDICIONES.md` §4.10).
 
 El motivo técnico del Firefox nativo, para que se entienda la prioridad: los
 navegadores instalados vía Snap o Flatpak aíslan el almacén de certificados NSS
@@ -112,6 +114,10 @@ debian-packages/encina-<x>/
 └── src/                 # árbol que se copia tal cual a la raíz del sistema
 ```
 
+`encina-meta` es la excepción y lo es por definición: **no tiene `src/`**, y por
+tanto tampoco el `override_dh_auto_install` de aquí abajo. Un metapaquete con
+contenido son dos paquetes mal separados (§6.1).
+
 - `debian/rules` usa `debhelper-compat (= 13)` y el patrón:
 
 ```make
@@ -125,7 +131,7 @@ override_dh_auto_install:
 
 - **Versionado:** semántico, `MAJOR.MINOR.PATCH`. Actualizar el changelog con
   `dch -v <versión>`. La suite del changelog es el codename de Ubuntu destino.
-- **Arquitectura:** `all` en ambos paquetes. No hay binarios compilados.
+- **Arquitectura:** `all` en los tres paquetes. No hay binarios compilados.
 - **Lintian es una puerta de calidad:** `lintian` sin errores es requisito.
   Los avisos deben justificarse o corregirse, no ignorarse en silencio.
 
@@ -500,19 +506,63 @@ con `apt-get -s install libreoffice-writer`, que no arrastra
 `libreoffice-common`: en `Depends:` obligaría a instalar LibreOffice entero.
 **Si algún día Encina OS trae LibreOffice de serie (E4), esa línea se mueve.**
 
+**Dos avisos medidos el 2026-08-08** (`MEDICIONES.md` §4.10), antes de copiar ese
+bloque tal cual:
+
+- **`thunderbird-locale-es` arrastra un Snap.** Es él mismo un paquete de
+  transición (`2:1snap1-0ubuntu3`) que depende de `thunderbird`, y ese lleva
+  `Pre-Depends: debconf, snapd`. En un producto cuyo motivo es no depender del
+  Snap, esa línea necesita **una decisión explícita**, no copiarse. `libreoffice-l10n-es`
+  está limpio (`Depends: locales | locales-all`).
+- **El resto del bloque no viola R10 por vía transitiva.** Simulado con el
+  repositorio de Mozilla configurado —que es donde algo de allí podría colarse—,
+  los 117 paquetes que arrastran el bloque de l10n y las `Depends:` de
+  `autofirma` salen todos de Ubuntu, y el control positivo demuestra que la
+  comprobación sabe detectar lo contrario.
+
 ### 6.3 Las tres trampas de este paquete
 
-**1. R10, y es la que puede pararlo.** `encina-firefox-native` **configura** el
-repositorio de Mozilla. `encina-meta` no puede depender —ni directa ni
-transitivamente— de ningún paquete que solo exista en ese repositorio, o se crea
-una dependencia circular de repositorio: apt necesitaría el paquete para
-configurar el repo del que saldría el paquete.
+**1. R10, y es la que podía pararlo. Medida el 2026-08-08: no lo para.**
+`encina-firefox-native` **configura** el repositorio de Mozilla. `encina-meta` no
+puede depender —ni directa ni transitivamente— de ningún paquete que solo exista
+en ese repositorio.
 
-En particular: **`encina-meta` NO declara `Depends: firefox`**. El Firefox
-nativo llega porque `encina-firefox-native` deja el repositorio y el anclaje
-puestos, no porque nadie lo declare. Si al construirlo aparece la necesidad de
-declararlo, es el criterio de parada de E1 (`ENCINA-OS.md` §10): significa que
-`encina-firefox-native` hace dos cosas y hay que partirlo antes de seguir.
+En particular: **`encina-meta` NO declara `Depends: firefox`**. Lo que sigue está
+medido en `MEDICIONES.md` §4.10, con sus controles, y **corrige el motivo que
+esta sección venía dando**.
+
+*Por qué no hace falta declararlo.* No es que «el Firefox nativo llegue porque el
+repositorio está puesto»: es que **el nombre `firefox` ya está instalado** en
+toda Ubuntu de escritorio —deb de transición al Snap, `Recommends:` de
+`ubuntu-desktop-minimal`— y el anclaje de prioridad reasigna ese nombre al deb de
+Mozilla en el siguiente `apt full-upgrade`. Nadie instala Firefox: **se sustituye
+el que ya hay**. Con control negativo: quitando solo el anclaje, apt no propone
+ningún cambio y la máquina se queda en el Snap.
+
+*Por qué declararlo sería peor que inútil.* `Depends: firefox` **no es
+irresoluble**, que es lo que esta sección afirmaba sin medirlo. Es resoluble por
+el paquete equivocado y en silencio: en un escritorio de fábrica lo satisface el
+deb de transición ya instalado —apt sale con 0 sin instalar nada y la máquina
+sigue en el Snap—, y en una base sin Firefox apt lo resuelve contra el índice de
+Ubuntu e **instala `snapd` y el Snap**. El repositorio de Mozilla no está en los
+índices *cuando apt resuelve*: sus ficheros se desempaquetan en esa misma
+transacción, cuando la decisión ya está tomada.
+
+*Y por qué partir el paquete no arreglaría nada.* El criterio de parada de E1
+(`ENCINA-OS.md` §10) prescribía partir `encina-firefox-native` si hacía falta
+declarar Firefox. Medido: partirlo **no compra nada**, porque lo que impide
+declararlo no es de quién sea el paquete, sino que el índice no esté presente al
+resolver. Un paquete aparte tendría el mismo problema en la misma transacción.
+Solo funciona como **segundo paso**, con un `apt update` en medio, que es la
+secuencia que §5.4 ya documenta sin paquete nuevo.
+
+*Lo que esto sí deja abierto, y es el hueco real de E1:* **el idioma**.
+`firefox-l10n-es-es` existe solo en el repositorio de Mozilla (`Candidate:
+(none)` en Ubuntu, y `firefox-locale-es` de Ubuntu es otro transitorio al Snap).
+Declararlo falla en duro; no declararlo tampoco lo trae, porque el `full-upgrade`
+no lo arrastra. Con el contenido de §6.2 tal cual, **Firefox nativo llega en
+inglés**. Se cierra en la secuencia de instalación (§6.4) o en el seed de E2, no
+con un `Depends:`.
 
 **2. `autofirma` no está en ningún repositorio.** Hoy es un `.deb` que se
 construye en `~/Projects/encina-autofirma`. Un `Depends: autofirma` es
@@ -531,13 +581,52 @@ que la CI no dé ya.
 Ejecutar en VM, sobre una Ubuntu 24.04 arm64 limpia clonada de
 `encina-limpia-respaldo`.
 
-- [ ] `lintian` sin errores. Se esperan avisos de metapaquete vacío; se
-      documentan en `debian/encina-meta.lintian-overrides` **con el motivo
-      escrito**, nunca con un override a secas
+**La secuencia de instalación, escrita antes de empezar y no descubierta.** Son
+tres órdenes y no una, y las tres están medidas (`MEDICIONES.md` §4.10). No es un
+apaño: es la consecuencia directa de R10, la misma que §5.4 ya documenta para
+`encina-firefox-native`.
+
+```
+# 1. los cuatro .deb, con el de autofirma puesto al lado (trampa 2 de §6.3)
+sudo apt install ./encina-meta_*.deb ./encina-branding_*.deb \
+                 ./encina-firefox-native_*.deb ./autofirma_*.deb
+# 2. hasta aqui el repositorio de Mozilla existe pero apt no lo ha leido
+sudo apt update
+# 3. el cambio de Snap a nativo, y el idioma, que ningun Depends: puede declarar
+sudo apt full-upgrade          # el paso 3 NO lo hace 'apt upgrade'
+sudo apt install firefox-l10n-es-es
+```
+
+**Un solo `apt install` no basta, y eso no lo arregla ningún contenido de este
+paquete.** Es lo que hay que corregir de la promesa de E1 (`ENCINA-OS.md` §7):
+declarar `firefox` no lo arreglaría, lo estropearía en silencio (§6.3).
+
+Casillas, cada una con lo que daría en un sistema sano y en uno roto:
+
+- [ ] **`lintian` no dice ni una línea.** No es «sin errores»: medido el
+      2026-08-08 con lintian 2.117 sobre el paquete construido, no produce
+      **ninguna** etiqueta, ni siquiera con `--display-info --pedantic`. Esta
+      sección esperaba avisos de metapaquete vacío y no los hay, así que **no
+      existe fichero de overrides y no debe crearse uno preventivo**. Si algún
+      día aparece una etiqueta, es nueva: se mira antes de escribir nada, y si
+      hay que anularla, con el motivo redactado
 - [ ] El paquete **no instala ni un fichero** fuera de `/usr/share/doc/`.
       `dpkg -L encina-meta` lo demuestra
 - [ ] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
       instala los cuatro y sale con código 0
+- [ ] **El paso 1 no ha instalado ni tocado Firefox.** `LC_ALL=C apt-cache policy
+      firefox` sigue diciendo `Installed: 1:1snap1-0ubuntu5`. *Sano:* esa versión
+      con epoch, intacta. *Roto:* si apareciera una versión de Mozilla ya aquí,
+      alguien ha declarado `firefox` y hay que volver a §6.3; si desapareciera el
+      paquete, se ha desinstalado algo que no tocaba
+- [ ] **Tras el paso 2, el anclaje manda.** `LC_ALL=C apt-cache policy firefox`
+      da `Candidate: 153.0.3~build1` con prioridad `1000` y origen
+      `packages.mozilla.org`. *Roto:* `Candidate: 1:1snap1-0ubuntu5`, o sea que
+      el anclaje no está haciendo efecto y el paso 3 devolvería el Snap
+- [ ] **Tras el paso 3, Firefox es el nativo.** `dpkg-query -W -f='${Version}'
+      firefox` **no empieza por `1:`**, y `readlink -f /usr/bin/firefox` no cae
+      bajo `/snap/`. *Roto:* versión con epoch = sigue siendo el deb de
+      transición, y todo lo demás de esta lista puede estar verde igualmente
 - [ ] Tras instalar: `check-language-support -l es` sigue saliendo vacío
 - [ ] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
       idéntico
@@ -545,17 +634,21 @@ Ejecutar en VM, sobre una Ubuntu 24.04 arm64 limpia clonada de
       para un metapaquete— y `apt autoremove` sí los propone. Comprobar las dos
       cosas y dejar la salida escrita
 - [ ] Una entrada de matriz nueva en `build.yml`, verde
-- [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con
-      `encina-meta` instalado y **nada tocado a mano**, sale una firma en
-      `valide.redsara.es` con certificado real. Mirada en pantalla.
+- [ ] **[OJOS] Firefox arranca en español.** No lo puede comprobar ningún script,
+      y **que salga en español no demuestra por sí solo que sea el nativo**: el
+      Snap también está en español. Primero el binario (casilla anterior),
+      después el idioma
+- [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con la secuencia de
+      arriba ejecutada **tal cual y sin ningún arreglo fuera de ella**, sale una
+      firma en `valide.redsara.es` con certificado real. Mirada en pantalla.
       **Es un experimento de un solo uso:** se hace sobre una VM clonada para
       la ocasión y **esa VM se destruye después**, porque lleva dentro un
       certificado de firma personal (`ENCINA-OS.md` §9.1). Todo lo demás de
       esta lista se comprueba sin él
 
 **La última casilla es la única que importa de verdad**, y es la única que
-ningún script puede dar por buena. Las otras siete pueden salir todas verdes con
-el producto sin funcionar: ya pasó en A2, donde con siete comprobaciones
+ningún script puede dar por buena. Las otras pueden salir todas verdes con el
+producto sin funcionar: ya pasó en A2, donde con siete comprobaciones
 automáticas en verde el icono seguía abriendo el Snap.
 
 **La sede tiene que ser `valide.redsara.es`.** `sededgsfp.gob.es` **no puede dar

@@ -1,6 +1,6 @@
 # Scripts de Encina OS
 
-Once scripts. Se ejecutan en orden. Cada uno termina diciéndote cuál viene
+Catorce scripts. Se ejecutan en orden. Cada uno termina diciéndote cuál viene
 después, y ninguno da nada por bueno sin comprobarlo.
 
 ## Orden
@@ -36,7 +36,44 @@ no coincide con `35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3`. La huella está
 escrita a mano dentro del script: leerla del fichero que se quiere validar no
 validaría nada.
 
-`09` es el que importa. Ejecuta `apt full-upgrade` **dos veces** y comprueba que
+### De `encina-meta`
+
+| Script | Qué hace | Dónde |
+|---|---|---|
+| `10-meta-construir.sh` | **Reglas duras** + build + lintian | VM y CI |
+| `11-meta-instalar.sh` | **La secuencia de tres órdenes**, paso a paso | VM |
+| `12-meta-verificar.sh` | Idempotencia x5, purga, `autoremove` | VM |
+
+Mismo motivo que antes para que sean aparte: 03/04/05 y 07/08/09 están
+validados contra sus paquetes y no se tocan.
+
+`10` **se detiene sin construir nada si no hay `debian/changelog`**, y no lo
+crea él: imprime la orden `dch --create` y para. El changelog se gestiona con
+`dch` y en la VM (`AGENTS.md` §3), así que el paquete se escribe en el Mac sin
+él a propósito. Su comprobación de R10 tiene una forma concreta: extrae los
+campos de dependencia con sus líneas de continuación y mira **solo ahí**, porque
+la `Description` de este paquete explica largamente por qué no declara Firefox y
+un `grep firefox` a secas lo acusaría de hacer justo lo que documenta que no
+hace (trampa 3). Lleva además dos controles: uno que inyecta un `firefox` y
+comprueba que la comprobación salta, y otro que verifica que la extracción no se
+está comiendo la `Description`. Las tres reglas —R10, sin ficheros propios, sin
+scripts de mantenedor— se validaron saboteando el paquete, y cada una la
+detectan **dos** comprobaciones independientes: una sobre el árbol de fuentes y
+otra sobre el `.deb` construido.
+
+`11` es el que enseña la secuencia. Comprueba lo que debe verse **y lo que no**:
+que el paso 1 no toque Firefox —si lo tocara, alguien ha declarado `firefox` y
+hay que parar—, que tras el paso 2 el candidato salga de Mozilla con prioridad
+1000, y que tras el paso 3 la versión instalada **no lleve epoch**, que es lo
+que distingue el deb de Mozilla del de transición al Snap. Lleva `-y
+--allow-downgrades` en el `full-upgrade` y el comentario dice por qué: sin él,
+`apt-get -y` se niega, porque el cambio es formalmente una desactualización.
+
+`12` deja escrito lo que debe pasar al purgar un metapaquete: los otros tres
+**siguen instalados** y `autoremove` los propone. Y no ejecuta el `autoremove`:
+esa VM se conserva como banco de E1.
+
+`09` es el que importa de A2. Ejecuta `apt full-upgrade` **dos veces** y comprueba que
 Firefox no ha vuelto al Snap. Si esas dos vueltas no mueven ningún paquete
 —porque el sistema ya estaba al día— lo dice y fuerza una vuelta más incluyendo
 las actualizaciones por fases de Ubuntu, para que apt tenga algo que decidir:
@@ -131,13 +168,16 @@ export ENCINA_REPO=/ruta/a/tu/repo
 
 ## Comprobado
 
-Los doce ficheros pasan `bash -n`. **`shellcheck` sí devuelve avisos**, al
+Los quince ficheros pasan `bash -n`. **`shellcheck` sí devuelve avisos**, al
 contrario de lo que decía antes este documento: cuatro `SC2164` sobre `cd` y el
 resto de nivel `info`/`style`. Los `SC2164` son falsos positivos —`lib.sh` fija
 `set -euo pipefail`, de modo que un `cd` fallido ya aborta el script, pero
 `shellcheck` no lo detecta porque no resuelve el `source` de ruta dinámica ni
 siquiera con `-x`. Se dejan como están a propósito. Los tres scripts de Firefox
-(07, 08, 09) están limpios a nivel `warning`.
+(07, 08, 09) y los tres de `encina-meta` (10, 11, 12) están limpios a nivel
+`warning`; los de `encina-meta` se verificaron con `shellcheck -S warning` y
+tenían tres avisos reales —dos `SC2010` y un `SC2034`—, que se **corrigieron**
+en lugar de silenciarse.
 
 Las comprobaciones de reglas
 duras se han validado saboteando un paquete a propósito: detectan violaciones de

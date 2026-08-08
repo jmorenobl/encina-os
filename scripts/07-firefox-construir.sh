@@ -75,15 +75,20 @@ titulo "2. Reglas duras que aplican a este paquete"
 
 # --- R10: sin dependencias circulares de repositorio ------------------------
 # firefox y firefox-l10n-es-es viven en el repositorio que configura ESTE
-# paquete, que no existe en el sistema hasta que este paquete se instala.
-# Declararlos como Depends daría una dependencia irresoluble.
+# paquete, que no está en los índices de apt cuando apt resuelve.
+#
+# Este comentario decía «daría una dependencia irresoluble», y es falso, medido
+# el 2026-08-08 (MEDICIONES.md §4.10e): el nombre firefox existe también en el
+# índice de Ubuntu, como paquete de transición al Snap. Declararlo no falla —lo
+# satisface el Snap, en silencio—, que es bastante peor.
 DEPS=$(grep -A5 -E '^(Depends|Pre-Depends|Recommends):' "$PKG/debian/control" 2>/dev/null || true)
 if grep -qE '\bfirefox' <<<"$DEPS"; then
     fallo "R10 — el paquete depende de algo del repositorio de Mozilla" \
 "$(grep -nE '^(Depends|Pre-Depends|Recommends):|firefox' "$PKG/debian/control")
-Ese repositorio no existe hasta que este paquete se instala: la dependencia
-sería irresoluble. Instalar Firefox pertenece a encina-meta o a la receta de
-imagen, no a este paquete."
+Ese repositorio no está en los índices de apt cuando apt resuelve, así que la
+dependencia la satisfaría el paquete de transición al Snap de Ubuntu, en
+silencio y saliendo con 0 (MEDICIONES.md §4.10e). Instalar Firefox pertenece a
+la secuencia documentada o a la receta de imagen, no a este paquete."
 else
     ok "R10 — no se depende de firefox ni de firefox-l10n-*"
 fi

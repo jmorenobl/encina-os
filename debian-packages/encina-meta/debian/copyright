@@ -1,0 +1,26 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: encina-meta
+Source: https://github.com/jmorenobl/encina-os
+
+Files: *
+Copyright: 2026 Jorge MB <jmorenobl@gmail.com>
+License: EUPL-1.2
+Comment: Este paquete no distribuye ningun fichero: solo declara dependencias.
+ No hay por tanto ningun activo de terceros que declarar aqui, a diferencia de
+ encina-branding (fotografias con licencia Unsplash) y de encina-firefox-native
+ (clave publica de firma de Mozilla). Lo que se licencia bajo la EUPL-1.2 es el
+ contenido de debian/, que es el paquete entero.
+
+License: EUPL-1.2
+ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
+ the European Commission - subsequent versions of the EUPL (the "Licence").
+ You may not use this work except in compliance with the Licence.
+ .
+ You may obtain a copy of the Licence at:
+ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the Licence is distributed on an "AS IS" basis, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ Licence for the specific language governing permissions and limitations
+ under the Licence.

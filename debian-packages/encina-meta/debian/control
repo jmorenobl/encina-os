@@ -1,0 +1,49 @@
+Source: encina-meta
+Section: metapackages
+Priority: optional
+Maintainer: Jorge MB <jmorenobl@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: encina-meta
+Architecture: all
+Depends: ${misc:Depends},
+         encina-branding,
+         encina-firefox-native,
+         autofirma,
+         hunspell-es,
+         language-pack-es,
+         language-pack-gnome-es
+Recommends: libreoffice-l10n-es,
+            hyphen-es,
+            mythes-es
+Description: Encina OS: instala el conjunto con un solo nombre
+ Metapaquete de Encina OS. No lleva ni un fichero propio: su trabajo entero es
+ declarar de que se compone el producto, para que un instalador desatendido
+ instale UN NOMBRE y no una lista.
+ .
+ Declara la identidad visual (encina-branding), el repositorio de Firefox
+ nativo (encina-firefox-native), el cliente de firma corregido (autofirma) y
+ la localizacion espanola que Ubuntu no cubre por si sola.
+ .
+ UN NOMBRE NO ES UNA SOLA ORDEN, y conviene saberlo antes de instalarlo. La
+ instalacion completa son tres ordenes, y el motivo esta medido:
+ .
+   sudo apt install ./encina-meta_*.deb ./encina-branding_*.deb \
+                    ./encina-firefox-native_*.deb ./autofirma_*.deb
+   sudo apt update
+   sudo apt full-upgrade && sudo apt install firefox-l10n-es-es
+ .
+ Este paquete NO declara firefox ni firefox-l10n-es-es, y no es un descuido:
+ los dos viven en el repositorio que configura encina-firefox-native, que no
+ esta en los indices de apt cuando apt resuelve estas dependencias. Declarar
+ firefox no falla, que seria lo comodo: lo satisface el paquete de transicion
+ al Snap que Ubuntu ya trae instalado, de modo que apt sale con exito y la
+ maquina se queda en el Snap sin decir nada. El navegador nativo llega en el
+ apt full-upgrade de la tercera orden, cuando el anclaje de prioridad reasigna
+ el nombre firefox al paquete de Mozilla.
+ .
+ El bloque de localizacion existe porque Ubuntu instala el idioma del sistema
+ pero no la l10n de las aplicaciones que se instalan DESPUES: no hay hook de
+ apt ni disparador de dpkg que la reejecute.

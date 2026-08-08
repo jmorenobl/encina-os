@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+# Este paquete no instala ningun fichero, asi que no hay override de
+# dh_auto_install que escribir: no hay src/ que copiar. Es deliberado y es la
+# definicion misma de un metapaquete (AGENTS.md 6.1). Si alguna vez aparece
+# aqui un override_dh_auto_install, significa que el paquete ha empezado a
+# llevar contenido y que ese contenido pertenece a otro paquete.
+#
+# Tampoco lleva postinst, prerm ni postrm. Si hiciera falta uno, seria senal
+# de que una dependencia esta mal declarada (AGENTS.md 6.1).
+
+%:
+	dh $@

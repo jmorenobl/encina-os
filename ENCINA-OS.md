@@ -87,9 +87,9 @@ redacción y la cuarta se enmienda.
 | Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`. Cuatro PRs escritas; **abrirlas está pendiente** |
 | Repositorio git | `jmorenobl/encina-os`. **Hoy privado; D5 dice que pasa a público** |
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
-| Scripts | Once, en `scripts/`, versionados con el repositorio |
+| Scripts | Catorce, en `scripts/`, versionados con el repositorio |
 | Licencia | EUPL-1.2, texto oficial completo verificado contra EUR-Lex |
-| `encina-meta` | **No existe.** Es el primer incremento (§6) |
+| `encina-meta` | **Escrito y construido, sin verificar en VM.** `debian/` completo, `lintian` mudo, tres scripts propios (10, 11, 12) con sus reglas duras validadas por sabotaje. Le falta el `changelog` —se crea con `dch` en la VM— y las casillas de §6.4 de `AGENTS.md` |
 | Instalación desatendida | **No existe.** Es el segundo incremento |
 | ~~`encina-doctor`~~ | **Suprimido el 2026-08-08 sin escribir una línea.** Ver §6.1 |
 
@@ -166,7 +166,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
-| **E1** | `encina-meta` | Un solo `apt install encina-meta` sobre una Ubuntu limpia deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12 | **← SIGUIENTE** |
+| **E1** | `encina-meta` | Una secuencia documentada de tres órdenes —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **← SIGUIENTE** |
 | **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | Sin abrir |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
@@ -237,8 +237,27 @@ Contiene:
 - **Ojo con R10:** `encina-firefox-native` configura el repositorio de Mozilla,
   así que `encina-meta` no puede depender de nada que venga de ese repositorio.
 
-Lo que lo da por terminado: `apt install encina-meta` sobre una Ubuntu 24.04
-arm64 limpia deja un sistema que firma en `valide.redsara.es`, mirado en
+**R10 medida el 2026-08-08, antes de escribir una línea** (`MEDICIONES.md`
+§4.10). Tres cosas, y la segunda cambia lo que este documento prometía:
+
+1. **E1 no se para.** `encina-meta` puede no declarar `firefox` sin dejar la
+   máquina sin navegador, porque el nombre `firefox` **ya está instalado** en
+   toda Ubuntu de escritorio —deb de transición al Snap— y el anclaje de
+   `encina-firefox-native` lo reasigna al deb de Mozilla. No se instala: se
+   sustituye. Con control negativo: sin el anclaje, apt no propone nada.
+2. **«Un solo `apt install`» no era posible, y no por culpa de este paquete.** El
+   cambio lo hace `apt full-upgrade` —`apt upgrade` no—, después de un
+   `apt update` que no puede ocurrir dentro de la misma transacción (R3). Y el
+   idioma, `firefox-l10n-es-es`, solo existe en el repositorio de Mozilla, así
+   que ningún `Depends:` de Encina puede traerlo. La secuencia de tres órdenes
+   está escrita en `AGENTS.md` §6.4.
+3. **Declarar `firefox` no lo arreglaría: lo estropearía en silencio.** No es
+   irresoluble, como se suponía: en un escritorio de fábrica lo satisface el deb
+   de transición ya instalado y la máquina sigue en el Snap con apt saliendo con
+   0; en una base sin Firefox, apt instala `snapd` y el Snap.
+
+Lo que lo da por terminado: esa secuencia, ejecutada tal cual sobre una Ubuntu
+24.04 arm64 limpia, deja un sistema que firma en `valide.redsara.es`, mirado en
 pantalla.
 
 ### La pregunta que hay que hacerle a E2 antes de abrirlo
@@ -341,7 +360,14 @@ definición de terminado**, porque es fácil escribir una casilla imposible:
 
 - **E1.** Si `encina-meta` no puede declarar sus dependencias sin violar R10,
   parar: significa que `encina-firefox-native` está haciendo dos cosas y hay que
-  partirlo antes de seguir.
+  partirlo antes de seguir. **Medido el 2026-08-08 y no dispara**
+  (`MEDICIONES.md` §4.10). Y de paso se midió que **el remedio que este criterio
+  prescribía no habría servido**: partir `encina-firefox-native` no compra nada,
+  porque lo que impide declarar Firefox no es de quién sea el paquete, sino que
+  el índice de Mozilla no está presente **cuando apt resuelve**. Un paquete
+  aparte tendría el mismo problema en la misma transacción. Si el criterio vuelve
+  a dispararse por otra vía, la salida es una **segunda orden** con `apt update`
+  en medio, no un paquete nuevo.
 - **E2.** Si el instalador de Ubuntu Desktop 24.04 arm64 no honra un
   `autoinstall.yaml` con `late-commands`, **no** forzarlo con Cubic ni con un
   chroot editado a mano (D4). Replantear la forma de la entrega.

@@ -4,10 +4,19 @@ Configura el repositorio APT oficial de Mozilla, su clave de firma y el anclaje
 de prioridad, para que Firefox se pueda instalar como paquete `.deb` nativo en
 lugar de como Snap.
 
-El motivo no es estetico: los navegadores instalados via Snap o Flatpak aislan
-el almacen de certificados NSS mediante sandbox, y eso impide que funcione la
-firma electronica espanola. Resolverlo aqui quita por adelantado el obstaculo
-principal de la Etapa B.
+El motivo no es estetico: dentro del Snap, **Firefox no ve el manejador del
+esquema `afirma:`** —su `XDG_DATA_DIRS` no incluye `/usr/share` del anfitrion,
+asi que no encuentra `afirma.desktop` ni `/usr/bin/autofirma` y al pulsar
+«Firmar» no hace nada, sin error y sin log—. Es un obstaculo que **ningun
+`.deb` puede tocar** y que el Firefox nativo elimina de raiz.
+
+Este parrafo decia antes que el Snap «aisla el almacen de certificados NSS
+mediante sandbox». **Es falso, y esta medido** (`MEDICIONES.md` §4.3 y §4.4): el
+almacen NSS del Snap funciona perfectamente y AutoFirma le instala la CA
+correcta. La conclusion no cambia —este paquete sigue siendo condicion
+necesaria— pero el cimiento es otro. Tambien decia «Etapa B», marco que
+desaparecio el 2026-08-08: la hoja de ruta va por incrementos (`ENCINA-OS.md`
+§6).
 
 ## Lo que este paquete NO hace
 
