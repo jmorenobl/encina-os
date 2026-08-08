@@ -1181,10 +1181,46 @@ no sabe responder» son la misma salida. Firefox sigue en `153.0.3~build1` con
 `/usr/bin/firefox → /usr/lib/firefox/firefox`, y los cuatro paquetes en
 `install ok installed`.
 
-**Lo que este apartado NO demuestra:** que una instalación desde cero con 0.1.1
-no traiga LibreOffice. Aquí se llegó quitando, no no-poniendo. La prueba desde
-cero es la del clon efímero, que ejecuta la secuencia entera «tal cual y sin
-ningún arreglo fuera de ella» sobre una máquina virgen.
+**Aquí se llegó quitando, no no-poniendo**, así que esto solo no demuestra que
+una instalación desde cero con 0.1.1 no traiga LibreOffice. **Demostrado aparte,
+el mismo día, en el clon efímero `encina-firma-efimera`** —virgen, con la línea
+base tomada antes de tocarla: sin `libreoffice-common`, sin `libreoffice-core` y
+con `check-language-support -l es` ya vacío—, ejecutando la secuencia entera «tal
+cual y sin ningún arreglo fuera de ella»:
+
+```
+$ LC_ALL=C dpkg-query -W libreoffice-common libreoffice-core libreoffice-l10n-es
+dpkg-query: no packages found matching libreoffice-common
+dpkg-query: no packages found matching libreoffice-core
+dpkg-query: no packages found matching libreoffice-l10n-es
+$ LC_ALL=C check-language-support -l es
+                                # vacio
+$ LC_ALL=C dpkg-query -W hyphen-es mythes-es
+hyphen-es 1:24.2.1-1
+mythes-es 1:24.2.1-1
+```
+
+`11-meta-instalar.sh` dio ahí **27 correctas, 0 fallos y 0 avisos**: una más que
+en el banco —la del l10n, que allí era el aviso— y ninguna pendiente.
+
+**Y la máquina quedó lista para la casilla que decide**, comprobado antes de
+meter ningún certificado, porque cada una de estas ausencias abortaría el intento
+sin decir por qué:
+
+```
+/usr/bin/autofirma                              presente
+/usr/share/applications/autofirma.desktop       presente
+xdg-mime query default x-scheme-handler/afirma  -> autofirma.desktop
+/usr/lib/firefox/defaults/pref/autofirma.js:
+    pref("network.protocol-handler.expose.afirma", false);   <- B1b
+    pref("network.protocol-handler.external.afirma", true);
+```
+
+Esa ruta —`/usr/lib/firefox/defaults/pref/`— es la que **sí** lee la compilación
+de Mozilla, que es B1a; la copia en `/etc/firefox/pref/` también está, y es la
+que no se lee. *Ojo con el nombre:* el manejador se llama `autofirma.desktop`, no
+`afirma.desktop` como dice el `.deb` oficial y como este documento repite al
+hablar de él.
 
 **d) `apt autoremove` y el metapaquete: la casilla depende de cómo entraron.**
 Tras `apt purge encina-meta`, los otros tres siguen instalados —correcto—, pero

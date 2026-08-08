@@ -713,7 +713,12 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       ```
 
       *Sano:* vacío. *Roto:* enumera lo que falta — y sabe hacerlo, como
-      demuestra el francés
+      demuestra el francés.
+      **Y confirmado desde cero**, que es distinto: en el banco se llegó
+      *quitando*. Sobre `encina-firma-efimera`, virgen y con línea base tomada
+      —sin `libreoffice-common` ni `libreoffice-core`—, la secuencia entera con
+      0.1.1 **no los trae**, y `11-meta-instalar.sh` da allí **27 correctas, 0
+      fallos y 0 avisos**
 - [x] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
       idéntico.
       **Medido comparando la lista completa de paquetes con su versión antes y
