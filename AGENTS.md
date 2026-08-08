@@ -601,39 +601,121 @@ sudo apt install firefox-l10n-es-es
 paquete.** Es lo que hay que corregir de la promesa de E1 (`ENCINA-OS.md` §7):
 declarar `firefox` no lo arreglaría, lo estropearía en silencio (§6.3).
 
+**Ejecutada el 2026-08-08 sobre la VM `encina-E1-meta`**, clon de
+`encina-limpia-respaldo` hecho ese día con `utmctl clone`. Huella tomada antes de
+tocarla, porque las seis VMs comparten hostname e IP: cero paquetes `encina-*`,
+sin `autofirma`, solo `ubuntu.sources` en `sources.list.d`, sin ningún perfil de
+Mozilla, `firefox` deb `1:1snap1-0ubuntu5`, Snap de Firefox `147.0.3-1` rev 7764,
+Ubuntu 24.04.4 arm64, un solo usuario. Coincide con la premisa (a) de
+`MEDICIONES.md` §4.10.
+
+Los tres scripts dieron **14 + 26 + 8 = 48 comprobaciones correctas, 0 fallos y
+2 avisos**. Los dos avisos son las dos casillas que abajo **no** se marcan.
+
 Casillas, cada una con lo que daría en un sistema sano y en uno roto:
 
-- [ ] **`lintian` no dice ni una línea.** No es «sin errores»: medido el
+- [x] **`lintian` no dice ni una línea.** No es «sin errores»: medido el
       2026-08-08 con lintian 2.117 sobre el paquete construido, no produce
       **ninguna** etiqueta, ni siquiera con `--display-info --pedantic`. Esta
       sección esperaba avisos de metapaquete vacío y no los hay, así que **no
       existe fichero de overrides y no debe crearse uno preventivo**. Si algún
       día aparece una etiqueta, es nueva: se mira antes de escribir nada, y si
-      hay que anularla, con el motivo redactado
-- [ ] El paquete **no instala ni un fichero** fuera de `/usr/share/doc/`.
-      `dpkg -L encina-meta` lo demuestra
-- [ ] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
-      instala los cuatro y sale con código 0
-- [ ] **El paso 1 no ha instalado ni tocado Firefox.** `LC_ALL=C apt-cache policy
+      hay que anularla, con el motivo redactado.
+      **Confirmado el 2026-08-08 sobre `encina-meta_0.1.0_all.deb` (2966 bytes):
+      `[OK] lintian no dice nada`.** Sigue sin haber fichero de overrides
+- [x] El paquete **no instala ni un fichero** fuera de `/usr/share/doc/`.
+      `dpkg -L encina-meta` lo demuestra.
+      **Comprobado dos veces y por dos vías**, sobre el `.deb` (`dpkg-deb -c`) y
+      sobre lo instalado (`dpkg -L`). El contenido entero son tres entradas:
+      `./usr/share/doc/encina-meta/`, `changelog.gz` y `copyright`
+- [x] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
+      instala los cuatro y sale con código 0.
+      **Los cuatro quedan `install ok installed`.** El de `autofirma` es
+      `autofirma_1.9.1+encina1_all.deb`, bajado del artefacto `autofirma-arm64`
+      de la ejecución 31232027825 de su CI
+      (`sha256 4aa647220eb62cc5b73a257760b44950663c2151f3efc063d81f14ffa92fff3e`)
+- [x] **El paso 1 no ha instalado ni tocado Firefox.** `LC_ALL=C apt-cache policy
       firefox` sigue diciendo `Installed: 1:1snap1-0ubuntu5`. *Sano:* esa versión
       con epoch, intacta. *Roto:* si apareciera una versión de Mozilla ya aquí,
       alguien ha declarado `firefox` y hay que volver a §6.3; si desapareciera el
-      paquete, se ha desinstalado algo que no tocaba
-- [ ] **Tras el paso 2, el anclaje manda.** `LC_ALL=C apt-cache policy firefox`
+      paquete, se ha desinstalado algo que no tocaba.
+      **Medido: sigue en `1:1snap1-0ubuntu5`, idéntico al de antes de la
+      transacción, y el Snap tampoco se ha movido (147.0.3-1 rev 7764, R4)**
+- [x] **Tras el paso 2, el anclaje manda.** `LC_ALL=C apt-cache policy firefox`
       da `Candidate: 153.0.3~build1` con prioridad `1000` y origen
       `packages.mozilla.org`. *Roto:* `Candidate: 1:1snap1-0ubuntu5`, o sea que
-      el anclaje no está haciendo efecto y el paso 3 devolvería el Snap
-- [ ] **Tras el paso 3, Firefox es el nativo.** `dpkg-query -W -f='${Version}'
+      el anclaje no está haciendo efecto y el paso 3 devolvería el Snap.
+      **Medido, exactamente eso:**
+
+      ```
+       *** 1:1snap1-0ubuntu5 500
+              500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+           153.0.3~build1 1000
+             1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+      ```
+
+- [x] **Tras el paso 3, Firefox es el nativo.** `dpkg-query -W -f='${Version}'
       firefox` **no empieza por `1:`**, y `readlink -f /usr/bin/firefox` no cae
       bajo `/snap/`. *Roto:* versión con epoch = sigue siendo el deb de
-      transición, y todo lo demás de esta lista puede estar verde igualmente
-- [ ] Tras instalar: `check-language-support -l es` sigue saliendo vacío
-- [ ] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
-      idéntico
+      transición, y todo lo demás de esta lista puede estar verde igualmente.
+      **Medido: `153.0.3~build1` (sin epoch) y `/usr/bin/firefox →
+      /usr/lib/firefox/firefox`.** El plan, mirado antes de aplicarlo, decía
+      `Inst firefox [1:1snap1-0ubuntu5] (153.0.3~build1 …/repositories/mozilla…)`.
+      **Y esto es lo que convierte en MEDIDO lo único que §4.10 dejaba
+      deducido:** el `full-upgrade` se comporta en una VM con escritorio, con el
+      Snap vivo, igual que en el contenedor. `firefox-l10n-es-es 153.0.3~build1`
+      instalado y desplegado en
+      `/usr/lib/firefox/distribution/extensions/langpack-es-ES@firefox.mozilla.org.xpi`
+- [ ] Tras instalar: `check-language-support -l es` sigue saliendo vacío.
+      **NO SE CUMPLE. Medido el 2026-08-08, salida literal:**
+
+      ```
+      $ LC_ALL=C check-language-support -l es
+      libreoffice-help-es
+      ```
+
+      **La causa está medida y es este paquete.** `Recommends:
+      libreoffice-l10n-es` arrastró `libreoffice-common` y `libreoffice-core`
+      —33 paquetes y 244 MB, en el log de apt del paso 1 y todos marcados
+      `automatic`— y la regla 13 de
+      `/usr/share/language-selector/data/pkg_depends`, `tr::libreoffice-common:libreoffice-help-`,
+      dice que con `libreoffice-common` instalado hace falta
+      `libreoffice-help-<lang>`. O sea que **la l10n que este paquete declara
+      abre un hueco de l10n nuevo.** En §A3 la misma orden salía vacía porque
+      allí no había ningún LibreOffice. Cerrarlo cuesta dos paquetes de Ubuntu
+      (`apt-get -s install libreoffice-help-es` → `libreoffice-help-common` +
+      `libreoffice-help-es`, nada de Mozilla ni de Snap), pero **es una decisión
+      sobre el contenido de §6.2 y no se toma desde aquí**
+- [x] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
+      idéntico.
+      **Medido comparando la lista completa de paquetes con su versión antes y
+      después, no el código de salida; y con control, alterando una línea de la
+      huella para comprobar que el `diff` sabe verlo**
 - [ ] `apt purge encina-meta` **no** desinstala los otros tres —es lo correcto
       para un metapaquete— y `apt autoremove` sí los propone. Comprobar las dos
-      cosas y dejar la salida escrita
-- [ ] Una entrada de matriz nueva en `build.yml`, verde
+      cosas y dejar la salida escrita.
+      **La primera mitad, medida y correcta:** tras `apt purge encina-meta`, los
+      tres siguen `install ok installed`.
+      **La segunda mitad no se puede demostrar tal cual en esta VM, y el motivo
+      importa para E2:** los tres entraron *por ruta* en la línea de órdenes del
+      paso 1, así que apt los marcó como **manuales** y `autoremove` no propone
+      ninguno. Medido con A/B, que es como sí se responde la pregunta:
+
+      ```
+      A) apt-mark auto los tres, con encina-meta INSTALADO
+         -> autoremove no propone ninguno          (control: sabe decir que no)
+      B) los mismos tres, con encina-meta PURGADO
+         -> Remv autofirma / Remv encina-branding / Remv encina-firefox-native
+      ```
+
+      La casilla se cumple **cuando los tres entran como dependencias
+      automáticas**, que es lo que hará el repo local de E2. Con `.deb` sueltos
+      al lado, no. Las marcas se devolvieron a manual y `encina-meta` quedó
+      reinstalado
+- [ ] Una entrada de matriz nueva en `build.yml`, verde.
+      **Escrita y commiteada junto al `changelog`, como exige `SCRIPTS.md`; sin
+      ejecutar.** La CI no se ha visto verde porque los commits de E1 siguen sin
+      empujar: `origin/main` está en `9d89ea3`
 - [ ] **[OJOS] Firefox arranca en español.** No lo puede comprobar ningún script,
       y **que salga en español no demuestra por sí solo que sea el nativo**: el
       Snap también está en español. Primero el binario (casilla anterior),
