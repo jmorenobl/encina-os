@@ -82,6 +82,27 @@ El splash de arranque, el logotipo de GDM y el fondo del escritorio hay que
 mirarlos. `04` y `05` te los listan al final marcados `[OJOS]` y no los cuentan
 como aprobados.
 
+**El splash no se puede mirar en estas VMs, y no es un fallo del paquete.** UTM
+responde *«display output is not active»* durante el arranque, así que la
+pantalla no está viva cuando Plymouth pinta. Medido el 2026-08-08: **no se ha
+visto nunca el splash con el logotipo nuevo, y no se va a poder** mientras la
+VM esté configurada así.
+
+Lo que sí cierra el hueco casi entero, sin ojos, es comprobar que el fichero
+correcto está en el sitio correcto **dentro del initramfs**, que es lo que R7
+protege y donde falla en silencio:
+
+```
+sudo unmkinitramfs /boot/initrd.img-$(uname -r) /tmp/x
+sha256sum /tmp/x/**/themes/encina/logo.png \
+          /usr/share/plymouth/themes/encina/logo.png
+```
+
+Si las dos huellas coinciden, el initramfs lleva el logotipo que crees. Queda
+sin comprobar únicamente que Plymouth lo dibuje — y ese camino ya se vio
+funcionar en A1, así que lo único nuevo es el contenido del fichero. **Es un
+`[OMIT] no se puede mirar en UTM`, no un `[OK]`.**
+
 Lo mismo con Firefox: que arranque **en español** no lo puede comprobar ningún
 script. `08` y `09` lo dejan marcado `[OJOS]` junto con `about:support`, donde
 `Application Binary` no debe estar bajo `/snap`.
