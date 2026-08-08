@@ -85,18 +85,19 @@ sudo apt update
 # 3. el cambio de Snap a nativo, y el idioma, que ningun Depends: puede declarar
 sudo apt full-upgrade          # 'apt upgrade' NO hace este paso
 sudo apt install firefox-l10n-es-es
-# 4. abre Firefox UNA VEZ, cierralo, y reconfigura AutoFirma
-sudo dpkg-reconfigure autofirma
 ```
 
 Con la secuencia y las advertencias que van con ella:
 
-- **Son cuatro órdenes y no una**, y eso está medido, no es un descuido: el
-  motivo de cada paso está en [MEDICIONES.md](MEDICIONES.md) §4.10 y §4.12.
-  El paso 4 es un apaño reconocido, y lo que cierra E1 es eliminarlo.
+- **Son tres órdenes y no una**, y eso está medido, no es un descuido: el motivo
+  de cada paso está en [MEDICIONES.md](MEDICIONES.md) §4.10 y §4.12. **Hubo un
+  cuarto paso** entre el 2026-08-08 y el 2026-08-09 —abrir Firefox y
+  `sudo dpkg-reconfigure autofirma`—, y se ha caído porque el paquete de
+  AutoFirma aprendió a hacerlo solo: ahora instala la CA de su socket **cuando
+  aparece el perfil de Firefox**, que es horas después de instalarse.
 - **Tres de los cuatro `.deb` se construyen desde este repositorio**, con los
   scripts de [más abajo](#cómo-construir-y-probar).
-- **El cuarto, `autofirma 1.9.1+encina1`, vive en `encina-autofirma`, que hoy es
+- **El cuarto, `autofirma 1.9.1+encina2`, vive en `encina-autofirma`, que hoy es
   un repositorio privado.** Se hará público cuando se publique la imagen: hacerlo
   antes activa obligaciones de mantenimiento hacia un público que ahora mismo es
   el autor ([ENCINA-OS.md](ENCINA-OS.md), D5). Mientras tanto, esta secuencia no
@@ -111,12 +112,12 @@ esconder al siguiente.
 
 | # | Obstáculo | Quién lo cierra en Encina OS |
 |---|---|---|
-| B1a | Las preferencias del esquema `afirma:` están donde la compilación de Mozilla no las lee | `autofirma 1.9.1+encina1` |
-| B1b | La preferencia con la que AutoFirma lanza el programa ya no existe en Firefox 153 | `autofirma 1.9.1+encina1` |
-| B2 | El certificado del canal seguro se instala en el perfil de navegador equivocado | `autofirma 1.9.1+encina1` |
+| B1a | Las preferencias del esquema `afirma:` están donde la compilación de Mozilla no las lee | `autofirma 1.9.1+encina2` |
+| B1b | La preferencia con la que AutoFirma lanza el programa ya no existe en Firefox 153 | `autofirma 1.9.1+encina2` |
+| B2 | El certificado del canal seguro se instala en el perfil de navegador equivocado | `autofirma 1.9.1+encina2` |
 | B3 | Dentro del Snap, Firefox **no ve** el programa que debería abrir | `encina-firefox-native`, y quitar el Snap en la imagen |
-| B4 | AutoFirma busca tu certificado en el perfil del Snap, que está vacío | `autofirma 1.9.1+encina1`, y quitar el Snap lo cierra solo |
-| B6 | Las bibliotecas NSS no se encuentran fuera de x86 | `autofirma 1.9.1+encina1` |
+| B4 | AutoFirma busca tu certificado en el perfil del Snap, que está vacío | `autofirma 1.9.1+encina2`, y quitar el Snap lo cierra solo |
+| B6 | Las bibliotecas NSS no se encuentran fuera de x86 | `autofirma 1.9.1+encina2` |
 
 Hay un séptimo, B5, que **no lo puede cerrar nadie desde el equipo**: algunas
 sedes electrónicas bloquean con su propia política de seguridad el `iframe` que
@@ -148,8 +149,8 @@ que pasa el nuestro.
 |---|---|
 | `encina-branding` | **Terminado.** v0.1.7, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
 | `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
-| `autofirma 1.9.1+encina1` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **Casi.** v0.1.1, construido y verificado en VM, 10 de 12 casillas. Sobre una máquina virgen salió una firma real, pero la casilla que decide sigue sin marcar: la secuencia necesitó un cuarto paso que no estaba escrito |
+| `autofirma 1.9.1+encina2` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
+| `encina-meta` | **Casi.** v0.1.1, construido y verificado en VM, 10 de 12 casillas. Sobre una máquina virgen salió una firma real, pero la casilla que decide sigue sin marcar. El cuarto paso que hizo falta entonces ya no existe —lo cerró `autofirma 1.9.1+encina2` el 2026-08-09—; falta repetir la firma con la secuencia de tres órdenes |
 | Instalación desatendida | Sin abrir |
 | Imagen | Sin abrir |
 
@@ -349,7 +350,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las siete trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las ocho trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

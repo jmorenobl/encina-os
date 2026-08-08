@@ -6,7 +6,7 @@
 lo demás —DNIe, locale, imagen ISO, cualquier herramienta de diagnóstico— queda
 **fuera de alcance** (§8) y no debe implementarse ni prepararse aún.
 
-**El cuarto paquete del producto, `autofirma 1.9.1+encina1`, no se especifica
+**El cuarto paquete del producto, `autofirma 1.9.1+encina2`, no se especifica
 aquí:** vive en `~/Projects/encina-autofirma`, con su propio `MEDICIONES.md`. Es
 un ingrediente con condición de salida (D14), no una línea de trabajo de este
 repositorio.
@@ -68,9 +68,10 @@ ni lee `/etc/firefox/pref/`, así que sobre un sistema con Firefox nativo falla
 
 **Y esa corrección tiene a su vez una corrección, del 2026-08-08.** «Falla más
 que en una Ubuntu de fábrica» era cierto **con el `.deb` oficial de AutoFirma**.
-Encina OS ya no instala ese `.deb`: instala `autofirma 1.9.1+encina1`, que cierra
-B1a, B1b, B2, B4 y B6. Sobre Firefox nativo, y con ese paquete, **la firma sale**
-—medido con certificado real de la FNMT en `valide.redsara.es`, mirado en
+Encina OS ya no instala ese `.deb`: instala `autofirma 1.9.1+encina2` —era
+`+encina1` cuando se midió lo que sigue—, que cierra B1a, B1b, B2, B4 y B6.
+Sobre Firefox nativo, y con ese paquete, **la firma sale** —medido con
+certificado real de la FNMT en `valide.redsara.es`, mirado en
 pantalla (`MEDICIONES.md` §4.9)—. A2 deja de ser «necesaria para fases futuras» y
 pasa a ser **una de las dos piezas del producto de hoy**.
 
@@ -608,19 +609,32 @@ sudo apt update
 # 3. el cambio de Snap a nativo, y el idioma, que ningun Depends: puede declarar
 sudo apt full-upgrade          # el paso 3 NO lo hace 'apt upgrade'
 sudo apt install firefox-l10n-es-es
-# 4. abre Firefox UNA VEZ, cierralo, y reconfigura AutoFirma
-sudo dpkg-reconfigure autofirma
 ```
 
-**El paso 4 se descubrió midiendo, el 2026-08-08, y por eso está aquí y no en la
-cabeza de nadie** (`MEDICIONES.md` §4.12a). El configurador de AutoFirma corre en
-el paso 1, cuando **Firefox nativo todavía no existe** —llega en el paso 3—, así
-que no hay ningún perfil de Mozilla donde instalar la CA de su socket, y sin ella
-el navegador rechaza la conexión y la sede dice «No es posible conectar con
-Autofirma». El propio paquete lo avisa por `term.log` y da esa orden. **Es un
-apaño y se dice que lo es:** el arreglo bueno es un disparador en
-`encina-autofirma` que reejecute su configurador cuando aparezca un perfil, y ese
-trabajo pertenece a aquel repositorio.
+**Hubo un cuarto paso entre el 2026-08-08 y el 2026-08-09, y se ha caído porque
+lo arreglaron donde tocaba.** Era «abre Firefox una vez y `sudo dpkg-reconfigure
+autofirma`», y lo obligaba un defecto real (`MEDICIONES.md` §4.12a): el
+configurador de AutoFirma corre en el paso 1, cuando **Firefox nativo todavía no
+existe** —llega en el paso 3—, así que no hay ningún perfil de Mozilla donde
+instalar la CA de su socket, y sin ella el navegador rechaza la conexión y la
+sede dice «No es posible conectar con Autofirma». Aquí se escribió como lo que
+era, un apaño, y el arreglo bueno se dijo en voz alta: un disparador en
+`encina-autofirma`.
+
+**Eso es exactamente lo que se hizo allí.** `autofirma 1.9.1+encina2` trae dos
+unidades de systemd de usuario que instalan la CA **cuando el perfil aparece**,
+sin que el usuario teclee nada. Medido en aquel repositorio (M14–M18 de su
+`MEDICIONES.md`), y lo que cierra el asunto es M18: sobre un clon virgen de
+`encina-limpia-respaldo`, con esta secuencia de tres órdenes ejecutada tal cual y
+**sin ejecutar `dpkg-reconfigure` ni una vez**, la CA acabó dentro del perfil.
+Con el mismo par de fechas que enunció el defecto, ya unido: la CA se genera a
+las `00:13:10` (paso 1) y entra en el perfil a las `00:16:12`, dos segundos
+después de que Firefox creara su almacén NSS.
+
+**Lo que no se ha cambiado es el aviso.** El `postinst` sigue diciendo que no ha
+encontrado perfil y sigue dando la orden manual, para las máquinas donde el
+mecanismo no pueda actuar. No se ha sustituido un fallo visible por uno
+silencioso.
 
 **Un solo `apt install` no basta, y eso no lo arregla ningún contenido de este
 paquete.** Es lo que hay que corregir de la promesa de E1 (`ENCINA-OS.md` §7):
@@ -658,10 +672,12 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       `./usr/share/doc/encina-meta/`, `changelog.gz` y `copyright`
 - [x] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
       instala los cuatro y sale con código 0.
-      **Los cuatro quedan `install ok installed`.** El de `autofirma` es
-      `autofirma_1.9.1+encina1_all.deb`, bajado del artefacto `autofirma-arm64`
-      de la ejecución 31232027825 de su CI
-      (`sha256 4aa647220eb62cc5b73a257760b44950663c2151f3efc063d81f14ffa92fff3e`)
+      **Los cuatro quedan `install ok installed`.** El de `autofirma` era, el día
+      de esta medición, `autofirma_1.9.1+encina1_all.deb`, bajado del artefacto
+      `autofirma-arm64` de la ejecución 31232027825 de su CI
+      (`sha256 4aa647220eb62cc5b73a257760b44950663c2151f3efc063d81f14ffa92fff3e`).
+      **El paquete de hoy es `1.9.1+encina2`**, y con él se repitió la secuencia
+      entera el 2026-08-09 sobre otro clon virgen (M18 de `encina-autofirma`)
 - [x] **El paso 1 no ha instalado ni tocado Firefox.** `LC_ALL=C apt-cache policy
       firefox` sigue diciendo `Installed: 1:1snap1-0ubuntu5`. *Sano:* esa versión
       con epoch, intacta. *Roto:* si apareciera una versión de Mozilla ya aquí,
@@ -796,23 +812,35 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       esta lista se comprueba sin él.
       **Intentada el 2026-08-08 sobre `encina-firma-efimera`. LA FIRMA SALIÓ
       —«Fichero firmado correctamente», mirado en pantalla, con certificado real
-      de la FNMT— Y AUN ASÍ LA CASILLA NO SE MARCA**, porque la secuencia no
-      bastó. Detalle con salidas en `MEDICIONES.md` §4.12. En corto:
-      *(1)* **El paso 1 instala `autofirma` cuando Firefox nativo aún no existe**
-      —llega en el paso 3— así que su configurador no encuentra ningún perfil de
-      Mozilla y **la CA del socket no se instala en ningún navegador**. La sede
-      responde «No es posible conectar con Autofirma», que apunta al sitio
-      equivocado. El paquete **avisó** en `term.log` y dio la orden exacta
-      (`sudo dpkg-reconfigure autofirma`); `11-meta-instalar.sh` se tragó el
-      aviso porque apt salió con 0. Hasta que `encina-autofirma` traiga un
-      disparador, **la secuencia son cuatro pasos**: tras el paso 3, abrir
-      Firefox una vez y `sudo dpkg-reconfigure autofirma`.
-      *(2)* El diálogo de AutoFirma **no se dibuja** en la VM (medido: 1 solo
-      color en la ventana). Eso no es del producto sino del laboratorio, y su
-      causa **no está establecida**: la hipótesis viva es la tarjeta de vídeo
-      emulada, y el experimento que la cierra no necesita certificado.
+      de la FNMT— Y AUN ASÍ LA CASILLA NO SE MARCÓ**, porque la secuencia no
+      bastó. Detalle con salidas en `MEDICIONES.md` §4.12. Hubo dos desviaciones,
+      y **la primera ya no existe**:
+      *(1)* **RESUELTA el 2026-08-09, y no aquí.** Era que el paso 1 instalaba
+      `autofirma` cuando Firefox nativo aún no existía —llega en el paso 3—, así
+      que su configurador no encontraba ningún perfil de Mozilla y **la CA del
+      socket no se instalaba en ningún navegador**; la sede respondía «No es
+      posible conectar con Autofirma», que apunta al sitio equivocado. Obligaba a
+      un cuarto paso manual. `autofirma 1.9.1+encina2` trae el disparador que
+      aquí se pedía, y **M18 de `encina-autofirma` mide la secuencia de tres
+      órdenes sobre un clon virgen, sin `dpkg-reconfigure` ni una vez, con la CA
+      dentro del perfil al abrir Firefox**. La secuencia de arriba vuelve a ser
+      de tres pasos. *(El otro cabo de aquella tarde también está cosido:
+      `11-meta-instalar.sh` se tragaba el aviso del `postinst` porque apt salía
+      con 0, y desde entonces lo imprime.)*
+      *(2)* El diálogo de AutoFirma **no se dibujaba** en la VM (medido: 1 solo
+      color en la ventana). Eso no es del producto sino del laboratorio, y **su
+      causa sí quedó establecida el mismo 2026-08-08**: la tarjeta de vídeo
+      emulada. Con `virtio-gpu-pci` pinta sin ninguna variable de entorno
+      (`MEDICIONES.md` §4.12b), y las VMs se igualaron.
       La VM se destruyó después, y se comprobó que no queda ninguna copia del
-      `.p12`
+      `.p12`.
+      **LA CASILLA SIGUE SIN MARCAR, y ahora por un solo motivo: el experimento
+      no se ha repetido.** Ya no hay ninguna desviación del producto que lo
+      bloquee. Hace falta otro clon efímero de `encina-limpia-respaldo`, un
+      certificado personal, la secuencia de tres órdenes tal cual, una firma en
+      `valide.redsara.es` mirada en pantalla, y destruir la VM. **No vale
+      `encina-E1-vigilante`**: allí la CA ya está instalada, así que no puede
+      volver a reproducir el caso virgen
 
 **La última casilla es la única que importa de verdad**, y es la única que
 ningún script puede dar por buena. Las otras pueden salir todas verdes con el
@@ -920,8 +948,8 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las siete trampas de
-  `SCRIPTS.md` son siete formas de que esto salga caro, y las siete dan **falsos
+  `scripts/`, para la CI y para la receta de imagen. Las ocho trampas de
+  `SCRIPTS.md` son ocho formas de que esto salga caro, y las ocho dan **falsos
   negativos o comprobaciones que no comprueban**.
 - **No existe ninguna máquina donde la firma funcione, y no va a existir.** La
   VM del primer positivo se destruyó a propósito porque contenía un certificado

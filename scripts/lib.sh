@@ -170,3 +170,80 @@ PY
 # así el flujo de A1 sigue funcionando exactamente igual sin tocar esos tres
 # scripts. Los de A2 (07, 08, 09) pasan su nombre.
 PKG_DIR() { echo "$(raiz_repo)/debian-packages/${1:-encina-branding}"; }
+
+# ------------------------------------------ el vigilante de AutoFirma -------
+#
+# 'autofirma 1.9.1+encina2' trae dos unidades de systemd DE USUARIO que meten
+# la CA de su socket en el perfil de Mozilla cuando el perfil aparece. Antes de
+# eso hacía falta un cuarto paso manual (MEDICIONES.md §4.12a y su enmienda).
+#
+# vigilante_estado imprime uno de cuatro estados, y los cuatro están MEDIDOS
+# por ssh sobre encina-E1-vigilante el 2026-08-09, usuario jorge, UID 501:
+#
+#   estado    cuándo                                    is-active   rc
+#   armado    paquete +encina2, sesión sana             active       0
+#   dormido   unidad presente, pero la sesión se abrió  inactive     3
+#             ANTES de instalar el paquete (encina-autofirma M15, A y B)
+#   ausente   la unidad no está: autofirma es viejo     inactive     4
+#   sin-bus   sin systemd de usuario alcanzable    (a stderr: "Failed
+#             to connect to bus"), salida vacía                      1
+#
+# Decide con DOS señales independientes y NO con el código de retorno: que el
+# fichero de la unidad exista —lo instala el paquete nuevo, y solo él— y que
+# is-active diga literalmente 'active'. Los rc 3 y 4 se midieron y se dejan
+# escritos arriba, pero no entran en la decisión: distinguir «no armada» de
+# «no existe» por un número de retorno es más frágil que mirar el fichero.
+#
+# La ruta sale de una variable para poder sabotearla en las pruebas: apuntarla
+# a algo que no existe es exactamente el caso 'ausente'.
+UNIDAD_VIGILANTE=${UNIDAD_VIGILANTE:-/usr/lib/systemd/user/autofirma-ca-mozilla.path}
+
+vigilante_estado() {
+    [[ -f "$UNIDAD_VIGILANTE" ]]           || { echo ausente; return; }
+    command -v systemctl >/dev/null 2>&1   || { echo sin-bus; return; }
+    local salida rc=0
+    salida=$(systemctl --user is-active autofirma-ca-mozilla.path 2>/dev/null) || rc=$?
+    if [[ "$salida" == "active" ]]; then
+        echo armado
+    elif [[ -z "$salida" ]] && (( rc != 0 )); then
+        echo sin-bus
+    else
+        echo dormido
+    fi
+}
+
+# vigilante_consejo <estado>
+# Escribe, indentado para ir debajo de un [OMIT] o un [AVISO], lo que hay que
+# hacer en ese estado. EL CONSEJO MANUAL NO DESAPARECE: sigue habiendo máquinas
+# con 'autofirma 1.9.1+encina1' o sin systemd de usuario, y en ésas la CA no
+# llega sola. Decirles que basta con abrir Firefox sería mentirles.
+vigilante_consejo() {
+    local manual="             abre Firefox una vez, ciérralo, y ejecuta:
+             ${C_AVI}sudo dpkg-reconfigure autofirma${C_FIN}"
+    case "$1" in
+        armado)
+            echo "         Basta con abrir Firefox una vez: la CA se instala sola en cuanto"
+            echo "         el navegador crea su almacén NSS (encina-autofirma, M16 y M18)."
+            ;;
+        dormido)
+            echo "         El paquete trae el vigilante, pero NO está armado en esta sesión."
+            echo "         Es lo que pasa cuando se instaló con la sesión ya abierta"
+            echo "         (encina-autofirma M15, A y B). Cierra la sesión y vuelve a entrar,"
+            echo "         o hazlo a mano:"
+            echo
+            echo "$manual"
+            ;;
+        ausente)
+            echo "         Esta máquina NO trae el vigilante: su 'autofirma' es anterior a"
+            echo "         1.9.1+encina2, y aquí la CA no se instala sola."
+            echo
+            echo "$manual"
+            ;;
+        sin-bus)
+            echo "         No se ha podido preguntar a systemd de usuario, así que no se"
+            echo "         sabe si el vigilante está armado. Por si acaso, a mano:"
+            echo
+            echo "$manual"
+            ;;
+    esac
+}

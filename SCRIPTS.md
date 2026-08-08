@@ -70,13 +70,38 @@ entera** (`MEDICIONES.md` §4.12a). Dos cosas:
   exacta para arreglarlo**, apt salió con 0, y nadie lo vio. Un aviso que nadie
   ve no es un aviso. Lleva su control: un aviso literal de aquel día contra el
   que se comprueba que el filtro sabe decir que sí.
-- **Y comprueba la CA del socket en el perfil de Firefox, por huella.** Es el
-  paso 4 de la secuencia, y sin él la firma no sale aunque todo lo demás esté en
-  verde. Tres salidas, las tres con su significado escrito: sin perfil todavía
-  (`[OMIT]`, es lo normal en una máquina virgen y explica el paso 4), con perfil
-  y sin CA (`[FALLO]`, es el defecto), y con una CA de apodo correcto pero huella
-  distinta (`[FALLO]`, que es una instalación anterior). Solo usa `certutil -L`,
-  nunca `-A`, por la trampa 7.
+- **Y comprueba la CA del socket en el perfil de Firefox, por huella.** Sin ella
+  la firma no sale aunque todo lo demás esté en verde. Tres salidas, las tres con
+  su significado escrito: sin perfil todavía (`[OMIT]`, es lo normal en una
+  máquina virgen), con perfil y sin CA (`[FALLO]`, es el defecto), y con una CA
+  de apodo correcto pero huella distinta (`[FALLO]`, que es una instalación
+  anterior). Solo usa `certutil -L`, nunca `-A`, por la trampa 7.
+
+**Y esa sección cambió otra vez el 2026-08-09, cuando el defecto se cerró en
+`encina-autofirma`.** Aquello obligaba a un cuarto paso manual, `sudo
+dpkg-reconfigure autofirma`; `autofirma 1.9.1+encina2` trae un vigilante de
+systemd de usuario que instala la CA cuando el perfil aparece, y la secuencia
+volvió a ser de tres órdenes (`MEDICIONES.md` §4.12a, enmienda). **Lo delicado no
+era quitar el consejo manual, era no quitarlo de más:** este script tiene que
+seguir diciendo la verdad sobre una máquina con el paquete viejo o sin systemd de
+usuario, donde la CA no llega sola. Por eso pregunta primero por el vigilante
+(`vigilante_estado` en `lib.sh`) y da el consejo manual solo a quien lo necesita.
+**Los cuatro estados están medidos antes de escribir el mensaje** —por ssh sobre
+`encina-E1-vigilante`, 2026-08-09— y la comprobación sabe dar las cuatro
+respuestas:
+
+| estado | cuándo | `is-active` | rc |
+|---|---|---|---|
+| `armado` | paquete `+encina2`, sesión sana | `active` | 0 |
+| `dormido` | unidad presente, sesión abierta antes de instalar | `inactive` | 3 |
+| `ausente` | la unidad no está: `autofirma` viejo | `inactive` | 4 |
+| `sin-bus` | sin systemd de usuario alcanzable | `Failed to connect to bus` | 1 |
+
+Decide con **dos señales independientes** y no con el código de retorno: que el
+fichero de la unidad exista —lo instala el paquete nuevo, y solo él— y que
+`is-active` diga literalmente `active`. Los rc 3 y 4 se midieron y están escritos
+en `lib.sh`, pero distinguir «no armada» de «no existe» por un número de retorno
+es más frágil que mirar el fichero.
 
 `11` es el que enseña la secuencia. Comprueba lo que debe verse **y lo que no**:
 que el paso 1 no toque Firefox —si lo tocara, alguien ha declarado `firefox` y
@@ -361,3 +386,46 @@ comprueba también el control.**
 rc=255 dejando el directorio intacto—, pero ese rc≠0 parece un fallo del sistema
 y es un «aquí no hay almacén». Cualquier script que recorra perfiles de navegador
 solo usa `-L`, y trata ese error como `[OMIT]`, no como `[FALLO]`.
+
+## Y una octava, que ningún contenedor habría enseñado (2026-08-09)
+
+Salió midiendo el vigilante de `autofirma 1.9.1+encina2` (M18 de
+`encina-autofirma`, y la enmienda de `MEDICIONES.md` §4.12a). Es de la misma
+familia que la 5: **una comprobación que responde lo mismo en un sistema sano y
+en uno roto**, y encima en el sitio donde más caro sale.
+
+**8. En la imagen base de Encina OS, el usuario del escritorio es UID 501.** No
+1000. Comprobado hoy sobre `encina-E1-vigilante`, con el usuario de siempre:
+
+```
+$ id
+uid=501(jorge) gid=1000(jorge) grupos=1000(jorge),4(adm),24(cdrom),27(sudo),...
+```
+
+**Y el detalle que lo hace venenoso: el GID sí es 1000.** Una comprobación que
+filtre por grupo pasa; la misma filtrando por UID salta al usuario. Recorrer las
+sesiones o el `passwd` con `awk '$1 >= 1000'` —que es lo que hace todo el mundo,
+porque es el `UID_MIN` de Debian— **se salta justo al único usuario que importa,
+y en silencio**: no hay error, no hay aviso, simplemente no aparece nadie. En
+`encina-autofirma` costó un `postinst` que decía «queda vigilando» y no vigilaba
+nada, y no lo vio ninguna prueba en contenedor porque `useradd` sin más da 1000.
+
+**En este repositorio, comprobado hoy, no muerde:** los diez `1000` que hay en
+`scripts/` son **prioridades de apt** —`Pin-Priority` en `07`, `apt-cache policy`
+en `08` y `11`—, ninguno es un filtro de usuario, y lo único que discrimina
+usuarios es `lib.sh`: `$EUID -eq 0` para negarse a correr como root, y `id -un`
+para buscar el `gnome-shell` de la sesión. Ninguno de los dos usa el número.
+
+```
+$ grep -rn "1000" scripts/          # las diez, todas de apt
+scripts/07-firefox-construir.sh:210:    if [[ "${PRIO:-0}" -ge 1000 ]]; then
+scripts/08-firefox-instalar.sh:125:  if grep -q "1000" <<<"$MOZ_GEN"; then
+scripts/11-meta-instalar.sh:249:    if grep -qE '(^|[[:space:]])1000([[:space:]]|$)' <<<"$BLOQUE"; then
+    ...
+```
+
+**Se deja escrito para el que venga**, que es lo que hace falta: la receta de
+imagen de E2/E3 y cualquier `postinst` futuro van a querer «recorrer los usuarios
+de verdad», y el número que parece obvio es el equivocado aquí. Lo correcto es
+recorrer a todo el mundo menos `root` y dejar que cada usuario se descarte solo
+por no tener lo que se busca.

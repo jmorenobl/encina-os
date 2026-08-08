@@ -52,7 +52,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
 | §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c** |
 | §4.11 | E1 ejecutado en una VM con escritorio | Sí. Cierra lo que §4.10 dejaba deducido, y tumba el `Recommends: libreoffice-l10n-es` con su motivo escrito |
-| §4.12 | El positivo sobre una máquina virgen instalada por la secuencia | Sí. Las seis barreras cerradas ahí, **y el defecto de orden que deja AutoFirma sin CA en el navegador**. Contiene además la única técnica conocida para mirar la pantalla de una VM sin ojos |
+| §4.12 | El positivo sobre una máquina virgen instalada por la secuencia | Sí. Las seis barreras cerradas ahí, **y el defecto de orden que dejaba AutoFirma sin CA en el navegador — cerrado el 2026-08-09, con la enmienda dentro del propio apartado (a)**. Contiene además la única técnica conocida para mirar la pantalla de una VM sin ojos |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -1321,6 +1321,98 @@ openssl verify -no-CAfile -no-CApath -no-CAstore -CAfile <CA del perfil>  -> OK
 traiga un disparador que reejecute su configurador cuando aparezca un perfil. El
 cuarto es «abre Firefox una vez y `sudo dpkg-reconfigure autofirma`». **El arreglo
 bueno pertenece a `encina-autofirma`, no a este repositorio.**
+
+**ENMIENDA DEL 2026-08-09 A ESTE APARTADO (a): el defecto está cerrado, y la
+secuencia vuelve a ser de tres pasos.** Lo de arriba **no se reescribe**: fue
+correcto el día que se midió, y el registro de por qué la casilla no se marcó
+vale tal cual. Lo que cambia es el mundo, no la medición.
+
+**El arreglo se hizo donde se dijo que pertenecía**, en `encina-autofirma`
+(commits `45ccad6` y `fb5aa9a`). `autofirma 1.9.1+encina2` trae dos unidades de
+systemd **de usuario** —una `.path` que vigila las tres raíces de perfiles de
+Mozilla y un `.service` que llama al ayudante `sincronizar-ca-mozilla.sh`— que
+meten la CA del socket en el perfil **cuando el perfil aparece**, que es minutos
+u horas después de instalar el paquete. Las mediciones son **M14–M18 de
+`~/Projects/encina-autofirma/MEDICIONES.md`**, y ahí está el detalle; lo que
+importa aquí es lo que cierra este apartado, citado de M18:
+
+```
+00:13:10  se genera /usr/share/autofirma/Autofirma_ROOT.cer   (postinst, paso 1)
+00:16:12  el vigilante la mete en el perfil                    (dos segundos
+          despues de que Firefox creara el almacen NSS)
+```
+
+**Es el mismo par de fechas de arriba —12:13:52 y 12:22:19—, ahora unido.** Se
+midió sobre `encina-E1-vigilante`, clon virgen de `encina-limpia-respaldo` con su
+huella de virginidad tomada antes de tocarlo, con la secuencia de `AGENTS.md`
+§6.4 ejecutada **tal cual y sin el cuarto paso**, más abrir Firefox una vez en
+una sesión Wayland de GNOME de verdad. **No se ejecutó `dpkg-reconfigure` ni una
+vez**, y la CA que acabó en el perfil es la del paquete comparada por huella
+(`AF:66:CF:22:…:FD:9A`). Que aquel `[OK]` no venía de un `postinst` reejecutado
+se comprobó en vez de suponerse: el `postinst` corrió **una** sola vez, tres
+minutos antes de que se escribiera el `cert9.db`.
+
+**Tres cosas que esta enmienda NO dice:**
+
+- **No dice que el aviso haya desaparecido.** El `postinst` sigue avisando cuando
+  no encuentra perfil y sigue dando la orden manual, para las máquinas donde el
+  mecanismo no pueda actuar. No se ha cambiado un fallo visible por uno
+  silencioso, y `11-meta-instalar.sh` sigue imprimiendo ese aviso.
+- **No dice que la casilla que decide esté marcada.** Sigue sin marcar: falta
+  repetir el experimento de la firma real, en otro clon efímero. Lo que ha
+  cambiado es que ya no hay ninguna desviación del producto que lo bloquee.
+- **No dice que `encina-E1-vigilante` sirva para volver a comprobarlo.** Esa VM
+  ya tiene la CA dentro, así que no puede reproducir el caso virgen. Para
+  repetirlo hay que clonar otra vez de `encina-limpia-respaldo`.
+
+**Y una trampa nueva salió de allí**, que es de la familia de las de `SCRIPTS.md`
+y está anotada como la número 8: **en la imagen base el usuario del escritorio es
+UID 501**, no 1000.
+
+**Lo que se ha comprobado desde ESTE repositorio, hoy, y no viene citado de
+allí.** Todo lo de arriba es de M18; esto se midió por ssh sobre
+`encina-E1-vigilante` al ponerla al día, y es lo que autoriza a escribir lo que
+`11-meta-instalar.sh` imprime ahora:
+
+```
+$ id
+uid=501(jorge) gid=1000(jorge) grupos=1000(jorge),4(adm),24(cdrom),27(sudo),...
+$ dpkg-query -W autofirma        ->  autofirma  1.9.1+encina2
+$ sudo dmesg | grep '\[drm\] features:'
+[drm] features: -virgl +edid ...      <- '-virgl' = virtio-gpu-pci  (§9)
+$ sha256sum /etc/gdm3/custom.conf
+ceee968ce0212138...d61810af          <- la misma huella de antes del autologin
+$ certutil -L -d sql:~/.config/mozilla/firefox/g9amkmb8.default-release
+SocketAutoFirma    C,,               <- el unico certificado: ningun personal
+$ find ~ -name '*.p12' -o -name '*.pfx' | wc -l   ->  0
+```
+
+Y la sección 6 de `11-meta-instalar.sh`, **extraída del script con `sed` y
+ejecutada tal cual** para no probar una copia divergente:
+
+```
+=== 6. La CA del socket de AutoFirma, en el perfil de Firefox ===
+--- el vigilante de AutoFirma, que es quien instala la CA cuando nace el perfil
+  [OK]    El vigilante está ARMADO: cuando aparezca un perfil, la CA se instala sola
+  [OK]    La CA del socket está en g9amkmb8.default-release, y es la del paquete
+         AF:66:CF:22:71:80:5D:1F:07:49:F7:76:38:0F:09:24:FA:C0:E6:D9:E8:3C:EB:5C:4B:EC:25:03:69:97:FD:9A
+```
+
+Esa huella es la de M18, carácter por carácter. **Y las dos respuestas que el
+consejo nuevo necesitaba saber dar, medidas antes de escribirlo**, con sus
+sabotajes —parar la unidad, y apuntar la ruta de la unidad a algo que no
+existe—; el detalle está en `SCRIPTS.md`, trampa 8 y sección de `11`:
+
+```
+  [OK]    armado  -> armado     (la maquina tal cual)
+  [OK]    dormido -> dormido    (unidad parada: sesion abierta antes de instalar)
+  [OK]    ausente -> ausente    (sin unidad: 'autofirma' anterior a +encina2)
+  [OK]    sin-bus -> sin-bus    (sin systemd de usuario alcanzable)
+```
+
+**Es lo que impide que el arreglo de allí convierta este script en un mentiroso:**
+a una máquina con el paquete viejo le sigue diciendo que tiene que teclear
+`sudo dpkg-reconfigure autofirma`, porque en ésa la CA no llega sola.
 
 **b) La segunda desviación no es del producto: es del laboratorio, y la causa
 está medida. Es la tarjeta de vídeo emulada.** El diálogo de AutoFirma **no se

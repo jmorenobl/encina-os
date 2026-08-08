@@ -353,29 +353,47 @@ else
 fi
 
 # ============================================================================
-titulo "6. EL PASO 4: la CA del socket de AutoFirma, en el perfil de Firefox"
+titulo "6. La CA del socket de AutoFirma, en el perfil de Firefox"
 #
-# Medido el 2026-08-08 (MEDICIONES.md §4.12a): el paso 1 instala autofirma
-# cuando Firefox nativo TODAVIA NO EXISTE —llega en el paso 3—, asi que su
-# configurador no encuentra ningun perfil de Mozilla y la CA de su socket no se
-# instala en ningun navegador. Sin ella el navegador rechaza la conexion wss:// y
-# la sede dice «No es posible conectar con Autofirma», que apunta al sitio
-# equivocado. La firma NO sale, y todo lo demas de este script puede estar verde.
+# POR QUE ESTA SECCION EXISTE. Medido el 2026-08-08 (MEDICIONES.md §4.12a): el
+# paso 1 instala autofirma cuando Firefox nativo TODAVIA NO EXISTE —llega en el
+# paso 3—, asi que su configurador no encontraba ningun perfil de Mozilla y la
+# CA de su socket no se instalaba en ningun navegador. Sin ella el navegador
+# rechaza la conexion wss:// y la sede dice «No es posible conectar con
+# Autofirma», que apunta al sitio equivocado. La firma NO sale, y todo lo demas
+# de este script puede estar verde.
+#
+# Y POR QUE YA NO HABLA DE UN «PASO 4». Cerrado en encina-autofirma (sus
+# mediciones M14-M18, y la enmienda de §4.12a): 'autofirma 1.9.1+encina2' trae
+# dos unidades de systemd de usuario que instalan la CA cuando el perfil
+# aparece, asi que la secuencia vuelve a ser de tres ordenes y no hay nada que
+# teclear. PERO este script tiene que seguir diciendo la verdad sobre una
+# maquina con el paquete VIEJO o sin systemd de usuario, donde la CA no llega
+# sola: por eso pregunta primero por el vigilante y el consejo manual sigue
+# aqui, dado solo a quien lo necesita (lib.sh, vigilante_estado).
 #
 # Se busca por HUELLA y no por nombre: cada reinstalacion genera un par nuevo, y
 # un perfil puede tener una CA vieja con el mismo CN y el mismo apodo (§9).
 PERFILES=$(ls -d "$HOME"/.config/mozilla/firefox/*/ 2>/dev/null | grep -v 'Crash Reports\|Pending Pings\|Profile Groups' || true)
 CA_PKG=/usr/share/autofirma/Autofirma_ROOT.cer
 
+paso "el vigilante de AutoFirma, que es quien instala la CA cuando nace el perfil"
+EST_VIG=$(vigilante_estado)
+case "$EST_VIG" in
+    armado)  ok "El vigilante está ARMADO: cuando aparezca un perfil, la CA se instala sola" ;;
+    dormido) aviso "El vigilante está instalado pero NO armado en esta sesión" ;;
+    ausente) aviso "Esta máquina no trae vigilante: 'autofirma' es anterior a 1.9.1+encina2" ;;
+    sin-bus) aviso "No hay systemd de usuario alcanzable: no se sabe si el vigilante está" ;;
+esac
+
 if [[ -z "$PERFILES" ]]; then
     omitido "No hay ningún perfil de Firefox todavía, así que la CA no puede estar"
-    echo "         Es lo ESPERADO en una máquina virgen, y es el motivo del paso 4:"
+    echo "         Es lo ESPERADO en una máquina virgen: el perfil no existe hasta"
+    echo "         que alguien abre Firefox por primera vez."
+    vigilante_consejo "$EST_VIG"
     echo
-    echo "             abre Firefox una vez, ciérralo, y ejecuta:"
-    echo "             ${C_AVI}sudo dpkg-reconfigure autofirma${C_FIN}"
-    echo
-    echo "         Sin eso la firma no sale. Vuelve a ejecutar este script después"
-    echo "         si quieres la comprobación en verde."
+    echo "         Vuelve a ejecutar este script después si quieres la comprobación"
+    echo "         en verde."
 elif [[ ! -f "$CA_PKG" ]]; then
     fallo "No existe $CA_PKG" "El postinst de autofirma no ha generado su CA."
 else
@@ -405,9 +423,17 @@ validará y la sede culpará a la instalación del cliente. Arréglalo con:
     done
     if (( ! CON_CA )); then
         fallo "Hay perfil de Firefox pero NINGUNO tiene la CA del socket" \
-"Es el defecto medido el 2026-08-08 (MEDICIONES.md §4.12a): el configurador de
-AutoFirma corrió en el paso 1, cuando Firefox nativo aún no existía, así que no
-tenía ningún perfil donde instalarla.
+"vigilante: $EST_VIG
+
+Con el vigilante 'armado' esto NO debería ocurrir: la CA entra a los pocos
+segundos de que Firefox cree su almacén NSS (encina-autofirma, M16 y M18). Si
+es el caso, es un defecto nuevo y hay dónde mirarlo:
+
+    journalctl --user -u autofirma-ca-mozilla.service
+
+Con el vigilante 'ausente' es el defecto de siempre (MEDICIONES.md §4.12a): el
+configurador de AutoFirma corrió en el paso 1, cuando Firefox nativo aún no
+existía, así que no tenía ningún perfil donde instalarla. Ahí el remedio es:
 
     cierra Firefox y ejecuta:  sudo dpkg-reconfigure autofirma
 
