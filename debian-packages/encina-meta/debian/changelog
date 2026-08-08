@@ -1,0 +1,17 @@
+encina-meta (0.1.0) noble; urgency=medium
+
+  * Primera version: metapaquete de Encina OS
+  * No declara firefox ni firefox-l10n-es-es (R10). Los dos viven en el
+    repositorio de Mozilla, que encina-firefox-native configura y que no
+    esta en los indices cuando apt resuelve. Declararlo no falla: lo
+    satisface el deb de transicion al Snap ya instalado. Medido en
+    MEDICIONES.md 4.10e.
+  * La instalacion son TRES ordenes, no una: los cuatro .deb, apt
+    update, y apt full-upgrade mas firefox-l10n-es-es. El paso 3 no lo
+    hace apt upgrade, porque el epoch 1: del deb de transicion convierte
+    el cambio en una desactualizacion formal (MEDICIONES.md 4.10c).
+  * Sin thunderbird-locale-es en Recommends: es un paquete de transicion
+    que arrastra thunderbird, con Pre-Depends: snapd (MEDICIONES.md
+    4.10h).
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 08 Aug 2026 11:40:54 +0200

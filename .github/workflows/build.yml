@@ -25,6 +25,12 @@ jobs:
             script: scripts/03-construir.sh
           - package: encina-firefox-native
             script: scripts/07-firefox-construir.sh
+          # encina-meta entra en la matriz en el MISMO commit que su
+          # debian/changelog, y no antes: 10-meta-construir.sh se detiene sin
+          # construir nada si no lo encuentra, asi que una entrada de matriz sin
+          # changelog pondria la CI roja a sabiendas.
+          - package: encina-meta
+            script: scripts/10-meta-construir.sh
 
     steps:
       - uses: actions/checkout@v4
