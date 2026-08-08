@@ -7,7 +7,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-EUPL--1.2-3A664E" alt="Licencia EUPL-1.2"></a>
   <img src="https://img.shields.io/badge/base-Ubuntu%2024.04%20LTS-A78B75" alt="Base: Ubuntu 24.04 LTS">
   <img src="https://img.shields.io/badge/arquitectura-arm64-A78B75" alt="Arquitectura: arm64">
-  <img src="https://img.shields.io/badge/estado-en%20construcci%C3%B3n-D6BFA0" alt="Estado: en construcción">
+  <img src="https://img.shields.io/badge/estado-a%C3%BAn%20no%20instalable-D6BFA0" alt="Estado: aún no instalable">
 </p>
 
 <p align="center">
@@ -17,52 +17,97 @@
 
 ---
 
-Una distribución de escritorio basada en Ubuntu LTS, pensada para que un usuario
-español la use con la mínima fricción — y en particular **para que la firma
-electrónica con la administración funcione sin que nadie tenga que entender por
-qué no funcionaba**.
+## Qué te aporta
 
-Se construyen paquetes `.deb`; lo que se entrega es Ubuntu LTS con esos paquetes
-aplicados. La base no se remasteriza: se hereda de Ubuntu toda la capa de
-actualizaciones y aplicaciones.
+Firmar electrónicamente con la administración española desde una Ubuntu recién
+instalada **no funciona**. Instalas AutoFirma, el instalador dice «éxito», la
+herramienta de reparación oficial dice que tu sistema está sano, pulsas «Firmar»
+y **no ocurre absolutamente nada**: sin diálogo, sin error, sin una línea en el
+registro del sistema.
 
-**Estado: en construcción, y con el problema principal resuelto y medido.** El
-7 de agosto de 2026 salió la primera firma real de extremo a extremo —certificado
-de la FNMT, sede real, mirada en pantalla—. Lo que falta no es averiguar cómo se
-hace, sino empaquetarlo y entregarlo.
+Encina OS es un escritorio Ubuntu LTS en el que eso funciona desde el primer
+arranque. Sin buscar foros, sin tocar `about:config`, sin entender qué es un
+perfil de Mozilla ni por qué importa que Firefox venga en Snap.
+
+**Se dan seis obstáculos encadenados, cada uno capaz de esconder al siguiente**,
+y están medidos en máquina propia, no citados de nadie. Los cierra el sistema, no
+tú. La [tabla completa está más abajo](#el-problema-que-resuelve).
 
 ---
 
-## Qué es
+## Cómo se usa
 
-- **Una distribución**, no un fork: `ID=ubuntu` intacto, repositorios de Ubuntu
-  intactos, `ubuntu-desktop-minimal` como base.
-- **Cuatro paquetes**, tres en este repositorio y uno en otro.
-- **Reproducible y declarativo.** Todo en git; nada editado a mano dentro de un
-  chroot.
+**Hoy no se puede usar todavía.** No hay imagen publicada, no hay instalador y no
+hay paquetes descargables. El problema principal está resuelto y medido —el 7 de
+agosto de 2026 salió la primera firma real de extremo a extremo, con certificado
+de la FNMT sobre una sede real—, pero lo que hay es la receta, no el producto.
 
-## Qué no es
+### Cómo se espera que se use
 
-- **No es una herramienta que instales sobre tu Ubuntu.** Lo que se entrega es el
-  sistema. Los `.deb` son ingredientes, no producto.
-- **No hay imagen publicada todavía.** Hoy solo existe para arm64, que es lo
-  único que el autor puede probar, y publicar una imagen que casi nadie puede
-  arrancar activa obligaciones de mantenimiento sin dar nada a cambio.
-- **No incluye estética de terceros.** Ni marca de Canonical, ni tipografías
-  propietarias, ni iconos que imiten a otros sistemas.
-- **No pretende ser un proyecto grande.** Es de una sola persona, y crece por
-  incrementos que dejan un sistema usable cada uno.
+Cuando esté, el uso previsto es este y no otro:
 
-## Por qué existe
+1. Descargas una imagen ISO de Encina OS.
+2. La instalas como instalarías Ubuntu.
+3. Entras, abres la sede electrónica, pulsas «Firmar», y firma.
 
-Firmar electrónicamente en una Ubuntu recién instalada **no funciona**, y falla
-de la peor manera posible: en silencio. AutoFirma se instala «con éxito» estando
-roto entero, la herramienta de reparación del propio fabricante declara sano un
-sistema roto, y al pulsar «Firmar» no ocurre absolutamente nada — sin diálogo,
-sin error, sin una línea en el registro del sistema.
+No hay paso 4. **No se instala sobre tu Ubuntu actual**: lo que se entrega es el
+sistema. Los `.deb` de este repositorio son ingredientes del producto, no un
+producto que puedas aplicar a una máquina que ya tienes.
 
-Medido en máquina propia, no citado de nadie: **son seis obstáculos encadenados**,
-cada uno capaz de esconder al siguiente.
+### Qué falta para llegar ahí
+
+| Hito | Qué te daría | Estado |
+|---|---|---|
+| **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Casi.** 10 de 12 casillas |
+| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | Sin abrir |
+| **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
+| **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
+| **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |
+| **E6** — amd64 | **Si tu equipo es Intel o AMD, lo necesitas** | Sin abrir |
+
+Detalle y motivos en [ENCINA-OS.md](ENCINA-OS.md) §6.
+
+**Y una advertencia sobre la arquitectura.** Hoy Encina OS solo existe para
+**arm64**, que es lo único que el autor puede probar. Si tu equipo es un PC
+normal, todavía no hay nada para ti; amd64 llegará cuando haya con qué medirlo.
+
+### Qué sí puedes hacer hoy
+
+Si quieres verlo funcionando, se puede reproducir sobre una **Ubuntu 24.04 arm64
+limpia** —una VM, no tu máquina—, construyendo los paquetes tú mismo:
+
+```
+# 1. los cuatro .deb, con el de autofirma puesto al lado
+sudo apt install ./encina-meta_*.deb ./encina-branding_*.deb \
+                 ./encina-firefox-native_*.deb ./autofirma_*.deb
+# 2. hasta aqui el repositorio de Mozilla existe pero apt no lo ha leido
+sudo apt update
+# 3. el cambio de Snap a nativo, y el idioma, que ningun Depends: puede declarar
+sudo apt full-upgrade          # 'apt upgrade' NO hace este paso
+sudo apt install firefox-l10n-es-es
+# 4. abre Firefox UNA VEZ, cierralo, y reconfigura AutoFirma
+sudo dpkg-reconfigure autofirma
+```
+
+Con la secuencia y las advertencias que van con ella:
+
+- **Son cuatro órdenes y no una**, y eso está medido, no es un descuido: el
+  motivo de cada paso está en [MEDICIONES.md](MEDICIONES.md) §4.10 y §4.12.
+  El paso 4 es un apaño reconocido, y lo que cierra E1 es eliminarlo.
+- **Tres de los cuatro `.deb` se construyen desde este repositorio**, con los
+  scripts de [más abajo](#cómo-construir-y-probar).
+- **El cuarto, `autofirma 1.9.1+encina1`, vive en `encina-autofirma`, que hoy es
+  un repositorio privado.** Se hará público cuando se publique la imagen: hacerlo
+  antes activa obligaciones de mantenimiento hacia un público que ahora mismo es
+  el autor ([ENCINA-OS.md](ENCINA-OS.md), D5). Mientras tanto, esta secuencia no
+  la puede completar alguien de fuera.
+
+---
+
+## El problema que resuelve
+
+Medido en máquina propia: **seis obstáculos encadenados**, cada uno capaz de
+esconder al siguiente.
 
 | # | Obstáculo | Quién lo cierra en Encina OS |
 |---|---|---|
@@ -79,24 +124,6 @@ su propio JavaScript necesita.
 
 Las salidas literales de todas estas mediciones están en
 [MEDICIONES.md](MEDICIONES.md).
-
----
-
-## Estado actual
-
-| Pieza | Estado |
-|---|---|
-| `encina-branding` | **Terminado.** v0.1.6, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
-| `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
-| `autofirma 1.9.1+encina1` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **En curso.** Un solo nombre que declara el conjunto. Escrito y construido; pendiente de verificar en VM. Un nombre no es una sola orden: la instalación son tres órdenes, y el motivo está medido (`MEDICIONES.md` §4.10) |
-| Instalación desatendida | Sin abrir |
-| Imagen | Sin abrir |
-
-**Arquitectura: solo arm64 por ahora.** Es lo único que se puede medir con el
-equipo disponible, y en este proyecto lo que no se mide no se da por bueno. La
-integración continua construye en amd64 porque el runner lo es, pero eso no es
-lo mismo que declararlo probado.
 
 ### El AutoFirma corregido, y por qué es temporal
 
@@ -115,7 +142,54 @@ que pasa el nuestro.
 
 ---
 
+## Estado actual
+
+| Pieza | Estado |
+|---|---|
+| `encina-branding` | **Terminado.** v0.1.7, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
+| `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
+| `autofirma 1.9.1+encina1` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
+| `encina-meta` | **Casi.** v0.1.1, construido y verificado en VM, 10 de 12 casillas. Sobre una máquina virgen salió una firma real, pero la casilla que decide sigue sin marcar: la secuencia necesitó un cuarto paso que no estaba escrito |
+| Instalación desatendida | Sin abrir |
+| Imagen | Sin abrir |
+
+**Arquitectura: solo arm64 por ahora.** Es lo único que se puede medir con el
+equipo disponible, y en este proyecto lo que no se mide no se da por bueno. La
+integración continua construye en amd64 porque el runner lo es, pero eso no es
+lo mismo que declararlo probado.
+
+---
+
+## Qué es, y qué no es
+
+**Qué es:**
+
+- **Una distribución**, no un fork: `ID=ubuntu` intacto, repositorios de Ubuntu
+  intactos, `ubuntu-desktop-minimal` como base.
+- **Cuatro paquetes**, tres en este repositorio y uno en otro. Se construyen
+  `.deb`; lo que se entrega es Ubuntu LTS con esos paquetes aplicados. La base no
+  se remasteriza: se hereda de Ubuntu toda la capa de actualizaciones y
+  aplicaciones.
+- **Reproducible y declarativo.** Todo en git; nada editado a mano dentro de un
+  chroot.
+
+**Qué no es:**
+
+- **No es una herramienta que instales sobre tu Ubuntu.** Lo que se entrega es el
+  sistema. Los `.deb` son ingredientes, no producto.
+- **No hay imagen publicada todavía.** Hoy solo existe para arm64, y publicar una
+  imagen que casi nadie puede arrancar activa obligaciones de mantenimiento sin
+  dar nada a cambio.
+- **No incluye estética de terceros.** Ni marca de Canonical, ni tipografías
+  propietarias, ni iconos que imiten a otros sistemas.
+- **No pretende ser un proyecto grande.** Es de una sola persona, y crece por
+  incrementos que dejan un sistema usable cada uno.
+
+---
+
 ## Cómo construir y probar
+
+Esta sección es para quien quiera trabajar sobre el proyecto, no para usarlo.
 
 ### Entorno
 
@@ -148,7 +222,7 @@ ninguno da nada por bueno sin comprobarlo. Detalle en [SCRIPTS.md](SCRIPTS.md).
 | `08-firefox-instalar.sh` | Instala, `apt update`, anclaje, idioma y Firefox nativo |
 | `09-firefox-verificar.sh` | `full-upgrade` ×2, idempotencia ×5, purga |
 | `10-meta-construir.sh` | Reglas duras de `encina-meta`, `.deb` y `lintian` |
-| `11-meta-instalar.sh` | La secuencia de tres órdenes, comprobada paso a paso |
+| `11-meta-instalar.sh` | La secuencia de órdenes, comprobada paso a paso |
 | `12-meta-verificar.sh` | Idempotencia ×5, purga y `autoremove` |
 | `diario.sh "texto"` | Añade una entrada fechada a `DIARIO.md` y hace commit |
 
@@ -170,7 +244,7 @@ sudo reboot
 ./scripts/09-firefox-verificar.sh    # full-upgrade x2: la prueba del anclaje
 
 ./scripts/10-meta-construir.sh
-./scripts/11-meta-instalar.sh        # las tres ordenes, comprobadas una a una
+./scripts/11-meta-instalar.sh        # las ordenes, comprobadas una a una
 ./scripts/12-meta-verificar.sh
 ```
 
