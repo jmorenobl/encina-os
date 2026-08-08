@@ -1,14 +1,20 @@
 # Encina OS — Instrucciones de implementación para el agente
 
 **Alcance de este documento:** tres paquetes, `encina-branding` (§4),
-`encina-firefox-native` (§5) y `encina-doctor` (§6, fase B1, **abierta el
-2026-08-07**). Todo lo demás (reparar AutoFirma, DNIe, locale, imagen ISO) queda
-**fuera de alcance** y no debe implementarse ni prepararse aún.
+`encina-firefox-native` (§5) y `encina-meta` (§6, incremento E1, **abierto el
+2026-08-08**). Todo lo demás —DNIe, locale, imagen ISO, cualquier herramienta de
+diagnóstico— queda **fuera de alcance** (§8) y no debe implementarse ni
+prepararse aún.
 
-**El alcance de B1 es estrecho a propósito: `encina doctor` diagnostica y no
-repara.** Reparar es B2 y sigue fuera de alcance. **D13 no se toca:** ninguna de
-las dos barreras se arregla desde `encina-firefox-native`, ni desde
-`encina-doctor`, ni desde ningún otro paquete de la Etapa A.
+**El cuarto paquete del producto, `autofirma 1.9.1+encina1`, no se especifica
+aquí:** vive en `~/Projects/encina-autofirma`, con su propio `MEDICIONES.md`. Es
+un ingrediente con condición de salida (D14), no una línea de trabajo de este
+repositorio.
+
+**D13 no se toca:** ninguna barrera de la firma se cierra desde
+`encina-branding`, ni desde `encina-firefox-native`, ni desde `encina-meta`. Se
+cerraron todas a la vez y en el sitio correcto —el paquete de AutoFirma—, que es
+justo lo que D13 pedía.
 
 **Cómo usar este documento:** las reglas de la sección 2 son invariantes. Si una
 tarea parece exigir violar una de ellas, **detente y pregunta** en lugar de
@@ -19,19 +25,27 @@ no declares una tarea completa sin ejecutar esas comprobaciones.
 
 ## 1. Contexto mínimo
 
-Encina OS es un conjunto de paquetes `.deb` sobre Ubuntu LTS. **No es un fork.**
-El producto es la paquetería; la imagen ISO es un envase opcional posterior.
+Encina OS es una distribución de escritorio basada en Ubuntu LTS. **No es un
+fork.** Se construyen `.deb`; **se entrega Ubuntu LTS con esos `.deb` aplicados**
+(D3, reescrita el 2026-08-08). La base no se remasteriza: se hereda de Ubuntu la
+capa de actualizaciones y aplicaciones, que es la razón entera de no partir de
+cero.
 
-Objetivo de estos dos paquetes: identidad visual propia y Firefox instalado de
-forma nativa (no Snap) y en español.
+**El alcance de hoy es pequeño a propósito:** un Encina OS arm64 que funcione en
+las VMs del autor, y a partir de ahí incrementos que dejen un sistema usable cada
+uno (D15). amd64 es un límite de alcance declarado, no deuda (D9).
 
-El motivo técnico de lo segundo, para que se entienda la prioridad: los
+Objetivo de los paquetes de este documento: identidad visual propia, Firefox
+instalado de forma nativa (no Snap) y en español, y un solo nombre que lo instale
+todo.
+
+El motivo técnico del Firefox nativo, para que se entienda la prioridad: los
 navegadores instalados vía Snap o Flatpak aíslan el almacén de certificados NSS
 mediante sandbox, lo que impide el funcionamiento de la firma electrónica
-española. Resolver esto ahora es **condición necesaria** para las fases futuras.
+española.
 
 **Ese último párrafo tenía razón en la conclusión y se equivocaba en el
-mecanismo. Medido el 2026-08-07** (`ENCINA-OS.md` §4.3 y §4.4): el almacén NSS
+mecanismo. Medido el 2026-08-07** (`MEDICIONES.md` §4.3 y §4.4): el almacén NSS
 del Snap **no** es el problema —AutoFirma le instala la CA correcta, con la
 huella del socket vivo, y `openssl verify` la valida—. Lo que el confinamiento
 rompe es que **Firefox dentro del Snap no ve `afirma.desktop` ni
@@ -48,9 +62,18 @@ el obstáculo principal de fases futuras». Es falso, y se comprobó instalando 
 `.deb` oficial de AutoFirma 1.9 en la VM: no lo elimina, **lo desplaza**.
 AutoFirma no reconoce el perfil del Firefox nativo (`~/.config/mozilla/firefox/`)
 ni lee `/etc/firefox/pref/`, así que sobre un sistema con Firefox nativo falla
-*más* que sobre una Ubuntu de fábrica. Salidas literales en `ENCINA-OS.md` §4.1.
-No cambia nada de lo que hay que implementar aquí: AutoFirma sigue fuera de
-alcance (§7).
+*más* que sobre una Ubuntu de fábrica. Salidas literales en `MEDICIONES.md` §4.1.
+
+**Y esa corrección tiene a su vez una corrección, del 2026-08-08.** «Falla más
+que en una Ubuntu de fábrica» era cierto **con el `.deb` oficial de AutoFirma**.
+Encina OS ya no instala ese `.deb`: instala `autofirma 1.9.1+encina1`, que cierra
+B1a, B1b, B2, B4 y B6. Sobre Firefox nativo, y con ese paquete, **la firma sale**
+—medido con certificado real de la FNMT en `valide.redsara.es`, mirado en
+pantalla (`MEDICIONES.md` §4.9)—. A2 deja de ser «necesaria para fases futuras» y
+pasa a ser **una de las dos piezas del producto de hoy**.
+
+No cambia nada de lo que hay que implementar aquí: corregir AutoFirma es trabajo
+de `~/Projects/encina-autofirma`, no de este repositorio (§8).
 
 ---
 
@@ -282,7 +305,7 @@ preferencia de Firefox (D13).**
 Esto no llegará como «voy a implementar AutoFirma» —eso ya lo para §7—. Llegará
 como «añado una preferencia a `encina-firefox-native`», que suena a A2 y no
 dispara ninguna alarma. Es la tentación concreta, y está medida en
-`ENCINA-OS.md` §4.1:
+`MEDICIONES.md` §4.1:
 
 - **Barrera 1.** Firefox de Mozilla no lee `/etc/firefox/pref/`, donde AutoFirma
   deja `Autofirma.js`, así que el esquema `afirma:` no existe para él y AutoFirma
@@ -423,461 +446,139 @@ sudo apt install firefox firefox-l10n-es-es
 
 ---
 
-## 6. Paquete `encina-doctor` (fase B1)
+## 6. Paquete `encina-meta` (incremento E1)
 
-Fase abierta el 2026-08-07. Es el primer paquete de la Etapa B y el único que
-esa etapa tiene abierto.
+Incremento abierto el 2026-08-08. Es el siguiente y el más pequeño del proyecto
+a propósito: desbloquea la entrega, porque un instalador desatendido instala
+**un nombre**, no tres.
+
+**Sustituye a la especificación de `encina-doctor`, suprimida el 2026-08-08.**
+El motivo está en `ENCINA-OS.md` §6.1: `encina doctor` existía para explicar por
+qué el `.deb` oficial de AutoFirma rompía el sistema en silencio, y Encina OS ya
+no instala ese `.deb`. La especificación completa que se descarta sigue en el
+historial de git. Las mediciones que se hicieron para escribirla **no se
+pierden**: están en `MEDICIONES.md` §4.2 y §4.9.
 
 ### 6.1 Qué hace y qué NO hace
 
-**Hace:** una sola cosa. Ejecutar `encina doctor` como usuario normal, sin
-`sudo`, y obtener una lista de obstáculos concretos para la firma electrónica en
-esta máquina, cada uno con la evidencia literal que lo demuestra.
+**Hace una sola cosa:** declarar dependencias. `Architecture: all`, **sin un solo
+fichero propio** fuera de `debian/`.
 
-**No hace, y la lista es tan importante como la anterior:**
+**No hace:**
 
-- **No repara nada.** Ni con `--fix`, ni con `--yes`, ni escondido tras una
-  pregunta. Reparar es B2. Un `encina doctor` que repara no se puede probar, no
-  se puede ejecutar dos veces, y no se puede recomendar a un usuario asustado.
-- **No modifica el sistema.** Ni un fichero, ni un permiso, ni una base de datos
-  NSS. Requisito verificable, no aspiración: ver §6.7. Tiene una trampa concreta
-  y está en §6.4 (C4).
-- **No instala nada**, ni AutoFirma, ni un JRE, ni `libnss3-tools`.
-- **No arranca AutoFirma, ni Firefox, ni abre ningún socket.** Todo el
-  diagnóstico de B1 es estáticamente decidible sobre ficheros en disco. Esto no
-  es una limitación aceptada a regañadientes: es lo que hace que las
-  comprobaciones se puedan probar (§6.5) y lo que permite ejecutarlas por ssh,
-  sin sesión gráfica y sin tocar la pantalla del usuario.
-- **No dice nunca que la firma funcione.** No puede saberlo: no existe ninguna
-  máquina donde se haya visto funcionar (§6.5). Lo más fuerte que tiene derecho
-  a decir es «no he encontrado ninguno de los obstáculos que sé buscar».
-- **No requiere que AutoFirma esté instalado.** En una máquina sin AutoFirma,
-  `encina doctor` sale con código 0 y marca `[OMIT]` con motivo todo lo que
-  dependa de él. No es un fallo: es una máquina distinta.
+- **No lleva configuración.** Ni `gschema.override`, ni dconf, ni ficheros en
+  `/etc`. Si algo hay que configurar, se configura en el paquete al que
+  pertenece. Un metapaquete con contenido es dos paquetes mal separados.
+- **No lleva `postinst` con lógica.** Si hace falta uno, es señal de que una
+  dependencia está mal declarada.
+- **No cierra ninguna barrera de la firma (D13).** La tentación aquí es distinta
+  a la de los otros paquetes y llegará como «ya que `encina-meta` lo instala
+  todo, que deje también el `policies.json`». La respuesta es D13.
 
-### 6.2 Las dos barreras, traducidas a datos que se pueden leer
-
-`ENCINA-OS.md` §4.1 mide dos barreras independientes. Toda la especificación
-existe para detectarlas por separado, porque **arreglar la primera destapa la
-segunda** y un diagnóstico que solo vea una produce una reparación que no repara.
-
-| | Barrera | Enunciado medido | Dato en disco que la decide |
-|---|---|---|---|
-| **B-1** | Firefox no entrega el URI | La build de Mozilla no lee `/etc/firefox/pref/`, donde AutoFirma deja `Autofirma.js`, así que `network.protocol-handler.*.afirma` no existe para él | ¿Está esa preferencia en alguna ruta que **esta** build sí lee? |
-| **B-2** | Firefox no confía en el socket | El socket es TLS: `CN=127.0.0.1` emitido por `CN=Autofirma ROOT`. El navegador tiene que confiar en esa CA | ¿Está esa CA, **por huella**, en el `cert9.db` del perfil que Firefox usa de verdad? |
-
-**La segunda columna de B-2 se puede resolver sin arrancar nada.** Medido el
-2026-08-07 sobre `encina-dev-firefox`: la CA viva está en
-`/usr/lib/Autofirma/Autofirma_ROOT.cer`, y el par de claves del socket en
-`/usr/lib/Autofirma/autofirma.pfx` (contraseña fija `654321`). La hoja del `.pfx`
-valida contra esa CA y no contra ninguna otra:
+### 6.2 Contenido
 
 ```
-$ openssl pkcs12 -in /usr/lib/Autofirma/autofirma.pfx -nokeys -passin pass:654321
-subject=CN = 127.0.0.1     issuer=CN = Autofirma ROOT
-notBefore=Aug  7 08:59:50 2026 GMT
-
-$ openssl verify -CAfile <CA de /usr/lib/Autofirma/Autofirma_ROOT.cer>  <hoja>
-OK
+Package: encina-meta
+Architecture: all
+Depends: encina-branding,
+         encina-firefox-native,
+         autofirma,
+         hunspell-es,
+         language-pack-es,
+         language-pack-gnome-es
+Recommends: libreoffice-l10n-es, hyphen-es, mythes-es, thunderbird-locale-es
 ```
 
-Es decir: el `openssl s_client` contra el socket vivo que hizo §4.1 se puede
-reproducir **estáticamente**, y por tanto se puede convertir en comprobación.
-
-### 6.3 Tres correcciones a §4.1, medidas el 2026-08-07, que cambian la especificación
-
-Se documentan aquí y no solo en `ENCINA-OS.md` porque cada una invalida una
-comprobación que parecía obvia.
-
-**1. El campo mal escrito es `Recomends:`, no `Recoments:`.** `ENCINA-OS.md` §4
-y §4.1 decían lo segundo. Medido:
-
-```
-$ dpkg -s autofirma | grep -iE "recom|depend"
-Depends: libnss3-tools
-Recomends: openjdk-17-jre
-```
-
-Una comprobación escrita contra la cadena documentada no habría disparado nunca.
-**Consecuencia para la especificación:** C2 no busca la errata. Busca la ausencia
-del hecho (§6.4).
-
-**2. AutoFirma sí escribió en un perfil nativo. Escribió en el equivocado.**
-§4.1 punto 4 decía que la CA va al perfil del Snap «y no en el del Firefox
-nativo». Medido, hay tres perfiles y la CA está en dos:
-
-```
-~/.config/mozilla/firefox/cmnc3cx7.default-release   0 certificados   <- el que Firefox usa
-~/.config/mozilla/firefox/ev2eu1nn.default           SocketAutoFirma  C,,
-~/snap/firefox/common/.mozilla/firefox/297le6kh.default   SocketAutoFirma  C,,
-```
-
-`ev2eu1nn.default` tiene cuatro ficheros, ningún `compatibility.ini` y
-`"firstUse": null`: **Firefox no lo ha abierto jamás.** Los dos ficheros de
-control se contradicen, y ese es el fallo exacto:
-
-```
-profiles.ini:  [Profile1] Path=ev2eu1nn.default  Default=1
-installs.ini:  [4F96D1932A9F858E] Default=cmnc3cx7.default-release  Locked=1
-```
-
-AutoFirma cree al primero; Firefox obedece al segundo. **Consecuencia:** «el
-perfil» no existe en singular, y resolverlo por `Default=1` reproduce el bug que
-se está diagnosticando. C3 lo resuelve por evidencia de uso (§6.4).
-
-**3. La CA que hay en los perfiles no es la del socket.** Son certificados
-distintos, los dos llamados `CN=Autofirma ROOT` y los dos con el apodo
-`SocketAutoFirma`:
-
-```
-en los perfiles:            serial -21749C55   notBefore Aug  7 08:58:41
-en disco y en el sistema:   serial -6D0BCF1F   notBefore Aug  7 08:59:50
-sha256 del perfil:  E8:6F:D6:2D:...:86:51:0C:25
-sha256 del disco:   4A:9F:CC:4C:...:85:5A:0B:09
-$ openssl verify -CAfile <CA del perfil> <hoja del socket>
-error 20 at 0 depth lookup: unable to get local issuer certificate
-```
-
-El log del configurador de la última ejecución explica por qué:
-
-```
-No se encuentran fichero de perfil de Mozilla, por lo que no se instalaran certificados
-No se ha detectado un perfil de Mozilla Firefox en el que instalar el certificado
-```
-
-Las CA de los perfiles son residuo de una instalación anterior. **Consecuencia,
-y es la más importante de las tres:** una comprobación que pregunte «¿hay un
-certificado llamado `SocketAutoFirma` en el perfil?» responde **sí** sobre un
-perfil que no puede validar el socket. Es exactamente el modo de fallo que este
-repositorio ya ha pagado dos veces. **C4 compara huellas, nunca nombres.**
-
-### 6.4 Comprobaciones: qué imprime cada una en sano y en roto
-
-**Regla de admisión.** Una comprobación entra en esta tabla solo si se conocen
-sus **dos** salidas. Si no se sabe qué diría en un sistema sano, no se
-especifica: se anota en §6.8 y se mide primero. Tres candidatas obvias están en
-§6.8 justamente por eso.
-
-`M` = las dos salidas están medidas en máquina real. `C` = la salida sana es
-construible con el control descrito en §6.5, y hay que grabarla antes de escribir
-la comprobación.
-
-| # | Pregunta | Cómo se decide | Sano | Roto (medido 2026-08-07) | |
-|---|---|---|---|---|---|
-| C1 | ¿Está AutoFirma instalado? | `dpkg-query -W -f='${Status}' autofirma` | `install ok installed` | rc≠0 → **todo lo demás pasa a `[OMIT]`, no a `[FALLO]`** | M |
-| C2 | ¿Hay un JRE, y AutoFirma lo declara? | Dos líneas distintas. (a) `readlink -f "$(command -v java)"`. (b) `LC_ALL=C apt-cache depends autofirma` | (a) una ruta. (b) un JRE en la lista | (a) `openjdk 17.0.19` → `[OK]`. (b) solo `Depends: libnss3-tools` → `[FALLO]` | M |
-| C3 | ¿Cuál es el perfil que Firefox usa **de verdad**? | Por evidencia de uso, **no** por `Default=1`: existe `compatibility.ini` **y** `times.json` tiene `firstUse` no nulo | exactamente uno por instalación | `cmnc3cx7.default-release` usado; `ev2eu1nn.default` con `firstUse: null` y sin `compatibility.ini` | M |
-| C4 | ¿El perfil de C3 confía en la CA que el socket usará **hoy**? | huella SHA-256 de `/usr/lib/Autofirma/Autofirma_ROOT.cer` **==** huella de algún cert del `cert9.db`. Nunca por apodo | huellas iguales y `openssl verify` de la hoja → `OK`. **Medido en `encina-snap-fabrica`** (`ENCINA-OS.md` §4.3) | perfil activo con 0 certificados → `[FALLO]` | M |
-| C5 | ¿Firefox ve el esquema `afirma:`? | ¿está `network.protocol-handler.external.afirma` en `/usr/lib/firefox/defaults/pref/*.js`, `distribution/policies.json`, `distribution.ini` o el `prefs.js`/`user.js` del perfil de C3? | presente en una de esas | presente **solo** en `/etc/firefox/pref/Autofirma.js`, que esta build no lee → `[FALLO]` | C |
-| C6 | ¿El manejador del sistema está puesto? | `xdg-mime query default x-scheme-handler/afirma`, y que el `.desktop` y su `Exec` existan | un `.desktop` existente | `afirma.desktop` → **`[OK]` hoy** | M |
-| C7 | ¿Hay CA huérfanas de AutoFirma? | certs con `Subject == Issuer == CN=Autofirma ROOT` y huella **distinta** de la de C4 | ninguna | dos, huella `E8:6F:D6:…`, una en un perfil que Firefox nunca abrió | M |
-| C8 | ¿El navegador **ve** el manejador de `afirma:`? | si el perfil de C3 está bajo `~/snap/` o `~/.var/app/`, comprobar que `afirma.desktop` y el binario del `Exec` son visibles **dentro** del confinamiento (`snap run --shell <snap> -c 'ls …'`) | visibles (caso del Firefox nativo: `/usr/share/applications/afirma.desktop` existe y `xdg-mime` lo devuelve) | dentro del Snap solo hay 4 `.desktop` y `afirma.desktop` no está; `/usr/bin/autofirma` tampoco → `[FALLO]` **irreparable desde un `.deb`** | M |
-
-**C6 sale verde, y por eso no se puede omitir.** Un diagnóstico que solo imprima
-fallos borra el dato que separa las dos mitades del problema: el sistema operativo
-entrega el URI y el navegador no. §4.1 tardó una sesión en establecerlo.
-
-**C8 es la única cuyo `[FALLO]` no tiene remedio, y eso cambia lo que doctor
-imprime.** Las demás describen algo reparable en B2. C8 no: si el navegador está
-confinado, ningún paquete puede hacerle visible el manejador. La línea tiene que
-decir **qué hacer**, y lo que hay que hacer es cambiar de navegador —que es
-exactamente lo que instala `encina-firefox-native`—. Es el único sitio de B1
-donde el diagnóstico apunta a una acción del usuario y no a una futura reparación
-automática.
-
-**C4 tiene una trampa de efectos secundarios.** `certutil -A` **crea** el
-`cert9.db` si no existe: así es como `ev2eu1nn.default` acabó con una base de
-datos. `certutil -L` no lo crea — medido sobre un directorio vacío:
-
-```
-$ certutil -L -d "sql:$(mktemp -d)"
-certutil: function failed: SEC_ERROR_BAD_DATABASE
-rc=255                      # y el directorio sigue vacío
-```
-
-Dos requisitos salen de ahí: **doctor solo usa `-L`**, y **`SEC_ERROR_BAD_DATABASE`
-con rc=255 significa «este perfil no tiene almacén», que es `[OMIT]`, no
-`[FALLO]`.** De regalo, esto explica el `SEC_ERROR_BAD_DATABASE` que §4.1 vio
-salir del `prerm` de AutoFirma: su desinstalador apunta `certutil` a un perfil sin
-base de datos.
-
-### 6.5 Cómo se valida que una comprobación sirve
-
-Las comprobaciones de `scripts/` se validaron **saboteando** un paquete: se coge
-algo sano, se rompe, y se mira que la comprobación se ponga roja. Aquí no se
-puede: **no existe ninguna máquina donde AutoFirma funcione**, así que no hay
-caso positivo contra el que contrastar.
-
-**La premisa es cierta, pero solo para una pregunta que doctor no hace.** No
-existe caso positivo para *«¿puede firmar esta máquina?»*. Doctor no pregunta
-eso: pregunta siete cosas locales e inspeccionables, y **cada una de las siete
-sí tiene positivo**. Tres mecanismos, por orden de preferencia.
-
-**(a) Positivo por construcción — reparar un eslabón, en la máquina rota, y
-deshacerlo.** El sabotaje al revés. Se coge lo roto, se repara exactamente un
-eslabón con una orden de usar y tirar —que **no** es el remedio que se
-publicará—, se mira que esa comprobación y **solo** esa se ponga verde, y se
-deshace. Para C4:
-
-```
-certutil -L -d sql:$PERFIL_ACTIVO                     # rojo: 0 certificados
-certutil -A -d sql:$PERFIL_ACTIVO -n SocketAutoFirma -t "C,," \
-         -i /usr/lib/Autofirma/Autofirma_ROOT.cer
-certutil -L -d sql:$PERFIL_ACTIVO                     # verde
-certutil -D -d sql:$PERFIL_ACTIVO -n SocketAutoFirma  # rojo otra vez
-```
-
-Esto no es implementar B2: son tres órdenes en una VM de pruebas, no código, no
-paquete, no gancho. **La condición de «y solo esa» es la mitad del valor:** si al
-poner la CA se mueve alguna otra línea, las comprobaciones están acopladas y una
-de las dos no mide lo que dice.
-
-**(b) Positivo por contraste — apuntar la misma comprobación a un hecho hermano
-que hoy sí está sano.** Para cuando construir el positivo es caro o destructivo.
-Dos casos reales:
-
-- **C5.** La pregunta es «¿ve Firefox esta preferencia?». El positivo no necesita
-  AutoFirma: `distribution.ini` contiene hoy `intl.locale.requested` y
-  `browser.gnome-search-provider.enabled` en una ruta que Firefox **sí** lee. Si
-  el lector de preferencias de doctor no encuentra esas dos, el roto es doctor.
-- **C6.** §4.1 ya midió que el manejador del sistema funciona
-  (`xdg-open afirma://…` arranca AutoFirma y se pone a escuchar). Hay positivo
-  vivo para la mitad de sistema operativo en la misma máquina donde la mitad de
-  navegador está roja.
-
-**(c) Positivo por cálculo — cuando el hecho es criptográfico, las dos salidas se
-obtienen sin tocar nada.** Ya medido, con cero efectos secundarios:
-
-```
-hoja = openssl pkcs12 -in /usr/lib/Autofirma/autofirma.pfx -nokeys -passin pass:654321
-openssl verify -CAfile <CA viva del disco>     <hoja>   ->  OK
-openssl verify -CAfile <CA huérfana del perfil> <hoja>   ->  error 20
-```
-
-Verde y rojo, los dos, en la máquina rota, sin instalar nada y sin modificar
-nada.
-
-**Aviso sobre el control negativo, y costó tres comandos descubrirlo.** El
-negativo obvio —verificar sin almacén de confianza— **no es negativo**:
-
-```
-$ openssl verify -no-CAfile -no-CApath <hoja>
-OK                                    # !!
-$ openssl verify -no-CAfile -no-CApath -no-CAstore <hoja>
-error 20 at 0 depth lookup: unable to get local issuer certificate
-```
-
-OpenSSL 3.x tiene un tercer origen de confianza, `-CAstore`, activo por defecto y
-que lee `/etc/ssl/certs` — donde el `postinst` de AutoFirma dejó su CA. El
-control negativo pasaba por la puerta de atrás. **La moraleja no es sobre
-`openssl`:** un control negativo también hay que comprobarlo, y el negativo bueno
-aquí es el de (c) —una CA *equivocada*—, que falla por el motivo correcto.
-
-**La puerta dura que sale de todo esto.** Ninguna comprobación se publica sin un
-**par de salidas literales grabadas, una verde y una roja, producidas las dos en
-máquina real**, junto con la orden exacta que provocó cada estado. Se guardan en
-`debian-packages/encina-doctor/pruebas/<id>.md`. Si el par verde no se puede
-producir, la comprobación **no se publica**: no se ha medido nada, se ha escrito
-una afirmación. Es la generalización literal de la moraleja de `SCRIPTS.md`:
-*cuando una dé `[OK]`, comprueba que habría dado `[FALLO]` de haber estado mal.*
-
-**Y la consecuencia sobre lo que doctor tiene derecho a decir.** Como el positivo
-de extremo a extremo genuinamente no existe, **doctor no imprime nunca una línea
-que signifique «puedes firmar»**. Eso no es prudencia: es que la afirmación no
-está respaldada por ninguna medición de nadie.
-
-### 6.6 Qué imprime, y cómo se distingue «no lo he comprobado»
-
-**Se reutiliza el vocabulario de `SCRIPTS.md`**, sin inventar uno nuevo:
-
-```
-[OK]     comprobado y correcto
-[FALLO]  comprobado e incorrecto, con la salida literal
-[AVISO]  algo que mirar, no bloquea
-[OMIT]   no se ha comprobado (no lo des por bueno)
-[OJOS]   solo lo puedes verificar tú mirando la pantalla
-```
-
-**El motivo de reutilizarlo** es que los cinco estados ya cubren exactamente lo
-que hace falta —`[OMIT]` incluido, que es la distinción cara— y ya están
-validados contra fallos reales en dos fases. Un segundo vocabulario en el mismo
-repositorio sería un impuesto de traducción a cambio de nada. Con **tres
-enmiendas**, que sí son necesarias porque el lector cambia: los scripts los lee
-el desarrollador, `encina doctor` lo lee un usuario asustado.
-
-1. **`[OMIT]` obliga a dar motivo.** `[OMIT] <qué> — <por qué no se pudo>`. Un
-   `[OMIT]` sin motivo es un fallo de la herramienta, no del sistema, y la
-   definición de terminado lo trata como tal. «No comprobado» sin porqué es lo
-   que ha salido caro en este repositorio.
-2. **`[OJOS]` queda prohibido en B1.** Una comprobación que exige mirar la
-   pantalla no se puede probar en regresión, y quien ejecuta doctor no sabe qué
-   es `about:support`. Es un `[OMIT]` disfrazado de comprobación. La prohibición
-   es sostenible porque las siete comprobaciones de §6.4 son estáticamente
-   decidibles. Si alguna vez hace falta un `[OJOS]`, es señal de que la
-   comprobación está mal planteada.
-3. **Nada se calla.** Lo no comprobado se imprime como `[OMIT]`, no se omite del
-   informe. El silencio se lee como «bien».
-
-**El formato.** Cada línea lleva veredicto, qué se preguntó y —si no es `[OK]`—
-la evidencia literal y qué significa para el usuario:
-
-```
-encina doctor 0.1.0
-encina-dev · Ubuntu 24.04.4 LTS · aarch64 · usuario jorge · 2026-08-07 19:14
-
-[OK]    Manejador del sistema para afirma:
-        xdg-mime → afirma.desktop → /usr/bin/autofirma
-[FALLO] Firefox no ve el esquema afirma:
-        la preferencia solo está en /etc/firefox/pref/Autofirma.js
-        y esta compilación de Firefox no lee ese directorio
-        comprobado en: /usr/lib/firefox/defaults/pref/*.js, distribution.ini,
-                       distribution/policies.json, prefs.js y user.js del perfil
-        qué significa: al pulsar «Firmar», AutoFirma no llega a arrancar
-[FALLO] El perfil activo no confía en la CA del socket de AutoFirma
-        perfil activo: ~/.config/mozilla/firefox/cmnc3cx7.default-release
-        CA que el socket usará: SHA256 4A:9F:CC:…:0B:09
-        en el perfil: ningún certificado
-[AVISO] Dos CA huérfanas de una instalación anterior (SHA256 E8:6F:D6:…:0C:25)
-        ~/.config/mozilla/firefox/ev2eu1nn.default  (Firefox nunca lo ha abierto)
-        ~/snap/firefox/common/.mozilla/firefox/297le6kh.default
-[OMIT]  Chromium — no instalado, no comprobado
-[OMIT]  Firefox en Flatpak — no instalado, no comprobado
-
-2 obstáculos encontrados · 3 comprobaciones en verde · 2 sin comprobar
-encina doctor no repara nada, y no puede afirmar que la firma funcione:
-solo que no ha encontrado ninguno de los obstáculos que sabe buscar.
-```
-
-**La distinción «no lo he comprobado» / «lo he comprobado y está bien» no se
-confía a una etiqueta: se confía a que las cuentas cuadren.** El resumen imprime
-tres números y su suma tiene que ser igual al número de comprobaciones
-declaradas. Una comprobación que se salta sin emitir línea rompe la suma y hace
-que doctor salga con error propio. Una etiqueta se puede leer por encima; una
-resta que no cuadra, no.
-
-**Código de salida:** 0 si no hay ningún `[FALLO]`; distinto de 0 si hay alguno.
-`[OMIT]` y `[AVISO]` no cambian el código, pero sí los números del resumen.
-
-**`--json`** produce el mismo contenido en una estructura estable, con la huella,
-la ruta y el estado de cada comprobación. Es el contrato con B2 —que consumirá
-esta salida en lugar de rediagnosticar— y lo que hace que un informe de usuario
-sea pegable. La forma humana y la JSON salen de la misma estructura: dos
-generadores independientes se desincronizarían.
-
-### 6.7 Definición de terminado
-
-Ejecutar en VM. La primera casilla es la que decide si la fase vale.
-
-- [ ] **Cada comprobación tiene su par grabado en
-      `debian-packages/encina-doctor/pruebas/<id>.md`:** salida verde, salida
-      roja, y la orden exacta que produjo cada estado. **Una comprobación sin par
-      verde no se publica** (§6.5)
-- [ ] **La prueba de la aguja, para C4:** tras `certutil -A` de la CA viva en el
-      perfil activo, C4 pasa a verde y **ninguna otra línea del informe cambia**;
-      tras `certutil -D`, vuelve a rojo. Las tres salidas, grabadas
-- [ ] **La prueba del perfil, para C3:** con `Default=1` invertido a mano en
-      `profiles.ini`, doctor **sigue eligiendo** el perfil que señala
-      `compatibility.ini`. Si cambia de perfil, reproduce el bug de AutoFirma
-- [ ] Sobre `encina-autofirma-rota`: imprime los dos `[FALLO]` de §6.4 y **ningún
-      otro**, y sale con código ≠ 0
-- [ ] Sobre `encina-A2-verificada` (sin AutoFirma): sale con **código 0**, todo lo
-      dependiente de AutoFirma en `[OMIT]` **con motivo**, y **ninguna línea que
-      signifique que la firma funciona**
-- [ ] **No modifica nada.** `find $HOME/.config/mozilla $HOME/snap/firefox /usr/lib/Autofirma -newermt <t0>` está vacío tras ejecutarlo. Se comprueba también sobre un perfil **sin** `cert9.db`, que es donde `certutil` muerde
-- [ ] Dos ejecuciones seguidas dan salida idéntica salvo la marca de tiempo (R9)
-- [ ] La suma del resumen es igual al número de comprobaciones declaradas. Se
-      comprueba forzando el salto de una: doctor debe salir con error propio
-- [ ] `LANG=es_ES.UTF-8` y `LANG=C` producen el **mismo diagnóstico**. Es la
-      trampa 2 de `SCRIPTS.md`: todo lo que consulte a apt o dpkg lleva `LC_ALL=C`
-- [ ] Se ejecuta **sin `sudo`** y sin sesión gráfica (por ssh). Lo que necesite
-      privilegios sale `[OMIT] requiere privilegios`, nunca un error
-- [ ] Con el usuario `prueba` —que ya existe en la VM de A1— el diagnóstico es
-      independiente del de `jorge`: los perfiles son por usuario
-- [ ] `lintian` sin errores, y una entrada de matriz nueva en `build.yml`
-- [ ] `encina doctor --json | python3 -m json.tool` no falla, y contiene los
-      mismos veredictos que la salida humana
-
-### 6.8 Lo que falta medir antes de escribir código
-
-Ninguna de estas se da por buena, y las tres primeras bloquean su comprobación.
-
-- **La salida sana de C5.** Es la única que queda marcada `C` en §6.4. **C4 ya no
-  lo está:** su positivo real se midió el 2026-08-07 en `encina-snap-fabrica`, una
-  Ubuntu de fábrica donde AutoFirma instala la CA correcta en el perfil correcto
-  (`ENCINA-OS.md` §4.3). Esa VM es el caso positivo de C4 y hay que conservarla.
-- **Que Firefox lea de verdad `/usr/lib/firefox/defaults/pref/`.** Está deducido
-  de cómo se construye el paquete de Mozilla, **no medido**. §4.1 midió lo
-  contrario —que **no** lee `/etc/firefox/pref/`— sobre un Firefox vivo, y esa
-  medición no se traslada. Mientras no se mida, C5 puede dar `[FALLO]` con
-  fundamento pero **no puede dar `[OK]`**. §4.3 aporta un dato estático a favor
-  (`libxul.so` del Snap tiene **cero** apariciones de `etc/firefox`, y sí
-  `defaults/pref/*.js` y `distribution.ini`), pero es una lectura del binario, no
-  una observación en ejecución.
-- **La firma real de extremo a extremo sobre el Snap.** §4.3 midió las dos
-  barreras por separado y **no** llegó a firmar: hace falta sede y pantalla. La
-  predicción es que falla por la barrera 1, igual que §4.1. Predicción, no
-  medición.
-- **Que `installs.ini` gane a `Default=1` de `profiles.ini`.** C3 no depende de
-  ello —decide por evidencia de uso, que es un hecho observable— pero el informe
-  no debe **explicar** el fallo con una regla que nadie ha comprobado.
-- **El aislamiento NSS del Snap** (§1). Afirmado y nunca medido, y lo medido lo
-  matiza.
-- **El desinstalador vacío** (`/usr/lib/Autofirma/uninstall.sh`, 0 bytes) y el
-  **log del configurador**. Los dos son datos buenos y ninguno tiene salida sana
-  conocida, así que **no son comprobaciones**: como mucho `[AVISO]` informativo.
-  El log vive además en `/var/tmp` y es de root: refleja la última ejecución de
-  *cualquiera*, no la del usuario que ejecuta doctor.
-- **Chrome y Chromium.** No instalados en ninguna VM. Hoy son `[OMIT]` honrados.
-
-### 6.9 Lenguaje y empaquetado
-
-**Python 3, en un `.deb` propio llamado `encina-doctor`, `Architecture: all`.**
-
-**Por qué no bash, que es lo que hay hoy.** Las comprobaciones de `scripts/` son
-«ejecuta una orden y busca una cadena». Estas no: hay que leer dos ficheros INI
-con reglas de precedencia entre ellos (`profiles.ini` / `installs.ini`), leer
-JSON (`times.json`), abrir almacenes NSS, comparar huellas X.509 y emitir JSON.
-En bash todo eso es volver a texto y volver a analizarlo — y **tres de las cuatro
-trampas de `SCRIPTS.md` son trampas de procesar texto en bash**: el SIGPIPE de
-`grep -q`, la salida de apt traducida, y el `grep` que casa con los comentarios.
-A eso se suma la de esta sesión: `grep -i afirma` **no** casa con
-`SocketAutoFirma`, porque la subcadena es `oFirma`. Elegir bash aquí es elegir
-repetir ese riesgo sobre un problema más difícil.
-
-**Por qué no Rust ni Go.** Producen binarios por arquitectura: se pierde
-`Architecture: all`, se mete una cadena de compilación en la CI y aparece el eje
-arm64/amd64 que D9 ya señala como delicado. Para una herramienta cuyo trabajo
-entero es leer ficheros, es coste sin contrapartida.
-
-**Por qué Python 3 y no otra cosa.** No añade tiempo de ejecución nuevo. Medido
-en la VM:
-
-```
-$ python3 -VV
-Python 3.12.3
-$ python3 -c "import cryptography, configparser, json, sqlite3"   # sin error
-$ dpkg -l python3-cryptography libnss3-tools | grep ^ii
-ii  python3-cryptography  41.0.7-4ubuntu0.4
-ii  libnss3-tools         2:3.98-1ubuntu0.2
-```
-
-`Depends: python3 (>= 3.10), python3-cryptography, libnss3-tools`. **No
-`Depends: autofirma`**: doctor tiene que arrancar y decir algo útil en una
-máquina donde AutoFirma no está (§6.1). `libnss3-tools` sí, porque `certutil` es
-la única vía a `cert9.db` que no implica reimplementar NSS.
-
-**Dónde vive el binario:** `/usr/bin/encina`, con `doctor` como subcomando. El
-nombre de la orden es `encina doctor` desde el primer día, aunque hoy solo haya
-un subcomando, porque B2 añadirá `encina configure` y renombrar una orden que el
-usuario ya ha escrito es peor que reservar el hueco.
-
-**Lo que este paquete no puede contener, y hay que decirlo aquí porque es donde
-llegará la tentación:** ningún fichero de preferencias de Firefox, ningún
-`policies.json`, ningún certificado. **D13 cubre a `encina-doctor` igual que a
-`encina-firefox-native`.** La barrera 1 cabría en este paquete tan fácilmente
-como en aquel, y cerrarla sola sigue siendo peor que no cerrar ninguna, por el
-mismo motivo: cambia un fallo con síntoma por uno sin él. Si una tarea pide
-añadir aquí un remedio, **detente y remite a D13**.
+**El bloque de l10n es el residuo de D12**, y su motivo está medido en
+`MEDICIONES.md` §A3: Ubuntu cubre el idioma del sistema, pero **las
+aplicaciones instaladas después no reciben su l10n española** —no hay hook de
+apt ni disparador de dpkg que reejecute `check-language-support`—. Verificado
+con `apt-get -s install libreoffice-writer`, que no arrastra
+`libreoffice-l10n-es`.
+
+`libreoffice-l10n-es` va en `Recommends:` y no en `Depends:` porque depende de
+`libreoffice-common`: en `Depends:` obligaría a instalar LibreOffice entero.
+**Si algún día Encina OS trae LibreOffice de serie (E4), esa línea se mueve.**
+
+### 6.3 Las tres trampas de este paquete
+
+**1. R10, y es la que puede pararlo.** `encina-firefox-native` **configura** el
+repositorio de Mozilla. `encina-meta` no puede depender —ni directa ni
+transitivamente— de ningún paquete que solo exista en ese repositorio, o se crea
+una dependencia circular de repositorio: apt necesitaría el paquete para
+configurar el repo del que saldría el paquete.
+
+En particular: **`encina-meta` NO declara `Depends: firefox`**. El Firefox
+nativo llega porque `encina-firefox-native` deja el repositorio y el anclaje
+puestos, no porque nadie lo declare. Si al construirlo aparece la necesidad de
+declararlo, es el criterio de parada de E1 (`ENCINA-OS.md` §10): significa que
+`encina-firefox-native` hace dos cosas y hay que partirlo antes de seguir.
+
+**2. `autofirma` no está en ningún repositorio.** Hoy es un `.deb` que se
+construye en `~/Projects/encina-autofirma`. Un `Depends: autofirma` es
+insatisfacible hasta que exista el repo local de E2. Es correcto declararlo
+—describe la verdad del producto— pero **la instalación de E1 se prueba con el
+`.deb` puesto a mano al lado**, y eso hay que decirlo en la definición de
+terminado en vez de descubrirlo.
+
+**3. `Depends:` sin versión.** No fijar versiones mínimas de los paquetes de
+Encina mientras los tres se construyan juntos: un `>=` obliga a subir la versión
+del metapaquete cada vez que cambia cualquiera de los otros, y no compra nada
+que la CI no dé ya.
+
+### 6.4 Definición de terminado
+
+Ejecutar en VM, sobre una Ubuntu 24.04 arm64 limpia clonada de
+`encina-limpia-respaldo`.
+
+- [ ] `lintian` sin errores. Se esperan avisos de metapaquete vacío; se
+      documentan en `debian/encina-meta.lintian-overrides` **con el motivo
+      escrito**, nunca con un override a secas
+- [ ] El paquete **no instala ni un fichero** fuera de `/usr/share/doc/`.
+      `dpkg -L encina-meta` lo demuestra
+- [ ] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
+      instala los cuatro y sale con código 0
+- [ ] Tras instalar: `check-language-support -l es` sigue saliendo vacío
+- [ ] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
+      idéntico
+- [ ] `apt purge encina-meta` **no** desinstala los otros tres —es lo correcto
+      para un metapaquete— y `apt autoremove` sí los propone. Comprobar las dos
+      cosas y dejar la salida escrita
+- [ ] Una entrada de matriz nueva en `build.yml`, verde
+- [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con
+      `encina-meta` instalado y **nada tocado a mano**, sale una firma en
+      `valide.redsara.es` con certificado real. Mirada en pantalla
+
+**La última casilla es la única que importa de verdad**, y es la única que
+ningún script puede dar por buena. Las otras siete pueden salir todas verdes con
+el producto sin funcionar: ya pasó en A2, donde con siete comprobaciones
+automáticas en verde el icono seguía abriendo el Snap.
+
+**La sede tiene que ser `valide.redsara.es`.** `sededgsfp.gob.es` **no puede dar
+un positivo** en Firefox de escritorio: su propia Content-Security-Policy bloquea
+el iframe que el JavaScript de AutoFirma necesita. Está medido en
+`MEDICIONES.md` §4.9b, y tres pruebas de firma de este proyecto se hicieron allí
+sin saberlo.
+
+---
+
+## 6bis. La entrega (incrementos E2 y E3)
+
+Sin abrir. Se especifica cuando E1 esté terminado. Lo que ya está decidido y no
+hay que volver a discutir:
+
+- **Repo local sin firmar**, generado en la propia construcción con
+  `dpkg-scanpackages` y consumido con `[trusted=yes]`. Ejercita el mecanismo
+  real —repo más metapaquete en el seed— sin gestión de claves. **La receta que
+  se escriba así es la definitiva** (`ENCINA-OS.md` §8).
+- **El Snap de Firefox se quita en la receta de imagen, no desde un paquete**
+  (R4, D11). Ahí sí está permitido, y cierra dos barreras de golpe: B3, que
+  **ningún `.deb` puede tocar**, y B4, que se cierra sola al desaparecer el
+  perfil del Snap (medido con control en `encina-autofirma/MEDICIONES.md` M6).
+- **Antes de escribir el seed de verdad, la pregunta de A3:** ¿qué comando
+  demuestra que esto es viable? Un `autoinstall.yaml` mínimo que instale
+  desatendido y ejecute una `late-command` en la ISO oficial de Ubuntu Desktop
+  24.04 arm64. Media tarde, y decide la forma de E2 entera.
 
 ---
 
@@ -903,17 +604,20 @@ Crear `.github/workflows/build.yml`:
 
 ## 8. Fuera de alcance — no implementar
 
-- **Reparar** AutoFirma: `encina configure`, `autofirma-fix`, cualquier fichero
-  de preferencias de Firefox, cualquier `policies.json`, cualquier certificado
-  instalado por un paquete. Eso es B2 y **no está abierto**. **Esto incluye
-  hacerlo desde `encina-firefox-native` y desde `encina-doctor` (D13).** Una de
-  las dos barreras medidas cabría en cualquiera de los dos y pasaría lintian;
-  cerrarla sola deja el sistema sin firmar y sin el aviso que hoy da. Detalle en
-  §5.1, §6.9 y en `ENCINA-OS.md` §4.1
-- **Diagnosticar** AutoFirma **sí está en alcance**, y solo eso: es §6, la fase
-  B1, abierta el 2026-08-07. `encina doctor` lee y no escribe
-- Certificados FNMT, DNIe, `opensc`, PKCS#11 como funcionalidad. Leer un almacén
-  NSS para diagnosticarlo (§6) no es implementar PKCS#11
+- **Tocar la firma electrónica desde un paquete de Encina**: ficheros de
+  preferencias de Firefox, `policies.json`, certificados instalados por un
+  paquete. **D13, y cubre a los tres paquetes de este documento.** Cualquiera de
+  ellos podría cerrar una barrera suelta y pasaría `lintian`; cerrarla sola deja
+  el sistema sin firmar y **sin el aviso que hoy da**. Lo que hay que corregir de
+  AutoFirma se corrige en `~/Projects/encina-autofirma`, que es su sitio
+- **`encina-doctor` y cualquier herramienta de diagnóstico. Suprimido el
+  2026-08-08** tras especificarlo entero y no escribir una línea. El motivo, en
+  `ENCINA-OS.md` §6.1: existía para explicar por qué el `.deb` oficial rompía el
+  sistema en silencio, y Encina OS ya no instala ese `.deb`. **Si esta tarea
+  reaparece en un encargo, no la implementes:** lo que sobrevive es la
+  verificación de la construcción en CI, y su código ya existe
+  (`verificar-deb.sh`)
+- Certificados FNMT, DNIe, `opensc`, PKCS#11 como funcionalidad
 - Paquete `encina-locale-es`. **Suprimido definitivamente el 2026-08-07 (D12).**
   No es «todavía no»: es que no existe nada que empaquetar.
   `check-language-support -l es` devuelve vacío en una Ubuntu 24.04 instalada en
@@ -922,11 +626,17 @@ Crear `.github/workflows/build.yml`:
   después del sistema— son tres `Depends:` de `encina-meta`, no un paquete.
   Además, tocar `/etc/default/keyboard`, `/etc/locale.gen` o `/etc/default/locale`
   violaría R5: no son conffiles de nadie, los genera debconf. Salidas literales
-  en `ENCINA-OS.md` §6.1. **Si esta tarea reaparece en un encargo, no la
+  en `MEDICIONES.md` §A3. **Si esta tarea reaparece en un encargo, no la
   implementes: remite a D12.**
-- `encina-keyring`, `encina-meta`, repositorio APT propio, `aptly`
+- `encina-keyring`, repositorio APT **firmado**, `aptly`. El repo **local sin
+  firmar** de E2 sí está en alcance cuando se abra E2, y puede que el firmado no
+  haga falta nunca (`ENCINA-OS.md` §8)
 - Modificación de `/etc/os-release` (requiere `dpkg-divert`; paquete separado futuro)
-- Construcción de imagen ISO, `live-build`, `debos`, Cubic
+- Construcción de imagen: `live-build`, `debos`, Cubic. **El `autoinstall.yaml`
+  de E2 y el reempaquetado de la ISO oficial de E3 no son esto**, pero tampoco
+  están abiertos todavía
+- amd64 (D9). Se construye en CI porque el runner es amd64, pero **no se declara
+  probado**: no hay máquina donde medirlo
 - Temas de GTK o de iconos, incluidos los de estética macOS
 - Cualquier interfaz gráfica
 
@@ -944,5 +654,13 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
   `postinst` es aceptable solo donde el fichero pertenece a otro paquete (R5).
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
-  dos, no la escribas: mídela primero, o anótala en §6.8. Vale para `scripts/` y
-  vale para `encina doctor`.
+  dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
+  `scripts/`, para la CI y para la receta de imagen. Las siete trampas de
+  `SCRIPTS.md` son siete formas de que esto salga caro, y las siete dan **falsos
+  negativos o comprobaciones que no comprueban**.
+- **Ahora existe un estado bueno conocido**, que antes no había: la VM
+  `encina-autofirma-firma`, donde salió una firma real. Cuando dudes de si una
+  comprobación discrimina, la respuesta es ejecutarla allí y ver si sale verde.
+- **`git` a través del hook de `rtk` devuelve commits que no son.** Se le pide un
+  hash y contesta otro, con su asunto, sin fallar ni avisar. Cualquier medición
+  sobre git va con `/usr/bin/git` o con `rtk proxy` (`MEDICIONES.md` §4.9d).

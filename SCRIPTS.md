@@ -5,7 +5,7 @@ después, y ninguno da nada por bueno sin comprobarlo.
 
 ## Orden
 
-### Comunes y fase A1 — `encina-branding`
+### Comunes y de `encina-branding`
 
 | Script | Qué hace | Dónde |
 |---|---|---|
@@ -18,7 +18,7 @@ después, y ninguno da nada por bueno sin comprobarlo.
 | `06-ci.sh` | GitHub Actions y repositorio remoto | VM |
 | `diario.sh "texto"` | El ritual de cierre en un comando | VM |
 
-### Fase A2 — `encina-firefox-native`
+### De `encina-firefox-native`
 
 | Script | Qué hace | Dónde |
 |---|---|---|
@@ -74,7 +74,7 @@ A partir de `01-repo.sh` los scripts viven dentro del repositorio, en
 ```
 
 Si hay un solo `[FALLO]`, el script sale con código distinto de cero y te
-recuerda que no marques la casilla en ENCINA-OS.md.
+recuerda que no marques la casilla de la definición de terminado (`AGENTS.md`).
 
 ## Lo que estos scripts NO pueden verificar
 
@@ -107,7 +107,7 @@ contrario de lo que decía antes este documento: cuatro `SC2164` sobre `cd` y el
 resto de nivel `info`/`style`. Los `SC2164` son falsos positivos —`lib.sh` fija
 `set -euo pipefail`, de modo que un `cd` fallido ya aborta el script, pero
 `shellcheck` no lo detecta porque no resuelve el `source` de ruta dinámica ni
-siquiera con `-x`. Se dejan como están a propósito. Los tres scripts de A2
+siquiera con `-x`. Se dejan como están a propósito. Los tres scripts de Firefox
 (07, 08, 09) están limpios a nivel `warning`.
 
 Las comprobaciones de reglas
@@ -166,10 +166,11 @@ La moraleja común de las cuatro: **una comprobación que pasa no vale nada si n
 sabes contra qué ha pasado.** Cuando una dé `[OK]`, comprueba que habría dado
 `[FALLO]` de haber estado mal.
 
-## Tres más, encontradas al especificar B1 (2026-08-07)
+## Tres más, encontradas midiendo AutoFirma (2026-08-07)
 
-Aparecieron midiendo AutoFirma para `AGENTS.md` §6. Ninguna es de A1 ni de A2,
-pero son de la misma familia y el sitio de leerlas es este.
+Salieron de las mediciones de `MEDICIONES.md` §4.2. No son de ningún script de
+aquí, pero son de la misma familia y el sitio de leerlas es este — y las tres
+aplican igual a la receta de imagen y a la CI.
 
 **5. Una subcadena que creías que estaba.** `grep -i afirma` **no** casa con
 `SocketAutoFirma`: antes de la `F` hay una `o`, así que la subcadena real es
