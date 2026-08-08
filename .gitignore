@@ -10,3 +10,13 @@ debian-packages/*/debian/debhelper-build-stamp
 
 # Ajustes locales de la herramienta, propios de cada maquina.
 .claude/settings.local.json
+
+# Basura de macOS, que aparece sola al abrir carpetas en el Finder.
+.DS_Store
+**/.DS_Store
+
+# Fondos de pantalla en su tamano original (3936x2624, ~3 MB cada uno).
+# Al repositorio entran ya redimensionados, dentro del src/ del paquete que los
+# distribuya. encina-os pesa kilobytes y conviene que siga pesandolos: es la
+# misma cuenta que decidio no meter AutoFirma como submodulo (MEDICIONES.md 4.8).
+assets/wallpaper/

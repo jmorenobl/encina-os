@@ -1,4 +1,21 @@
-# Encina OS
+<p align="center">
+  <img src="assets/banner.png" alt="Encina OS — Ubuntu con la firma electrónica española lista de fábrica" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/jmorenobl/encina-os/actions/workflows/build.yml"><img src="https://github.com/jmorenobl/encina-os/actions/workflows/build.yml/badge.svg" alt="Estado de la construcción"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-EUPL--1.2-3A664E" alt="Licencia EUPL-1.2"></a>
+  <img src="https://img.shields.io/badge/base-Ubuntu%2024.04%20LTS-A78B75" alt="Base: Ubuntu 24.04 LTS">
+  <img src="https://img.shields.io/badge/arquitectura-arm64-A78B75" alt="Arquitectura: arm64">
+  <img src="https://img.shields.io/badge/estado-en%20construcci%C3%B3n-D6BFA0" alt="Estado: en construcción">
+</p>
+
+<p align="center">
+  <sub><b>Proyecto independiente.</b> Sin relación con la Administración General del Estado, la FNMT ni Canonical.<br>
+  Derivado de Ubuntu; ni publicado ni avalado por Canonical Ltd.</sub>
+</p>
+
+---
 
 Una distribución de escritorio basada en Ubuntu LTS, pensada para que un usuario
 español la use con la mínima fricción — y en particular **para que la firma
@@ -210,6 +227,35 @@ scripts/          # los once scripts + lib.sh
 Los artefactos de construcción (`.deb`, `.buildinfo`, `.changes`) no se
 versionan. El código y los activos sí.
 
+## Identidad visual
+
+<p align="center">
+  <img src="assets/identidad.png" alt="Guía de identidad de Encina OS: logotipo, paleta de colores y fondo de pantalla" width="100%">
+</p>
+
+Una encina cuya copa y raíces son una red de nodos: el árbol de la dehesa
+española y la red de confianza que hace posible una firma electrónica, que son
+las dos cosas de las que va el proyecto.
+
+| Color | Hex |
+|---|---|
+| Verde encina | `#3A664E` |
+| Tierra íbera | `#A78B75` |
+| Arcilla | `#D6BFA0` |
+| Gris pizarra | `#E6E8E6` |
+| Blanco roto | `#FFFFFF` |
+
+**Procedencia de los activos**, que R8 exige declarar:
+
+- **Logotipo y banner:** generados con Google Gemini a partir de indicaciones
+  propias. Ninguna marca de terceros forma parte de ellos.
+- **Fondos de pantalla:** fotografías de **Amanda Anusane** publicadas en
+  Unsplash bajo la Unsplash License. Es una licencia permisiva pero **no es una
+  licencia libre al uso** —prohíbe vender copias sin modificar y compilar las
+  fotos para replicar un servicio competidor—, así que se declara como párrafo
+  propio en el `debian/copyright` del paquete que las distribuya. La atribución
+  no es obligatoria; se hace igualmente.
+
 ## Documentación
 
 | Documento | Para qué |
@@ -229,8 +275,11 @@ Verificado carácter a carácter contra la publicación de la Unión Europea en
 EUR-Lex —la EUPL v1.2 es el anexo de la Decisión de Ejecución (UE) 2017/863—
 ignorando solo espaciado y comillas tipográficas: 10.956 caracteres idénticos.
 
-Ningún activo gráfico de terceros forma parte del proyecto: ni marca de Canonical
-o Ubuntu, ni tipografías propietarias, ni iconos que imiten a otros sistemas (R8).
+Ninguna **marca** de terceros forma parte del proyecto: ni logotipos de Canonical
+o Ubuntu, ni emblemas institucionales, ni tipografías propietarias, ni iconos que
+imiten a otros sistemas (R8). Los activos gráficos que **sí** vienen de fuera son
+las fotografías de los fondos de pantalla, con su licencia y su autoría
+declaradas arriba, que es lo que R8 permite y exige.
 
 El único fichero de terceros que se distribuye es la **clave pública de firma
 del repositorio APT de Mozilla**, dentro de `encina-firefox-native`. Se incluye
