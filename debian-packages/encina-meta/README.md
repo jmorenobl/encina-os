@@ -10,7 +10,7 @@ Un metapaquete con contenido son dos paquetes mal separados.
 ```
 Depends:    encina-branding, encina-firefox-native, autofirma,
             hunspell-es, language-pack-es, language-pack-gnome-es
-Recommends: libreoffice-l10n-es, hyphen-es, mythes-es
+Recommends: hyphen-es, mythes-es
 ```
 
 ## Un nombre no es una sola orden
@@ -89,6 +89,17 @@ gh run download <ID> -n autofirma-arm64 -R jmorenobl/encina-autofirma
 - **No cierra ninguna barrera de la firma** (D13). La tentación aquí llega como
   «ya que `encina-meta` lo instala todo, que deje también el `policies.json`».
   La respuesta es D13.
+- **No declara `libreoffice-l10n-es`**, y esto se aprendió midiendo, no
+  pensando. Estaba en el `Recommends:` de la versión 0.1.0 con el motivo escrito
+  de que en `Depends:` «obligaría a instalar LibreOffice entero». Falso por los
+  dos lados: no *depende* de `libreoffice-core`, lo **recomienda**, y un
+  `Recommends:` se instala por defecto. En la VM metió 33 paquetes y 244 MB —el
+  motor de LibreOffice en una máquina sin LibreOffice— y con ellos **abrió un
+  hueco de l10n nuevo**: con `libreoffice-common` puesto, `check-language-support
+  -l es` pasa a pedir `libreoffice-help-es`. O sea que la línea que existía para
+  cerrar huecos de idioma abría uno. Vuelve en E4, con su paquete de ayuda al
+  lado. `hyphen-es` y `mythes-es` se quedan: `Depends: dictionaries-common` y
+  nada más
 - **No declara `thunderbird-locale-es`**, que sí estaba en la especificación
   inicial. Es un paquete de transición que arrastra `thunderbird`, y ese lleva
   `Pre-Depends: snapd`: un `Recommends:` que devuelve el Snap a la única imagen

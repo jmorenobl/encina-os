@@ -492,7 +492,7 @@ Depends: encina-branding,
          hunspell-es,
          language-pack-es,
          language-pack-gnome-es
-Recommends: libreoffice-l10n-es, hyphen-es, mythes-es, thunderbird-locale-es
+Recommends: hyphen-es, mythes-es
 ```
 
 **El bloque de l10n es el residuo de D12**, y su motivo está medido en
@@ -502,9 +502,19 @@ apt ni disparador de dpkg que reejecute `check-language-support`—. Verificado
 con `apt-get -s install libreoffice-writer`, que no arrastra
 `libreoffice-l10n-es`.
 
-`libreoffice-l10n-es` va en `Recommends:` y no en `Depends:` porque depende de
-`libreoffice-common`: en `Depends:` obligaría a instalar LibreOffice entero.
-**Si algún día Encina OS trae LibreOffice de serie (E4), esa línea se mueve.**
+**`libreoffice-l10n-es` se cayó del `Recommends:` el 2026-08-08, medido en la
+VM** (`MEDICIONES.md` §4.11). Lo que este párrafo decía —«va en `Recommends:` y
+no en `Depends:` porque depende de `libreoffice-common`: en `Depends:` obligaría
+a instalar LibreOffice entero»— **era falso en la práctica y en las dos mitades**:
+no depende de `libreoffice-common` sino que lo **recomienda** (`Recommends:
+libreoffice-core`), y un `Recommends:` se instala por defecto, así que ponerlo
+ahí no evitaba nada. Medido: metió 33 paquetes y 244 MB —`libreoffice-core`
+incluido— en una máquina sin LibreOffice, y con ellos abrió un **hueco de l10n
+nuevo**, porque la regla `tr::libreoffice-common:libreoffice-help-` de
+`pkg_depends` pide entonces `libreoffice-help-es`. La línea vuelve en E4, cuando
+se decida si Encina OS trae LibreOffice de serie, y entonces con
+`libreoffice-help-es` al lado. `hyphen-es` y `mythes-es` se quedan: los dos
+declaran solo `Depends: dictionaries-common` y no arrastran nada.
 
 **Dos avisos medidos el 2026-08-08** (`MEDICIONES.md` §4.10), antes de copiar ese
 bloque tal cual:
@@ -512,8 +522,11 @@ bloque tal cual:
 - **`thunderbird-locale-es` arrastra un Snap.** Es él mismo un paquete de
   transición (`2:1snap1-0ubuntu3`) que depende de `thunderbird`, y ese lleva
   `Pre-Depends: debconf, snapd`. En un producto cuyo motivo es no depender del
-  Snap, esa línea necesita **una decisión explícita**, no copiarse. `libreoffice-l10n-es`
-  está limpio (`Depends: locales | locales-all`).
+  Snap, esa línea necesita **una decisión explícita**, no copiarse. ~~`libreoffice-l10n-es`
+  está limpio (`Depends: locales | locales-all`).~~ **Esa última frase es falsa y
+  se corrige el 2026-08-08:** miró solo el `Depends:` y se dejó el `Recommends:
+  libreoffice-core`, que es justo el que instala. Familia de la misma trampa que
+  esta viñeta acierta en el paquete de al lado.
 - **El resto del bloque no viola R10 por vía transitiva.** Simulado con el
   repositorio de Mozilla configurado —que es donde algo de allí podría colarse—,
   los 117 paquetes que arrastran el bloque de l10n y las `Depends:` de
@@ -610,7 +623,10 @@ Ubuntu 24.04.4 arm64, un solo usuario. Coincide con la premisa (a) de
 `MEDICIONES.md` §4.10.
 
 Los tres scripts dieron **14 + 26 + 8 = 48 comprobaciones correctas, 0 fallos y
-2 avisos**. Los dos avisos son las dos casillas que abajo **no** se marcan.
+2 avisos**. Los dos avisos fueron las dos únicas casillas que no salieron a la
+primera: el hueco de l10n —**corregido el mismo día en la versión 0.1.1**, y por
+eso su casilla está marcada— y la de `autoremove`, que no depende del paquete
+sino de cómo entraron los otros tres.
 
 Casillas, cada una con lo que daría en un sistema sano y en uno roto:
 
@@ -666,26 +682,38 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       Snap vivo, igual que en el contenedor. `firefox-l10n-es-es 153.0.3~build1`
       instalado y desplegado en
       `/usr/lib/firefox/distribution/extensions/langpack-es-ES@firefox.mozilla.org.xpi`
-- [ ] Tras instalar: `check-language-support -l es` sigue saliendo vacío.
-      **NO SE CUMPLE. Medido el 2026-08-08, salida literal:**
+- [x] Tras instalar: `check-language-support -l es` sigue saliendo vacío.
+      **Con la versión 0.1.0 NO SE CUMPLIÓ. Salida literal:**
 
       ```
       $ LC_ALL=C check-language-support -l es
       libreoffice-help-es
       ```
 
-      **La causa está medida y es este paquete.** `Recommends:
+      **La causa se midió y era este paquete.** `Recommends:
       libreoffice-l10n-es` arrastró `libreoffice-common` y `libreoffice-core`
       —33 paquetes y 244 MB, en el log de apt del paso 1 y todos marcados
       `automatic`— y la regla 13 de
       `/usr/share/language-selector/data/pkg_depends`, `tr::libreoffice-common:libreoffice-help-`,
       dice que con `libreoffice-common` instalado hace falta
-      `libreoffice-help-<lang>`. O sea que **la l10n que este paquete declara
-      abre un hueco de l10n nuevo.** En §A3 la misma orden salía vacía porque
-      allí no había ningún LibreOffice. Cerrarlo cuesta dos paquetes de Ubuntu
-      (`apt-get -s install libreoffice-help-es` → `libreoffice-help-common` +
-      `libreoffice-help-es`, nada de Mozilla ni de Snap), pero **es una decisión
-      sobre el contenido de §6.2 y no se toma desde aquí**
+      `libreoffice-help-<lang>`. O sea que **la l10n que este paquete declaraba
+      abría un hueco de l10n nuevo.** En §A3 la misma orden salía vacía porque
+      allí no había ningún LibreOffice.
+      **Corregido el mismo día en `encina-meta 0.1.1`**, quitando la causa en vez
+      de tapándola: la línea se cae del `Recommends:` y vuelve en E4 con
+      `libreoffice-help-es` al lado (§6.2, `MEDICIONES.md` §4.11c). Verificado
+      tras el `autoremove` de los 37 paquetes huérfanos, **y con control, que es
+      lo que hace que el vacío signifique algo**:
+
+      ```
+      $ LC_ALL=C check-language-support -l es
+                                      # vacio
+      $ LC_ALL=C check-language-support -l fr
+      gnome-user-docs-fr hunspell-fr language-pack-fr language-pack-gnome-fr wfrench
+      ```
+
+      *Sano:* vacío. *Roto:* enumera lo que falta — y sabe hacerlo, como
+      demuestra el francés
 - [x] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
       idéntico.
       **Medido comparando la lista completa de paquetes con su versión antes y

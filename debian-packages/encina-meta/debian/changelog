@@ -1,3 +1,15 @@
+encina-meta (0.1.1) noble; urgency=medium
+
+  * Fuera libreoffice-l10n-es del Recommends. Medido en VM: recomienda
+    libreoffice-core, y un Recommends se instala por defecto, asi que
+    metia 33 paquetes y 244 MB de motor de LibreOffice en una maquina
+    sin LibreOffice. Y con libreoffice-common puesto, check-language-
+    support -l es pasa a pedir libreoffice-help-es: la linea que existia
+    para cerrar huecos de idioma abria uno. Vuelve en E4 con su paquete
+    de ayuda al lado (MEDICIONES.md 4.11).
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 08 Aug 2026 12:03:35 +0200
+
 encina-meta (0.1.0) noble; urgency=medium
 
   * Primera version: metapaquete de Encina OS

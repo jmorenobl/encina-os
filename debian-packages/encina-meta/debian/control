@@ -15,8 +15,7 @@ Depends: ${misc:Depends},
          hunspell-es,
          language-pack-es,
          language-pack-gnome-es
-Recommends: libreoffice-l10n-es,
-            hyphen-es,
+Recommends: hyphen-es,
             mythes-es
 Description: Encina OS: instala el conjunto con un solo nombre
  Metapaquete de Encina OS. No lleva ni un fichero propio: su trabajo entero es
@@ -47,3 +46,11 @@ Description: Encina OS: instala el conjunto con un solo nombre
  El bloque de localizacion existe porque Ubuntu instala el idioma del sistema
  pero no la l10n de las aplicaciones que se instalan DESPUES: no hay hook de
  apt ni disparador de dpkg que la reejecute.
+ .
+ Ese bloque NO incluye la localizacion de LibreOffice, y tampoco es un descuido.
+ libreoffice-l10n-es recomienda libreoffice-core, y un Recommends se instala por
+ defecto, asi que en una maquina sin LibreOffice metia 33 paquetes y 244 MB de
+ motor de LibreOffice sin LibreOffice; y con ellos abria un hueco de l10n nuevo,
+ porque con libreoffice-common instalado el sistema pasa a echar en falta
+ libreoffice-help-es. Vuelve el dia que Encina OS traiga LibreOffice de serie, y
+ ese dia con su paquete de ayuda al lado.

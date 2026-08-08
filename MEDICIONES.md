@@ -50,7 +50,8 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.7 | ¿El `.deb` corregido hace innecesario el Firefox nativo? | **Sí, y es la sección más importante para el producto de hoy.** La respuesta es no |
 | §4.8 | Forma del fork: tres repositorios | Ejecutada. Histórico |
 | §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
-| §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3 |
+| §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c** |
+| §4.11 | E1 ejecutado en una VM con escritorio | Sí. Cierra lo que §4.10 dejaba deducido, y tumba el `Recommends: libreoffice-l10n-es` con su motivo escrito |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -1067,6 +1068,144 @@ se comporte igual en una VM real con escritorio. El contenedor comparte apt,
 arquitectura e índices, pero no es un escritorio. El A/B cuesta un clon y
 `08-firefox-instalar.sh --sin-firefox`, y hace falta instalar en una máquina.
 
+> **Cerrado el 2026-08-08.** Ese A/B ya está hecho, en una VM real con escritorio
+> y con el Snap vivo: §4.11(a). Se comporta igual que el contenedor.
+
+
+### 4.11 E1 en una VM de verdad: lo deducido de §4.10, y dos cosas que no salieron (2026-08-08)
+
+Ejecución de la definición de terminado de `AGENTS.md` §6.4 sobre la VM
+**`encina-E1-meta`**, clon de `encina-limpia-respaldo` hecho ese día con
+`utmctl clone`. **Huella tomada antes de tocarla**, porque las seis VMs comparten
+hostname (`encina-dev`) e IP: cero paquetes `encina-*`, sin `autofirma`, solo
+`ubuntu.sources` en `sources.list.d`, ningún perfil de Mozilla, `firefox` deb
+`1:1snap1-0ubuntu5`, Snap de Firefox `147.0.3-1` rev 7764, Ubuntu 24.04.4 arm64,
+un solo usuario. Coincide con la premisa (a) de §4.10.
+
+Los tres scripts —`10`, `11`, `12`— dieron **48 comprobaciones correctas y 0
+fallos**. Lo que importa no son las 48: son las tres cosas de abajo.
+
+**a) Lo que §4.10 dejaba deducido, ahora medido.** Aquella sección cerró con «lo
+deducido y NO medido: que el `full-upgrade` de (b) se comporte igual en una VM
+real con escritorio». Se comporta igual, y con el Snap instalado y vivo:
+
+```
+paso 1 (los cuatro .deb):  firefox 1:1snap1-0ubuntu5    <- intacto
+                           snap firefox 147.0.3-1 7764  <- intacto (R4)
+paso 2 (apt update):       Candidate: 153.0.3~build1
+                            *** 1:1snap1-0ubuntu5 500  ports.ubuntu.com
+                                153.0.3~build1   1000  packages.mozilla.org
+plan del paso 3:  Inst firefox [1:1snap1-0ubuntu5] (153.0.3~build1 …/mozilla)
+paso 3 aplicado:  dpkg-query -W firefox -> 153.0.3~build1   (sin epoch)
+                  readlink -f /usr/bin/firefox -> /usr/lib/firefox/firefox
+                  firefox-l10n-es-es 153.0.3~build1 instalado
+```
+
+Mirado en pantalla en `about:support`, y en el orden que exige §6.4 —primero el
+binario, después el idioma—: `Binario de la aplicación =
+/usr/lib/firefox/firefox-bin`, `ID de distribución = mozilla-deb`, `Directorio de
+perfil = /home/jorge/.config/mozilla/firefox/…` y la interfaz en español.
+`Políticas empresariales: Inactivo`, o sea D13 vista y no deducida.
+
+*Trampa anotada para no perseguirla:* el `Agente de usuario` dice `x86_64` en una
+máquina arm64. Firefox congela ese campo en Linux a propósito.
+
+**b) El paquete abría un hueco de l10n, y lo abría su bloque de l10n.** La
+casilla «`check-language-support -l es` sigue saliendo vacío» **no se cumplió**:
+
+```
+$ LC_ALL=C check-language-support -l es
+libreoffice-help-es
+```
+
+La cadena, medida entera y no supuesta. En `/var/log/apt/history.log`, la
+transacción del paso 1 instaló, todos marcados `automatic`,
+`libreoffice-l10n-es`, `libreoffice-common`, `libreoffice-core`,
+`libreoffice-uiconfig-common`, `libreoffice-style-colibre`, `ure`, `python3-uno`
+y compañía: **33 paquetes y 244 MB**, con `libreoffice-core` (148 MB) dentro. Y
+en `/usr/share/language-selector/data/pkg_depends`, la regla 13:
+
+```
+tr::libreoffice-common:libreoffice-help-
+```
+
+Con `libreoffice-common` instalado, el sistema pasa a echar en falta
+`libreoffice-help-<lang>`. **La línea que existía para cerrar huecos de idioma
+abría uno.** En §A3 la misma orden salía vacía porque allí no había ningún
+LibreOffice: no es que Ubuntu haya cambiado, es que la máquina ya no es la misma.
+
+**c) Y el motivo escrito para ponerla ahí era falso por los dos lados.**
+`AGENTS.md` §6.2 decía que `libreoffice-l10n-es` iba en `Recommends:` y no en
+`Depends:` «porque depende de `libreoffice-common`: en `Depends:` obligaría a
+instalar LibreOffice entero». Medido:
+
+```
+$ LC_ALL=C apt-cache show libreoffice-l10n-es | grep -E '^(Depends|Recommends):'
+Depends: locales | locales-all
+Recommends: libreoffice-core (>> 4:25.8.7)
+```
+
+No lo **depende**: lo **recomienda**. Y un `Recommends:` se instala por defecto,
+así que ponerlo en `Recommends:` no evitaba nada. **Esto corrige también §4.10h**,
+que declaró ese paquete «limpio» mirando solo su `Depends:` — el mismo error de
+mirar el campo equivocado que esa misma viñeta acierta en `thunderbird-locale-es`.
+Los otros dos del bloque sí están limpios, con control:
+
+```
+$ LC_ALL=C apt-cache show hyphen-es mythes-es | grep -E '^(Package|Depends):'
+Package: hyphen-es      Depends: dictionaries-common
+Package: mythes-es      Depends: dictionaries-common
+$ LC_ALL=C apt-get -s install hyphen-es mythes-es
+0 upgraded, 0 newly installed, 0 to remove and 4 not upgraded.
+```
+
+**Decisión tomada el 2026-08-08:** la línea se cae del `Recommends:` y vuelve en
+E4, con `libreoffice-help-es` al lado. Se quita la causa en vez de taparla.
+
+**Y el arreglo, verificado en la misma VM.** `encina-meta 0.1.1` construido con
+`10-meta-construir.sh` (14/14, `lintian` sigue sin decir una línea, `Recommends:
+hyphen-es, mythes-es`), instalado sobre el 0.1.0, y `apt autoremove --purge` de
+los 37 paquetes que quedaron huérfanos —lista mirada entera antes de ejecutarla:
+toda la cadena de LibreOffice más `libfwupd2`, que ya estaba huérfano de antes, y
+**ninguno de `encina-*`, `autofirma`, `firefox`, `openjdk` ni `snapd`**—:
+
+```
+$ LC_ALL=C check-language-support -l es
+                                # vacio
+$ LC_ALL=C check-language-support -l fr
+gnome-user-docs-fr hunspell-fr language-pack-fr language-pack-gnome-fr wfrench
+```
+
+El francés es el control, y es imprescindible: sin él, «vacío» y «esta orden ya
+no sabe responder» son la misma salida. Firefox sigue en `153.0.3~build1` con
+`/usr/bin/firefox → /usr/lib/firefox/firefox`, y los cuatro paquetes en
+`install ok installed`.
+
+**Lo que este apartado NO demuestra:** que una instalación desde cero con 0.1.1
+no traiga LibreOffice. Aquí se llegó quitando, no no-poniendo. La prueba desde
+cero es la del clon efímero, que ejecuta la secuencia entera «tal cual y sin
+ningún arreglo fuera de ella» sobre una máquina virgen.
+
+**d) `apt autoremove` y el metapaquete: la casilla depende de cómo entraron.**
+Tras `apt purge encina-meta`, los otros tres siguen instalados —correcto—, pero
+`autoremove` **no propone ninguno**, porque en el paso 1 entraron *por ruta* en
+la línea de órdenes y apt los marcó como manuales. La pregunta se responde con
+A/B, marcándolos `auto`:
+
+```
+A) con encina-meta INSTALADO -> autoremove no propone ninguno   (control)
+B) con encina-meta PURGADO   -> Remv autofirma
+                                Remv encina-branding
+                                Remv encina-firefox-native
+```
+
+O sea que la conducta es la correcta y lo que faltaba era la premisa. **Importa
+para E2:** la casilla se cumplirá sola cuando los tres entren como dependencias
+desde el repo local; con `.deb` sueltos al lado, no, y no es un fallo.
+
+**Lo que sigue sin medirse:** la firma real sobre esta secuencia. Va en un clon
+efímero con certificado personal, que se destruye después (§9.1), y es la única
+casilla que decide.
 
 ---
 
