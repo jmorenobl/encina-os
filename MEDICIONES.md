@@ -50,6 +50,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.7 | ¿El `.deb` corregido hace innecesario el Firefox nativo? | **Sí, y es la sección más importante para el producto de hoy.** La respuesta es no |
 | §4.8 | Forma del fork: tres repositorios | Ejecutada. Histórico |
 | §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
+| §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3 |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -835,6 +836,238 @@ paquete sobrevive a una actualización de Firefox de Mozilla.
 > es hoy un límite de alcance declarado (§2, D9), no un pendiente.
 
 
+### 4.10 R10 y `encina-meta`: por qué vía llega Firefox nativo (2026-08-08)
+
+Medición previa a escribir `encina-meta`, para responder a la pregunta que puede
+parar E1 (`ENCINA-OS.md` §10): **¿puede `encina-meta` no declarar `firefox` sin
+que la máquina se quede sin navegador?**
+
+**Respuesta: sí, y por un motivo distinto del que suponía `AGENTS.md` §6.3.** El
+nombre `firefox` **ya está instalado** en toda Ubuntu de escritorio, apuntando a
+un deb de transición al Snap, y el anclaje de `encina-firefox-native` reasigna
+ese nombre al deb de Mozilla. Nadie instala Firefox: se sustituye el que ya hay.
+
+**Dónde se midió.** Contenedor `ubuntu:24.04` **arm64 nativo** en el Mac
+(`dpkg --print-architecture` → `arm64`), con los índices reales de
+`ports.ubuntu.com` y de `packages.mozilla.org` y el `.deb` real
+`encina-firefox-native_0.2.0`. Todo en simulación (`apt-get -s`) y con `LC_ALL=C`
+(trampa 2 de `SCRIPTS.md`). La premisa de partida (a) se confirmó además en la
+VM `encina-limpia-respaldo`, arrancada, leída y apagada, **sin instalar nada**.
+
+**Lo que el contenedor NO es, y hay que tenerlo delante:** no es un escritorio y
+nunca tuvo el Snap vivo. Aquí no se ha medido ni una sola conducta de Snap ni de
+GNOME: se han medido **decisiones de apt**, que dependen de la versión instalada,
+de los índices y del anclaje, y de nada más.
+
+**a) La premisa: una Ubuntu de escritorio ya trae el nombre `firefox`.** En
+`encina-limpia-respaldo` (Ubuntu 24.04.4 arm64, huella: cero paquetes `encina-*`,
+sin ningún perfil de Mozilla, solo `ubuntu.sources`, instalada el 2026-08-06,
+Snap de Firefox 147.0.3-1 rev 7764):
+
+```
+$ LC_ALL=C apt-cache policy firefox
+firefox:
+  Installed: 1:1snap1-0ubuntu5
+  Candidate: 1:1snap1-0ubuntu5
+
+$ LC_ALL=C apt-cache rdepends --installed firefox
+Reverse Depends:
+  ubuntu-desktop-minimal
+```
+
+Llega como **`Recommends:` de `ubuntu-desktop-minimal`**, no como `Depends:`
+(comprobado en el índice: `firefox` figura en su `Recommends:` y no en su
+`Depends:`). Y ese paquete no es Firefox:
+
+```
+Package: firefox
+Version: 1:1snap1-0ubuntu5
+Pre-Depends: debconf, snapd (>= 2.54)
+Depends: debconf (>= 0.5) | debconf-2.0
+```
+
+77 kB: iconos, documentación y un `/usr/bin/firefox` de 2377 bytes que es un
+script. Su `preinst` imprime `=> Installing the firefox snap`. **Y el script hace
+algo que conviene saber:** si lo ejecutas, reescribe `favorite-apps` cambiando
+`firefox.desktop` por `firefox_firefox.desktop` y mueve
+`xdg-settings default-web-browser` al Snap — es decir, deshace en caliente lo que
+hace el `gschema.override` de `encina-firefox-native`. Deja de poder hacerlo en
+cuanto el deb de Mozilla lo sustituye, porque entonces `/usr/bin/firefox` es el
+binario de verdad.
+
+**b) La vía, y su control.** Sobre un escritorio simulado con los paquetes
+**reales** de Ubuntu (`snapd` y el `firefox` de transición instalados con apt, y
+el sistema puesto al día antes de empezar):
+
+```
+--- linea base, sin el repo de Mozilla ---
+$ LC_ALL=C apt-get -s full-upgrade
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+firefox:  Installed: 1:1snap1-0ubuntu5   Candidate: 1:1snap1-0ubuntu5
+
+--- tras instalar encina-firefox-native y hacer apt update ---
+firefox:  Installed: 1:1snap1-0ubuntu5   Candidate: 153.0.3~build1
+
+$ LC_ALL=C apt-get -s upgrade
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+$ LC_ALL=C apt-get -s full-upgrade
+The following packages will be DOWNGRADED:
+  firefox
+0 upgraded, 79 newly installed, 1 downgraded, 0 to remove and 0 not upgraded.
+Inst firefox [1:1snap1-0ubuntu5] (153.0.3~build1 …/repositories/mozilla:mozilla [arm64])
+```
+
+La tabla de versiones, con las dos prioridades a la vista:
+
+```
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+     153.0.3~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+```
+
+**Control negativo**, sobre ese mismo sistema y retirando **solo**
+`/etc/apt/preferences.d/encina-mozilla`:
+
+```
+firefox:  Installed: 1:1snap1-0ubuntu5   Candidate: 1:1snap1-0ubuntu5
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+      # ninguna linea "Inst firefox": se queda en el Snap
+```
+
+**Control del control:** repuesto el fichero, vuelve a aparecer la línea `Inst
+firefox … mozilla`. La comprobación sabe decir que sí y sabe decir que no, y lo
+que la mueve es el anclaje y nada más.
+
+**c) `upgrade` no hace el cambio; `full-upgrade` sí. Y con `-y` se niega.**
+Es un *downgrade* formal (el epoch `1:` del deb de transición lo hace versión más
+alta), así que:
+
+```
+$ LC_ALL=C apt-get -y -s full-upgrade
+E: Packages were downgraded and -y was used without --allow-downgrades.
+
+$ LC_ALL=C apt-get -y -s full-upgrade --allow-downgrades
+Inst firefox [1:1snap1-0ubuntu5] (153.0.3~build1 …/repositories/mozilla:mozilla [arm64])
+```
+
+Importa para E2: una `late-command` que dé este paso necesita
+`--allow-downgrades`, y sin él **falla ruidosamente**, que es lo bueno. Y
+`unattended-upgrades`, que hace `upgrade` y no `full-upgrade`, no lo dará nunca.
+
+**d) El límite de la vía: depende de la base.** Sobre una base **sin** `firefox`
+instalado, un metapaquete que no lo declara instala con código 0 y después:
+
+```
+firefox:  Installed: (none)   Candidate: 153.0.3~build1
+$ LC_ALL=C apt-get -s full-upgrade
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+      # la maquina se queda SIN NAVEGADOR
+```
+
+O sea que la vía existe porque Ubuntu Desktop trae el deb de transición. **Si la
+imagen de E2 no parte de un escritorio completo, esta vía no está**, y hay que
+instalar Firefox explícitamente en el seed.
+
+**e) Qué haría `Depends: firefox`, medido con dos metapaquetes de laboratorio.**
+No es lo que decía `AGENTS.md` §6.3 —«produciría una dependencia irresoluble»—.
+Son dos modos, y **el peor es silencioso**:
+
+```
+--- escritorio de fabrica, repo de Mozilla aun ausente de los indices,
+--- una sola transaccion: apt-get -s install ./meta.deb ./encina-firefox-native.deb
+0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.
+Inst libdconf1 … Inst dconf-service … Inst dconf-gsettings-backend
+Inst encina-firefox-native (0.2.0 local-deb [all])
+Inst lab-meta-a (0 local-deb [all])
+      # NINGUNA linea de firefox: la dependencia la satisface el deb de
+      # transicion YA instalado. apt sale con 0 y la maquina sigue en el Snap.
+
+--- la misma orden sobre una base sin firefox instalado
+0 upgraded, 104 newly installed, 0 to remove and 0 not upgraded.
+Inst snapd (2.76+ubuntu24.04.1 Ubuntu:24.04/noble-updates, …)
+Inst firefox (1:1snap1-0ubuntu5 Ubuntu:24.04/noble [arm64])
+      # INSTALA EL SNAP.
+```
+
+El motivo de fondo es que el repositorio de Mozilla no está en los índices
+**cuando apt resuelve**: los ficheros que lo declaran se desempaquetan dentro de
+esa misma transacción, y apt ya había decidido. R10 se sostiene, y por un motivo
+más fuerte que el escrito: no es que falle, es que **acierta con el paquete
+equivocado sin decir nada**. Es el patrón de D13 —cambiar un fallo visible por
+uno silencioso— aplicado al resolutor.
+
+**f) El idioma español no tiene ninguna vía, y es el hueco real de E1.**
+
+```
+$ LC_ALL=C apt-cache policy firefox-l10n-es-es      # sin el repo de Mozilla
+firefox-l10n-es-es:
+  Installed: (none)
+  Candidate: (none)
+
+$ LC_ALL=C apt-cache policy firefox-locale-es
+  Candidate: 1:1snap1-0ubuntu5   # noble/universe: OTRO transitorio al Snap
+```
+
+Declararlo sí es duro y ruidoso, que es la diferencia con (e):
+
+```
+ lab-meta-c : Depends: firefox-l10n-es-es but it is not installable
+E: Unable to correct problems, you have held broken packages.
+```
+
+Y no declararlo tampoco lo trae: en el `full-upgrade` de (b) **no aparece
+ninguna línea `Inst firefox-l10n`**. Conclusión medida: con `encina-meta` tal
+como está especificado en `AGENTS.md` §6.2, **Firefox nativo llega en inglés**.
+No lo arregla partir `encina-firefox-native`: lo que impide declararlo es que el
+índice no esté presente al resolver, así que un paquete aparte tendría el mismo
+problema en la misma transacción. Solo funciona como **segundo paso**, con un
+`apt update` en medio — que es la secuencia que `AGENTS.md` §5.4 ya documenta.
+
+**g) La cláusula «ni transitivamente» de R10 está limpia.** Simulando el resto de
+lo que `encina-meta` declararía (el bloque de l10n de D12 y las `Depends:` de
+`autofirma`) **sobre la máquina que sí tiene el repo de Mozilla configurado**,
+que es donde algo de allí podría colarse:
+
+```
+     70 Ubuntu:24.04/noble
+     41 Ubuntu:24.04/noble-updates,
+      6 Ubuntu:24.04/noble-updates
+--- lineas de packages.mozilla.org: NINGUNA
+--- control positivo (apt-get -s install firefox):
+Inst firefox [1:1snap1-0ubuntu5] (153.0.3~build1 …/repositories/mozilla:mozilla [arm64])
+```
+
+117 paquetes, ninguno de Mozilla, y el control demuestra que la comprobación no
+está ciega: sabe imprimir esa línea cuando la hay.
+
+**h) Un `Recommends:` de §6.2 instala un Snap.** `thunderbird-locale-es` es él
+mismo un transitorio:
+
+```
+thunderbird-locale-es:  Candidate: 2:1snap1-0ubuntu3
+Depends: thunderbird (>= 2:1snap1-0ubuntu3)
+
+$ LC_ALL=C apt-get -s install --no-install-recommends thunderbird-locale-es
+Inst thunderbird (2:1snap1-0ubuntu3 Ubuntu:24.04/noble [arm64])
+Inst thunderbird-locale-es (2:1snap1-0ubuntu3 …)
+
+Package: thunderbird
+Pre-Depends: debconf, snapd
+```
+
+En un producto cuyo motivo es no depender del Snap, esa línea necesita decisión
+explícita. **No medido:** si el escritorio de fábrica ya trae Thunderbird, en
+cuyo caso sobre esa base concreta es inocuo. `libreoffice-l10n-es`, en cambio,
+está limpio: `Depends: locales | locales-all`.
+
+**Lo deducido y NO medido, que no se da por bueno:** que el `full-upgrade` de (b)
+se comporte igual en una VM real con escritorio. El contenedor comparte apt,
+arquitectura e índices, pero no es un escritorio. El A/B cuesta un clon y
+`08-firefox-instalar.sh --sin-firefox`, y hace falta instalar en una máquina.
+
+
 ---
 
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
@@ -932,6 +1165,10 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **«No se han encontrado certificados válidos» con el certificado delante** | `certutil -L` lo ve en el perfil y AutoFirma no | AutoFirma no encuentra las bibliotecas NSS: solo busca en `/usr/lib/x86_64-linux-gnu` y `/usr/lib/i386-linux-gnu`. En arm64 falla con «No se ha podido determinar la localizacion de NSS en UNIX», y el diálogo no menciona NSS por ninguna parte (§4.9c) |
 | **La sede se bloquea a sí misma** | Todo correcto en la máquina y la firma no arranca; nada en pantalla | La CSP de la sede no incluye `afirma:` en `frame-src`, y `autoscript.js` invoca el esquema por iframe en Firefox de escritorio. Solo se ve en la consola del navegador (§4.9b) |
 | **`git` contesta un commit que no es** | Se pide un hash y devuelve otro, con su asunto | El hook de `rtk` filtra la salida de `git`. No falla ni avisa, y `rev-parse --short HEAD` sí coincide. Medir con `/usr/bin/git` o `rtk proxy` (§4.9d) |
+| **Un `Depends: firefox` se cumple con el Snap** | El metapaquete instala «bien», apt sale con 0, y la máquina sigue abriendo el Snap | El nombre `firefox` existe en los dos repositorios. En un escritorio de fábrica ya está instalado el deb de transición, así que la dependencia se da por satisfecha y no se instala nada; y en una base sin él, apt lo resuelve contra el índice de Ubuntu, porque el repo de Mozilla no está en los índices **cuando apt resuelve** (§4.10e) |
+| **`apt upgrade` no cambia el Snap por el nativo** | El anclaje está bien puesto y Firefox sigue siendo el de transición | Es un *downgrade* formal, por el epoch `1:`. Solo lo hace `full-upgrade`, y con `-y` hace falta `--allow-downgrades`. `unattended-upgrades` no lo dará nunca (§4.10c) |
+| **Firefox nativo llega en inglés y nadie lo nota hasta abrirlo** | Todo en verde, `apt policy` correcto, y la interfaz en inglés | `firefox-l10n-es-es` **solo** existe en el repositorio de Mozilla: `Candidate: (none)` en Ubuntu, y `firefox-locale-es` de Ubuntu es otro transitorio al Snap. Ningún paquete de Encina puede declararlo sin violar R10, y el `full-upgrade` no lo arrastra (§4.10f) |
+| **Un `Recommends:` de l10n instala un Snap** | Se pide el idioma de Thunderbird y entra `snapd` | `thunderbird-locale-es` es un transitorio (`2:1snap1-…`) que depende de `thunderbird`, que lleva `Pre-Depends: debconf, snapd` (§4.10h) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
