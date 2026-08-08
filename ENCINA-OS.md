@@ -336,7 +336,7 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 | VM | Qué es | Vídeo | Estado |
 |---|---|---|---|
 | `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | `gpu-pci` | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
-| `encina-E1-meta` | **Banco de E1.** Clon virgen instalado por la secuencia, con los cuatro paquetes y `encina-meta` 0.1.1. **Sin ningún certificado, a propósito** | `ramfb-gl` | **En uso.** Aquí se ejecutó la definición de terminado de E1 |
+| `encina-E1-meta` | **Banco de E1.** Clon virgen instalado por la secuencia, con los cuatro paquetes y `encina-meta` 0.1.1. **Sin ningún certificado, a propósito** | `gpu-pci` | **En uso.** Aquí se ejecutó la definición de terminado de E1, y el 2026-08-08 el experimento de la tarjeta: nació `ramfb-gl` y **se cambió** (§4.12b) |
 | `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `ramfb-gl` | Se queda: línea base virgen, y de ella se clona |
 | `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | `gpu-pci` | Se queda: es la mitad roja de las mediciones, y la base del positivo de §4.9 |
 | `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Redundante.** Candidata a borrar |
@@ -348,9 +348,22 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 (`MEDICIONES.md` §4.12c): las VMs no son comparables entre sí, y el diff completo
 de sus configuraciones de UTM da **esa única diferencia**. Las `gpu-pci` son las
 máquinas viejas, donde se validó A1, A2 y el primer positivo; la línea base
-virgen y sus clones son `ramfb-gl`. **Un resultado visual medido en una familia no
-vale automáticamente en la otra.** Y `lspci` **no** sirve para saber cuál tienes:
-devuelve lo mismo con las dos.
+virgen y sus clones nacen `ramfb-gl`. **Un resultado visual medido en una familia
+no vale automáticamente en la otra.**
+
+**Y ya se sabe qué cambia esa columna: con `ramfb-gl`, la interfaz de AutoFirma no
+se dibuja.** Medido en la misma VM cambiando solo la tarjeta (§4.12b): `colores=1`
+con `ramfb-gl`, `colores=3858` con `gpu-pci`. Por eso `encina-E1-meta` está ya en
+`gpu-pci`. **`encina-limpia-respaldo` sigue en `ramfb-gl`, y de ella se clona**:
+hay una propuesta razonada de cambiarla, pendiente de decisión, en §4.12g.
+
+**Para saber qué tarjeta tienes puesta, `lspci` no sirve** — devuelve
+`Virtio 1.0 GPU (rev 01)` con las dos. La que discrimina, validada contra los dos
+estados conocidos antes de usarla (§4.12e):
+
+```
+sudo dmesg | grep '\[drm\] features:'      # +virgl = ramfb-gl ; -virgl = gpu-pci
+```
 
 ### 9.1 No hay estado bueno conservable, y es a propósito
 

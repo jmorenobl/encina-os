@@ -136,11 +136,22 @@ El splash de arranque, el logotipo de GDM y el fondo del escritorio hay que
 mirarlos. `04` y `05` te los listan al final marcados `[OJOS]` y no los cuentan
 como aprobados.
 
-**El splash no se puede mirar en estas VMs, y no es un fallo del paquete.** UTM
+**El splash no se ha podido mirar en estas VMs, y no es un fallo del paquete.** UTM
 responde *«display output is not active»* durante el arranque, así que la
-pantalla no está viva cuando Plymouth pinta. Medido el 2026-08-08: **no se ha
-visto nunca el splash con el logotipo nuevo, y no se va a poder** mientras la
-VM esté configurada así.
+pantalla no está viva cuando Plymouth pinta. **No se ha visto nunca el splash con
+el logotipo nuevo.**
+
+**Pero hasta dónde llega ese «no se va a poder» es una pregunta abierta**, y
+conviene no leerlo como cerrado: se midió en `encina-dev`, que es de la familia
+`gpu-pci`, y más abajo está escrito que un resultado visual de una familia no vale
+en la otra. Se buscó una medida barata desde dentro del invitado y **no la hay**:
+`plymouth-start.service` arranca y `plymouthd` queda vivo, con `splash` en
+`/proc/cmdline`, **igual se vea el splash o no** —la frase la dice UTM, en el
+anfitrión—, así que es otra comprobación que responde lo mismo en los dos casos.
+Lo único medido: las dos familias tienen un dispositivo DRM listo antes de que
+Plymouth arranque, de modo que nada apunta a que la tarjeta mande aquí
+(`MEDICIONES.md` §4.12f). Lo que lo cerraría es capturar la ventana de UTM desde
+el anfitrión durante el arranque.
 
 Lo que sí cierra el hueco casi entero, sin ojos, es comprobar que el fichero
 correcto está en el sitio correcto **dentro del initramfs**, que es lo que R7
@@ -209,7 +220,18 @@ y eso mira hacia atrás: el `[OMIT]` del splash de Plymouth se midió en
 **Y ojo con cómo se comprueba qué tarjeta hay puesta**, que aquí ya hubo una
 comprobación inútil: `lspci` devuelve `Virtio 1.0 GPU (rev 01)` **con las dos**.
 No discrimina, nunca discriminó, y se usó para dar por aplicado un cambio de
-configuración. Es la trampa 5 en estado puro.
+configuración. Es la trampa 5 en estado puro. **La que sí discrimina**, validada
+contra los dos estados conocidos antes de usarla (`MEDICIONES.md` §4.12e):
+
+```
+sudo dmesg | grep '\[drm\] features:'      # +virgl = ramfb-gl ; -virgl = gpu-pci
+```
+
+**Y ya se sabe qué diferencia hacen.** Cambiando solo la tarjeta en la misma VM,
+la interfaz de AutoFirma pasa de `colores=1` (negro absoluto) con `ramfb-gl` a
+`colores=3858` con `gpu-pci`, sin ninguna variable de entorno. El
+`_JAVA_OPTIONS=-Dsun.java2d.xrender=false` que se venía usando tapaba **un defecto
+del laboratorio, no del producto**.
 
 ## Idempotencia
 

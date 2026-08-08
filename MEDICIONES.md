@@ -1322,39 +1322,47 @@ traiga un disparador que reejecute su configurador cuando aparezca un perfil. El
 cuarto es «abre Firefox una vez y `sudo dpkg-reconfigure autofirma`». **El arreglo
 bueno pertenece a `encina-autofirma`, no a este repositorio.**
 
-**b) La segunda desviación no es del producto: es del laboratorio.** El diálogo de
-AutoFirma **no se dibuja** en la VM. Medido sin ojos, capturando la ventana X11 y
-contando colores:
+**b) La segunda desviación no es del producto: es del laboratorio, y la causa
+está medida. Es la tarjeta de vídeo emulada.** El diálogo de AutoFirma **no se
+dibuja** en la VM. Medido sin ojos, capturando la ventana X11 y contando colores
+(método en (d)).
+
+**El experimento que lo cierra, 2026-08-08, sobre `encina-E1-meta`.** Misma VM,
+mismo disco, misma sesión Wayland de GNOME, mismo comando y misma ventana
+(`0xe00007 "Autofirma v1.10"`, 790x637, `Map State: IsViewable` en los tres
+casos). **Una sola variable**: la tarjeta, cambiada **desde la interfaz de UTM** —
+no editando el `config.plist`, que es justo lo que la vez anterior no se supo
+verificar— y comprobada **dentro del invitado** con (e):
 
 ```
-virtio-ramfb-gl + Wayland + por defecto        colores=1     medio=0      negro
-virtio-ramfb-gl + Wayland + xrender=false      colores=4317               pinta
-"virtio-gpu-pci" + Wayland + por defecto       colores=106                negro
-virtio-gpu-pci? + Xorg    + por defecto        pinta, y con el se firmo
+tarjeta (verificada dentro)   variable Java    colores    medio    resultado
+virtio-ramfb-gl               ninguna                1        0    negro absoluto
+virtio-ramfb-gl               xrender=false       2976    39605    pinta
+virtio-gpu-pci                ninguna             3858    42957    pinta
 ```
 
-`colores=106` es el antialiasing del texto de la barra de título, que la dibuja
-mutter: todo lo que pinta Java sigue en negro.
+Con `virtio-ramfb-gl` el histograma de la ventana entera son 503230 píxeles
+`#000000` y nada más. **Con `virtio-gpu-pci` se dibuja sin ninguna variable de
+entorno.** La fila de en medio es el control positivo, tomado en la misma máquina
+y la misma tarde: prueba que el `colores=1` es la ventana y no la captura.
 
-**Lo que NO está establecido, y es importante no dejarlo escrito como si lo
-estuviera:**
+**Consecuencias, y hay tres:**
 
-- **La verificación del cambio de tarjeta no verificaba nada.** Se dio por
-  aplicada leyendo `lspci`, que devuelve `Virtio 1.0 GPU (rev 01)` — y
-  `encina-autofirma-rota`, con la tarjeta **distinta**, devuelve esa misma cadena.
-  Es la trampa 5 de `SCRIPTS.md`: una comprobación que responde lo mismo en los
-  dos casos. Por tanto **no se sabe si el plist editado llegó a aplicarse**, y la
-  fila «virtio-gpu-pci + Wayland» de la tabla no es fiable.
-- **La hipótesis de Xorg se probó y no explica el pasado.** `encina-autofirma-rota`
-  —base del positivo de §4.9— corría **Wayland**: `Session=ubuntu` en
-  `/var/lib/AccountsService/users/jorge`, `gnome-session-wayland.target` en el
-  journal del 7 de agosto, y sin `~/.xsession-errors`, que solo existe en X11. El
-  método de leer AccountsService se validó antes de usarlo, contra una verdad
-  conocida (`Type=x11` ↔ `Session=ubuntu-xorg`).
-- **La hipótesis viva**, no medida: la tarjeta es la causa y la edición del plist
-  no se aplicó. El experimento que la cierra es barato y **no necesita ningún
-  certificado**: cambiar la tarjeta de `encina-E1-meta` desde la interfaz de UTM,
-  arrancar, y repetir la medida de colores sobre la ventana de AutoFirma.
+- **`_JAVA_OPTIONS=-Dsun.java2d.xrender=false` no arregla un defecto del
+  producto.** Tapa uno del laboratorio. No tiene por qué llevarlo la imagen ni
+  ningún paquete de Encina.
+- **La hipótesis de Xorg queda descartada, y ahora el pasado encaja.**
+  `encina-autofirma-rota` —base del positivo de §4.9— corría **Wayland**
+  (`Session=ubuntu` en `/var/lib/AccountsService/users/jorge`,
+  `gnome-session-wayland.target` en el journal del 7 de agosto, y sin
+  `~/.xsession-errors`, que solo existe en X11; el método se validó antes de
+  usarlo contra la verdad conocida `Type=x11` ↔ `Session=ubuntu-xorg`). Lo que
+  tiene `rota` **no es Xorg: es `virtio-gpu-pci`**, y con eso basta para que
+  pinte. La sesión gráfica no entra en la explicación.
+- **La fila `"virtio-gpu-pci" + Wayland → colores=106` queda retirada.** Se tomó
+  con el plist editado a mano y `lspci` por toda verificación, así que no se sabe
+  qué tarjeta estaba activa cuando se midió. Con `virtio-gpu-pci` **verificada**,
+  esa medida da 3858.
 
 **c) Las VMs de este proyecto no son comparables entre sí, y no estaba escrito.**
 
@@ -1387,6 +1395,86 @@ identify -format '%k %[mean]' /tmp/x.png  # colores distintos y luminancia media
 colores es la medida: **1 color es una ventana sin pintar**, y lo distingue de una
 pintada sin necesidad de mirarla. No sirve para ventanas Wayland nativas, solo
 para las de XWayland — que es justo el caso de AutoFirma.
+
+Dos detalles que costaron un intento cada uno. Hace falta una **sesión gráfica
+iniciada**: `encina-E1-meta` arranca en el greeter de GDM, y ahí no hay ventana
+que medir. Y AutoFirma necesita `DISPLAY` en el entorno; sin él no falla de forma
+visible, sino que se degrada a modo consola y escribe su ayuda:
+
+```
+ADVERTENCIA: No se puede crear el entorno grafico. Se tratar la peticion como
+             una llamada por consola
+```
+
+**e) La comprobación que sí dice qué tarjeta está activa.** Validada **antes** de
+usarla, contra los dos estados conocidos: `encina-autofirma-rota`
+(`virtio-gpu-pci`) y `encina-E1-meta` sin tocar (`virtio-ramfb-gl`). Cuatro
+señales independientes, y las cuatro coinciden:
+
+```
+                              virtio-gpu-pci            virtio-ramfb-gl
+dmesg '[drm] features:'       -virgl                    +virgl
+dmesg simple-framebuffer      ausente                   presente, en 0,4 s
+/proc/fb                      0 virtio_gpudrmfb         0 simpledrmdrmfb
+                                                        1 virtio_gpudrmfb
+/sys/class/drm/card0 ->       .../0000:00:02.0          .../simple-framebuffer.0
+lspci                         Virtio 1.0 GPU (rev 01)   lo mismo, palabra por palabra
+```
+
+La más corta y la más legible es la primera:
+
+```
+sudo dmesg | grep '\[drm\] features:'
+```
+
+`+virgl` es `virtio-ramfb-gl`; `-virgl` es `virtio-gpu-pci`. La segunda señal dice
+lo mismo por otra vía: `ramfb` deja **dos** framebuffers, porque expone uno
+temprano de firmware (`simpledrm`, fb0) antes de que el driver virtio tome el
+relevo (fb1); `gpu-pci` deja uno solo. **`lspci` se incluye a propósito, como
+control negativo**: respondió idéntico en las dos máquinas, y otra vez en directo
+al cambiar la tarjeta de `encina-E1-meta`. No discriminó nunca.
+
+**f) El splash de Plymouth queda como pregunta abierta, no como respuesta.**
+`SCRIPTS.md` daba por bueno que «no se puede mirar en UTM», y eso se midió en
+`encina-dev`, que es de la familia `gpu-pci`; (c) dice que un resultado visual de
+una familia no vale en la otra. Se buscó una medida barata desde dentro del
+invitado y **no la hay**: el journal muestra `plymouth-start.service` arrancando y
+`plymouthd` vivo, con `splash` en `/proc/cmdline`, exactamente igual tanto si el
+anfitrión enseña el splash como si no —porque «display output is not active» lo
+dice UTM, fuera del invitado—. Es otra comprobación que respondería lo mismo en
+los dos casos, así que **no se escribe**. Lo único medido y pertinente: **las dos
+familias tienen un dispositivo DRM listo antes de que Plymouth arranque**
+(`simpledrm` a los 0,4 s con `ramfb`, `virtio_gpu` a los 0,22 s con `gpu-pci`), de
+modo que nada apunta a que la tarjeta decida aquí. El experimento que lo cerraría
+es del anfitrión: capturar la ventana de UTM durante el arranque.
+
+**g) Qué hacer con `encina-limpia-respaldo`. Propuesta, no ejecutada.** De ella
+salen todos los clones nuevos, y hoy es `virtio-ramfb-gl`: **cada clon nace con la
+interfaz de AutoFirma invisible**, y quien lo herede volverá a perseguirlo.
+Recomendación: **ponerla en `virtio-gpu-pci`**, desde la interfaz de UTM, y
+comprobarlo con (e). Razones y objeción, para que se decida con las dos delante:
+
+- A favor: iguala las siete VMs, retira una variable que ya ha estropeado dos
+  mediciones, y **no toca el disco** — es configuración del emulador, no del
+  sistema instalado, así que ningún resultado de paquetes o de apt cambia.
+- La objeción seria: **el defecto es real y el usuario final puede tenerlo.** Si
+  Encina se instala algún día sobre una máquina con una pila gráfica parecida a
+  `ramfb`+virgl, AutoFirma se verá negra. Igualar las VMs **esconde ese caso**.
+  Por eso la recomendación va con una condición: dejar `encina-snap-fabrica` en
+  `virtio-ramfb-gl` como testigo de la familia, ya que sus mediciones están
+  grabadas y es candidata a borrar de todos modos. Sale gratis conservar un caso
+  reproducible del fallo.
+- Lo que **no** hay que hacer es meter `_JAVA_OPTIONS` en ningún paquete para
+  tapar esto: el remedio del laboratorio no pertenece al producto.
+
+**h) En qué estado queda `encina-E1-meta`.** Con `virtio-gpu-pci`, cambiada en
+este experimento y **no revertida** (ENCINA-OS.md §9 al día). Para medir hizo
+falta una sesión gráfica, así que se activó el autologin de GDM y **se revirtió al
+terminar, verificado por huella**: `/etc/gdm3/custom.conf` vuelve a
+`ceee968c…10af`, la que tenía antes. AutoFirma dejó `~/.afirma`, que son sus
+propios registros. **No entró ningún certificado**, y se comprobó al acabar: el
+perfil `marwtfna.default-release` no lista ninguno, ni siquiera `SocketAutoFirma`
+—lo que de paso vuelve a mostrar el defecto de (a)—.
 
 ---
 
