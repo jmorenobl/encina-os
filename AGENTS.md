@@ -716,10 +716,25 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       **Escrita y commiteada junto al `changelog`, como exige `SCRIPTS.md`; sin
       ejecutar.** La CI no se ha visto verde porque los commits de E1 siguen sin
       empujar: `origin/main` está en `9d89ea3`
-- [ ] **[OJOS] Firefox arranca en español.** No lo puede comprobar ningún script,
+- [x] **[OJOS] Firefox arranca en español.** No lo puede comprobar ningún script,
       y **que salga en español no demuestra por sí solo que sea el nativo**: el
       Snap también está en español. Primero el binario (casilla anterior),
-      después el idioma
+      después el idioma.
+      **Mirada por Jorge el 2026-08-08 en `encina-E1-meta`, en `about:support`, y
+      en ese orden.** Tres campos independientes descartan el Snap antes de
+      mirar el idioma: `Binario de la aplicación = /usr/lib/firefox/firefox-bin`
+      (esta lista y §5.5 dicen `/usr/lib/firefox/firefox`; `firefox-bin` es el
+      ejecutable real al que apunta ese nombre, mismo sitio), `ID de
+      distribución = mozilla-deb` —no `canonical-*`— y `Directorio de perfil =
+      /home/jorge/.config/mozilla/firefox/…`, la ubicación XDG del deb de
+      Mozilla y no `~/.mozilla/` ni `~/snap/firefox/`. Solo después, la interfaz
+      en español. Versión 153.0.3, compilación 20260803132010.
+      **De propina, D13 vista y no deducida:** `Políticas empresariales:
+      Inactivo`, o sea que no hay ningún `policies.json` puesto por nadie.
+      *No perseguir:* el `Agente de usuario` dice `x86_64` en una máquina arm64;
+      Firefox congela ese campo en Linux a propósito y no significa nada aquí.
+      Miradas también en la misma sesión, y correctas, el fondo en claro y en
+      oscuro (`encina-branding` 0.1.7 sobre una máquina donde nunca había estado)
 - [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con la secuencia de
       arriba ejecutada **tal cual y sin ningún arreglo fuera de ella**, sale una
       firma en `valide.redsara.es` con certificado real. Mirada en pantalla.
