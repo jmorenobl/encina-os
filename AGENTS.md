@@ -608,7 +608,19 @@ sudo apt update
 # 3. el cambio de Snap a nativo, y el idioma, que ningun Depends: puede declarar
 sudo apt full-upgrade          # el paso 3 NO lo hace 'apt upgrade'
 sudo apt install firefox-l10n-es-es
+# 4. abre Firefox UNA VEZ, cierralo, y reconfigura AutoFirma
+sudo dpkg-reconfigure autofirma
 ```
+
+**El paso 4 se descubrió midiendo, el 2026-08-08, y por eso está aquí y no en la
+cabeza de nadie** (`MEDICIONES.md` §4.12a). El configurador de AutoFirma corre en
+el paso 1, cuando **Firefox nativo todavía no existe** —llega en el paso 3—, así
+que no hay ningún perfil de Mozilla donde instalar la CA de su socket, y sin ella
+el navegador rechaza la conexión y la sede dice «No es posible conectar con
+Autofirma». El propio paquete lo avisa por `term.log` y da esa orden. **Es un
+apaño y se dice que lo es:** el arreglo bueno es un disparador en
+`encina-autofirma` que reejecute su configurador cuando aparezca un perfil, y ese
+trabajo pertenece a aquel repositorio.
 
 **Un solo `apt install` no basta, y eso no lo arregla ningún contenido de este
 paquete.** Es lo que hay que corregir de la promesa de E1 (`ENCINA-OS.md` §7):
@@ -781,7 +793,26 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       **Es un experimento de un solo uso:** se hace sobre una VM clonada para
       la ocasión y **esa VM se destruye después**, porque lleva dentro un
       certificado de firma personal (`ENCINA-OS.md` §9.1). Todo lo demás de
-      esta lista se comprueba sin él
+      esta lista se comprueba sin él.
+      **Intentada el 2026-08-08 sobre `encina-firma-efimera`. LA FIRMA SALIÓ
+      —«Fichero firmado correctamente», mirado en pantalla, con certificado real
+      de la FNMT— Y AUN ASÍ LA CASILLA NO SE MARCA**, porque la secuencia no
+      bastó. Detalle con salidas en `MEDICIONES.md` §4.12. En corto:
+      *(1)* **El paso 1 instala `autofirma` cuando Firefox nativo aún no existe**
+      —llega en el paso 3— así que su configurador no encuentra ningún perfil de
+      Mozilla y **la CA del socket no se instala en ningún navegador**. La sede
+      responde «No es posible conectar con Autofirma», que apunta al sitio
+      equivocado. El paquete **avisó** en `term.log` y dio la orden exacta
+      (`sudo dpkg-reconfigure autofirma`); `11-meta-instalar.sh` se tragó el
+      aviso porque apt salió con 0. Hasta que `encina-autofirma` traiga un
+      disparador, **la secuencia son cuatro pasos**: tras el paso 3, abrir
+      Firefox una vez y `sudo dpkg-reconfigure autofirma`.
+      *(2)* El diálogo de AutoFirma **no se dibuja** en la VM (medido: 1 solo
+      color en la ventana). Eso no es del producto sino del laboratorio, y su
+      causa **no está establecida**: la hipótesis viva es la tarjeta de vídeo
+      emulada, y el experimento que la cierra no necesita certificado.
+      La VM se destruyó después, y se comprobó que no queda ninguna copia del
+      `.p12`
 
 **La última casilla es la única que importa de verdad**, y es la única que
 ningún script puede dar por buena. Las otras pueden salir todas verdes con el

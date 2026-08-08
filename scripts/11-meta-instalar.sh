@@ -117,6 +117,31 @@ else
     resumen; exit 1
 fi
 
+# --- LOS AVISOS DEL postinst, QUE ANTES SE PERDIAN ---------------------------
+# El 2026-08-08 esto costo una sesion entera. El postinst de autofirma imprimio
+#     autofirma: AVISO: no se ha encontrado ningun perfil de Mozilla, ...
+#     autofirma:          sudo dpkg-reconfigure autofirma
+# diciendo exactamente que pasaba y como arreglarlo, y nadie lo vio: la salida
+# de apt se guarda en $INS y solo se imprimia si apt fallaba. apt salio con 0.
+# Un aviso que nadie ve no es un aviso (MEDICIONES.md §4.12a).
+AVISOS=$(grep -aE '^[a-z0-9.+-]+: *(AVISO|ERROR|WARNING)' <<<"$INS" || true)
+if [[ -n "$AVISOS" ]]; then
+    aviso "Los scripts de mantenedor han avisado de algo. LEELO:"
+    echo "$AVISOS" | sed 's/^/         /'
+else
+    ok "Ningún script de mantenedor ha impreso avisos"
+fi
+# Control: si este filtro no supiera encontrar un aviso, el [OK] de arriba seria
+# una comprobacion que no comprueba (trampa 5 de SCRIPTS.md).
+CTRL_AVISO='autofirma: AVISO: no se ha encontrado ningún perfil de Mozilla, así que la CA'
+if grep -qaE '^[a-z0-9.+-]+: *(AVISO|ERROR|WARNING)' <<<"$CTRL_AVISO"; then
+    ok "El filtro de avisos sabe decir que sí (control con el aviso real de 2026-08-08)"
+else
+    fallo "El filtro de avisos no detecta un aviso conocido" \
+"No habria encontrado este, que es literal del 2026-08-08:
+$CTRL_AVISO"
+fi
+
 for p in encina-meta encina-branding encina-firefox-native autofirma; do
     EST=$(LC_ALL=C dpkg-query -W -f='${Status}' "$p" 2>/dev/null || echo "")
     if [[ "$EST" == "install ok installed" ]]; then
@@ -328,7 +353,72 @@ else
 fi
 
 # ============================================================================
-titulo "6. Lo que solo puedes comprobar tú, mirando"
+titulo "6. EL PASO 4: la CA del socket de AutoFirma, en el perfil de Firefox"
+#
+# Medido el 2026-08-08 (MEDICIONES.md §4.12a): el paso 1 instala autofirma
+# cuando Firefox nativo TODAVIA NO EXISTE —llega en el paso 3—, asi que su
+# configurador no encuentra ningun perfil de Mozilla y la CA de su socket no se
+# instala en ningun navegador. Sin ella el navegador rechaza la conexion wss:// y
+# la sede dice «No es posible conectar con Autofirma», que apunta al sitio
+# equivocado. La firma NO sale, y todo lo demas de este script puede estar verde.
+#
+# Se busca por HUELLA y no por nombre: cada reinstalacion genera un par nuevo, y
+# un perfil puede tener una CA vieja con el mismo CN y el mismo apodo (§9).
+PERFILES=$(ls -d "$HOME"/.config/mozilla/firefox/*/ 2>/dev/null | grep -v 'Crash Reports\|Pending Pings\|Profile Groups' || true)
+CA_PKG=/usr/share/autofirma/Autofirma_ROOT.cer
+
+if [[ -z "$PERFILES" ]]; then
+    omitido "No hay ningún perfil de Firefox todavía, así que la CA no puede estar"
+    echo "         Es lo ESPERADO en una máquina virgen, y es el motivo del paso 4:"
+    echo
+    echo "             abre Firefox una vez, ciérralo, y ejecuta:"
+    echo "             ${C_AVI}sudo dpkg-reconfigure autofirma${C_FIN}"
+    echo
+    echo "         Sin eso la firma no sale. Vuelve a ejecutar este script después"
+    echo "         si quieres la comprobación en verde."
+elif [[ ! -f "$CA_PKG" ]]; then
+    fallo "No existe $CA_PKG" "El postinst de autofirma no ha generado su CA."
+else
+    HUELLA_PKG=$(openssl x509 -in "$CA_PKG" -noout -fingerprint -sha256 2>/dev/null | cut -d= -f2)
+    CON_CA=0          # algún perfil tiene una CA con ese apodo
+    CORRECTA=0        # ...y su huella es la del paquete
+    for P in $PERFILES; do
+        [[ -f "$P/cert9.db" ]] || continue
+        # Solo -L: 'certutil -A' crearía la base de datos que viene a inspeccionar
+        # (trampa 7 de SCRIPTS.md). Un rc!=0 aquí es «sin almacén», no un fallo.
+        PEM=$(certutil -L -d "sql:$P" -n SocketAutoFirma -a 2>/dev/null || true)
+        [[ -n "$PEM" ]] || continue
+        CON_CA=1
+        HUELLA_PERFIL=$(openssl x509 -noout -fingerprint -sha256 2>/dev/null <<<"$PEM" | cut -d= -f2)
+        if [[ "$HUELLA_PERFIL" == "$HUELLA_PKG" ]]; then
+            ok "La CA del socket está en $(basename "${P%/}"), y es la del paquete"
+            echo "         $HUELLA_PKG"
+            CORRECTA=1
+        else
+            fallo "El perfil $(basename "${P%/}") tiene una CA 'SocketAutoFirma' que NO es la actual" \
+"en el perfil: $HUELLA_PERFIL
+del paquete:  $HUELLA_PKG
+Mismo nombre, distinta clave: es una CA de una instalación anterior. El socket no
+validará y la sede culpará a la instalación del cliente. Arréglalo con:
+    sudo dpkg-reconfigure autofirma"
+        fi
+    done
+    if (( ! CON_CA )); then
+        fallo "Hay perfil de Firefox pero NINGUNO tiene la CA del socket" \
+"Es el defecto medido el 2026-08-08 (MEDICIONES.md §4.12a): el configurador de
+AutoFirma corrió en el paso 1, cuando Firefox nativo aún no existía, así que no
+tenía ningún perfil donde instalarla.
+
+    cierra Firefox y ejecuta:  sudo dpkg-reconfigure autofirma
+
+Sin esto la firma NO sale, y el mensaje de la sede apunta al sitio equivocado."
+    elif (( ! CORRECTA )); then
+        aviso "Hay CA del socket en algún perfil, pero ninguna coincide con la del paquete"
+    fi
+fi
+
+# ============================================================================
+titulo "7. Lo que solo puedes comprobar tú, mirando"
 pendiente_visual "Firefox arranca EN ESPAÑOL."
 echo "           Y ojo: que salga en español no demuestra que sea el nativo."
 echo "           El Snap también está en español. Primero el binario:"

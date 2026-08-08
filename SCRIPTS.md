@@ -61,6 +61,23 @@ scripts de mantenedor— se validaron saboteando el paquete, y cada una la
 detectan **dos** comprobaciones independientes: una sobre el árbol de fuentes y
 otra sobre el `.deb` construido.
 
+**`11` creció el 2026-08-08, después de que su forma anterior costara una sesión
+entera** (`MEDICIONES.md` §4.12a). Dos cosas:
+
+- **Ahora imprime los avisos de los scripts de mantenedor.** Antes guardaba la
+  salida de apt en una variable y solo la enseñaba si apt fallaba. El `postinst`
+  de `autofirma` avisó de que no había ningún perfil de Mozilla y **dio la orden
+  exacta para arreglarlo**, apt salió con 0, y nadie lo vio. Un aviso que nadie
+  ve no es un aviso. Lleva su control: un aviso literal de aquel día contra el
+  que se comprueba que el filtro sabe decir que sí.
+- **Y comprueba la CA del socket en el perfil de Firefox, por huella.** Es el
+  paso 4 de la secuencia, y sin él la firma no sale aunque todo lo demás esté en
+  verde. Tres salidas, las tres con su significado escrito: sin perfil todavía
+  (`[OMIT]`, es lo normal en una máquina virgen y explica el paso 4), con perfil
+  y sin CA (`[FALLO]`, es el defecto), y con una CA de apodo correcto pero huella
+  distinta (`[FALLO]`, que es una instalación anterior). Solo usa `certutil -L`,
+  nunca `-A`, por la trampa 7.
+
 `11` es el que enseña la secuencia. Comprueba lo que debe verse **y lo que no**:
 que el paso 1 no toque Firefox —si lo tocara, alguien ha declarado `firefox` y
 hay que parar—, que tras el paso 2 el candidato salga de Mozilla con prioridad
@@ -143,6 +160,56 @@ funcionar en A1, así que lo único nuevo es el contenido del fichero. **Es un
 Lo mismo con Firefox: que arranque **en español** no lo puede comprobar ningún
 script. `08` y `09` lo dejan marcado `[OJOS]` junto con `about:support`, donde
 `Application Binary` no debe estar bajo `/snap`.
+
+### Sí se puede mirar la pantalla sin ojos, si la ventana es de X11
+
+Encontrado el 2026-08-08 persiguiendo un diálogo de AutoFirma que no se dibujaba
+(`MEDICIONES.md` §4.12d). **No** funcionan las dos vías obvias: la captura por
+DBus de GNOME responde `Screenshot is not allowed`, y `org.gnome.Shell.Eval` está
+capado desde GNOME 41 y devuelve `(false, '')`. Lo que sí funciona, por ssh, para
+cualquier cliente X11 bajo XWayland —que es el caso de AutoFirma y de cualquier
+aplicación Java:
+
+```
+export DISPLAY=:0
+export XAUTHORITY=$(ls -t /run/user/$(id -u)/.mutter-Xwaylandauth.* | head -1)
+xwininfo -root -children                    # titulo, geometria y Map State
+import -window <id> /tmp/x.png              # captura de esa ventana
+identify -format '%k %[mean]' /tmp/x.png    # colores distintos y luminancia
+```
+
+`XAUTHORITY` es imprescindible: sin él, `Authorization required`. Y **el número de
+colores es la medida**: `1` es una ventana sin pintar, y eso distingue «no se ve»
+de «se ve mal» sin depender de nadie mirando. Con eso se midió, con control:
+
+```
+por defecto        colores=1     medio=0        negro absoluto
+xrender=false      colores=4317  medio=40590    la interfaz entera
+```
+
+No sirve para ventanas Wayland nativas, solo para las de XWayland.
+
+### Las VMs de este proyecto no son comparables entre sí
+
+Medido el 2026-08-08. El `Display Hardware` de UTM no es el mismo en todas, y el
+diff completo de las configuraciones da **exactamente esa diferencia y ninguna
+más**:
+
+```
+virtio-gpu-pci    encina-dev, encina-dev-firefox, encina-A2-verificada, encina-autofirma-rota
+virtio-ramfb-gl   encina-limpia-respaldo, encina-snap-fabrica, y todo clon suyo
+```
+
+Las cuatro de arriba son las máquinas viejas, donde se validó A1, A2 y el primer
+positivo. La línea base virgen de la que salen los clones nuevos es de la otra
+familia. **Un resultado visual medido en una no vale automáticamente en la otra**,
+y eso mira hacia atrás: el `[OMIT]` del splash de Plymouth se midió en
+`encina-dev`, que es `virtio-gpu-pci`.
+
+**Y ojo con cómo se comprueba qué tarjeta hay puesta**, que aquí ya hubo una
+comprobación inútil: `lspci` devuelve `Virtio 1.0 GPU (rev 01)` **con las dos**.
+No discrimina, nunca discriminó, y se usó para dar por aplicado un cambio de
+configuración. Es la trampa 5 en estado puro.
 
 ## Idempotencia
 

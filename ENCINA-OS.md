@@ -89,7 +89,7 @@ redacción y la cuarta se enmienda.
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
 | Scripts | Catorce, en `scripts/`, versionados con el repositorio |
 | Licencia | EUPL-1.2, texto oficial completo verificado contra EUR-Lex |
-| `encina-meta` | **Escrito y construido, sin verificar en VM.** `debian/` completo, `lintian` mudo, tres scripts propios (10, 11, 12) con sus reglas duras validadas por sabotaje. Le falta el `changelog` —se crea con `dch` en la VM— y las casillas de §6.4 de `AGENTS.md` |
+| `encina-meta` | **Construido, instalado y verificado en VM.** v0.1.1, `changelog` creado con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **10 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre una máquina virgen instalada por su secuencia salió una firma real en `valide.redsara.es`, mirada en pantalla — pero **la casilla que decide sigue sin marcar**, porque la secuencia necesitó un cuarto paso que no estaba escrito (`MEDICIONES.md` §4.12) |
 | Instalación desatendida | **No existe.** Es el segundo incremento |
 | ~~`encina-doctor`~~ | **Suprimido el 2026-08-08 sin escribir una línea.** Ver §6.1 |
 
@@ -166,7 +166,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
-| **E1** | `encina-meta` | Una secuencia documentada de tres órdenes —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **← SIGUIENTE** |
+| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma, **y un cuarto paso**— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **CASI.** 10 de 12 casillas. Firma real conseguida sobre máquina virgen, pero **la secuencia no bastó** (§4.12) |
 | **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | Sin abrir |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
@@ -260,6 +260,21 @@ Lo que lo da por terminado: esa secuencia, ejecutada tal cual sobre una Ubuntu
 24.04 arm64 limpia, deja un sistema que firma en `valide.redsara.es`, mirado en
 pantalla.
 
+**Estado el 2026-08-08: 10 de 12 casillas, y la que decide sigue abierta a
+propósito.** La firma salió —«Fichero firmado correctamente», con certificado real
+de la FNMT, sobre una máquina virgen instalada por la secuencia, y la VM se
+destruyó después—, pero **la secuencia no bastó**, y la casilla exige que baste.
+Falta un cuarto paso: el `postinst` de `autofirma` corre en el paso 1, cuando
+Firefox nativo todavía no existe, así que no hay perfil donde instalar la CA de su
+socket, y sin ella la sede dice «No es posible conectar con Autofirma». Con
+`sudo dpkg-reconfigure autofirma` después de abrir Firefox una vez, funciona.
+
+**Lo que cierra E1, entonces, no es otra tarde de VM: es un disparador en
+`encina-autofirma`** que reejecute su configurador cuando aparezca un perfil de
+Mozilla. Mientras no exista, la secuencia son cuatro órdenes y está escrita como
+tal en `AGENTS.md` §6.4. Todo lo demás de E1 está hecho y medido, incluidas las
+seis barreras cerradas sobre esa máquina (`MEDICIONES.md` §4.12).
+
 ### La pregunta que hay que hacerle a E2 antes de abrirlo
 
 Es la lección de A3 y de B∥, y ha acertado las dos veces: **¿qué comando
@@ -318,14 +333,24 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 **No arrancar dos a la vez.** Se listan y se arrancan con `utmctl list` y
 `utmctl start <nombre>`, sin abrir la interfaz de UTM.
 
-| VM | Qué es | Estado |
-|---|---|---|
-| `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
-| `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | Se queda: línea base virgen, y de ella se clona |
-| `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | Se queda: es la mitad roja de las mediciones |
-| `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | **Redundante.** Candidata a borrar |
-| `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | Sus mediciones están grabadas y la imagen no llevará Snap. **Candidata** |
-| `encina-A2-verificada` | Red de seguridad de A2 | A2 está en git y en CI verde. **Candidata** |
+| VM | Qué es | Vídeo | Estado |
+|---|---|---|---|
+| `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | `gpu-pci` | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
+| `encina-E1-meta` | **Banco de E1.** Clon virgen instalado por la secuencia, con los cuatro paquetes y `encina-meta` 0.1.1. **Sin ningún certificado, a propósito** | `ramfb-gl` | **En uso.** Aquí se ejecutó la definición de terminado de E1 |
+| `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `ramfb-gl` | Se queda: línea base virgen, y de ella se clona |
+| `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | `gpu-pci` | Se queda: es la mitad roja de las mediciones, y la base del positivo de §4.9 |
+| `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Redundante.** Candidata a borrar |
+| `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | `ramfb-gl` | Sus mediciones están grabadas y la imagen no llevará Snap. **Candidata** |
+| `encina-A2-verificada` | Red de seguridad de A2 | `gpu-pci` | A2 está en git y en CI verde. **Candidata** |
+| ~~`encina-firma-efimera`~~ | El positivo de E1, sobre máquina virgen | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
+
+**La columna de vídeo es nueva y no es decorativa.** Medido el 2026-08-08
+(`MEDICIONES.md` §4.12c): las VMs no son comparables entre sí, y el diff completo
+de sus configuraciones de UTM da **esa única diferencia**. Las `gpu-pci` son las
+máquinas viejas, donde se validó A1, A2 y el primer positivo; la línea base
+virgen y sus clones son `ramfb-gl`. **Un resultado visual medido en una familia no
+vale automáticamente en la otra.** Y `lspci` **no** sirve para saber cuál tienes:
+devuelve lo mismo con las dos.
 
 ### 9.1 No hay estado bueno conservable, y es a propósito
 

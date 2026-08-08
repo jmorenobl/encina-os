@@ -52,6 +52,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
 | §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c** |
 | §4.11 | E1 ejecutado en una VM con escritorio | Sí. Cierra lo que §4.10 dejaba deducido, y tumba el `Recommends: libreoffice-l10n-es` con su motivo escrito |
+| §4.12 | El positivo sobre una máquina virgen instalada por la secuencia | Sí. Las seis barreras cerradas ahí, **y el defecto de orden que deja AutoFirma sin CA en el navegador**. Contiene además la única técnica conocida para mirar la pantalla de una VM sin ojos |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -1242,6 +1243,150 @@ desde el repo local; con `.deb` sueltos al lado, no, y no es un fallo.
 **Lo que sigue sin medirse:** la firma real sobre esta secuencia. Va en un clon
 efímero con certificado personal, que se destruye después (§9.1), y es la única
 casilla que decide.
+
+---
+
+### 4.12 EL POSITIVO SOBRE UNA MÁQUINA VIRGEN, y lo que costó llegar (2026-08-08)
+
+**«Fichero firmado correctamente», mirado en pantalla**, en
+`valide.redsara.es/valide/firmar/ejecutar.html`, con certificado real de la FNMT,
+sobre `encina-firma-efimera` —clon virgen de `encina-limpia-respaldo` **instalado
+por la secuencia de E1**, no montado a mano— y con los cuatro paquetes de Encina.
+La VM se destruyó después (§9.1): `utmctl delete`, directorio borrado y
+comprobado que no queda ninguna copia del `.p12`.
+
+**Qué añade esto al positivo de §4.9.** Aquel se hizo sobre un clon de
+`encina-autofirma-rota`, una máquina montada a mano que **ya tenía Firefox nativo
+y perfiles de Mozilla creados**. Este es el primero sobre una máquina que no
+había tenido nunca nada, instalada por la secuencia documentada. Las seis
+barreras, del log de AutoFirma y de `ss`:
+
+```
+java ... -jar /usr/share/autofirma/autofirma.jar afirma://websocket?ports=...&v=4
+    -> Firefox entrega el URI afirma:            B1a y B1b
+127.0.0.1:53215 <-> 127.0.0.1:36164  (establecida y sostenida)
+    -> el navegador confia en la CA del socket   B2
+Directorio de bibliotecas NSS: /usr/lib/aarch64-linux-gnu
+    -> NSS localizado en arm64                   B6
+perfiles determinado por 'AFIRMA_NSS_PROFILES_INI' -> 9002enln.default-release
+    -> el perfil correcto, no el del Snap        B4
+Almacen de claves cargado / Mostramos el dialogo de seleccion de certificados
+Certificado seleccionado por el usuario
+```
+
+**Pero la casilla que decide NO se marca, y hay que ser exacto con el motivo.**
+`AGENTS.md` §6.4 exige la secuencia «tal cual y sin ningún arreglo fuera de
+ella». Hubo dos desviaciones, y **solo la primera es culpa del producto**:
+
+**a) La secuencia de E1 deja AutoFirma sin configurar en el navegador. Es un
+defecto real, y va con fechas:**
+
+```
+12:13:52  se genera /usr/share/autofirma/Autofirma_ROOT.cer   (postinst, paso 1)
+12:22:19  NACE ~/.config/mozilla/firefox/                     (nueve minutos despues)
+```
+
+El configurador corre en el paso 1, cuando **Firefox nativo todavía no existe** —
+llega en el paso 3 — y por tanto no hay ningún perfil donde instalar la CA del
+socket. Resultado: `certutil -L` sobre el perfil lista **solo** el certificado
+personal, sin `SocketAutoFirma`, y la sede responde «No es posible conectar con
+Autofirma debido a un problema de comunicación o de instalación del cliente»,
+que es un mensaje que apunta al sitio equivocado.
+
+**El paquete lo avisó, y el script se lo tragó.** En `/var/log/apt/term.log`:
+
+```
+autofirma: AVISO: no se ha encontrado ningún perfil de Mozilla, así que la CA
+autofirma:        del socket NO se ha instalado en ningún navegador.
+autofirma:        Es lo normal si Firefox no se ha abierto todavía. Abre Firefox
+autofirma:        una vez y repite la configuración con:
+autofirma:          sudo dpkg-reconfigure autofirma
+```
+
+`11-meta-instalar.sh` captura la salida de apt en una variable y **solo la
+imprime si apt falla**. apt salió con 0. Un aviso que nadie ve no es un aviso.
+
+Ejecutado `sudo dpkg-reconfigure autofirma` con Firefox cerrado, la CA aparece, y
+se comprueba **por huella y no por nombre** (trampa de §9), con control negativo:
+
+```
+CA en el perfil   96:CE:8D:21:...:73:EA:E7
+CA del paquete    96:CE:8D:21:...:73:EA:E7    (antes era C2:F6:...: la regenero)
+socket CN=127.0.0.1 emitido por CN=Autofirma ROOT
+openssl verify -no-CAfile -no-CApath -no-CAstore -CAfile <CA del perfil>  -> OK
+   ... contra una CA equivocada                                          -> error 20
+```
+
+**Consecuencia: la secuencia son CUATRO pasos, no tres**, mientras el paquete no
+traiga un disparador que reejecute su configurador cuando aparezca un perfil. El
+cuarto es «abre Firefox una vez y `sudo dpkg-reconfigure autofirma`». **El arreglo
+bueno pertenece a `encina-autofirma`, no a este repositorio.**
+
+**b) La segunda desviación no es del producto: es del laboratorio.** El diálogo de
+AutoFirma **no se dibuja** en la VM. Medido sin ojos, capturando la ventana X11 y
+contando colores:
+
+```
+virtio-ramfb-gl + Wayland + por defecto        colores=1     medio=0      negro
+virtio-ramfb-gl + Wayland + xrender=false      colores=4317               pinta
+"virtio-gpu-pci" + Wayland + por defecto       colores=106                negro
+virtio-gpu-pci? + Xorg    + por defecto        pinta, y con el se firmo
+```
+
+`colores=106` es el antialiasing del texto de la barra de título, que la dibuja
+mutter: todo lo que pinta Java sigue en negro.
+
+**Lo que NO está establecido, y es importante no dejarlo escrito como si lo
+estuviera:**
+
+- **La verificación del cambio de tarjeta no verificaba nada.** Se dio por
+  aplicada leyendo `lspci`, que devuelve `Virtio 1.0 GPU (rev 01)` — y
+  `encina-autofirma-rota`, con la tarjeta **distinta**, devuelve esa misma cadena.
+  Es la trampa 5 de `SCRIPTS.md`: una comprobación que responde lo mismo en los
+  dos casos. Por tanto **no se sabe si el plist editado llegó a aplicarse**, y la
+  fila «virtio-gpu-pci + Wayland» de la tabla no es fiable.
+- **La hipótesis de Xorg se probó y no explica el pasado.** `encina-autofirma-rota`
+  —base del positivo de §4.9— corría **Wayland**: `Session=ubuntu` en
+  `/var/lib/AccountsService/users/jorge`, `gnome-session-wayland.target` en el
+  journal del 7 de agosto, y sin `~/.xsession-errors`, que solo existe en X11. El
+  método de leer AccountsService se validó antes de usarlo, contra una verdad
+  conocida (`Type=x11` ↔ `Session=ubuntu-xorg`).
+- **La hipótesis viva**, no medida: la tarjeta es la causa y la edición del plist
+  no se aplicó. El experimento que la cierra es barato y **no necesita ningún
+  certificado**: cambiar la tarjeta de `encina-E1-meta` desde la interfaz de UTM,
+  arrancar, y repetir la medida de colores sobre la ventana de AutoFirma.
+
+**c) Las VMs de este proyecto no son comparables entre sí, y no estaba escrito.**
+
+```
+virtio-gpu-pci    encina-dev, encina-dev-firefox, encina-A2-verificada, encina-autofirma-rota
+virtio-ramfb-gl   encina-limpia-respaldo, encina-snap-fabrica, y todo clon de la primera
+```
+
+Las cuatro de arriba son las máquinas viejas, donde se validó A1, A2 y el
+positivo de §4.9. La línea base virgen de la que sale todo lo nuevo tiene otra
+tarjeta. El diff completo de las dos configuraciones de UTM da **exactamente una
+diferencia**, esa. **Un resultado visual medido en una familia no vale
+automáticamente en la otra**, y eso afecta hacia atrás: el `[OMIT]` del splash de
+Plymouth se midió en `encina-dev`, que es de la otra familia.
+
+**d) Cómo se miró la pantalla sin ojos, que sirve para el futuro.** La captura por
+DBus de GNOME está prohibida (`Screenshot is not allowed`) y `org.gnome.Shell.Eval`
+está capado desde GNOME 41 (devuelve `(false, '')`). Lo que **sí** funciona, para
+clientes X11 bajo XWayland:
+
+```
+export DISPLAY=:0
+export XAUTHORITY=$(ls -t /run/user/<uid>/.mutter-Xwaylandauth.* | head -1)
+xwininfo -root -children                  # geometria y Map State
+import -window <id> /tmp/x.png            # captura de esa ventana
+identify -format '%k %[mean]' /tmp/x.png  # colores distintos y luminancia media
+```
+
+`XAUTHORITY` es imprescindible: sin él, `Authorization required`. Y el número de
+colores es la medida: **1 color es una ventana sin pintar**, y lo distingue de una
+pintada sin necesidad de mirarla. No sirve para ventanas Wayland nativas, solo
+para las de XWayland — que es justo el caso de AutoFirma.
 
 ---
 
