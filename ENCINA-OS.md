@@ -291,26 +291,49 @@ Tres matices:
 
 ## 9. Las VMs de UTM
 
-`ssh jorge@192.168.64.3`, `sudo` sin contraseña. **Las cinco tienen el mismo
+`ssh jorge@192.168.64.3`, `sudo` sin contraseña. **Las seis tienen el mismo
 hostname (`encina-dev`) y la misma IP**, incluidas las clonadas: el hostname no
 distingue nada. Para saber en cuál estás, lo que funciona es «paquetes
 instalados + versión del Snap de Firefox + qué perfiles existen».
 
-**No arrancar dos a la vez.**
+**No arrancar dos a la vez.** Se listan y se arrancan con `utmctl list` y
+`utmctl start <nombre>`, sin abrir la interfaz de UTM.
 
-| VM | Qué es | Bajo el enfoque nuevo |
+| VM | Qué es | Estado |
 |---|---|---|
-| `encina-autofirma-firma` | Donde salió la firma real, con certificado FNMT, en VALIDe | **La más valiosa que existe. Único estado bueno conocido.** No tocarla |
+| `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
 | `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | Se queda: línea base virgen, y de ella se clona |
 | `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | Se queda: es la mitad roja de las mediciones |
 | `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | **Redundante.** Candidata a borrar |
 | `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | Sus mediciones están grabadas y la imagen no llevará Snap. **Candidata** |
 | `encina-A2-verificada` | Red de seguridad de A2 | A2 está en git y en CI verde. **Candidata** |
-| `encina-dev` | Banco de A1, con el usuario `prueba` | A1 está en git y en CI verde. **Candidata** |
 
-**Antes de borrar ninguna:** arranca `encina-autofirma-firma` y confirma que
-sigue firmando. Es la única irreemplazable y se creó durante B∥, así que no
-estaba documentada hasta hoy.
+### 9.1 No hay estado bueno conservable, y es a propósito
+
+`encina-autofirma-firma` —la VM donde salió el primer positivo de extremo a
+extremo el 2026-08-07— **ya no existe. Se destruyó deliberadamente porque
+contenía el certificado personal de la FNMT**, y una máquina con un certificado
+de firma real dentro no se guarda ni se clona. Es la decisión correcta y no se
+revisa.
+
+**La consecuencia hay que tenerla presente cada vez que se escriba una
+definición de terminado**, porque es fácil escribir una casilla imposible:
+
+- **El positivo sigue siendo real.** Está medido y registrado con sus salidas
+  (`MEDICIONES.md` §4.9, y M11 del repositorio `encina-autofirma`). Lo que no
+  hay es una máquina contra la que volver a contrastar.
+- **Todo lo que no sea la firma final se verifica con un certificado de
+  prueba**, sin tocar el personal: es lo que ya se hizo en M6 con
+  `CERT-PRUEBA-ENCINA`, y lo que hacen las 21 comprobaciones de
+  `verificar-deb.sh` en contenedor. Cubre las seis barreras salvo el «¿la sede
+  lo acepta?».
+- **La firma real es, por construcción, manual y efímera.** Se clona una VM, se
+  mete el certificado, se firma en `valide.redsara.es`, se mira en pantalla, se
+  anota, y **se destruye la VM**. No es un banco de pruebas: es un experimento
+  de un solo uso.
+- **Ninguna casilla puede decir «compruébalo contra el estado bueno».** No lo
+  hay ni lo habrá. Puede decir «repite el experimento efímero», que es otra cosa
+  y cuesta más.
 
 ---
 

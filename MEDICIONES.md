@@ -49,7 +49,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.6 | Estrategia de fork | Ejecutada. Histórico |
 | §4.7 | ¿El `.deb` corregido hace innecesario el Firefox nativo? | **Sí, y es la sección más importante para el producto de hoy.** La respuesta es no |
 | §4.8 | Forma del fork: tres repositorios | Ejecutada. Histórico |
-| §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. Es el estado bueno conocido |
+| §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 

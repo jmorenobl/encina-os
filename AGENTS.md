@@ -547,7 +547,11 @@ Ejecutar en VM, sobre una Ubuntu 24.04 arm64 limpia clonada de
 - [ ] Una entrada de matriz nueva en `build.yml`, verde
 - [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con
       `encina-meta` instalado y **nada tocado a mano**, sale una firma en
-      `valide.redsara.es` con certificado real. Mirada en pantalla
+      `valide.redsara.es` con certificado real. Mirada en pantalla.
+      **Es un experimento de un solo uso:** se hace sobre una VM clonada para
+      la ocasión y **esa VM se destruye después**, porque lleva dentro un
+      certificado de firma personal (`ENCINA-OS.md` §9.1). Todo lo demás de
+      esta lista se comprueba sin él
 
 **La última casilla es la única que importa de verdad**, y es la única que
 ningún script puede dar por buena. Las otras siete pueden salir todas verdes con
@@ -658,9 +662,15 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
   `scripts/`, para la CI y para la receta de imagen. Las siete trampas de
   `SCRIPTS.md` son siete formas de que esto salga caro, y las siete dan **falsos
   negativos o comprobaciones que no comprueban**.
-- **Ahora existe un estado bueno conocido**, que antes no había: la VM
-  `encina-autofirma-firma`, donde salió una firma real. Cuando dudes de si una
-  comprobación discrimina, la respuesta es ejecutarla allí y ver si sale verde.
+- **No existe ninguna máquina donde la firma funcione, y no va a existir.** La
+  VM del primer positivo se destruyó a propósito porque contenía un certificado
+  personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido y
+  registrado; lo que no hay es un estado bueno contra el que contrastar. **No
+  escribas nunca una comprobación cuya validación sea «ejecútala en la máquina
+  buena».** Lo que sí puedes hacer: verificar todo menos la firma final con un
+  **certificado de prueba** —es lo que hizo M6 con `CERT-PRUEBA-ENCINA`— y dejar
+  la firma real como experimento manual de un solo uso, en una VM que se
+  destruye después.
 - **`git` a través del hook de `rtk` devuelve commits que no son.** Se le pide un
   hash y contesta otro, con su asunto, sin fallar ni avisar. Cualquier medición
   sobre git va con `/usr/bin/git` o con `rtk proxy` (`MEDICIONES.md` §4.9d).

@@ -92,6 +92,14 @@ Todos son idempotentes: ejecútalos las veces que quieras. `02-activos.sh` no
 sobrescribe activos existentes salvo con `--forzar`, para que el día que pongas
 el logotipo de verdad no te lo machaque un script.
 
+**Desde el 2026-08-08, `02-activos.sh --forzar` es destructivo.** Ese día llegó:
+`encina.jpg` y `encina-dark.jpg` ya no son los degradados que generaba el script,
+son fotografías. El script sigue sabiendo fabricar el degradado, así que
+`--forzar` **las sustituiría por él sin preguntar** y las dos comprobaciones que
+hace después —que son JPEG y que difieren entre sí— saldrían en verde igualmente.
+Sin `--forzar` las omite, que es lo correcto. Si alguna vez hay que regenerarlas,
+se rehacen desde `assets/wallpaper/`, no con el script.
+
 ## Ubicación del repositorio
 
 Por defecto `~/encina`. Si lo tienes en otro sitio:

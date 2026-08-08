@@ -1,3 +1,32 @@
+encina-branding (0.1.7) noble; urgency=medium
+
+  * Fondos de pantalla propios en lugar de los degradados generados.
+    Cinco fotografias de Amanda Anusane publicadas en Unsplash,
+    recortadas a 16:9 y reescaladas a 3840x2160.
+  * encina.jpg y encina-dark.jpg pasan a ser la MISMA fotografia, la
+    segunda atenuada a gamma 0,35, para que alternar entre tema claro y
+    oscuro no cambie de paisaje. Se conservan esos dos nombres a
+    proposito: los llevan escritos a mano 02-activos.sh, que asi los
+    omite en vez de regenerar el degradado, y 03-construir.sh, que
+    comprueba que el .deb los incluya.
+  * Las otras cuatro (amapolas, olivar, sierra, farallon) se ofrecen en
+    Ajustes -> Apariencia mediante gnome-background-properties. El
+    gschema.override NO se toca: sigue apuntando a los mismos dos
+    nombres.
+  * debian/copyright declara la Unsplash License con su texto y la
+    autoria, y avisa de que es permisiva pero no es una licencia libre
+    al uso ni cumple las DFSG.
+  * Logotipo rehecho para que coincida con la identidad visual: una
+    encina cuya copa y raices son una red de nodos, en lugar de la hoja
+    suelta anterior. La copa es un racimo de circulos solapados del
+    mismo color, que se leen como una silueta unica y siguen siendo
+    reconocibles a 16 px cuando la malla interior ya no se distingue.
+    logo.png, que Plymouth saca de ese SVG, se regenero con rsvg-convert
+    a mano y NO con 02-activos.sh --forzar, que habria sustituido los
+    fondos nuevos por el degradado.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 08 Aug 2026 02:45:54 +0200
+
 encina-branding (0.1.6) noble; urgency=medium
 
   * Anadir barra de progreso al splash y hacer perceptible el latido del

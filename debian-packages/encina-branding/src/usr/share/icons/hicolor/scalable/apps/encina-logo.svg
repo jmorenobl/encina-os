@@ -1,13 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Logotipo de Encina OS: hoja de encina. Activo propio (R8). -->
+<!--
+  Logotipo de Encina OS. Activo propio (R8): ninguna marca de terceros.
+
+  Una encina cuya copa y raices son una red de nodos: el arbol de la dehesa y
+  la red de confianza que hace posible una firma electronica.
+
+  Reescrito el 2026-08-08 para que coincida con la identidad visual del banner
+  (assets/identidad.png). La version anterior era una hoja suelta y no se
+  parecia a nada de lo demas.
+
+  La copa es un racimo de circulos del MISMO color y sin borde: al solaparse se
+  leen como una sola silueta lobulada, sin necesidad de un path complicado ni
+  de filtros. Es lo que hace que el icono siga siendo reconocible a 16 px,
+  cuando la malla interior ya no se distingue.
+
+  Verde encina #3A664E y arcilla #D6BFA0, de la paleta de la identidad.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <g fill="none" stroke="#6E8F5E" stroke-width="5" stroke-linecap="round">
-    <path d="M64 116 V44"/>
+
+  <!-- Copa: racimo de circulos solapados = una sola silueta -->
+  <g fill="#3A664E">
+    <circle cx="64" cy="34" r="19"/>
+    <circle cx="46" cy="39" r="16"/>
+    <circle cx="82" cy="39" r="16"/>
+    <circle cx="53" cy="24" r="12"/>
+    <circle cx="75" cy="24" r="12"/>
+    <circle cx="34" cy="46" r="12"/>
+    <circle cx="94" cy="46" r="12"/>
+    <circle cx="64" cy="51" r="16"/>
+    <circle cx="42" cy="53" r="11"/>
+    <circle cx="86" cy="53" r="11"/>
   </g>
-  <path fill="#4A6741" d="M64 10
-    c-6 8-14 9-21 8 3 5 3 9 1 12-6-2-12-1-16 3 6 3 9 7 9 12-6 1-11 5-12 11
-    7 0 13 3 15 8 5-4 11-5 16-3-1 6 1 11 8 15 7-4 9-9 8-15 5-2 11-1 16 3
-    2-5 8-8 15-8-1-6-6-10-12-11 0-5 3-9 9-12-4-4-10-5-16-3-2-3-2-7 1-12
-    -7 1-15 0-21-8z"/>
-  <circle cx="64" cy="120" r="5" fill="#6E8F5E"/>
+
+  <!-- Malla dentro de la copa -->
+  <g stroke="#D6BFA0" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M64 22 L48 30 M64 22 L64 38 M64 22 L80 30"/>
+    <path d="M48 30 L36 44 M48 30 L64 38 M48 30 L50 50"/>
+    <path d="M80 30 L64 38 M80 30 L92 44 M80 30 L78 50"/>
+    <path d="M36 44 L50 50 M92 44 L78 50"/>
+    <path d="M64 38 L50 50 M64 38 L78 50"/>
+    <path d="M50 50 L64 60 M78 50 L64 60"/>
+  </g>
+  <g fill="#D6BFA0">
+    <circle cx="64" cy="22" r="2.6"/>
+    <circle cx="48" cy="30" r="2.6"/>
+    <circle cx="80" cy="30" r="2.6"/>
+    <circle cx="36" cy="44" r="2.6"/>
+    <circle cx="92" cy="44" r="2.6"/>
+    <circle cx="64" cy="38" r="2.6"/>
+    <circle cx="50" cy="50" r="2.6"/>
+    <circle cx="78" cy="50" r="2.6"/>
+    <circle cx="64" cy="60" r="2.6"/>
+  </g>
+
+  <!-- Tronco y raices, tambien en red.
+       El tronco se ENSANCHA hacia abajo y lleva aspas: sin ellas parecia un
+       mastil, y las raices, patas de caballete. -->
+  <g stroke="#3A664E" stroke-width="4.2" stroke-linecap="round" fill="none">
+    <path d="M59 62 L54 88 M69 62 L74 88"/>
+    <path d="M57 76 L71 76 M54 88 L74 88"/>
+    <path d="M54 88 L34 102 M54 88 L46 110"/>
+    <path d="M64 88 L64 108"/>
+    <path d="M74 88 L82 110 M74 88 L94 102"/>
+  </g>
+  <g fill="#3A664E">
+    <circle cx="57" cy="76" r="3"/>
+    <circle cx="71" cy="76" r="3"/>
+    <circle cx="54" cy="88" r="3.4"/>
+    <circle cx="64" cy="88" r="3.4"/>
+    <circle cx="74" cy="88" r="3.4"/>
+    <circle cx="34" cy="102" r="2.8"/>
+    <circle cx="46" cy="110" r="2.8"/>
+    <circle cx="64" cy="108" r="2.8"/>
+    <circle cx="82" cy="110" r="2.8"/>
+    <circle cx="94" cy="102" r="2.8"/>
+  </g>
 </svg>

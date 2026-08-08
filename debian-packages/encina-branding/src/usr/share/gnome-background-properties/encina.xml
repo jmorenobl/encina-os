@@ -1,10 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<!--
+  Hace que estos fondos aparezcan en Ajustes -> Apariencia.
+
+  El primero es el predeterminado y el unico con <filename-dark>: es la misma
+  fotografia atenuada, para que alternar entre tema claro y oscuro no cambie de
+  paisaje. Los otros cuatro son alternativas y se ven igual en los dos temas.
+
+  Los nombres de fichero encina.jpg y encina-dark.jpg NO son arbitrarios: los
+  llevan escritos a mano 02-activos.sh (que los omite si ya existen, en vez de
+  regenerar el degradado que habia antes) y 03-construir.sh (que comprueba que
+  el .deb los incluya). Renombrarlos rompe las dos cosas en silencio.
+
+  pcolor y scolor son el color de relleno mientras carga y en los margenes que
+  'zoom' no cubra. Se dejan en el verde del gschema.override para que las dos
+  cosas no se separen.
+-->
 <wallpapers>
   <wallpaper deleted="false">
     <name>Encina</name>
     <filename>/usr/share/backgrounds/encina/encina.jpg</filename>
     <filename-dark>/usr/share/backgrounds/encina/encina-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <pcolor>#2F4033</pcolor>
+    <scolor>#2F4033</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Encina — Amapolas</name>
+    <filename>/usr/share/backgrounds/encina/amapolas.jpg</filename>
+    <options>zoom</options>
+    <pcolor>#2F4033</pcolor>
+    <scolor>#2F4033</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Encina — Olivar</name>
+    <filename>/usr/share/backgrounds/encina/olivar.jpg</filename>
+    <options>zoom</options>
+    <pcolor>#2F4033</pcolor>
+    <scolor>#2F4033</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Encina — Sierra</name>
+    <filename>/usr/share/backgrounds/encina/sierra.jpg</filename>
+    <options>zoom</options>
+    <pcolor>#2F4033</pcolor>
+    <scolor>#2F4033</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Encina — Farallón</name>
+    <filename>/usr/share/backgrounds/encina/farallon.jpg</filename>
     <options>zoom</options>
     <pcolor>#2F4033</pcolor>
     <scolor>#2F4033</scolor>
