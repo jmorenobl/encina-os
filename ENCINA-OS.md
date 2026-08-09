@@ -89,7 +89,7 @@ redacción y la cuarta se enmienda.
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
 | Scripts | Catorce, en `scripts/`, versionados con el repositorio |
 | Licencia | EUPL-1.2, texto oficial completo verificado contra EUR-Lex |
-| `encina-meta` | **Construido, instalado y verificado en VM, y con LA CASILLA QUE DECIDE MARCADA (2026-08-09).** v0.1.1, `changelog` con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **11 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre un clon virgen instalado por la secuencia de **tres órdenes, tal cual y sin nada fuera de ella**, salió una firma real en `valide.redsara.es`, mirada en pantalla (`MEDICIONES.md` §4.13). **La casilla 12 no se puede cumplir dentro de E1 y se sabe por qué**: con los `.deb` puestos por ruta, apt los marca manuales y `autoremove` no los propone; se cumple en E2, con el repo local |
+| `encina-meta` | **Construido, instalado y verificado en VM, y con LA CASILLA QUE DECIDE MARCADA (2026-08-09).** v0.1.1, `changelog` con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **11 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre un clon virgen instalado por la secuencia de **tres órdenes, tal cual y sin nada fuera de ella**, salió una firma real en `valide.redsara.es`, mirada en pantalla (`MEDICIONES.md` §4.13). **La casilla que falta —la novena, la del `autoremove`— no se puede cumplir dentro de E1, y se sabe por qué**: con los `.deb` puestos por ruta, apt los marca manuales y `autoremove` no los propone; se cumple en E2, con el repo local |
 | Instalación desatendida | **No existe.** Es el segundo incremento |
 | ~~`encina-doctor`~~ | **Suprimido el 2026-08-08 sin escribir una línea.** Ver §6.1 |
 
@@ -166,7 +166,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
-| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO en lo que decide (2026-08-09).** 11 de 12 casillas, incluida la que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La casilla 12 (`autoremove`) no es cumplible con `.deb` sueltos y se cierra en E2 |
+| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO en lo que decide (2026-08-09).** 11 de 12 casillas, incluida la que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no es cumplible con `.deb` sueltos y se cierra en E2 |
 | **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | Sin abrir |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
@@ -225,7 +225,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 casilla que decide se marcó ese día, con una firma real sobre un clon virgen
 instalado por la secuencia de tres órdenes (`MEDICIONES.md` §4.13). Lo que sigue
 en esta sección es el registro de E1, que se conserva porque explica **por qué**
-la secuencia es la que es, y porque su casilla 12 —`autoremove`— es justo lo que
+la secuencia es la que es, y porque su casilla novena —`apt purge` + `autoremove`— es justo lo que
 E2 tiene que cerrar. La pregunta con la que abrir E2 está más abajo.
 
 ### E1 — `encina-meta` (terminado en lo que decide)
