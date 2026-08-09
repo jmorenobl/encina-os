@@ -803,18 +803,31 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       Firefox congela ese campo en Linux a propósito y no significa nada aquí.
       Miradas también en la misma sesión, y correctas, el fondo en claro y en
       oscuro (`encina-branding` 0.1.7 sobre una máquina donde nunca había estado)
-- [ ] **[OJOS] La casilla que decide:** sobre esa máquina, con la secuencia de
+- [x] **[OJOS] La casilla que decide:** sobre esa máquina, con la secuencia de
       arriba ejecutada **tal cual y sin ningún arreglo fuera de ella**, sale una
       firma en `valide.redsara.es` con certificado real. Mirada en pantalla.
+      **MARCADA EL 2026-08-09** sobre `encina-firma-efimera`, clon virgen de
+      `encina-limpia-respaldo` con huella tomada antes de tocarla. La secuencia,
+      **tres órdenes, sin `dpkg-reconfigure` y sin nada fuera de ella**: 29
+      correctas, 0 fallos, 1 aviso —el del `postinst`, que es el que debe
+      salir— y 1 omitida. La CA del socket **llegó sola** al abrir Firefox
+      (`11:16:59`, dos segundos tras el almacén NSS; misma huella que la del
+      paquete, `30:67:39:25…69:C1`), y el `postinst` había corrido **una** sola
+      vez. Certificado importado y **firma mirada en pantalla por Jorge**.
+      Salidas completas en `MEDICIONES.md` §4.13. La VM se destruyó después
+      (§9.1) y se comprobó que no queda ninguna copia del `.p12`.
       **Es un experimento de un solo uso:** se hace sobre una VM clonada para
       la ocasión y **esa VM se destruye después**, porque lleva dentro un
       certificado de firma personal (`ENCINA-OS.md` §9.1). Todo lo demás de
-      esta lista se comprueba sin él.
-      **Intentada el 2026-08-08 sobre `encina-firma-efimera`. LA FIRMA SALIÓ
-      —«Fichero firmado correctamente», mirado en pantalla, con certificado real
-      de la FNMT— Y AUN ASÍ LA CASILLA NO SE MARCÓ**, porque la secuencia no
-      bastó. Detalle con salidas en `MEDICIONES.md` §4.12. Hubo dos desviaciones,
-      y **la primera ya no existe**:
+      esta lista se comprueba sin él. **Y por eso esta casilla, una vez marcada,
+      no se puede volver a contrastar contra ninguna máquina**: si algún día hay
+      que rehacerla, se rehace el experimento entero.
+      **El intento del 2026-08-08, que es lo que hizo falta para llegar aquí.**
+      Sobre otra VM efímera con el mismo nombre, **la firma salió igual** —mirada
+      en pantalla, con certificado real de la FNMT— **y aun así la casilla no se
+      marcó**, porque la secuencia no bastó. Detalle con salidas en
+      `MEDICIONES.md` §4.12. Hubo dos desviaciones, y **ninguna de las dos existe
+      ya**:
       *(1)* **RESUELTA el 2026-08-09, y no aquí.** Era que el paso 1 instalaba
       `autofirma` cuando Firefox nativo aún no existía —llega en el paso 3—, así
       que su configurador no encontraba ningún perfil de Mozilla y **la CA del
@@ -832,15 +845,12 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       causa sí quedó establecida el mismo 2026-08-08**: la tarjeta de vídeo
       emulada. Con `virtio-gpu-pci` pinta sin ninguna variable de entorno
       (`MEDICIONES.md` §4.12b), y las VMs se igualaron.
-      La VM se destruyó después, y se comprobó que no queda ninguna copia del
-      `.p12`.
-      **LA CASILLA SIGUE SIN MARCAR, y ahora por un solo motivo: el experimento
-      no se ha repetido.** Ya no hay ninguna desviación del producto que lo
-      bloquee. Hace falta otro clon efímero de `encina-limpia-respaldo`, un
-      certificado personal, la secuencia de tres órdenes tal cual, una firma en
-      `valide.redsara.es` mirada en pantalla, y destruir la VM. **No vale
-      `encina-E1-vigilante`**: allí la CA ya está instalada, así que no puede
-      volver a reproducir el caso virgen
+      Aquella VM se destruyó también, y se comprobó que no quedaba ninguna copia
+      del `.p12`.
+      **Lo que separa las dos fechas no es una tarde más de VM: es un paquete.**
+      El 8 de agosto la firma salía y la secuencia no bastaba; el 9, con
+      `autofirma 1.9.1+encina2`, basta. Es la diferencia entre «se puede hacer
+      funcionar» y «funciona», que es justo lo que esta casilla mide
 
 **La última casilla es la única que importa de verdad**, y es la única que
 ningún script puede dar por buena. Las otras pueden salir todas verdes con el

@@ -89,7 +89,7 @@ redacción y la cuarta se enmienda.
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
 | Scripts | Catorce, en `scripts/`, versionados con el repositorio |
 | Licencia | EUPL-1.2, texto oficial completo verificado contra EUR-Lex |
-| `encina-meta` | **Construido, instalado y verificado en VM.** v0.1.1, `changelog` creado con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **10 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre una máquina virgen instalada por su secuencia salió una firma real en `valide.redsara.es`, mirada en pantalla — pero **la casilla que decide sigue sin marcar**. El cuarto paso que hizo falta entonces **ya no existe** (`+encina2`, §4.12a enmendada); lo que falta ahora es solo repetir el experimento de la firma en un clon efímero |
+| `encina-meta` | **Construido, instalado y verificado en VM, y con LA CASILLA QUE DECIDE MARCADA (2026-08-09).** v0.1.1, `changelog` con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **11 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre un clon virgen instalado por la secuencia de **tres órdenes, tal cual y sin nada fuera de ella**, salió una firma real en `valide.redsara.es`, mirada en pantalla (`MEDICIONES.md` §4.13). **La casilla 12 no se puede cumplir dentro de E1 y se sabe por qué**: con los `.deb` puestos por ruta, apt los marca manuales y `autoremove` no los propone; se cumple en E2, con el repo local |
 | Instalación desatendida | **No existe.** Es el segundo incremento |
 | ~~`encina-doctor`~~ | **Suprimido el 2026-08-08 sin escribir una línea.** Ver §6.1 |
 
@@ -166,7 +166,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
-| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **CASI.** 10 de 12 casillas. Firma real conseguida sobre máquina virgen; la secuencia **no bastó entonces** y **hoy sí basta** —`+encina2` cerró el cuarto paso, §4.12a enmendada—, pero eso hay que volver a verlo en pantalla |
+| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO en lo que decide (2026-08-09).** 11 de 12 casillas, incluida la que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La casilla 12 (`autoremove`) no es cumplible con `.deb` sueltos y se cierra en E2 |
 | **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | Sin abrir |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
@@ -221,7 +221,14 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-### E1 — `encina-meta`
+**Desde el 2026-08-09 esa tarea es E2.** E1 está hecho en lo que prometía: la
+casilla que decide se marcó ese día, con una firma real sobre un clon virgen
+instalado por la secuencia de tres órdenes (`MEDICIONES.md` §4.13). Lo que sigue
+en esta sección es el registro de E1, que se conserva porque explica **por qué**
+la secuencia es la que es, y porque su casilla 12 —`autoremove`— es justo lo que
+E2 tiene que cerrar. La pregunta con la que abrir E2 está más abajo.
+
+### E1 — `encina-meta` (terminado en lo que decide)
 
 Un paquete `Architecture: all` sin ficheros propios cuyo trabajo entero es
 declarar dependencias. Es pequeño a propósito y desbloquea todo lo demás: un
@@ -278,12 +285,18 @@ la secuencia de tres órdenes y sin ejecutar `dpkg-reconfigure` ni una vez (M18 
 `encina-autofirma`; enmienda en `MEDICIONES.md` §4.12a). **La secuencia son otra
 vez tres órdenes** y así está escrita en `AGENTS.md` §6.4.
 
-**La casilla que decide sigue sin marcar, y ahora por un solo motivo: el
-experimento no se ha repetido.** Ya no hay desviación del producto que lo
-bloquee — falta clonar otra vez de `encina-limpia-respaldo`, meter un certificado
-personal, firmar en `valide.redsara.es` mirándolo en pantalla, y destruir la VM.
-Todo lo demás de E1 está hecho y medido, incluidas las seis barreras cerradas
-sobre esa máquina (`MEDICIONES.md` §4.12).
+**Y LA CASILLA QUE DECIDE ESTÁ MARCADA, el mismo 2026-08-09.** Se repitió el
+experimento sobre otro clon virgen, `encina-firma-efimera`: la secuencia de tres
+órdenes tal cual —29 correctas, 0 fallos, sin `dpkg-reconfigure`—, la CA del
+socket llegando **sola** al perfil al abrir Firefox, el certificado importado, y
+la firma **mirada en pantalla**. Salidas en `MEDICIONES.md` §4.13. La VM se
+destruyó después, como manda §9.1.
+
+**Queda una casilla de doce, y no depende de este paquete.** `apt autoremove` no
+propone los tres porque entraron **por ruta** en la línea de órdenes, así que apt
+los marcó manuales; medido con A/B el 2026-08-08. Se cumple sola en cuanto los
+`.deb` lleguen como dependencias de un repositorio, que es lo que hace E2. **E1
+está terminado para lo que E1 prometía: una máquina que firma.**
 
 ### La pregunta que hay que hacerle a E2 antes de abrirlo
 
@@ -353,7 +366,8 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 | `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Redundante.** Candidata a borrar |
 | `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | `ramfb-gl` | **Ya no es candidata a borrar, y no por el Snap:** es el **único testigo de `ramfb-gl`** que queda, o sea el único sitio donde se puede reproducir que AutoFirma no se dibuja (§4.12g) |
 | `encina-A2-verificada` | Red de seguridad de A2 | `gpu-pci` | A2 está en git y en CI verde. **Candidata** |
-| ~~`encina-firma-efimera`~~ | El positivo de E1, sobre máquina virgen | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
+| ~~`encina-firma-efimera`~~ (2026-08-08) | El positivo de E1, sobre máquina virgen, con la secuencia que aún necesitaba un cuarto paso | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
+| ~~`encina-firma-efimera`~~ (2026-08-09) | **La casilla que decide.** Otro clon virgen, mismo nombre, con la secuencia ya de tres órdenes: 29/0/1/1, la CA llegando sola, y la firma mirada en pantalla (§4.13) | `gpu-pci` | **Destruida el 2026-08-09.** Mismo motivo, misma regla: llevaba el certificado personal |
 
 **La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de
 AutoFirma no se dibuja.** Medido el 2026-08-08 en la misma VM cambiando solo la

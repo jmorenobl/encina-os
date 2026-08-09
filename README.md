@@ -40,7 +40,9 @@ tú. La [tabla completa está más abajo](#el-problema-que-resuelve).
 **Hoy no se puede usar todavía.** No hay imagen publicada, no hay instalador y no
 hay paquetes descargables. El problema principal está resuelto y medido —el 7 de
 agosto de 2026 salió la primera firma real de extremo a extremo, con certificado
-de la FNMT sobre una sede real—, pero lo que hay es la receta, no el producto.
+de la FNMT sobre una sede real, y el 9 de agosto una máquina **virgen**,
+instalada solo con las tres órdenes de más abajo, firmó sin que hubiera que
+tocarle nada más—, pero lo que hay es la receta, no el producto.
 
 ### Cómo se espera que se use
 
@@ -58,7 +60,7 @@ producto que puedas aplicar a una máquina que ya tienes.
 
 | Hito | Qué te daría | Estado |
 |---|---|---|
-| **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Casi.** 10 de 12 casillas |
+| **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho.** 11 de 12 casillas, incluida la que decide: una máquina virgen instalada con la secuencia firma de verdad |
 | **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | Sin abrir |
 | **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
 | **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
@@ -150,7 +152,7 @@ que pasa el nuestro.
 | `encina-branding` | **Terminado.** v0.1.7, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
 | `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
 | `autofirma 1.9.1+encina2` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **Casi.** v0.1.1, construido y verificado en VM, 10 de 12 casillas. Sobre una máquina virgen salió una firma real, pero la casilla que decide sigue sin marcar. El cuarto paso que hizo falta entonces ya no existe —lo cerró `autofirma 1.9.1+encina2` el 2026-08-09—; falta repetir la firma con la secuencia de tres órdenes |
+| `encina-meta` | **Terminado en lo que decide.** v0.1.1, construido y verificado en VM, 11 de 12 casillas. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La casilla que falta (`autoremove`) no es cumplible con `.deb` sueltos y se cierra con la instalación desatendida |
 | Instalación desatendida | Sin abrir |
 | Imagen | Sin abrir |
 
