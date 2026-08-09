@@ -3,7 +3,7 @@
 **Punto de entrada único del proyecto.** Si no sabes por dónde seguir, lee la
 sección 7 («Empieza aquí») y nada más.
 
-Última actualización: 9 de agosto de 2026
+Última actualización: 10 de agosto de 2026
 
 ---
 
@@ -14,7 +14,7 @@ sección 7 («Empieza aquí») y nada más.
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
 | `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de cada paquete y de la imagen | Al lanzar trabajo con Claude Code |
 | `MEDICIONES.md` | Lo medido, con las salidas literales | Antes de volver a investigar algo. Casi siempre ya está medido |
-| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las ocho trampas | Antes de ejecutar nada en la VM |
+| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las nueve trampas | Antes de ejecutar nada en la VM |
 | `README.md` | Qué es el proyecto, para quien llega de fuera | Al enseñar el repositorio |
 | `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
 
@@ -89,7 +89,7 @@ redacción y la cuarta se enmienda.
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
 | Scripts | Catorce, en `scripts/`, versionados con el repositorio |
 | Licencia | EUPL-1.2, texto oficial completo verificado contra EUR-Lex |
-| `encina-meta` | **Construido, instalado y verificado en VM, y con LA CASILLA QUE DECIDE MARCADA (2026-08-09).** v0.1.1, `changelog` con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **11 de 12 casillas de §6.4 de `AGENTS.md`.** Sobre un clon virgen instalado por la secuencia de **tres órdenes, tal cual y sin nada fuera de ella**, salió una firma real en `valide.redsara.es`, mirada en pantalla (`MEDICIONES.md` §4.13). **La casilla que falta —la novena, la del `autoremove`— no se puede cumplir dentro de E1, y se sabe por qué**: con los `.deb` puestos por ruta, apt los marca manuales y `autoremove` no los propone; se cumple en E2, con el repo local |
+| `encina-meta` | **Construido, instalado y verificado en VM, y con LA CASILLA QUE DECIDE MARCADA (2026-08-09).** v0.1.1, `changelog` con `dch`, matriz de CI verde, `lintian` mudo también en el runner. **12 de 12 casillas de §6.4 de `AGENTS.md`, completadas el 2026-08-10.** Sobre un clon virgen instalado por la secuencia de **tres órdenes, tal cual y sin nada fuera de ella**, salió una firma real en `valide.redsara.es`, mirada en pantalla (`MEDICIONES.md` §4.13). **La novena —la del `autoremove`— se cerró ya en E2**, con el repo local sin firmar: `apt install encina-meta` a secas deja los otros tres marcados automáticos y entonces `autoremove` los propone (`MEDICIONES.md` §4.15) |
 | Instalación desatendida | **No existe.** Es el segundo incremento |
 | ~~`encina-doctor`~~ | **Suprimido el 2026-08-08 sin escribir una línea.** Ver §6.1 |
 
@@ -166,8 +166,8 @@ de menor a mayor riesgo, no de menor a mayor interés.
 
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
-| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO en lo que decide (2026-08-09).** 11 de 12 casillas, incluida la que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no es cumplible con `.deb` sueltos y se cierra en E2 |
-| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | Sin abrir |
+| **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO, 12 de 12 (2026-08-09, cerrada la última el 2026-08-10).** La que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no era cumplible con `.deb` sueltos y **se cumplió en E2 con el repo local** (§4.15) |
+| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3 |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
 | **E5** | Imagen propia (`live-build`/`debos`) | El destino declarado. Solo compra marcar el propio instalador y controlar el conjunto base | Sin abrir |
@@ -181,11 +181,22 @@ Launchpad. Es donde la gente abandona. E2 y E3 dan «un sistema que es Encina OS
 sin remasterizar nada, son ficheros en git, y son reproducibles. La receta que
 se escriba en E2 es la definitiva; E5 la envuelve.
 
-**Y hay un antecedente a favor de E2**, aunque no es prueba: al menos una de las
-VMs de este proyecto se instaló con `autoinstall`, y su
-`/var/log/installer/subiquity-server-debug.log` se leyó entero para `MEDICIONES.md`
-§6.1. O sea que el mecanismo funciona en Ubuntu 24.04 arm64. Lo que no está
-probado es el seed que haya que escribir.
+**El «antecedente a favor de E2» que decía aquí era falso, y se retira el
+2026-08-10.** Este documento afirmaba que al menos una de las VMs del proyecto se
+había instalado con `autoinstall`. **No es cierto: `encina-limpia-respaldo` se
+instaló a mano**, y su propio log lo dice tres veces (`no autoinstall found in
+cloud-config`, `load_autoinstall_config … file None`, `skipping Locale as
+interactive`). Lo que engañó fue el fichero
+`/var/log/installer/autoinstall-user-data`, que **el instalador escribe siempre**,
+también cuando nadie le dio ninguna configuración. Salidas y demostración por el
+otro lado —una máquina que sí llevaba seed, con ese fichero distinto del seed y
+sin sus `late-commands`— en `MEDICIONES.md` §4.14a y §4.14f.
+
+**Lo que hay en su lugar no es un antecedente sino una medición**, hecha el
+2026-08-09 antes de escribir el seed de verdad: la ISO oficial de Ubuntu Desktop
+24.04.4 arm64 **sí** honra un `autoinstall` mínimo servido en un volumen
+`CIDATA`, y **sí** ejecuta las `late-commands`. El precio, que cambia la frontera
+entre E2 y E3, está en la fila de E2 de la tabla y en §7.
 
 ### 6.1 Por qué se suprimió `encina-doctor`
 
@@ -221,12 +232,40 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-**Desde el 2026-08-09 esa tarea es E2.** E1 está hecho en lo que prometía: la
-casilla que decide se marcó ese día, con una firma real sobre un clon virgen
-instalado por la secuencia de tres órdenes (`MEDICIONES.md` §4.13). Lo que sigue
-en esta sección es el registro de E1, que se conserva porque explica **por qué**
-la secuencia es la que es, y porque su casilla novena —`apt purge` + `autoremove`— es justo lo que
-E2 tiene que cerrar. La pregunta con la que abrir E2 está más abajo.
+**Esa tarea es E2, y E2 ya está abierto.** E1 está terminado del todo: la casilla
+que decide se marcó el 2026-08-09 con una firma real sobre un clon virgen
+(`MEDICIONES.md` §4.13), y la última que quedaba —`autoremove`— se cerró el
+2026-08-10 dentro de E2, con el repo local (§4.15). **12 de 12.**
+
+**Lo que E2 ya tiene medido, y no hay que volver a preguntarlo**
+(`MEDICIONES.md` §4.14 y §4.15):
+
+1. **La ISO oficial de Ubuntu Desktop 24.04.4 arm64 honra un `autoinstall`
+   mínimo** servido en un volumen etiquetado `CIDATA`, sin tocar la ISO.
+2. **Las `late-commands` se ejecutan**, tanto sobre `/target/` desde el entorno
+   del instalador como con `curtin in-target`, ésta como root.
+3. **Y hay un precio: sin `autoinstall` en la línea de órdenes del núcleo, el
+   instalador de escritorio se para a esperar un clic.** Con él, instala solo.
+   Medido con su control: la misma máquina sin esa palabra estuvo 14 minutos
+   viva sin escribir un byte.
+4. **El repo local sin firmar funciona**: `dpkg-scanpackages` + `[trusted=yes]`,
+   `apt install encina-meta` a secas, y los otros tres entran marcados
+   automáticos.
+
+**El siguiente paso concreto, y es uno solo:** escribir el `autoinstall.yaml` de
+verdad —el que trae el repo local con los cuatro `.deb`, instala `encina-meta` y
+**quita el Snap de Firefox**, que es donde sí está permitido (R4, D11)— y medir
+que la máquina resultante llega entera. La firma en `valide.redsara.es` viene
+después, y va en un clon efímero que se destruye (§9.1).
+
+**Y una consecuencia de forma, que hay que decidir antes de escribir el seed:**
+el punto 3 mueve la frontera entre E2 y E3. «Que nadie la toque a mano» obliga a
+poner `autoinstall` en la línea de órdenes, y eso, sin un hipervisor por medio,
+solo se hace **reempaquetando la ISO**, que es E3. Las salidas posibles están en
+§10, en el criterio de parada de E2, ya reescrito con lo medido.
+
+Lo que sigue en esta sección es el registro de E1, que se conserva porque explica
+**por qué** la secuencia de instalación es la que es.
 
 ### E1 — `encina-meta` (terminado en lo que decide)
 
@@ -298,20 +337,31 @@ los marcó manuales; medido con A/B el 2026-08-08. Se cumple sola en cuanto los
 `.deb` lleguen como dependencias de un repositorio, que es lo que hace E2. **E1
 está terminado para lo que E1 prometía: una máquina que firma.**
 
-### La pregunta que hay que hacerle a E2 antes de abrirlo
+### La pregunta que se le hizo a E2 antes de abrirlo, y lo que contestó
 
-Es la lección de A3 y de B∥, y ha acertado las dos veces: **¿qué comando
-demuestra que esto es viable?** Para E2 es un `autoinstall.yaml` mínimo sobre la
-ISO oficial de Ubuntu Desktop 24.04 arm64 que instale desatendido y ejecute una
-`late-command`. Si el instalador de escritorio no honra el seed como se supone,
-E2 cambia de forma entera, y eso se sabe en media tarde o no se sabe.
+Es la lección de A3 y de B∥, y ha vuelto a acertar: **¿qué comando demuestra que
+esto es viable?** Para E2 era un `autoinstall.yaml` mínimo sobre la ISO oficial de
+Ubuntu Desktop 24.04 arm64 que instalase desatendido y ejecutase una
+`late-command`. **Contestada el 2026-08-09 en una tarde** (`MEDICIONES.md` §4.14),
+y contestó tres cosas en vez de una:
+
+- **Sí, el seed se honra**, y la ISO no hay que tocarla.
+- **Sí, las `late-commands` corren**, las dos formas.
+- **Y no, no es desatendido gratis**: falta una palabra en la línea de órdenes
+  del núcleo, y ponerla en una máquina de verdad no es cosa del seed.
+
+**De paso tumbó una premisa que este documento daba por buena** —el «antecedente»
+de que la línea base se había instalado por `autoinstall`— que era falsa. Media
+tarde de medición ha corregido una creencia y ha movido la frontera de un
+incremento; es exactamente lo que la pregunta compra.
 
 ### Lo aprendido que sigue valiendo
 
 - **Una comprobación que pasa no vale nada si no sabes contra qué ha pasado.**
   Cuando una dé `[OK]`, comprueba que habría dado `[FALLO]` de haber estado mal.
-  Las ocho trampas de `SCRIPTS.md` son ocho formas de que esto salga caro, y
-  aplican igual dentro de un `autoinstall.yaml`.
+  Las nueve trampas de `SCRIPTS.md` son nueve formas de que esto salga caro, y
+  aplican igual dentro de un `autoinstall.yaml`. **La novena salió justo aquí, al
+  abrir E2:** un control necesita su propia señal de que llegó a ejecutarse.
 - **Todo lo verificable sin pantalla no basta.** En A2, con las siete
   comprobaciones automáticas en verde, el icono seguía abriendo el Snap. Se vio
   mirando `about:support`, y estaba en español, así que parecía correcto.
@@ -348,10 +398,15 @@ Tres matices:
 
 ## 9. Las VMs de UTM
 
-`ssh jorge@192.168.64.3`, `sudo` sin contraseña. **Las ocho tienen el mismo
-hostname (`encina-dev`) y la misma IP**, incluidas las clonadas: el hostname no
-distingue nada. Para saber en cuál estás, lo que funciona es «paquetes
-instalados + versión del Snap de Firefox + qué perfiles existen».
+**Son once desde el 2026-08-10**, y ya no forman una sola familia.
+
+- **Las ocho de E1** —clonadas unas de otras— comparten hostname `encina-dev`,
+  usuario `jorge` con `sudo` sin contraseña y la IP `192.168.64.3`. **El hostname
+  no distingue nada entre ellas.** Para saber en cuál estás, lo que funciona es
+  «paquetes instalados + versión del Snap de Firefox + qué perfiles existen».
+- **Las tres de E2** no son clones: **nacen de la ISO oficial**, con hostname
+  `encina-e2`, usuario `encina` y una IP propia cada una (`.4`, `.5`, `.7`). Se
+  entra con la clave efímera de la medición, no con la de siempre.
 
 **No arrancar dos a la vez.** Se listan y se arrancan con `utmctl list` y
 `utmctl start <nombre>`, sin abrir la interfaz de UTM.
@@ -368,6 +423,9 @@ instalados + versión del Snap de Firefox + qué perfiles existen».
 | `encina-A2-verificada` | Red de seguridad de A2 | `gpu-pci` | A2 está en git y en CI verde. **Candidata** |
 | ~~`encina-firma-efimera`~~ (2026-08-08) | El positivo de E1, sobre máquina virgen, con la secuencia que aún necesitaba un cuarto paso | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
 | ~~`encina-firma-efimera`~~ (2026-08-09) | **La casilla que decide.** Otro clon virgen, mismo nombre, con la secuencia ya de tres órdenes: 29/0/1/1, la CA llegando sola, y la firma mirada en pantalla (§4.13) | `gpu-pci` | **Destruida el 2026-08-09.** Mismo motivo, misma regla: llevaba el certificado personal |
+| `encina-E2-seed` | **Vía A de E2.** No es un clon: **nace de la ISO oficial**, instalada por el seed `CIDATA` con un clic en «Ready to install» (§4.14d). Es también donde se cerró la casilla novena con el repo local en `/srv/encina-repo` (§4.15) | `gpu-pci` | **En uso.** Su estado tras §4.15: `encina-meta` purgado y los otros tres puestos y marcados automáticos. **Sin ningún certificado personal.** Lleva un `sudoers.d` sin contraseña puesto para medir, y `dpkg-dev` purgado |
+| `encina-E2-desatendida` | **Vía B de E2, y el testigo que importa: instalada sin que nadie la tocara**, con `autoinstall` en la línea de órdenes y `-no-reboot` (§4.14h). Sus dos testigos de `late-commands` están dentro | `gpu-pci` | **Parada.** Se queda: es la única máquina del proyecto que nadie ha tocado a mano. **Sin certificado personal** |
+| `encina-E2-control` | **El control de §4.14i.** Idéntica a la anterior salvo la palabra `autoinstall`. Su disco sigue **vacío**, y eso es el resultado | `gpu-pci` | **Parada.** Su valor está en el registro, no en el disco: candidata a borrar cuando E2 avance |
 
 **La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de
 AutoFirma no se dibuja.** Medido el 2026-08-08 en la misma VM cambiando solo la
@@ -432,9 +490,22 @@ definición de terminado**, porque es fácil escribir una casilla imposible:
   aparte tendría el mismo problema en la misma transacción. Si el criterio vuelve
   a dispararse por otra vía, la salida es una **segunda orden** con `apt update`
   en medio, no un paquete nuevo.
-- **E2.** Si el instalador de Ubuntu Desktop 24.04 arm64 no honra un
-  `autoinstall.yaml` con `late-commands`, **no** forzarlo con Cubic ni con un
-  chroot editado a mano (D4). Replantear la forma de la entrega.
+- **E2. Medido el 2026-08-09, y no dispara** (`MEDICIONES.md` §4.14): el
+  instalador de Ubuntu Desktop 24.04.4 arm64 **sí** honra un `autoinstall.yaml`
+  con `late-commands`. Si no lo hubiera honrado, el criterio decía **no** forzarlo
+  con Cubic ni con un chroot editado a mano (D4), y replantear la entrega.
+  **Lo que sí apareció es un criterio nuevo, y éste sigue abierto:** sin
+  `autoinstall` en la línea de órdenes del núcleo el instalador **se para a
+  esperar un clic**, y esa palabra no la puede poner el seed. Las salidas son
+  tres, y hay que elegir **antes** de escribir el seed de verdad:
+  *(1)* aceptar que E2 se entrega con un hipervisor que pasa el parámetro
+  —vale para las VMs de este proyecto y no vale para nadie más—;
+  *(2)* adelantar de E3 lo justo para reempaquetar la ISO con esa palabra en su
+  `grub.cfg`, y entonces E2 y E3 se solapan a propósito y se dice;
+  *(3)* aflojar la casilla a «una edición manual del GRUB y nada más», que es
+  volver a tener un humano dentro y **no** es lo que E2 prometía.
+  **No elegir es la peor**: deja el seed escrito contra una casilla que no se
+  puede cumplir.
 - **E5.** Si a las dos semanas de abrir `live-build`/`debos` no hay una imagen
   que arranque, cerrarlo y quedarse en E3. E3 ya entrega el producto; E5 solo lo
   envuelve mejor. **Es donde este tipo de proyecto muere.**

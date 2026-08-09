@@ -752,9 +752,27 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       **Medido comparando la lista completa de paquetes con su versión antes y
       después, no el código de salida; y con control, alterando una línea de la
       huella para comprobar que el `diff` sabe verlo**
-- [ ] `apt purge encina-meta` **no** desinstala los otros tres —es lo correcto
+- [x] `apt purge encina-meta` **no** desinstala los otros tres —es lo correcto
       para un metapaquete— y `apt autoremove` sí los propone. Comprobar las dos
       cosas y dejar la salida escrita.
+      **CUMPLIDA EL 2026-08-10, en E2 y con el mecanismo de verdad**
+      (`MEDICIONES.md` §4.15): repo local **sin firmar** generado con
+      `dpkg-scanpackages` y consumido con `[trusted=yes]`, sobre una máquina
+      instalada por seed. `apt install encina-meta` a secas mete los cuatro, y
+      entonces las marcas salen solas —`showauto`: los tres; `showmanual`:
+      `encina-meta`—, que es lo único que faltaba:
+
+      ```
+      CONTROL (encina-meta instalado):  autoremove no propone ninguno
+      purge encina-meta              :  los tres siguen install ok installed
+      autoremove despues             :  Remv autofirma / Remv encina-branding /
+                                        Remv encina-firefox-native
+      ```
+
+      **Con esto E1 queda en 12 de 12.** Lo que la cerró no fue tocar este
+      paquete: fue cambiar la vía por la que llegan los otros tres.
+      *Lo de abajo es el registro del 2026-08-08 y se conserva, porque explica
+      por qué esta casilla estuvo abierta y por qué el remedio no estaba aquí.*
       **La primera mitad, medida y correcta:** tras `apt purge encina-meta`, los
       tres siguen `install ok installed`.
       **La segunda mitad no se puede demostrar tal cual en esta VM, y el motivo
@@ -865,23 +883,80 @@ sin saberlo.
 
 ---
 
-## 6bis. La entrega (incrementos E2 y E3)
+## 6bis. La entrega — E2, abierto el 2026-08-09
 
-Sin abrir. Se especifica cuando E1 esté terminado. Lo que ya está decidido y no
-hay que volver a discutir:
+**E3 sigue sin abrir** y no se especifica aquí. Lo que sigue es E2.
+
+### 6bis.1 Lo decidido, que no se vuelve a discutir
 
 - **Repo local sin firmar**, generado en la propia construcción con
-  `dpkg-scanpackages` y consumido con `[trusted=yes]`. Ejercita el mecanismo
-  real —repo más metapaquete en el seed— sin gestión de claves. **La receta que
-  se escriba así es la definitiva** (`ENCINA-OS.md` §8).
+  `dpkg-scanpackages` y consumido con `[trusted=yes]`. **Medido el 2026-08-10 y
+  funciona** (`MEDICIONES.md` §4.15): `apt update` traga los `Ign:` de firma,
+  `apt install encina-meta` mete los cuatro y los otros tres quedan marcados
+  automáticos. **La receta que se escriba así es la definitiva**
+  (`ENCINA-OS.md` §8).
 - **El Snap de Firefox se quita en la receta de imagen, no desde un paquete**
   (R4, D11). Ahí sí está permitido, y cierra dos barreras de golpe: B3, que
   **ningún `.deb` puede tocar**, y B4, que se cierra sola al desaparecer el
   perfil del Snap (medido con control en `encina-autofirma/MEDICIONES.md` M6).
-- **Antes de escribir el seed de verdad, la pregunta de A3:** ¿qué comando
-  demuestra que esto es viable? Un `autoinstall.yaml` mínimo que instale
-  desatendido y ejecute una `late-command` en la ISO oficial de Ubuntu Desktop
-  24.04 arm64. Media tarde, y decide la forma de E2 entera.
+- **D13 intacta:** nada de esto se cierra desde `encina-branding` ni desde
+  `encina-firefox-native`.
+
+### 6bis.2 Lo medido al abrir, que ya no se pregunta
+
+Todo en `MEDICIONES.md` §4.14, sobre la ISO oficial
+`ubuntu-24.04.4-desktop-arm64.iso` (`sha256 c2610520…`, verificada contra el
+`SHA256SUMS` de cdimage):
+
+| Pregunta | Respuesta medida |
+|---|---|
+| ¿Honra la ISO oficial de **escritorio** un `autoinstall` servido en un volumen `CIDATA`? | **Sí.** `autoinstall found in cloud-config`, `file /autoinstall.yaml`, y el seed leído de `/dev/vdb` con sus 976 y 52 bytes exactos |
+| ¿Se ejecutan las `late-commands`? | **Sí, las dos formas.** Sobre `/target/` desde el entorno del instalador, y con `curtin in-target`, ésta **como root** y en `aarch64` |
+| ¿Instala desatendido tal cual? | **No.** Se para en «Ready to install» y espera un clic. Con `autoinstall` en la línea de órdenes del núcleo, no se para — **y el control lo aísla**: la misma máquina sin esa palabra estuvo 14 min viva sin escribir un byte |
+| ¿La base que produce sirve para la secuencia de §6.4? | **Sí.** Trae el `firefox 1:1snap1-0ubuntu5` de transición, que es la premisa (a) de §4.10, y el Snap, que es lo que hay que quitar |
+
+**Y dos avisos que salieron de ahí, para el que escriba el seed:**
+
+- **`/var/log/installer/autoinstall-user-data` no demuestra nada.** El instalador
+  lo escribe siempre, también sin seed. Lo que sí distingue una instalación
+  contestada a mano de una gobernada por seed es
+  `/var/log/installer/telemetry`: trece entradas contra dos. **Pero no detecta el
+  clic de confirmación** (§4.14g), así que no sirve para la casilla de «nadie la
+  ha tocado».
+- **El repositorio local no puede vivir en un `$HOME`**: apt baja a usuario `_apt`
+  y un `/home/x` en `drwxr-x---` lo deja mudo, sin error reconocible (§4.15).
+
+### 6bis.3 Definición de terminado de E2
+
+Cada casilla, con lo que daría en un sistema sano y en uno roto. **No marcar
+ninguna sin la salida literal.**
+
+- [ ] Un `autoinstall.yaml` versionado en este repositorio instala una máquina
+      **sin que nadie conteste nada**. *Sano:* `telemetry` con dos entradas
+      (`loading`, `done`). *Roto:* aparecen `identity`, `storage` o `confirm`.
+- [ ] Ese seed **trae el repo local sin firmar** con los cuatro `.deb` e instala
+      `encina-meta`. *Sano:* los cuatro `install ok installed` y los tres
+      dependientes en `apt-mark showauto`. *Roto:* alguno en `showmanual`, que
+      es lo que pasaba con `.deb` por ruta.
+- [ ] **Sin Snap.** *Sano:* `snap list` no menciona `firefox`, y
+      `/var/lib/snapd/desktop/applications/firefox_firefox.desktop` no existe.
+      *Roto:* cualquiera de las dos cosas presente — y ojo, que el icono puede
+      seguir en el dock aunque el paquete se haya ido (es el caso de A2).
+- [ ] **Firefox es el nativo y está en español**, por la vía de §4.10: versión
+      **sin** epoch y `/usr/bin/firefox` fuera de `/snap/`. *Roto:* versión
+      `1:…` = sigue siendo el deb de transición.
+- [ ] La secuencia de §6.4 **deja de hacer falta**: lo que allí eran tres
+      órdenes lo hace el seed. Si algo de la secuencia no se puede expresar en
+      el seed, **eso es un hallazgo y se mide**; no se cambia la secuencia para
+      que encaje.
+- [ ] **[OJOS] Una firma en `valide.redsara.es`** sobre una máquina instalada
+      así, **que nadie ha tocado a mano**. Va en un **clon efímero que se
+      destruye después** (`ENCINA-OS.md` §9.1), y se comprueba por huella que no
+      queda copia del `.p12`.
+
+**Antes de escribir el seed hay que elegir cómo llega el parámetro `autoinstall`
+a la máquina.** Las tres salidas y sus consecuencias están en `ENCINA-OS.md` §10.
+No es un detalle de implementación: decide si la última casilla se puede cumplir.
 
 ---
 
@@ -932,12 +1007,15 @@ Crear `.github/workflows/build.yml`:
   en `MEDICIONES.md` §A3. **Si esta tarea reaparece en un encargo, no la
   implementes: remite a D12.**
 - `encina-keyring`, repositorio APT **firmado**, `aptly`. El repo **local sin
-  firmar** de E2 sí está en alcance cuando se abra E2, y puede que el firmado no
-  haga falta nunca (`ENCINA-OS.md` §8)
+  firmar** está **en alcance desde el 2026-08-09**, con E2 abierto, y ya está
+  medido (`MEDICIONES.md` §4.15); el firmado puede que no haga falta nunca
+  (`ENCINA-OS.md` §8)
 - Modificación de `/etc/os-release` (requiere `dpkg-divert`; paquete separado futuro)
 - Construcción de imagen: `live-build`, `debos`, Cubic. **El `autoinstall.yaml`
-  de E2 y el reempaquetado de la ISO oficial de E3 no son esto**, pero tampoco
-  están abiertos todavía
+  de E2 y el reempaquetado de la ISO oficial de E3 no son esto.** El primero está
+  **abierto** (§6bis); el segundo sigue sin abrir, y la medición de apertura de E2
+  ha dejado un motivo para que E3 llegue antes de lo previsto: sin `autoinstall`
+  en la línea de órdenes del núcleo no hay instalación desatendida de verdad
 - amd64 (D9). Se construye en CI porque el runner es amd64, pero **no se declara
   probado**: no hay máquina donde medirlo
 - Temas de GTK o de iconos, incluidos los de estética macOS
@@ -958,9 +1036,11 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las ocho trampas de
-  `SCRIPTS.md` son ocho formas de que esto salga caro, y las ocho dan **falsos
-  negativos o comprobaciones que no comprueban**.
+  `scripts/`, para la CI y para la receta de imagen. Las nueve trampas de
+  `SCRIPTS.md` son nueve formas de que esto salga caro, y las nueve dan **falsos
+  negativos o comprobaciones que no comprueban**. **La novena es del propio
+  método** y se pagó abriendo E2: un control también necesita su señal de que
+  llegó a ejecutarse.
 - **No existe ninguna máquina donde la firma funcione, y no va a existir.** La
   VM del primer positivo se destruyó a propósito porque contenía un certificado
   personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido y

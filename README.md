@@ -60,8 +60,8 @@ producto que puedas aplicar a una máquina que ya tienes.
 
 | Hito | Qué te daría | Estado |
 |---|---|---|
-| **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho.** 11 de 12 casillas, incluida la que decide: una máquina virgen instalada con la secuencia firma de verdad |
-| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | Sin abrir |
+| **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho, 12 de 12.** La que decide: una máquina virgen instalada con la secuencia firma de verdad. La última casilla se cerró ya dentro de E2 |
+| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto.** Medido que la ISO oficial de Ubuntu honra el seed y ejecuta las `late-commands`; medido también que, sin una palabra en la línea de órdenes del núcleo, el instalador se para a pedir un clic |
 | **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
 | **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
 | **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |
@@ -352,7 +352,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las ocho trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las nueve trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

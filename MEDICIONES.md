@@ -6,7 +6,7 @@ correcciones incluidas. Reproducir estas mediciones cuesta sesiones de máquina
 virtual, y buena parte ya no se puede reproducir porque el `.deb` oficial de
 AutoFirma que las produjo ha dejado de ser el que Encina OS usa.
 
-Última actualización: 8 de agosto de 2026.
+Última actualización: 10 de agosto de 2026.
 
 **La numeración `§4.x` y `§9` se conserva a propósito.** Estas secciones vivían
 en `ENCINA-OS.md` hasta el 2026-08-08 y se citan por ese nombre desde
@@ -53,6 +53,9 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c** |
 | §4.11 | E1 ejecutado en una VM con escritorio | Sí. Cierra lo que §4.10 dejaba deducido, y tumba el `Recommends: libreoffice-l10n-es` con su motivo escrito |
 | §4.12 | El positivo sobre una máquina virgen instalada por la secuencia | Sí. Las seis barreras cerradas ahí, **y el defecto de orden que dejaba AutoFirma sin CA en el navegador — cerrado el 2026-08-09, con la enmienda dentro del propio apartado (a)**. Contiene además la única técnica conocida para mirar la pantalla de una VM sin ojos |
+| §4.13 | La casilla que decide de E1, marcada: la secuencia de tres órdenes basta | Sí. Es el positivo que cierra E1, y **no se puede volver a contrastar contra ninguna máquina**: la VM llevaba certificado personal y se destruyó (§9.1) |
+| §4.14 | E2: la ISO oficial de escritorio honra un `autoinstall` mínimo, y a qué precio | Sí. Es la medición de apertura de E2, y **corrige a `DIARIO.md` y a `ENCINA-OS.md` §6**, que daban por hecho que la línea base se había instalado por `autoinstall` |
+| §4.15 | El repo local sin firmar, y la casilla novena de E1 | Sí. **Cierra la última casilla de `AGENTS.md` §6.4**, y con el mecanismo de verdad en vez del A/B del 2026-08-08 |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -1728,6 +1731,486 @@ certificado personal. El autologin se revirtió antes, y se verificó por huella
 (`ceee968c…10af`, 0 líneas activas). Ni el nombre del fichero `.p12` ni el
 titular aparecen en ningún sitio de este repositorio: se copió a la VM con un
 nombre neutro a propósito.
+
+---
+
+### 4.14 E2 — La ISO oficial de escritorio SÍ honra un `autoinstall` mínimo, y a qué precio (2026-08-09, cerrada de madrugada el 10)
+
+Medición de apertura de E2, hecha **antes de escribir una línea del seed de
+verdad**, para contestar la pregunta de A3: *¿qué comando demuestra que esto es
+viable?*
+
+**Respuesta corta: sí es viable, la ISO oficial no hay que tocarla, y el precio es
+una palabra en la línea de órdenes del núcleo.** Sin ella, el instalador de
+escritorio lee el seed entero, lo enseña por pantalla y **se para a esperar un
+clic**; con ella, instala solo y no pregunta. Las dos vías están medidas aquí, y
+la segunda lleva su control.
+
+#### (a) La pista del DIARIO era falsa, y el motivo es una trampa de método
+
+`DIARIO.md` del 2026-08-07 dice que aquella VM «se instalo por autoinstall», y
+`ENCINA-OS.md` §6 lo repetía como «antecedente a favor de E2». **No es cierto: se
+instaló a mano.**
+
+Comprobado sobre `encina-E1-vigilante`, que es clon de `encina-limpia-respaldo` y
+por tanto trae sus mismos `/var/log/installer/`. Se usó el clon **para no tocar la
+línea base**. Tres señales del propio instalador y una de cloud-init:
+
+```
+$ sudo grep -h "autoinstall found in cloud-config" /var/log/installer/subiquity-server-debug.log*
+2026-08-06 19:10:44,625 DEBUG subiquity.server.server:872 no autoinstall found in cloud-config
+2026-08-06 19:11:49,108 DEBUG subiquity.server.server:872 no autoinstall found in cloud-config
+
+$ sudo grep -h "load_autoinstall_config" /var/log/installer/subiquity-server-debug.log*
+... load_autoinstall_config only_early True file None
+... load_autoinstall_config only_early False file None
+
+$ sudo grep -h "as interactive" /var/log/installer/subiquity-server-debug.log* | head -2
+... apply_autoinstall_config: skipping Locale as interactive
+... apply_autoinstall_config: skipping Refresh as interactive
+
+$ sudo grep -h "bytes from /var/lib/cloud/seed" /var/log/installer/cloud-init.log
+... Reading 0 bytes from /var/lib/cloud/seed/nocloud/user-data
+... Reading 0 bytes from /var/lib/cloud/seed/nocloud/meta-data
+```
+
+El único `seed` de aquella instalación era **el vacío que trae la propia ISO**.
+
+**Y lo que engaña, que es lo que hay que llevarse de aquí:**
+
+```
+$ sudo ls -l /var/log/installer/autoinstall-user-data
+-r-------- 1 root root 2489 ago  6 21:20 autoinstall-user-data
+```
+
+**Ese fichero existe en las dos.** El instalador lo escribe **siempre**, también
+cuando nadie le dio ninguna configuración: es la reconstrucción de lo que se
+eligió, no una copia del seed. Que esté no demuestra nada. La prueba de que es
+una reconstrucción, por el otro lado, en (f); y la comprobación que **sí**
+distingue, en (g).
+
+#### (b) El montaje, y por qué se puede repetir
+
+No se tocó ninguna VM de E1. Se crearon máquinas nuevas.
+
+```
+ISO:   ubuntu-24.04.4-desktop-arm64.iso     # cdimage.ubuntu.com/ubuntu/releases/24.04
+       c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
+       verificada contra el SHA256SUMS oficial: COINCIDE
+seed:  volumen FAT12 etiquetado CIDATA, 4 MiB, con user-data (976 B) y meta-data (52 B)
+       f5ecde113184f470ad6f8e14840be7110f20475d624bad8cacc852dc77804a55
+VM:    aarch64/virt, UEFI, 4 CPU, 8 GiB, disco nuevo de 40 GiB, virtio-gpu-pci
+```
+
+Y la ISO es exactamente la que instaló la línea base, comprobado por texto:
+
+```
+$ tar -xOf ubuntu-24.04.4-desktop-arm64.iso .disk/info      # en el Mac, bsdtar lee ISO9660
+Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+$ sudo cat /var/log/installer/media-info                    # en encina-E1-vigilante
+Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+```
+
+El `user-data` es un `#cloud-config` con `autoinstall:`: `version`, `locale`,
+`keyboard`, `source: ubuntu-desktop-minimal`, `codecs`/`drivers` a `false`,
+`storage: layout: direct` con `match: size: largest`, `identity`, `ssh` con una
+clave **efímera generada para esto**, y **dos `late-commands` que dejan un testigo
+cada una**: la primera escribe sobre `/target/etc/` desde el entorno del
+instalador, la segunda pasa por `curtin in-target`. Son dos formas distintas a
+propósito.
+
+`match: size: largest` no es adorno: el seed va en un disco de 4 MiB y sin esa
+línea `layout: direct` podría elegirlo como destino.
+
+#### (c) Qué daría un sistema sano y qué uno roto, escrito antes de mirar
+
+- **Sano:** la VM instala sin que nadie toque nada, y se entra por `ssh` con la
+  clave del seed; en su log, `autoinstall found in cloud-config`; los dos
+  testigos existen con su contenido.
+- **Roto:** se queda en la pantalla del instalador y el disco no crece; y si
+  alguien la instalara a mano, el log diría `no autoinstall found in
+  cloud-config`.
+
+**Ese «roto» no es hipotético: es la salida literal de (a)**, medida el mismo día
+sobre una máquina real. La comprobación sabía decir que no antes de que se le
+preguntara que sí.
+
+#### (d) Vía A — ISO oficial arrancada tal cual: el seed se honra, pero hay un clic
+
+Arranque normal por el GRUB de la ISO, que es este:
+
+```
+menuentry "Try or Install Ubuntu" {
+	linux	/casper/vmlinuz  --- quiet splash console=tty0
+	initrd	/casper/initrd
+}
+```
+
+cloud-init encuentra el seed y dice de dónde:
+
+```
+Running command ['blkid', '-tLABEL=CIDATA', '-odevice'] ...
+DataSourceNoCloud.py[DEBUG]: Attempting to use data from /dev/vdb
+Running command ['mount', '-o', 'ro', '-t', 'auto', '/dev/vdb', '/run/cloud-init/tmp/tmphzyiocpm']
+DataSourceNoCloud.py[DEBUG]: Using data from /dev/vdb
+util.py[DEBUG]: Reading 976 bytes from /run/cloud-init/tmp/tmphzyiocpm//user-data
+util.py[DEBUG]: Reading 52 bytes from /run/cloud-init/tmp/tmphzyiocpm//meta-data
+```
+
+976 y 52 son **exactamente** los tamaños de los dos ficheros del seed. Y un
+detalle que importa para escribir el seed de verdad: el seed vacío de la ISO se
+lee **antes** (`Reading 0 bytes from /var/lib/cloud/seed/nocloud/user-data`) y aun
+así gana el del volumen. Que haya un seed vacío por delante no estorba.
+
+Subiquity dice lo contrario que en (a):
+
+```
+2026-08-09 10:08:03,704 DEBUG subiquity.server.server:866 autoinstall found in cloud-config
+2026-08-09 10:08:03,776 DEBUG subiquity.server.server:704 load_autoinstall_config only_early True file /autoinstall.yaml
+2026-08-09 10:08:03,779 DEBUG subiquity.server.server:704 load_autoinstall_config only_early False file /autoinstall.yaml
+```
+
+**Y entonces se para.** [OJOS] En pantalla, «Ready to install → Review your
+choices», con **el YAML del seed listado entero** —`codecs: install: false`,
+`identity: hostname: encina-e2 / username: encina`, `keyboard: layout: es`,
+`locale: es_ES.UTF-8` y las dos `late-commands` palabra por palabra— y un botón
+`Install`. **El disco se quedó en 197 248 bytes desde las `12:06` hasta que Jorge
+pulsó el botón**; medido a las `12:09:03` seguía intacto, y a las `12:13:57` ya
+llevaba 955 MB. *(La hora exacta del clic no se midió; lo que se midió es el
+antes y el después.)*
+
+Esto **no es un defecto del seed**: es el comportamiento documentado de esta vía.
+*Citado, no medido aquí* — `canonical/ubuntu-desktop-provision`,
+`docs/oem-provisioning-24_04_1.md`, líneas 287-289:
+
+> The installer prompts for a confirmation before modifying the disk based on the
+> provided `autoinstall`. To skip the need for a confirmation you can interrupt
+> the booting process then add the `autoinstall` parameter to the kernel command
+> line.
+
+El montaje de esta medición coincide además con el que esa misma página describe:
+la ISO como `cdrom` y el seed como segundo disco.
+
+#### (e) Las `late-commands` se ejecutan, las dos, y con control
+
+Sobre la máquina de la vía A, entrando con la clave del seed —`ssh` disponible a
+las `12:23:28`, sin que nadie volviera a tocar la ventana tras el clic—:
+
+```
+$ hostname; lsb_release -ds; uname -m
+encina-e2 / Ubuntu 24.04.4 LTS / aarch64
+
+$ cat /etc/encina-e2-testigo-instalador
+testigo-entorno-instalador 2026-08-09T10:23:00Z
+$ cat /etc/encina-e2-testigo-in-target
+testigo-in-target 2026-08-09T10:23:01Z uname=aarch64 id=0
+
+# control: un testigo que no se escribio nunca
+[AUSENTE] /etc/encina-e2-testigo-que-no-existe   <- la comprobacion sabe decir que no
+```
+
+Las dos formas funcionan, y la de `curtin in-target` corre **como root**
+(`id=0`) y en la arquitectura de la máquina (`aarch64`, no la del constructor).
+
+#### (f) El fichero que engaña, demostrado por el otro lado
+
+Sobre esa misma máquina —donde **sí** hubo autoinstall y sabemos exactamente qué
+se le dio— el instalador escribió su `autoinstall-user-data`:
+
+```
+$ sudo wc -c /var/log/installer/autoinstall-user-data
+2636 /var/log/installer/autoinstall-user-data          # el seed son 976
+
+$ sudo grep -E "^  [a-z-]+:" /var/log/installer/autoinstall-user-data
+  active-directory:   apt:   codecs:   drivers:   identity:   kernel:
+  keyboard:   locale:   network:   oem:   source:   ssh:   storage:   updates:
+```
+
+**No contiene `late-commands`**, que es lo más característico de lo que se le dio,
+y sí contiene `active-directory` y `oem`, que no se le dieron. Es una
+reconstrucción de las secciones interactivas. Queda cerrado (a): ese fichero no
+distingue una instalación a mano de una automática, ni en un sentido ni en el
+otro.
+
+#### (g) La que SÍ distingue una cosa, y NO distingue la otra
+
+`/var/log/installer/telemetry` guarda las pantallas por las que se pasó. Las tres
+máquinas, con la misma ISO:
+
+```
+encina-E1-vigilante   (a mano):       "Stages": {"1":"locale","4":"accessibility","5":"keyboard",
+                                       "7":"network","8":"autoinstall","99":"sourceSelection",
+                                       "131":"codecsAndDrivers","160":"storage","179":"identity",
+                                       "256":"timezone","271":"confirm","277":"install","704":"done"}
+
+encina-E2-seed        (por seed + clic):        "Stages": {"4":"loading","896":"done"}
+encina-E2-desatendida (por seed, sin clic):     "Stages": {"1":"loading","552":"done"}
+```
+
+Dos entradas contra trece: **`telemetry` sí distingue una instalación contestada a
+mano de una gobernada por un seed**, y es la comprobación que `autoinstall-user-data`
+no puede dar. *Sano:* dos entradas. *Roto:* aparecen `identity`, `storage`,
+`confirm`…
+
+**Y lo que NO hace, medido a propósito con la tercera máquina:** las dos
+instaladas por seed dan **la misma telemetría**, con clic y sin clic. O sea que
+esto **no** demuestra «nadie la ha tocado»: demuestra «nadie contestó las
+pantallas». La casilla de E2 no puede apoyarse solo en esto. Se apunta porque la
+tentación de usarlo como prueba de lo otro es exactamente el error de (a).
+
+#### (h) Vía B — con `autoinstall` en la línea de órdenes: nadie toca nada
+
+Máquina nueva, **el mismo seed byte a byte y la misma ISO**, arrancando el núcleo
+y el `initrd` **de la propia ISO** (extraídos con `tar`; `casper/vmlinuz` viene
+comprimido y se descomprime a un `Image` de arm64) y una sola cosa cambiada:
+`-append autoinstall`.
+
+```
+00:26:00  arranca la VM
+00:36:26  la VM se apaga sola  <- -no-reboot: la instalacion ha terminado
+          10 min 26 s, y nadie ha tocado nada
+```
+
+Arrancada después **desde el disco, con la ISO fuera y sin el núcleo externo**:
+
+```
+$ hostname; id
+encina-e2
+uid=1000(encina) gid=1000(encina) grupos=1000(encina),4(adm),24(cdrom),27(sudo),...
+
+$ cat /etc/encina-e2-testigo-instalador
+testigo-entorno-instalador 2026-08-09T22:36:03Z
+$ cat /etc/encina-e2-testigo-in-target
+testigo-in-target 2026-08-09T22:36:04Z uname=aarch64 id=0
+[AUSENTE] /etc/encina-e2-testigo-que-no-existe        <- el control, otra vez
+
+$ sudo grep -h "autoinstall found in cloud-config" .../subiquity-server-debug.log*
+2026-08-09 22:26:46,777 DEBUG subiquity.server.server:866 autoinstall found in cloud-config
+```
+
+**El `-no-reboot` no es un detalle: es lo que hace la medición legible.** El
+primer intento de esta vía no lo llevaba, y **la máquina se reinstaló en bucle**:
+con `-kernel`, QEMU arranca ese núcleo en **todos** los arranques, así que cada
+reinicio volvía al instalador y, con `autoinstall` puesto, ni preguntaba.
+Sobrevivió a tres vueltas y la última se quedó a medias, **borrando los testigos
+de la buena**: dejó el sistema arrancable con el usuario y la clave del seed —eso
+lo escribe `curtin` pronto— y sin `late-commands` ni logs, que van al final. Se
+descartó ese resultado y se repitió entero. *(Que no era la ISO del lector se
+sabe sin más medición: el GRUB de la ISO no lleva `autoinstall`, así que por ahí
+se habría parado a preguntar en vez de reinstalar.)*
+
+Es el mismo motivo por el que la orden de ejemplo de Canonical lleva
+`-no-reboot`, y **es un modo de fallo real para E3**: una entrega que reinstale en
+cada arranque.
+
+#### (i) El control de (h), que es lo que lo convierte en medido
+
+La vía B cambia dos cosas respecto de la A, no una: el parámetro **y** la forma de
+arrancar. Sin cerrar eso, «lo que quita el clic» sería una deducción. Tercera
+máquina, idéntica a la B **salvo el parámetro** —`-append quiet` en lugar de
+`-append autoinstall`—, con el mismo núcleo, el mismo `initrd` y el mismo seed:
+
+```
+00:03:08  arranca
+00:17:32  ping -c2 192.168.64.7  ->  0.0% packet loss
+          consola serie          ->  "Ubuntu 24.04.4 LTS ubuntu ttyAMA0" / "ubuntu login:"
+          disco                  ->  197 248 bytes
+00:20:06  14 min: sistema vivo y disco intacto
+```
+
+Catorce minutos encendida, con red y con `getty`, **sin escribir un byte en el
+disco de destino**; la vía B, con la misma línea de una sola palabra cambiada,
+llevaba 1418 MB a los 90 segundos.
+
+**El primer intento de este control era falso y se anula.** Consistía solo en «el
+disco no crece», y dio verde porque aquella VM **no había arrancado siquiera**:
+
+```
+/init: line 38: can't open /dev/sr0: No medium found      (en bucle, por la serie)
+```
+
+Nació con el lector vacío por un fallo al crearla. «No crece» responde lo mismo
+cuando el instalador espera un clic que cuando la máquina está muerta. De ahí
+salen las dos señales de arriba, y la **trampa 9** de `SCRIPTS.md`.
+
+*Lo que este control no prueba, y no se escribe como si lo probara:* que la
+máquina de control esté **enseñando** la pantalla de confirmación. Sin
+`console=tty0` la pantalla está negra —UTM no deja pasar varias palabras en
+`-append`, las parte y QEMU protesta con `---: invalid option`—, así que puede
+estar esperando ahí o puede que la interfaz no haya arrancado. Da igual para lo
+que se mide, porque en los dos casos no instala, y **la vía B tenía la pantalla
+igual de negra y aun así instaló entera**. Quien vio la pantalla de confirmación
+fue la vía A, con la ISO arrancada tal cual.
+
+#### (j) De propina, dos cosas que no se buscaban
+
+**El UID del usuario depende de cómo se instale**, y eso enmienda la trampa 8:
+
+```
+encina-E1-vigilante  (a mano):     uid=501(jorge)    gid=1000(jorge)
+encina-E2-seed       (por seed):   uid=1000(encina)  gid=1000(encina)
+```
+
+El 501 no es una propiedad de la imagen: es del camino. Una comprobación con
+`awk '$1 >= 1000'` acierta o falla **según cómo naciera la máquina**.
+
+**Y la base que produce el seed cumple la premisa (a) de §4.10.** Con
+`source: ubuntu-desktop-minimal`:
+
+```
+$ LC_ALL=C apt-cache policy firefox
+firefox:  Installed: 1:1snap1-0ubuntu5   Candidate: 1:1snap1-0ubuntu5
+$ snap list | grep firefox
+firefox  147.0.3-1  7764  latest/stable/…  mozilla**
+$ ls /etc/apt/sources.list.d/
+ubuntu.sources  ubuntu.sources.curtin.orig
+```
+
+Campo por campo, la huella de virginidad de §4.13. La vía por la que llega Firefox
+nativo —sustitución del deb de transición, no instalación— **existe también sobre
+una máquina instalada por seed**, que es la condición que §4.10(d) dejaba escrita.
+Y el Snap está ahí, que es lo que la receta de imagen tiene que quitar (R4, D11).
+
+#### (k) Lo que esta medición NO contesta
+
+- **No hay ningún `.deb` de Encina en juego todavía.** Aquí solo se ha medido el
+  mecanismo del instalador.
+- **`-kernel`/`-append` es un truco de hipervisor, no una entrega.** Sirve para
+  medir sin humano; no es cómo llegará el parámetro a una máquina de verdad, que
+  es una ISO reempaquetada (E3) o una edición manual del GRUB. Cambia la frontera
+  entre E2 y E3, y está escrito en §6 y §7 de `ENCINA-OS.md`.
+- **No se ha medido `apt` dentro de una `late-command`.** Los dos testigos
+  escriben ficheros; que `curtin in-target -- apt install` funcione con red es
+  otra cosa.
+- **amd64, nada.** D9 sigue igual.
+
+---
+
+### 4.15 El repo local sin firmar, y la casilla que E1 no podía cumplir (2026-08-10)
+
+La casilla novena de `AGENTS.md` §6.4 —la única de las doce que quedaba— decía:
+`apt purge encina-meta` **no** desinstala los otros tres, y `apt autoremove` **sí**
+los propone. La primera mitad estaba medida en E1; la segunda **no se podía
+demostrar allí**, porque los `.deb` entraban *por ruta* en la línea de órdenes y
+apt los marcaba manuales. El 2026-08-08 se midió con un A/B que el
+comportamiento correcto existía en cuanto estuvieran marcados automáticos, y se
+dejó dicho que se cerraría con el repo local de E2.
+
+**Se cierra aquí, y sin A/B: con el mecanismo de verdad.**
+
+Sobre `encina-E2-seed` —máquina instalada por seed, virgen de paquetes de
+Encina—, con los cuatro `.deb` de §4.13 (mismas huellas, comprobadas en la propia
+VM) en un repositorio local **sin firmar**, generado con `dpkg-scanpackages` y
+consumido con `[trusted=yes]`, que es lo decidido en `ENCINA-OS.md` §8.
+
+```
+$ sudo sh -c 'cd /srv/encina-repo && dpkg-scanpackages . /dev/null > Packages'
+dpkg-scanpackages: warning: Packages in archive but missing from override file:
+dpkg-scanpackages: warning:   autofirma encina-branding encina-firefox-native encina-meta
+dpkg-scanpackages: info: Wrote 4 entries to output Packages file.
+
+$ grep -E '^(Package|Version|SHA256):' /srv/encina-repo/Packages
+Package: autofirma              Version: 1.9.1+encina2   SHA256: d5a0ebe1…
+Package: encina-branding        Version: 0.1.7           SHA256: d4205134…
+Package: encina-firefox-native  Version: 0.2.0           SHA256: 3880b8aa…
+Package: encina-meta            Version: 0.1.1           SHA256: e15ce56f…
+```
+
+Las cuatro huellas son, carácter por carácter, las de §4.13.
+
+```
+$ cat /etc/apt/sources.list.d/encina-local.list
+deb [trusted=yes] file:/srv/encina-repo ./
+
+$ sudo apt-get update
+Get:1 file:/srv/encina-repo ./ InRelease
+Ign:1 file:/srv/encina-repo ./ InRelease      <- sin firma, y apt sigue
+Get:3 file:/srv/encina-repo ./ Packages
+
+$ LC_ALL=C apt-cache policy encina-meta
+encina-meta:
+  Installed: (none)
+  Candidate: 0.1.1
+  Version table:
+     0.1.1 500
+        500 file:/srv/encina-repo ./ Packages
+
+$ LC_ALL=C apt-cache policy encina-paquete-que-no-existe
+                                              # vacio: la comprobacion no esta ciega
+```
+
+**Un solo `apt install`, y entran los cuatro:**
+
+```
+$ sudo apt-get install -y encina-meta
+Inst autofirma (1.9.1+encina2 localhost [all])
+Inst encina-branding (0.1.7 localhost [all])
+Inst encina-firefox-native (0.2.0 localhost [all])
+Inst encina-meta (0.1.1 localhost [all])
+...
+$ dpkg-query -W -f='${Package} ${Version} ${Status}\n' encina-meta encina-branding encina-firefox-native autofirma
+autofirma 1.9.1+encina2 install ok installed
+encina-branding 0.1.7 install ok installed
+encina-firefox-native 0.2.0 install ok installed
+encina-meta 0.1.1 install ok installed
+```
+
+**Y las marcas, que son lo que decide la casilla:**
+
+```
+$ apt-mark showauto   | grep -E '^(encina-|autofirma)'
+autofirma
+encina-branding
+encina-firefox-native
+$ apt-mark showmanual | grep -E '^(encina-|autofirma)'
+encina-meta
+```
+
+Con `.deb` por ruta salían los cuatro en `showmanual`. Ésa era toda la
+diferencia, y no hizo falta tocar ninguna marca a mano.
+
+**La casilla, con su control delante:**
+
+```
+--- CONTROL: con encina-meta INSTALADO, autoremove no debe proponer ninguno
+$ LC_ALL=C sudo apt-get -s autoremove | grep -E '^Remv (encina|autofirma)'
+                                        # ninguno: sabe decir que NO
+
+--- mitad 1: purge encina-meta no se lleva a los otros tres
+$ sudo apt-get -y purge encina-meta
+Removing encina-meta (0.1.1) ...
+$ dpkg-query -W -f='${Package} ${Status}\n' encina-branding encina-firefox-native autofirma
+autofirma install ok installed
+encina-branding install ok installed
+encina-firefox-native install ok installed
+
+--- mitad 2: LA QUE E1 NO PUDO
+$ LC_ALL=C sudo apt-get -s autoremove | grep -E '^Remv (encina|autofirma)'
+Remv autofirma [1.9.1+encina2]
+Remv encina-branding [0.1.7]
+Remv encina-firefox-native [0.2.0]
+```
+
+**Casilla novena de `AGENTS.md` §6.4 cumplida. E1 pasa a 12 de 12**, y lo que la
+cerró no fue tocar `encina-meta`: fue cambiar la vía por la que llegan los otros
+tres, que es justo lo que se predijo el 2026-08-08.
+
+**Tres cosas del laboratorio, que costaron tiempo y se dicen:**
+
+- **El repositorio NO puede vivir en el `$HOME`.** `/home/encina` es `drwxr-x---`
+  y apt baja a usuario `_apt`, así que `file:$HOME/repo` no se lee y **apt no
+  protesta de forma reconocible**: `apt-cache policy` sale vacío y el `install`
+  no hace nada. Se mudó a `/srv/encina-repo`. En la receta de imagen esto no
+  aparece —el repo irá en un sitio del sistema—, pero el modo de fallo silencioso
+  sí importa.
+- **`dpkg-dev` se instaló para generar el índice y se purgó antes de medir**, para
+  no medir con el entorno de construcción dentro (`command -v dpkg-scanpackages`
+  → `AUSENTE` antes del `apt install encina-meta`). En E2 de verdad el índice se
+  genera en la construcción, no en la máquina.
+- **Un `sudo -S` con la contraseña por tubería se come el `stdin` del comando.**
+  `echo "linea" | sudo -S tee fichero` escribe **la contraseña** en el fichero, no
+  la línea, y no falla: dejó `encina-local.list` vacío y costó una vuelta
+  entenderlo. Es de la familia de la trampa 1.
 
 ---
 

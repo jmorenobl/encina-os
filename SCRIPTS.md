@@ -429,3 +429,40 @@ imagen de E2/E3 y cualquier `postinst` futuro van a querer «recorrer los usuari
 de verdad», y el número que parece obvio es el equivocado aquí. Lo correcto es
 recorrer a todo el mundo menos `root` y dejar que cada usuario se descarte solo
 por no tener lo que se busca.
+
+> **Enmienda del 2026-08-10, y refuerza la trampa en vez de anularla.** El 501 no
+> es una propiedad de la imagen: es una propiedad del **camino de instalación**.
+> Medido al abrir E2 (`MEDICIONES.md` §4.14i), sobre la misma ISO oficial
+> `ubuntu-24.04.4-desktop-arm64.iso` y con la misma huella de medio:
+>
+> ```
+> encina-E1-vigilante   instalada A MANO         uid=501(jorge)   gid=1000(jorge)
+> encina-E2-seed        instalada POR SEED       uid=1000(encina) gid=1000(encina)
+> ```
+>
+> O sea que una comprobación con `awk '$1 >= 1000'` **se salta al usuario en las
+> máquinas de E1 y no en las de E2**: acierta o falla según cómo naciera la
+> máquina, que es el peor modo de fallo que puede tener una comprobación. El
+> consejo no cambia, se vuelve obligatorio: **no filtrar por número**.
+
+## Y una novena, del propio laboratorio (2026-08-10)
+
+No es de un script de `scripts/`, es de cómo se miden las cosas, y costó dar por
+bueno un control que no valía. Va aquí porque la siguiente vez muerde igual.
+
+**9. Un control necesita su propia señal de que llegó a ejecutarse.** Midiendo si
+el instalador de escritorio se para sin el parámetro `autoinstall`
+(`MEDICIONES.md` §4.14h), el control era «el disco no crece en 20 minutos». Dio
+verde. Y era falso: aquella VM **no había arrancado siquiera** —nació con el
+lector vacío y se quedó en el `initramfs`—, así que el disco no crecía por el
+motivo equivocado:
+
+```
+/init: line 38: can't open /dev/sr0: No medium found      (en bucle, por la consola serie)
+```
+
+«No crece» responde lo mismo cuando la máquina espera un clic que cuando está
+muerta. La forma correcta lleva **dos señales independientes**: una que demuestre
+que el sistema llegó donde tenía que llegar —aquí, `lease` de DHCP y el `getty`
+de la serie— y otra que mida lo que se quería medir —el disco intacto—. Es la
+misma familia que la 5 y la 8, aplicada al control en vez de a la comprobación.
