@@ -3538,7 +3538,7 @@ puesto con el nombre nuevo:
         esperada 972ec932…   real c2de429a…
 ```
 
-**VM nueva `encina-E2-0.2.1`**, bundle fabricado sin tocar la interfaz de UTM.
+**VM nueva `encina-E2-0.2.1`**, bundle fabricado sin tocar la interfaz de UTM. **AVISO: esta máquina y este seed se rehicieron el mismo día** (§4.20c), al cambiar la contraseña del YAML. Los números de aquí son los de la primera pasada y siguen siendo válidos como medición; **la máquina vigente es la de §4.20c** —seed `420ca3df…`, testigo `17:14:27Z`—, y es de la que salió el clon de la firma.
 La palabra la puso el hipervisor y se lee en el `debug.log` de QEMU, no en el
 YAML: `-append autoinstall`, suelto, con `-no-reboot`.
 
@@ -3609,6 +3609,183 @@ de línea y el `07` filtra comentarios.
 - **La máquina nueva se llama `encina-e2-completa` de hostname**, igual que la
   vieja, porque el nombre lo pone el seed. Se distinguen por el testigo:
   `16:31:03Z` la nueva, `14:50:22Z` la vieja.
+
+---
+
+### 4.20 LA FIRMA SOBRE LA MÁQUINA DEL SEED, Y LA CONTRASEÑA QUE NO EXISTÍA (2026-08-10)
+
+**La última casilla de E2.** Y para llegar a ella hubo que arreglar antes un
+defecto del propio seed que nadie había notado porque nunca había hecho falta
+entrar por la pantalla: **la contraseña del usuario no la sabía nadie.**
+
+#### (a) El defecto: un seed con una contraseña que no se puede usar
+
+`imagen/autoinstall.yaml` lleva la contraseña como hash `$6$…`, que es de una
+sola dirección. Para la firma hace falta **entrar en la sesión gráfica**, y hasta
+ahora todo se había medido por `ssh` con clave, así que el texto claro nunca se
+echó de menos. No estaba anotado en ninguna parte del repositorio —correcto— pero
+tampoco lo recordaba nadie.
+
+Comprobado que **el mismo hash viaja en los cuatro seeds** (`user-data-minimo`,
+`user-data-medicion-snap`, `user-data-completa` y `autoinstall.yaml`), lo que
+concuerda con lo escrito en §4.16k: «la contraseña desechable es la de siempre».
+No lo era, o ya no.
+
+**Decisión de Jorge: regenerar con `encina`.** Se hace en el seed versionado, no a
+mano sobre la máquina, para que la máquina siga siendo **100 % producto del
+seed** — retocarla por GRUB habría sido tocarla a mano, que es justo lo que la
+casilla `[OJOS]` prohíbe.
+
+#### (b) LA TRAMPA, y habría colado una contraseña rota
+
+Primer intento, con `crypt` de Python en el Mac:
+
+```
+hash nuevo: $6WjIPoxPKheY
+```
+
+**Trece caracteres. Eso es DES, no SHA-512.** macOS **no implementa `$6$` en
+`crypt(3)`** y cae al método antiguo **sin avisar y sin error**; Python declara
+`crypt.METHOD_SHA512` disponible, que es lo que engaña. Y el prefijo `$6` a
+simple vista parece correcto: lo que lo delata es **la longitud**, no el prefijo.
+
+DES trunca la contraseña **a ocho caracteres** y su hash es trivial de romper.
+Habría «funcionado» —`encina` tiene seis— y habría sido mentira. Rehecho con
+`openssl passwd -6`, que en macOS sí lo implementa, y verificado a la salida:
+
+```
+$6$X7olMGXFyS5DEjp$YAhAR8.Yf…       105 caracteres, prefijo $6$
+  'encina'  -> COINCIDE
+  'Encina'  -> no coincide            <- los dos controles
+  'encinaX' -> no coincide
+```
+
+Va a `SCRIPTS.md` como **trampa 15**.
+
+#### (c) La reinstalación, y el verificador por fin como root
+
+Seed nuevo `420ca3df57c97993b7328816da27c9f379d3c4e2a56e3cb9319538ad1851138d`
+—las cuatro huellas de los `.deb` intactas, solo cambia el YAML—. Máquina
+`encina-E2-0.2.1` rehecha entera:
+
+```
+17:04:16Z  arranca                     disco 0 MB reales
+17:05:48Z  disco 2054 MB  arp .10 viva          <- las DOS senales
+17:12:19Z  testigo-entorno-instalador
+17:14:27Z  encina-seed llego al final
+17:14:59Z  la VM esta apagada          disco 11 130 MB
+```
+
+**10 min 43 s, sin que nadie abriera su ventana**, con `-append autoinstall`
+leído del `debug.log` de QEMU. Y con la contraseña ya conocida se pudo ejecutar
+`verificar-e2.sh` **como root**, que es como pedía §4.18m:
+
+```
+[OK] 35   [FALLO] 0   [AVISO] 0   [OMIT] 0
+```
+
+**Cero omitidas por primera vez:** la casilla de `telemetry` deja de estar
+omitida. Y la contraseña se comprueba contra quien la valida de verdad, con su
+control:
+
+```
+$ echo "encina"   | sudo -S -k true   -> [OK]    la acepta
+$ echo "noesesta" | sudo -S -k true   -> [OK]    control: rechaza una equivocada
+$ grep ^encina: /etc/shadow           -> $6$X7olMGXFyS5DEjp$…   106 caracteres
+```
+
+#### (d) LA FIRMA — `[OJOS]`, hecha por Jorge el 2026-08-10
+
+**Esto lo vio Jorge en pantalla y lo declara él; yo no he visto la pantalla.** Lo
+que sigue es la corroboración que dejó la máquina, recogida **antes** de
+destruirla, y que es consistente con su declaración.
+
+**Y la trampa de §4.2a mordió, exactamente como está escrita.** Hay **cinco**
+entradas bajo el directorio de perfiles y tres ni siquiera son perfiles
+(`Crash Reports`, `Pending Pings`, `Profile Groups`). Los dos ficheros se
+contradicen:
+
+```
+profiles.ini:  Default=quf9icbd.default-release     (arriba)
+profiles.ini:  Name=default   Path=hodgdgie.default   Default=1
+installs.ini:  Default=quf9icbd.default-release   Locked=1
+```
+
+Un `head -1` habría cogido `Crash Reports` o el perfil vacío `hodgdgie.default` y
+habría respondido «la CA no está», que es falso. **El perfil se eligió por
+evidencia de uso**, que es el criterio de §4.2a:
+
+```
+  quf9icbd.default-release   compatibility.ini=SI  firstUse=1786382464491  cert9.db=SI
+  hodgdgie.default           compatibility.ini=no  firstUse=None           cert9.db=no
+```
+
+**La CA de AutoFirma llegó sola al perfil que Firefox usa de verdad**, comparada
+por huella y no por apodo (§4.2b):
+
+```
+$ certutil -L -d sql:<perfil usado>          (solo -L, trampa 7)
+   SocketAutoFirma                                C,,
+   <el certificado personal de la FNMT>           u,u,u
+
+  CA del paquete en disco, en DER:  9d3621278884a004d908ba1b2ff9006fa61d5280f4a5fd9a7a072d0d5ff2904f
+  CA en el almacen NSS,     en DER:  9d3621278884a004d908ba1b2ff9006fa61d5280f4a5fd9a7a072d0d5ff2904f
+  [OK] COINCIDE
+```
+
+**Detalle de método que conviene no olvidar:** el `.crt` en disco está en PEM y
+su `sha256` de fichero es `5ad03b99…`, que **no** es comparable con nada sacado
+de NSS. Hay que normalizar **los dos lados a DER** antes de comparar; si no, sale
+un falso «no coincide» perfectamente creíble.
+
+**Y el certificado personal estaba en el almacén con su clave privada** (`u,u,u`,
+y `certutil -K` lista una clave RSA asociada). *El sujeto no se transcribe aquí:
+lleva nombre y DNI, y este repositorio es público (D5).*
+
+**AutoFirma se ejecutó de verdad**, y desde el navegador:
+
+```
+java … -DAFIRMA_NSS_PROFILES_INI=/home/encina/.config/mozilla/firefox/profiles.ini
+       -jar /usr/share/autofirma/autofirma.jar afirma://websocket?ports=59098,60297,55743&…
+  305 lineas con «autofirma» en el journal de la sesion
+  /home/encina/.afirma                       creado a las 17:22:27Z
+  cert9.db del perfil usado                  escrito a las 17:22:00Z
+```
+
+Dos cosas que ese volcado demuestra y que son las que importaban: el
+`AFIRMA_NSS_PROFILES_INI` apunta al **perfil nativo** (`~/.config/mozilla/`), no
+al del Snap, o sea que B5 no se reprodujo; y el esquema `afirma://` llegó a
+AutoFirma, o sea que B1 sigue cerrada.
+
+**Y el navegador que firmó era el nativo**, que es la condición de todo el
+proyecto:
+
+```
+$ readlink -f /proc/<pid>/exe    -> /usr/lib/firefox/firefox-bin
+  control: ¿esta bajo /snap/?    -> fuera de /snap/
+  lanzado como                   -> /usr/bin/firefox
+```
+
+#### (e) El clon, destruido, con su control
+
+```
+[OK] encina-firma-efimera ya no aparece en utmctl
+[OK] el bundle ya no existe en disco
+ninguna copia de *.p12 en los bundles de UTM, ni en el scratchpad, ni en el repositorio
+  control de que la busqueda sabe encontrar algo:  ~/Documents/CertificadoJMB.p12
+  el original, intacto: 1f1679705959902f0d3579ced856fe20d81c67a41a486158ed22dbcda47f21a0
+```
+
+#### (f) Lo que esta medición NO contesta
+
+- **La firma en sí no la he visto yo.** Es `[OJOS]` y la declara Jorge. Lo que
+  hay aquí es la corroboración que dejó la máquina, no una captura de la sede.
+- **No se ha medido una segunda firma**, ni sobre otra sede.
+- **La contraseña `encina` es débil y ahora es pública**, porque está en el
+  `autoinstall.yaml` versionado. Para E2 —receta validada en un hipervisor, con
+  máquinas desechables— es aceptable y es la decisión tomada. **Para E3 no lo
+  es**, y queda escrito como deuda de E3 en `ENCINA-OS.md`.
+- **amd64, nada.** D9 sigue igual.
 
 ---
 

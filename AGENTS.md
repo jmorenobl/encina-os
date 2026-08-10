@@ -1101,8 +1101,25 @@ ninguna sin la salida literal.**
       medir, que era el riesgo de verdad: hay red desde dentro del chroot**
       (§4.18f), porque `curtin in-target` deja dentro el `resolv.conf` del
       entorno vivo
-- [ ] **[OJOS] Una firma en `valide.redsara.es`** sobre una máquina instalada
-      así, **que nadie ha tocado a mano**. Va en un **clon efímero que se
+- [x] **[OJOS] Una firma en `valide.redsara.es`** sobre una máquina instalada
+      así, **que nadie ha tocado a mano**.
+      **MARCADA el 2026-08-10 (§4.20d). La firma la hizo y la vio Jorge; el
+      agente no ha visto la pantalla**, y así queda dicho. Sobre un clon efímero
+      de `encina-E2-0.2.1` —máquina 100 % producto del seed, verificada como root
+      con 35 correctas y 0 fallos— que **se destruyó después**, con control de que
+      no queda ninguna copia del `.p12` en los bundles de UTM, ni en el
+      repositorio, ni en el scratchpad, y con el original intacto por huella.
+      **Corroboración que dejó la máquina, recogida antes de destruirla:** el
+      navegador que firmó era `/usr/lib/firefox/firefox-bin`, **fuera de
+      `/snap/`**; AutoFirma se lanzó desde el navegador por el esquema
+      `afirma://websocket` (o sea que B1 sigue cerrada) apuntando al **perfil
+      nativo** `~/.config/mozilla/` y no al del Snap (o sea que B5 no se
+      reprodujo); y la CA `SocketAutoFirma` estaba en el almacén NSS del perfil
+      que Firefox usa de verdad, **con la misma huella que la del paquete en
+      disco, comparadas las dos en DER**. **Ojo al medirlo: hay cinco entradas en
+      el directorio de perfiles y tres no son perfiles; `profiles.ini` e
+      `installs.ini` se contradicen, y un `head -1` responde «la CA no está»,
+      que es falso (§4.2a).** Va en un **clon efímero que se
       destruye después** (`ENCINA-OS.md` §9.1), y se comprueba por huella que no
       queda copia del `.p12`.
       **Lo que colgaba de aquí ya está contestado y quita el riesgo de que fuera
@@ -1251,7 +1268,7 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las catorce trampas de
+  `scripts/`, para la CI y para la receta de imagen. Las quince trampas de
   `SCRIPTS.md` son catorce formas de que esto salga caro, y las nueve dan **falsos
   negativos o comprobaciones que no comprueban**. **La novena es del propio
   método** y se pagó abriendo E2: un control también necesita su señal de que

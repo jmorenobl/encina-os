@@ -153,7 +153,7 @@ que pasa el nuestro.
 | `encina-firefox-native` | **Terminado.** v0.2.1, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje. Desde el 10 de agosto de 2026 el usuario ve **un solo icono de Firefox** y no dos |
 | `autofirma 1.9.1+encina2` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
 | `encina-meta` | **Terminado, 12 de 12.** v0.1.1, construido y verificado en VM. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La última casilla (`autoremove`) no era cumplible con `.deb` sueltos y se cerró con el repositorio local de la instalación desatendida |
-| Instalación desatendida | **Abierta, y el seed ya instala una máquina entera sola.** `imagen/autoinstall.yaml` sobre la ISO oficial de Ubuntu, sin tocarla: repositorio local con los cuatro `.deb` dentro del propio volumen del seed, `encina-meta`, **sin Snap**, y Firefox de Mozilla en español. Medido el 10 de agosto de 2026: **menos de 11 minutos y nadie tocó nada**. Falta la firma en una sede sobre esa máquina |
+| Instalación desatendida | **Terminada, 6 de 6 (10 de agosto de 2026).** `imagen/autoinstall.yaml` sobre la ISO oficial de Ubuntu, sin tocarla: repositorio local con los cuatro `.deb` dentro del propio volumen del seed, `encina-meta`, **sin Snap**, y Firefox de Mozilla en español. Medido el 10 de agosto de 2026: **menos de 11 minutos y nadie tocó nada**. **Y esa misma tarde salió la firma** en `valide.redsara.es`, sobre un clon efímero de esa máquina que se destruyó después: el navegador que firmó era el nativo, fuera de `/snap/`, y la CA de AutoFirma estaba donde tenía que estar, comprobada por huella |
 | Imagen | Sin abrir |
 
 **Arquitectura: solo arm64 por ahora.** Es lo único que se puede medir con el
@@ -358,7 +358,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las catorce trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las quince trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

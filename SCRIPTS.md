@@ -714,3 +714,43 @@ Y para la VM nueva, dos cosas que costaron un arranque fallido cada una:
   no le gusta, **UTM no da error: la VM simplemente no aparece en la lista.** Lo
   barato es partir del `config.plist` de una VM que ya funciona y cambiar solo lo
   necesario.
+
+## Y una decimoquinta, generando la contraseña del seed (2026-08-10)
+
+**15. En macOS, `crypt` de Python **no** hace SHA-512: cae a DES sin avisar.**
+Generando el hash de la contraseña de `imagen/autoinstall.yaml` (`MEDICIONES.md`
+§4.20b), esto es lo que salió:
+
+```
+python3 -c "import crypt; print(crypt.crypt('encina','$6$'+salt))"
+   -> $6WjIPoxPKheY
+```
+
+**Trece caracteres.** Eso es DES. `crypt(3)` de macOS **no implementa `$6$`**, e
+ignora el prefijo en silencio: no hay error, no hay aviso, y `crypt.METHOD_SHA512`
+aparece como disponible, que es lo que remata el engaño. Y **el prefijo `$6` a
+simple vista parece correcto** — lo que lo delata es la longitud:
+
+```
+SHA-512 crypt   105-106 caracteres, empieza por $6$<salt>$
+DES              13 caracteres
+```
+
+Lo caro no es el fallo, es que **el resultado funciona**: DES trunca la
+contraseña a ocho caracteres, así que una contraseña corta entra igual y la
+máquina parece correcta. Se habría entregado un seed con un hash trivial de
+romper y nadie lo habría notado.
+
+La forma correcta en macOS es `openssl passwd -6`, que sí lo implementa, y **se
+verifica a la salida**, no se da por bueno:
+
+```
+H=$(openssl passwd -6 -salt "$SALT" encina)
+[ ${#H} -gt 90 ] || fallo "el hash no es SHA-512"
+[ "$(openssl passwd -6 -salt "$SALT" encina)"  = "$H" ] || fallo   # reproduce
+[ "$(openssl passwd -6 -salt "$SALT" Encina)" != "$H" ] || fallo   # y el control
+```
+
+Es de la familia de la 5 y de la 13: **una herramienta que responde algo
+plausible en vez de fallar**. La defensa es la misma de siempre: comprobar el
+resultado contra lo que tiene que dar **y** contra lo que no.

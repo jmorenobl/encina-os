@@ -48,7 +48,7 @@ autoinstall:
     realname: Encina E2
     username: encina
     hostname: encina-e2-completa
-    password: "$6$ntMA8KTyTiVSAPzM$rVIhNWMXeHf9y8sWV5lO7t5x2NmLH5FBzHbpp6qFwwhpZFWa9HnM.sR0Jq/1Rad9bLTxTEFx8dE6o26qMpvb21"
+    password: "$6$X7olMGXFyS5DEjp$YAhAR8.YfZ9d4jsjTFdntvm3EBycrE4e5eAVEZR0uWs.ymcHgTUTsrPzrU7YAFF5Yyci.Pj/j5TMvnRwloB9k/"
   ssh:
     install-server: true
     allow-pw: false
