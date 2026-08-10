@@ -31,12 +31,16 @@ TAM_MB=128
 
 uso() {
     cat <<'FIN'
-uso: fabricar-seed.sh --repo DIR --salida IMG [--actualizar-yaml]
+uso: fabricar-seed.sh --repo DIR --salida IMG [--yaml RUTA] [--actualizar-yaml]
 
   --repo DIR          directorio con los cuatro .deb y el fichero Packages
   --salida IMG        imagen CIDATA a escribir (se sobrescribe)
-  --actualizar-yaml   reescribe la late-command de autoinstall.yaml a partir
-                      de encina-seed.sh, en vez de solo comprobar que coinciden
+  --yaml RUTA         seed a meter como user-data. Por defecto autoinstall.yaml,
+                      que es el de E2 (desatendido, con contrasena de
+                      laboratorio). Para medir la forma de E3 se le pasa
+                      autoinstall-e3.yaml, que pregunta y no lleva credenciales
+  --actualizar-yaml   reescribe la late-command del YAML elegido a partir de
+                      encina-seed.sh, en vez de solo comprobar que coinciden
 FIN
 }
 
@@ -44,11 +48,14 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --repo)             REPO="$2"; shift 2 ;;
         --salida)           SALIDA="$2"; shift 2 ;;
+        --yaml)             YAML="$2"; shift 2 ;;
         --actualizar-yaml)  ACTUALIZAR=1; shift ;;
         -h|--help)          uso; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso; exit 2 ;;
     esac
 done
+
+[ -f "$YAML" ] || { echo "[FALLO] no existe el seed: $YAML"; exit 2; }
 
 [ -n "$REPO" ] && [ -n "$SALIDA" ] || { uso; exit 2; }
 

@@ -815,3 +815,46 @@ leído si lo leído salió antes del aborto** — pero hay que decir dónde par�
 comprobar que el fichero que se cita estaba entero. Aquí `bin/subiquity/` y
 `meta/snap.yaml` se extraen antes, y la versión del snap se transcribe para que
 se pueda repetir.
+
+---
+
+## Y una decimoctava, del registro de UTM (2026-08-10)
+
+**18. Una VM desaparece del listado de UTM al reiniciar la aplicación, y su bundle está intacto.**
+Pasó fabricando la VM de la forma de E3: tras un `quit`/`open` de UTM,
+`encina-E2-sinsnap` dejó de salir en `utmctl list` y `utmctl status` respondía
+`Virtual machine not found` — con el bundle entero en disco y su `config.plist`
+pasando `plutil -lint`.
+
+**La causa no es el bundle, es el registro de UTM**, que guarda la ruta de cada
+VM y **no la actualiza al renombrar la carpeta**:
+
+```
+clave del registro: DE23E4B0-60A6-4652-9428-0D03E844AFB0
+Name: encina-E2-control                                   <- el nombre viejo
+Path: .../encina-E2-control.utm                           <- una ruta que ya no existe
+```
+
+Esa VM nació como `encina-E2-control` y se renombró a `encina-E2-sinsnap`.
+**Mientras UTM no se reinicie no se nota**, porque la lleva resuelta en memoria;
+al reiniciar, la entrada apunta a un sitio que no existe y la VM no se lista,
+**y el registro tampoco deja que UTM la redescubra**, porque el UUID ya está
+cogido.
+
+**El arreglo, con UTM cerrado y el `plist` respaldado antes:**
+
+```
+osascript -e 'quit app "UTM"'
+P=~/Library/Containers/com.utmapp.UTM/Data/Library/Preferences/com.utmapp.UTM.plist
+cp "$P" respaldo.plist
+/usr/libexec/PlistBuddy -c "Delete :Registry:<UUID>" "$P"
+plutil -lint "$P" && open -a UTM
+```
+
+Borrada la entrada obsoleta, UTM **redescubre el bundle** al escanear su carpeta
+de documentos y lo vuelve a listar con su nombre y su UUID correctos.
+
+Lo que hay que llevarse, y es método y no anécdota: **`utmctl list` no es un
+inventario del disco, es un inventario del registro**. Antes de dar por perdida
+una VM —o por buena una limpieza— hay que mirar los bundles con `ls`, que es la
+otra mitad. Aquí nadie borró nada; una lista incompleta pareció una VM perdida.

@@ -51,14 +51,22 @@ autoinstall:
 
   # lo que contesta quien instala, como en Ubuntu
   interactive-sections:
-    - locale       # idioma
-    - keyboard     # teclado
+    - keyboard     # teclado: es HARDWARE, y no todo el que quiere el sistema en
+                   # espanol tiene un teclado espanol. Se pregunta.
     - network      # red
     - storage      # disco  (filesystem.py:248 -- la clave se llama 'storage')
     - identity     # usuario y contrasena
     - timezone     # zona horaria
 
   # lo que NO se pregunta, porque es lo que hace que esto sea Encina OS
+  #
+  # EL IDIOMA VA FIJO, y por el mismo motivo que 'source': es el producto, no una
+  # preferencia de instalacion. Encina OS existe para firmar con la
+  # administracion espanola; el seed instala firefox-l10n-es-es sin condicion y
+  # encina-meta arrastra el resto del idioma (hunspell-es, language-pack-es...).
+  # Si el idioma se preguntara, quien eligiera otro se llevaria una maquina a
+  # medias: sistema en un idioma y navegador en espanol. Se fija y se dice.
+  locale: es_ES.UTF-8
   source:
     id: ubuntu-desktop-minimal
     search_drivers: false

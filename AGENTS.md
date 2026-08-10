@@ -1210,24 +1210,37 @@ pregunta Ubuntu, pero dejando una máquina que es Encina OS.
 
 ### 6ter.0 LA FORMA DE E3, decidida el 2026-08-10, y no se vuelve a discutir
 
-**La ISO pregunta lo que pregunta Ubuntu, menos una cosa.** Las seis secciones
-que contesta quien instala van listadas por nombre —`locale`, `keyboard`,
-`network`, `storage`, `identity`, `timezone`—, y **no son nombres inventados: son
-los `autoinstall_key` de los controladores de esta ISO** (`filesystem.py:248`
-para `storage`, `identity.py:50`, `locale.py:30`, `keyboard.py:162`,
-`network.py:77`, `timezone.py:80`). El seed no aporta ninguna de esas respuestas
+**La ISO pregunta lo que pregunta Ubuntu, menos lo que es el producto.** Las
+**cinco** secciones que contesta quien instala van listadas por nombre
+—`keyboard`, `network`, `storage`, `identity`, `timezone`—, y **no son nombres
+inventados: son los `autoinstall_key` de los controladores de esta ISO**
+(`keyboard.py:162`, `network.py:77`, `filesystem.py:248` para `storage`,
+`identity.py:50`, `timezone.py:80`). El seed no aporta ninguna de esas respuestas
 — aporta **solo lo de Encina**, que va entero en las `late-commands` y es **byte a
 byte el mismo** trabajo que el de E2.
 
-**LA QUE NO SE PREGUNTA, Y ES LO QUE HACE QUE ESTO SEA UN PRODUCTO: `source`.**
-Va fijo a `ubuntu-desktop-minimal`, y con él `codecs: {install: false}` y
-`drivers: {install: false}`. **No es una preferencia de instalación, es la forma
-del producto:** Encina OS **se construye sobre la instalación mínima**, y lo que
-va encima se declara en `encina-meta`, que es el eje por el que crece (E4,
-`ENCINA-OS.md` §6). Si `source` se preguntara, media entrega dependería de que el
-usuario acertara con una pantalla y **dos máquinas de Encina OS no serían la
-misma cosa**. Se usa la lista explícita **en vez de `['*']`** exactamente por
-esto: `'*'` haría interactivo también `source`.
+**LO QUE NO SE PREGUNTA, Y ES LO QUE HACE QUE ESTO SEA UN PRODUCTO: `source` y
+`locale`.**
+
+- **`source: ubuntu-desktop-minimal`**, y con él `codecs: {install: false}` y
+  `drivers: {install: false}`. Encina OS **se construye sobre la instalación
+  mínima**, y lo que va encima se declara en `encina-meta`, que es el eje por el
+  que crece (E4, `ENCINA-OS.md` §6). Si se preguntara, media entrega dependería
+  de que el usuario acertara con una pantalla y **dos máquinas de Encina OS no
+  serían la misma cosa**.
+- **`locale: es_ES.UTF-8`** (decidido el 2026-08-10, a la vez que lo anterior).
+  Mismo motivo y además una incoherencia que quita: el seed instala
+  `firefox-l10n-es-es` **sin condición** y `encina-meta` arrastra el resto del
+  idioma. **Si el idioma se preguntara, quien eligiera otro se llevaría una
+  máquina a medias** —sistema en un idioma, navegador en español—. Encina OS
+  existe para firmar con la administración española; el idioma es producto, no
+  preferencia.
+- **El teclado sí se pregunta, y la distinción importa:** el teclado es
+  **hardware**, y no todo el que quiere el sistema en español teclea en un
+  teclado español.
+
+Se usa la lista explícita **en vez de `['*']`** exactamente por esto: `'*'` haría
+interactivas también `source` y `locale`.
 
 **Y el mecanismo permite mezclar**, que es lo que esto usa: `controller.py:113-127`
 decide **sección por sección**, no todo o nada. Que el instalador **de
@@ -1382,7 +1395,7 @@ Nada de esto existe todavía; se escribe según se mida.
 
 | Fichero | Qué es |
 |---|---|
-| `imagen/autoinstall-e3.yaml` | **Escrito el 2026-08-10. El seed de la entrega.** Seis claves: `version`; `interactive-sections` con las seis secciones que contesta quien instala; `source: ubuntu-desktop-minimal` con `codecs` y `drivers` en `false`, **que son las que NO se preguntan**; y las **mismas tres `late-commands` de E2, byte a byte** (comprobado con `diff`). Sin `identity:`, sin `ssh:`, sin `storage:`, **sin ninguna credencial**. Va a la **raíz del ISO9660** con el nombre `autoinstall.yaml` |
+| `imagen/autoinstall-e3.yaml` | **Escrito el 2026-08-10. El seed de la entrega.** Siete claves: `version`; `interactive-sections` con las **cinco** secciones que contesta quien instala (`keyboard`, `network`, `storage`, `identity`, `timezone`); **`locale: es_ES.UTF-8`** y **`source: ubuntu-desktop-minimal`** con `codecs` y `drivers` en `false`, **que son las que NO se preguntan porque son el producto**; y las **mismas tres `late-commands` de E2, byte a byte** (comprobado con `diff`). Sin `identity:`, sin `ssh:`, sin `storage:`, **sin ninguna credencial**. Va a la **raíz del ISO9660** con el nombre `autoinstall.yaml` |
 | `imagen/autoinstall.yaml` | **El de E2, y se queda como está.** Es la única prueba que queda de que la receta entera funciona **sin humano**, y sigue corriendo con `CIDATA` en el banco. Su contraseña de laboratorio es legítima ahí y **no viaja a ninguna ISO** |
 | `imagen/encina-seed.sh` | **El mismo, sin cambios.** Los dos seeds llevan su base64 y `fabricar-seed.sh` se sigue negando si se separan |
 | `imagen/verificar-e2.sh` | **El mismo, sin cambios**: la máquina que sale tiene que ser la misma |
@@ -1499,7 +1512,7 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las diecisiete trampas de
+  `scripts/`, para la CI y para la receta de imagen. Las dieciocho trampas de
   `SCRIPTS.md` son catorce formas de que esto salga caro, y las nueve dan **falsos
   negativos o comprobaciones que no comprueban**. **La novena es del propio
   método** y se pagó abriendo E2: un control también necesita su señal de que

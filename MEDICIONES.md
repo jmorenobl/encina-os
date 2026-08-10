@@ -4207,12 +4207,15 @@ de «¿qué aplicaciones quieres?» ahora que `source` no se pregunta**, que es 
 que en el escritorio comparte sitio con los códecs y los controladores; y si las
 `late-commands` siguen corriendo cuando hay secciones interactivas.
 
-**Y una arista del producto que sale de aquí y no estaba pensada:** el seed
-instala `firefox-l10n-es-es` sin condición, así que **quien elija otro idioma en
-la pantalla de `locale` se llevará un Firefox en español**. Hoy Encina OS es un
-producto en español y está dicho en el `README`, así que no es un fallo; pero es
-una decisión que ahora tiene una pantalla enfrente, y conviene saberlo antes de
-que alguien lo descubra instalando.
+**Una arista del producto que salió de aquí, y se cerró el mismo día.** El seed
+instala `firefox-l10n-es-es` **sin condición**, así que si el idioma se
+preguntara, quien eligiera otro se llevaría **una máquina a medias**: sistema en
+un idioma y navegador en español. **Jorge lo vio y decidió forzar el español**:
+`locale: es_ES.UTF-8` sale de `interactive-sections` y pasa a ser producto, igual
+que `source`. **El teclado no**, y la distinción es la que importa: el teclado es
+**hardware**, y no todo el que quiere el sistema en español teclea en un teclado
+español. **Queda por medir una consecuencia de esto:** con `locale` no
+interactiva, en qué idioma sale la interfaz **del propio instalador**.
 
 ---
 
