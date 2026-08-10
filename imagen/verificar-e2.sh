@@ -99,14 +99,65 @@ else fallo "CONTROL ROTO: no encuentra ni bash"; fi
 for d in /var/lib/snapd/desktop/applications/firefox_firefox.desktop /var/lib/snapd /snap; do
     if esta "$d"; then fallo "sigue estando $d"; else ok "no existe $d"; fi
 done
+# LA TERCERA COSA. Esta comprobacion pedia NINGUNA hasta el 2026-08-10 y ESTABA
+# MAL ESCRITA, no aflojada: se redacto con §4.16i, medido sobre una maquina SIN
+# NINGUN PAQUETE DE ENCINA, donde NINGUNA era correcto porque no habia ni Snap
+# ni sombra. En una maquina de Encina OS el identificador lo resuelve la sombra
+# de encina-firefox-native, asi que responde /usr/bin/firefox %u.
+#
+# Y lo que decidio corregirla en vez de bajar el liston: NINGUNA solo se alcanza
+# quitando la sombra, y quitarla, medido en encina-E1-meta el 2026-08-10 (§4.19),
+# hace que en una maquina CON Snap el mismo identificador vuelva a resolver a
+# /snap/bin/firefox %u. O sea que la casilla, tal como estaba, exigia un estado
+# que solo se consigue REABRIENDO A2. Lo que queria preguntar de verdad es que
+# no resuelva a nada bajo /snap/, y eso es lo que pregunta ahora.
 R=$(resolver_desktop firefox_firefox.desktop)
-igual "a que resuelve firefox_firefox.desktop" "NINGUNA" "$R"
+case "$R" in
+    \?)       fallo "no se ha podido resolver firefox_firefox.desktop" "$R" ;;
+    *snap*)   fallo "firefox_firefox.desktop resuelve al Snap" "obtenido: $R" ;;
+    NINGUNA)  fallo "firefox_firefox.desktop no resuelve a nada" \
+"obtenido: NINGUNA
+En una maquina de Encina OS ese identificador lo tiene que resolver la sombra
+de encina-firefox-native. Si no resuelve, el icono anclado del dock de Ubuntu
+de fabrica no abre nada (§4.19)." ;;
+    *)        ok "firefox_firefox.desktop no resuelve a nada bajo /snap/ ($R)" ;;
+esac
 # CONTROL: el resolvedor tiene que saber resolver algo, o el NINGUNA no vale
 RC_CTL=$(resolver_desktop org.gnome.Nautilus.desktop)
 case "$RC_CTL" in
     NINGUNA|\?) fallo "CONTROL ROTO: el resolvedor no resuelve ni Nautilus" "$RC_CTL" ;;
     *)          ok "control: org.gnome.Nautilus.desktop -> $RC_CTL" ;;
 esac
+# CONTROL de que el resolvedor sabe decir NINGUNA, que es la trampa 11: sin el,
+# «no resuelve» y «no lo se» se leen igual
+RC_NIN=$(resolver_desktop encina-lanzador-que-no-existe.desktop)
+igual "control: un identificador que no existe" "NINGUNA" "$RC_NIN"
+
+# LA CUARTA COSA, y es nueva: CUANTOS ICONOS DE FIREFOX VE EL USUARIO.
+# Ninguna casilla lo preguntaba —todas preguntaban a que resuelve el
+# identificador—, y por eso el duplicado de §4.17h paso desapercibido hasta que
+# se miro por casualidad. sano: 1. roto: 2, que es lo que se veia hasta la
+# 0.2.1 de encina-firefox-native.
+N_FF=$(XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop \
+       XDG_CURRENT_DESKTOP=ubuntu:GNOME python3 - <<'PY' 2>/dev/null || echo "?"
+import gi
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio
+todas = Gio.AppInfo.get_all()
+ff  = [a for a in todas if "firefox" in a.get_id().lower() and a.should_show()]
+vis = [a for a in todas if a.should_show()]
+# el control va en la misma linea: si el total de visibles fuera 0, un 0 de
+# Firefox no significaria nada
+print(f"{len(ff)} {len(vis)}")
+PY
+)
+set -- $N_FF
+igual "iconos de Firefox que ve el usuario" "1" "${1:-?}"
+if [ "${2:-0}" -gt 5 ] 2>/dev/null; then
+    ok "control: ${2} aplicaciones visibles en total (el inventario no esta mudo)"
+else
+    fallo "CONTROL ROTO: el inventario de aplicaciones visibles sale en ${2:-?}"
+fi
 # y el estado dpkg, que es lo que decide: 'dpkg -l | grep -i snap' da falsa
 # alarma con libsnapd-glib, gir1.2-snapd-2, xdg-desktop-portal y una extension
 # de GNOME que ordena ventanas (§4.16h)

@@ -14,7 +14,7 @@ sección 7 («Empieza aquí») y nada más.
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
 | `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de cada paquete y de la imagen | Al lanzar trabajo con Claude Code |
 | `MEDICIONES.md` | Lo medido, con las salidas literales | Antes de volver a investigar algo. Casi siempre ya está medido |
-| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las doce trampas | Antes de ejecutar nada en la VM |
+| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las catorce trampas | Antes de ejecutar nada en la VM |
 | `README.md` | Qué es el proyecto, para quien llega de fuera | Al enseñar el repositorio |
 | `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
 
@@ -69,7 +69,7 @@ redacción y la cuarta se enmienda.
 | D8 | Certificado software FNMT antes que DNIe con lector | Cubre el 90% de trámites y no requiere hardware. **Cumplido:** el positivo de `MEDICIONES.md` §4.9 se hizo con certificado real de la FNMT |
 | D9 | **Solo arm64 por ahora.** amd64 cuando haya con qué probarlo | Solo hay un Mac M3, así que arm64 es lo único que se puede medir, y en este proyecto lo que no se mide no se da por bueno. **Es un límite de alcance declarado, no un pendiente.** Consecuencia conocida y medida: B6 (`MEDICIONES.md` §4.9c) es específica de arm64 y no aparecería en amd64 |
 | D10 | No comprar máquina física | SoftHSM2 cubre PKCS#11 sin lector; Hetzner por horas cubre amd64 de escritorio el día que haga falta |
-| D11 | Los dos lanzadores «Firefox» se resuelven **quitando el Snap en la imagen**, no ocultando entradas | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada y §8 prohíbe cualquier GUI. **Con D3 reescrita, esto deja de ser un aplazamiento indefinido: la imagen es el producto, así que es el sitio donde ocurre.** Y quitar el Snap cierra además B3 y B4 (§4 de este documento) |
+| D11 | Los dos lanzadores «Firefox» se resuelven **quitando el Snap en la imagen**, no ocultando entradas. **Matizada el 2026-08-10 (§4.19a): no estaba equivocada, estaba incompleta.** Daba por hecho que el segundo lanzador era el del Snap, así que quitarlo bastaba; E2 lo quitó y siguieron saliendo dos, porque **el segundo es nuestro**. Ocultar *nuestra* sombra sí es correcto y es lo que hace la 0.2.1 — y está medido que ocultarla **no** la desactiva, así que el icono anclado del dock de fábrica sigue abriendo el nativo | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada y §8 prohíbe cualquier GUI. **Con D3 reescrita, esto deja de ser un aplazamiento indefinido: la imagen es el producto, así que es el sitio donde ocurre.** Y quitar el Snap cierra además B3 y B4 (§4 de este documento) |
 | D12 | **No habrá `encina-locale-es`.** Lo poco que queda va como `Depends:` de `encina-meta` | Medido el 2026-08-07: `check-language-support -l es` sale vacío y el instalador de Ubuntu ya ejecuta ese mismo comando y actúa. Detalle en `MEDICIONES.md` §A3 |
 | D13 | **Ningún paquete de Encina cierra una sola de las barreras de la firma por su cuenta** | Cerrar una barrera aislada deja el sistema sin firmar **y sin el síntoma que hoy avisa**: cambia un fallo visible por uno silencioso. **Enmendada el 2026-08-08: la regla se mantiene y su caso se ha cumplido, no violado.** Las barreras se cerraron todas a la vez, en el sitio correcto —el paquete de AutoFirma— y por el dueño correcto, que es exactamente lo que D13 estaba esperando. Lo que se prohíbe sigue prohibido: nada de `policies.json`, ficheros de preferencias de Firefox ni certificados en `encina-branding` ni en `encina-firefox-native` |
 | D14 | **El AutoFirma corregido es un ingrediente con condición de salida medible** | El fork existe porque el `.deb` oficial está roto, y se retira cuando deje de estarlo. La condición no es una fecha ni la aceptación de las PRs: es que `verificar-deb.sh` pase sobre el `.deb` descargado de `firmaelectronica.gob.es`. Medido: la AGE va **un año por detrás de su propio código** (`MEDICIONES.md` §4.5) y una PR de una línea tardó 87 días |
@@ -82,7 +82,7 @@ redacción y la cuarta se enmienda.
 | Artefacto | Estado |
 |---|---|
 | `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
-| `encina-firefox-native` | **Construido, instalado y probado.** v0.2.0, las siete casillas de la definición de terminado, la última mirada en pantalla. **Es condición necesaria del producto, y está medido por qué** (§4) |
+| `encina-firefox-native` | **Construido, instalado y probado.** v0.2.1 (2026-08-10), que pone `NoDisplay=true` en la sombra y deja **un solo icono de Firefox** en las dos máquinas, con y sin Snap, sin reabrir A2 (§4.19). La definición de terminado pasa de siete casillas a nueve: las dos nuevas cuentan *cuántos* iconos hay y comprueban que ocultar no es desactivar. **Es condición necesaria del producto, y está medido por qué** (§4) |
 | `autofirma 1.9.1+encina2` | **Construido, probado, y con el primer positivo de extremo a extremo del proyecto.** En `~/Projects/encina-autofirma`, anclado en `v1.9.1`, CI verde en amd64 y arm64. **`+encina2`, del 2026-08-09, cierra el defecto de `MEDICIONES.md` §4.12a**: dos unidades de systemd de usuario meten la CA del socket en el perfil de Mozilla cuando el perfil aparece, así que la secuencia de E1 vuelve a ser de tres órdenes (M14–M18 de aquel repositorio) |
 | Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`. Cuatro PRs escritas; **abrirlas está pendiente** |
 | Repositorio git | `jmorenobl/encina-os`, **ya público** (comprobado el 2026-08-09: `gh repo view` da `"visibility":"PUBLIC"`), como pedía D5. **`jmorenobl/encina-autofirma` sigue privado**, y por eso la secuencia de instalación todavía no la puede completar alguien de fuera |
@@ -167,7 +167,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
 | **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO, 12 de 12 (2026-08-09, cerrada la última el 2026-08-10).** La que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no era cumplible con `.deb` sueltos y **se cumplió en E2 con el repo local** (§4.15) |
-| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3. **El 2026-08-10 (§4.16) se cerró la casilla técnica que faltaba: el Snap SÍ se quita desde el seed**, con `apt-get purge snapd` por `curtin in-target`, y el escritorio sobrevive; **la vía obvia, `snap remove`, no sirve y encima dice que sí**. **El seed de verdad está escrito y medido entero el 2026-08-10 (§4.18): `imagen/autoinstall.yaml` instala una máquina completa —repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español— en menos de 11 minutos y sin humano dentro. 4 de 6 casillas marcadas.** Faltan la firma `[OJOS]` y una casilla que **no se puede cumplir tal como está escrita**, y eso es un hallazgo: la tercera condición de «Sin Snap» choca con la sombra `.desktop` de `encina-firefox-native` (§4.18k) |
+| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3. **El 2026-08-10 (§4.16) se cerró la casilla técnica que faltaba: el Snap SÍ se quita desde el seed**, con `apt-get purge snapd` por `curtin in-target`, y el escritorio sobrevive; **la vía obvia, `snap remove`, no sirve y encima dice que sí**. **El seed de verdad está escrito y medido entero el 2026-08-10 (§4.18): `imagen/autoinstall.yaml` instala una máquina completa —repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español— en menos de 11 minutos y sin humano dentro. 4 de 6 casillas marcadas.** **El 2026-08-10 (§4.19) se cierra la quinta: 5 de 6.** La casilla «Sin Snap» no se aflojó — se descubrió que **estaba escrita al revés**: pedía que `firefox_firefox.desktop` no resolviera a nada, y ese estado **solo se alcanza reabriendo A2**, porque sin la sombra el identificador vuelve a dar `/snap/bin/firefox %u`. Se corrigió con su motivo, se le añadió la condición que faltaba —**cuántos iconos de Firefox ve el usuario**— y se arregló la sombra en `encina-firefox-native` 0.2.1. Con el `.deb` nuevo cambió una de las cuatro huellas del seed, así que se reconstruyó el volumen y **se remidió §4.18 entero** con una instalación nueva y desatendida (`encina-E2-0.2.1`, 10 min 07 s): 34 comprobaciones correctas y ningún fallo. **Solo queda la firma `[OJOS]`** |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
 | **E5** | Imagen propia (`live-build`/`debos`) | El destino declarado. Solo compra marcar el propio instalador y controlar el conjunto base | Sin abrir |
@@ -279,22 +279,36 @@ escribir el seed.
    chroot**, y la pregunta que colgaba también está contestada: **el vigilante de
    AutoFirma mete la CA en el perfil igual en una máquina sin Snap** (§4.18l).
 
+9. **La sombra `.desktop` está arreglada y la casilla «Sin Snap» marcada**
+   (2026-08-10, §4.19): `encina-firefox-native` **0.2.1** con `NoDisplay=true`,
+   un solo icono de Firefox en los dos mundos y A2 intacto. Cambió una de las
+   cuatro huellas del seed, así que el volumen se reconstruyó (`b8269e52…`) y
+   **§4.18 se remidió entero** con una máquina nueva. **E2 va 5 de 6.**
+
 **El siguiente paso concreto, y es uno solo: la firma en `valide.redsara.es`**,
 que es la casilla `[OJOS]` y la última que decide E2. Va en un clon efímero de
-`encina-E2-completa` que **se destruye después** (§9.1), con un certificado
+**`encina-E2-0.2.1`** —**no** de `encina-E2-completa`, que se queda con la 0.2.0
+y con los dos iconos— que **se destruye después** (§9.1), con un certificado
 personal que no se queda en ninguna máquina conservable.
 
-**Y hay una casilla que no se puede marcar y no es culpa de la máquina** (§4.18k):
-«Sin Snap» pide que `firefox_firefox.desktop` no resuelva a nada, y ese
-identificador lo resuelve **la sombra que instala `encina-firefox-native`**. La
-casilla se escribió midiendo una máquina sin paquetes de Encina. **No se afloja:
-se arregla donde toca**, y es la misma tarea que la de abajo.
+**Los dos iconos de Firefox y la casilla que dependía de ellos: CERRADOS el
+2026-08-10** (§4.19). Eran la misma cosa vista por dos sitios, y las dos se
+arreglan en `encina-firefox-native` **0.2.1**, con `NoDisplay=true` en la sombra.
+**Medido en los dos mundos, y es el único estado que sirve:** deja un icono con
+Snap y sin Snap, y **el identificador sigue resolviendo a `/usr/bin/firefox %u`**,
+así que A2 no se reabre. Las alternativas están descartadas por medición, no por
+criterio: borrar la sombra devuelve `/snap/bin/firefox %u` en la máquina con
+Snap, y `Hidden=true` la deja en `NINGUNA` y mata el icono anclado del dock.
 
-**Esa tarea NO es de E2 y por eso no bloqueaba el seed, pero ahora tiene una
-casilla esperándola:** el usuario ve **dos iconos de Firefox**, y está medido que
-**el duplicado ya existía en E1** (§4.17h). Toca a `encina-firefox-native`, cuya
-sombra `.desktop` se quedó sin trabajo el día que desapareció el Snap. Arreglarla
-cierra las dos cosas de golpe.
+**Y la casilla no estaba floja, estaba al revés, que es peor:** pedía `NINGUNA`,
+y `NINGUNA` **solo se alcanza reabriendo A2** o dejando el icono muerto. Se
+corrigió con su motivo escrito —ahora pregunta que no resuelva bajo `/snap/`— y
+se le añadió la condición que no tenía nadie: **cuántos iconos ve el usuario**.
+Ninguna de las doce casillas contaba iconos, y por eso el defecto vivió desde A2.
+
+Cambiar el paquete cambió una de las cuatro huellas del seed, así que se
+reconstruyó el volumen y **se remidió §4.18 entero** con una instalación nueva
+(`encina-E2-0.2.1`): 34 comprobaciones correctas, ningún fallo.
 
 Lo que sigue en esta sección es el registro de E1, que se conserva porque explica
 **por qué** la secuencia de instalación es la que es.
@@ -391,7 +405,7 @@ incremento; es exactamente lo que la pregunta compra.
 
 - **Una comprobación que pasa no vale nada si no sabes contra qué ha pasado.**
   Cuando una dé `[OK]`, comprueba que habría dado `[FALLO]` de haber estado mal.
-  Las doce trampas de `SCRIPTS.md` son doce formas de que esto salga caro, y
+  Las catorce trampas de `SCRIPTS.md` son catorce formas de que esto salga caro, y
   aplican igual dentro de un `autoinstall.yaml`. **La novena salió justo aquí, al
   abrir E2:** un control necesita su propia señal de que llegó a ejecutarse.
 - **Todo lo verificable sin pantalla no basta.** En A2, con las siete
@@ -430,14 +444,14 @@ Tres matices:
 
 ## 9. Las VMs de UTM
 
-**Son diez desde el 2026-08-10**, y ya no forman una sola familia.
+**Son once desde el 2026-08-10**, y ya no forman una sola familia.
 
 - **Las ocho de E1** —clonadas unas de otras— comparten hostname `encina-dev`,
   usuario `jorge` con `sudo` sin contraseña y la IP `192.168.64.3`. **El hostname
   no distingue nada entre ellas.** Para saber en cuál estás, lo que funciona es
   «paquetes instalados + versión del Snap de Firefox + qué perfiles existen».
-- **Las cuatro de E2**, todas **nacidas de la ISO oficial**, con usuario
-  `encina` y una IP propia cada una (`.4`, `.5`, `.7`, `.8`). Se entra con la
+- **Las cinco de E2**, todas **nacidas de la ISO oficial**, con usuario
+  `encina` y una IP propia cada una (`.4`, `.5`, `.7`, `.8`, `.9`). Se entra con la
   clave efímera de la medición, no con la de siempre. Dos comparten hostname
   `encina-e2`; `encina-E2-sinsnap` y `encina-E2-completa` traen el suyo desde su
   propio seed, **y aun así hay que identificarlas por huella**.
@@ -449,12 +463,16 @@ Tres matices:
   escribe el seed definitivo, y los cuatro paquetes de Encina instalados.
 
 **No arrancar dos a la vez.** Se listan y se arrancan con `utmctl list` y
-`utmctl start <nombre>`, sin abrir la interfaz de UTM.
+`utmctl start <nombre>`, sin abrir la interfaz de UTM. **Y no es un consejo:** el
+2026-08-10 se arrancaron `encina-dev` y `encina-E1-meta` a la vez y las dos
+respondieron en `192.168.64.3`, alternándose, sin que nada avisara (trampa 14 de
+`SCRIPTS.md`). No estropeó ninguna medición **porque cada salida lleva dentro su
+huella de identidad**, que es exactamente para lo que se pone.
 
 | VM | Qué es | Vídeo | Estado |
 |---|---|---|---|
 | `encina-dev` | Banco de A1, con el usuario `prueba`. Snap 153.0.3 con perfil, sin Firefox nativo | `gpu-pci` | **En uso.** Aquí se verificó `encina-branding` 0.1.7 |
-| `encina-E1-meta` | **Banco de E1.** Clon virgen instalado por la secuencia, con los cuatro paquetes y `encina-meta` 0.1.1. **Sin ningún certificado, a propósito** | `gpu-pci` | **En uso.** Aquí se ejecutó la definición de terminado de E1, y el 2026-08-08 el experimento de la tarjeta: nació `ramfb-gl` y **se cambió** (§4.12b) |
+| `encina-E1-meta` | **Banco de E1, y el único sitio donde se puede comprobar que algo no reabre A2**, porque es la única máquina con Snap **y** con los paquetes de Encina puestos. Clon virgen instalado por la secuencia. **Sin ningún certificado, a propósito.** Su huella de identidad: los cuatro paquetes y el Snap `firefox 147.0.3-1` rev 7764 | `gpu-pci` | **En uso.** Aquí se ejecutó la definición de terminado de E1, y el 2026-08-08 el experimento de la tarjeta: nació `ramfb-gl` y **se cambió** (§4.12b). **Cambiada el 2026-08-10 (§4.19e): ya NO es la máquina de §4.17h.** Lleva `encina-firefox-native` **0.2.1**, instalado sobre una sesión gráfica viva a propósito, que es como se midió la regresión de D11. El dock del usuario quedó como estaba (`dconf` vacío) y el autologin de GDM que hizo falta está revertido y verificado por huella (`ceee968c…10af`) |
 | `encina-E1-vigilante` | **Donde se cerró el defecto de §4.12a.** Clon virgen instalado por la secuencia de E1 **sin el cuarto paso**, con `autofirma 1.9.1+encina2`: la CA del socket llegó sola al perfil al abrir Firefox (M18 de `encina-autofirma`). **Sin ningún certificado personal**, así que no le aplican las precauciones de §9.1 | `gpu-pci` | **Parada.** Se queda de momento: es el testigo del arreglo. **No sirve para reproducir el caso virgen otra vez** —ya tiene la CA dentro—, para eso hay que clonar de nuevo. El autologin de GDM que hizo falta quedó revertido y verificado por huella (`ceee968c…10af`) |
 | `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `gpu-pci` | Se queda: línea base virgen, y de ella se clona. **Cambiada el 2026-08-08** para que los clones no nazcan con AutoFirma invisible (§4.12g) |
 | `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | `gpu-pci` | Se queda: es la mitad roja de las mediciones, y la base del positivo de §4.9 |
@@ -466,7 +484,8 @@ Tres matices:
 | `encina-E2-seed` | **Vía A de E2.** No es un clon: **nace de la ISO oficial**, instalada por el seed `CIDATA` con un clic en «Ready to install» (§4.14d). Es también donde se cerró la casilla novena con el repo local en `/srv/encina-repo` (§4.15) | `gpu-pci` | **En uso.** Su estado tras §4.15: `encina-meta` purgado y los otros tres puestos y marcados automáticos. **Sin ningún certificado personal.** Lleva un `sudoers.d` sin contraseña puesto para medir, y `dpkg-dev` purgado |
 | `encina-E2-desatendida` | **Vía B de E2, y el testigo que importa: instalada sin que nadie la tocara**, con `autoinstall` en la línea de órdenes y `-no-reboot` (§4.14h). Sus dos testigos de `late-commands` están dentro | `gpu-pci` | **Parada.** Se queda: es la única máquina del proyecto que nadie ha tocado a mano. **Sin certificado personal** |
 | ~~`encina-E2-firefox`~~ | **Fue el banco de §4.17**, clon de `encina-E2-sinsnap`. Allí se midió por qué vía llega Firefox nativo sin deb de transición, y salió el duplicado de iconos | `gpu-pci` | **Borrada el 2026-08-10** en la limpieza. Su medición está escrita en §4.17, y su estado final lo reproduce `encina-E2-completa` **por seed** en vez de a mano |
-| `encina-E2-completa` | **LA MÁQUINA DE E2, y la primera Encina OS entera instalada sola.** Nace de la ISO oficial con el seed definitivo `imagen/autoinstall.yaml` (§4.18): repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español. Hostname `encina-e2-completa`, IP `.8`. Su bundle de UTM se construyó a mano | `gpu-pci` | **Parada.** Se queda: es de aquí de donde sale el clon efímero de la firma. **Sin ningún certificado personal.** **Ya no es virgen de Firefox**: se abrió una vez, a propósito, para medir el vigilante de AutoFirma (§4.18l). Lleva dentro su propio registro de instalación en `/etc/encina-seed.log`, 1916 líneas |
+| `encina-E2-completa` | **LA MÁQUINA DE E2, y la primera Encina OS entera instalada sola.** Nace de la ISO oficial con el seed definitivo `imagen/autoinstall.yaml` (§4.18): repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español. Hostname `encina-e2-completa`, IP `.8`. Su bundle de UTM se construyó a mano | `gpu-pci` | **Parada.** Se queda: es de aquí de donde sale el clon efímero de la firma. **Sin ningún certificado personal.** **Ya no es virgen de Firefox**: se abrió una vez, a propósito, para medir el vigilante de AutoFirma (§4.18l). Lleva dentro su propio registro de instalación en `/etc/encina-seed.log`, 1916 líneas. **El 2026-08-10 se usó de banco para §4.19 sin modificarla:** el usuario `encina` no tiene `sudo` sin contraseña, así que los estados de la sombra se midieron sobre un árbol `XDG_DATA_DIRS` sintético en `/tmp`, con el control de que sin mutar da lo mismo que el sistema real. **Queda con `encina-firefox-native` 0.2.0**, o sea con los dos iconos: la sustituye `encina-E2-0.2.1` |
+| `encina-E2-0.2.1` | **LA MÁQUINA DE E2 VIGENTE**, la que sustituye a `encina-E2-completa` como banco de la entrega. Nace de la ISO oficial con el seed reconstruido (`b8269e52…`), ya con `encina-firefox-native` **0.2.1** dentro, así que es la primera Encina OS con **un solo icono de Firefox**. Instalada de una pasada en **10 min 07 s** sin que nadie abriera su ventana (§4.19g). Su bundle de UTM se fabricó sin tocar la interfaz. IP `.9` | `gpu-pci` | **Parada.** Se queda: es de aquí de donde tiene que salir ahora el clon efímero de la firma `[OJOS]`. **Sin ningún certificado personal y virgen de Firefox.** Verificada con `imagen/verificar-e2.sh`: 34 correctas, 0 fallos. **Ojo: su hostname es `encina-e2-completa`, igual que la vieja**, porque lo pone el seed; se distinguen por el testigo `/etc/encina-e2-testigo-seed` (`16:31:03Z` la nueva, `14:50:22Z` la vieja) |
 | ~~`encina-E2-control`~~ → `encina-E2-sinsnap` | **Era el control de §4.14i**, cuyo valor estaba en el registro y no en el disco. **Se consumió el 2026-08-10** para medir si el Snap se puede quitar desde el seed (§4.16), y **ya no es un control**: lo que queda de aquel control es lo escrito en §4.14i | `gpu-pci` | **Parada.** Ahora es **la primera máquina de Encina OS sin Snap**: instalada desatendida en 8 min 32 s, sin `/var/lib/snapd`, sin `/snap`, sin orden `snap`, con el saludador de GDM vivo. Hostname propio `encina-e2-sinsnap`, IP `.7`. **Sin certificado personal**, y **sin `sudo` sin contraseña** (al revés que `encina-E2-seed`) |
 
 **La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de

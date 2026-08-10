@@ -344,25 +344,37 @@ La sombra no está ganando. Comprueba el orden de XDG_DATA_DIRS de la sesión:
                 ;;
         esac
 
-        # Que el icono anclado siga VIVO importa tanto como a dónde apunta.
-        # Con NoDisplay=true apuntaba bien y desaparecía del dock igualmente.
+        # Que el identificador siga VIVO importa tanto como a dónde apunta, pero
+        # «vivo» no es «visible». Desde la 0.2.1 la sombra lleva NoDisplay=true,
+        # así que lo correcto aquí es should_show=False Y que el identificador
+        # siga resolviendo, que es lo que comprueba el `case` de arriba.
+        #
+        # Medido el 2026-08-10 (§4.19): NoDisplay OCULTA pero NO DESACTIVA. Si
+        # esto diera True, la sombra habría perdido el NoDisplay y el usuario
+        # vería dos «Firefox»; si el `case` de arriba diera NINGUNA con Firefox
+        # ya instalado, la entrada estaría muerta y el icono anclado no abriría
+        # nada. Son dos fallos distintos y por eso se preguntan por separado.
         VISIBLE=$(XDG_DATA_DIRS="$(xdg_data_dirs_sesion)" XDG_CURRENT_DESKTOP=ubuntu:GNOME \
                   python3 - firefox_firefox.desktop <<'PY' 2>/dev/null || echo "?"
 import sys, gi
 gi.require_version("Gio", "2.0")
 from gi.repository import Gio
-a = Gio.DesktopAppInfo.new(sys.argv[1])
+try:
+    a = Gio.DesktopAppInfo.new(sys.argv[1])
+except TypeError:      # el constructor devolvió NULL (trampa 11)
+    a = None
 print(a.should_show() if a else "NINGUNA")
 PY
 )
-        if [[ "$VISIBLE" == "True" ]]; then
-            ok "La entrada se sigue mostrando: el icono anclado no desaparece"
+        if [[ "$VISIBLE" == "False" ]]; then
+            ok "La entrada está oculta (NoDisplay) y el identificador sigue vivo"
+        elif [[ "$VISIBLE" == "True" ]]; then
+            fallo "La entrada se muestra: el usuario ve DOS «Firefox»" \
+"La sombra ha perdido NoDisplay=true. Sin él salen dos entradas idénticas
+llamadas «Firefox», y en el producto —la imagen, que no tiene Snap— el usuario
+las ve siempre (MEDICIONES.md §4.19, §4.17h)."
         else
-            fallo "La entrada no se muestra (should_show=$VISIBLE)" \
-"Quien instale el paquete con la sesión abierta se queda SIN icono de Firefox
-hasta que cierre sesión: GNOME Shell retira el icono al instante por inotify,
-pero no relee los favoritos por defecto hasta el siguiente inicio de sesión.
-Quita NoDisplay de la sombra."
+            omitido "No se ha podido saber si la entrada se muestra (should_show=$VISIBLE)"
         fi
     else
         ok "No hay lanzador del Snap que sombrear (sistema sin el Snap)"

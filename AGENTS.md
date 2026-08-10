@@ -388,6 +388,35 @@ Firefox (R10): entre instalar el paquete e instalar Firefox el binario no
 existe, y sin `TryExec` el icono abriría la nada. Y `NoDisplay=true`, para que
 no aparezcan dos «Firefox» idénticos en el buscador.
 
+**Ojo con `NoDisplay`, que se quitó y se volvió a poner, y las dos veces por un
+motivo.** La 0.2.0 lo retiró porque con él, instalar el paquete en una sesión ya
+abierta hacía desaparecer el icono del dock, y se aceptó el duplicado a cambio.
+La 0.2.1 lo repuso porque ese trato dejó de valer al pasar el producto a ser la
+imagen (D3) y dejar la imagen de tener Snap: entonces el duplicado no lo ve solo
+quien actualiza su Ubuntu, lo ve **todo** usuario, siempre. **Lo que decide está
+medido en los dos mundos** (`MEDICIONES.md` §4.19), y son tres hechos:
+
+| Estado de la sombra | Con Snap (`encina-E1-meta`) | Sin Snap (`encina-E2-completa`) |
+|---|---|---|
+| como estaba (0.2.0) | 2 iconos, id → `/usr/bin/firefox %u` | 2 iconos, id → `/usr/bin/firefox %u` |
+| **`NoDisplay=true`** | **1 icono**, id → `/usr/bin/firefox %u` | **1 icono**, id → `/usr/bin/firefox %u` |
+| sin el fichero | 2 iconos, id → **`/snap/bin/firefox %u`** | 1 icono, id → `NINGUNA` |
+| `Hidden=true` | 1 icono, id → `NINGUNA` | — |
+
+- **`NoDisplay` oculta pero NO desactiva.** Con él puesto el identificador sigue
+  resolviendo a `/usr/bin/firefox %u`, así que el dock de Ubuntu de fábrica, que
+  tiene anclado ese identificador, sigue abriendo el nativo. A2 no se toca.
+- **Borrar el fichero reabre A2 entero** en la máquina con Snap.
+- **`Hidden=true` no sirve:** significa «borrado», no «oculto», y deja el icono
+  anclado muerto.
+
+Lo que sigue costando, y va dicho en el propio fichero: en la **primera**
+instalación sobre una sesión gráfica abierta cuyo dock tenga anclado el
+identificador del Snap, GNOME Shell puede dejar de pintar ese icono hasta el
+siguiente inicio de sesión. Medido que **no** reescribe `favorite-apps` en el
+dconf del usuario, así que no es permanente; si desaparece de la pantalla o no,
+es `[OJOS]`.
+
 **Predeterminados del escritorio:**
 `usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override`
 
@@ -450,6 +479,37 @@ sudo apt install firefox firefox-l10n-es-es
       y el `ID de distribución` no debe ser `canonical-*`. Que la interfaz salga en
       español **no demuestra nada por sí solo**: el Snap también está en español, así
       que primero se confirma el binario y después el idioma
+- [ ] **El usuario ve UN SOLO icono de Firefox, y se cuenta en las dos máquinas:
+      una con Snap y otra sin él.** Esta casilla es nueva desde la 0.2.1 y existe
+      porque **ninguna de las doce anteriores la hacía**: todas preguntaban *a qué
+      resuelve* el identificador y ninguna *cuántos iconos hay*, que es por lo que
+      el duplicado vivió sin que nadie lo viera desde A2 hasta `MEDICIONES.md`
+      §4.17h. Es la familia de A2 en estado puro: siete comprobaciones en verde y
+      la pantalla haciendo otra cosa.
+      No se cuenta mirando ficheros ni con `ls`, se le pregunta a la misma
+      biblioteca que dibuja la rejilla:
+
+      ```
+      XDG_DATA_DIRS=$(xdg_data_dirs_sesion) XDG_CURRENT_DESKTOP=ubuntu:GNOME python3 -c '
+      import gi; gi.require_version("Gio","2.0")
+      from gi.repository import Gio
+      t=Gio.AppInfo.get_all(); v=[a for a in t if a.should_show()]
+      print(sum(1 for a in v if "firefox" in a.get_id().lower()), "de", len(v), "visibles")'
+      ```
+
+      *Sano:* `1`. *Roto:* `2` — el de Mozilla y la sombra, los dos llamados
+      «Firefox» y los dos abriendo `/usr/bin/firefox`, que es lo que se veía
+      hasta la 0.2.0. **El segundo número es el control**: si el total de
+      visibles saliera 0, un `1` no significaría nada. Y no vale hacerla solo sin
+      Snap: el duplicado ya existía **con** Snap (§4.17h), así que se cuenta en
+      las dos o no se marca
+- [ ] **Con `NoDisplay` puesto, el identificador del Snap SIGUE resolviendo al
+      nativo.** *Sano:* `resolver_desktop firefox_firefox.desktop` →
+      `/usr/bin/firefox %u` y `should_show()` → `False`. *Roto:* `NINGUNA`, que
+      es lo que dan `Hidden=true` o quitar el fichero, y deja muerto el icono
+      anclado del dock de fábrica; o `/snap/bin/firefox %u`, que es A2 reabierto.
+      Las dos preguntas son distintas y se hacen por separado: «oculta» y
+      «desactivada» no son lo mismo, y confundirlas es lo que costó la 0.2.0
 
 ---
 
@@ -990,35 +1050,36 @@ ninguna sin la salida literal.**
       §4.15 comprobadas tres veces: en el Mac, en el volumen, y ya copiadas
       dentro de `/target`. Los cuatro `install ok installed`, tres en `showauto`
       y `encina-meta` en `showmanual`, **sin tocar ninguna marca**
-- [ ] **Sin Snap.** *Sano:* `snap list` no menciona `firefox`, y
+- [x] **Sin Snap.** *Sano:* `snap list` no menciona `firefox`, y
       `/var/lib/snapd/desktop/applications/firefox_firefox.desktop` no existe.
       *Roto:* cualquiera de las dos cosas presente — y ojo, que el icono puede
       seguir en el dock aunque el paquete se haya ido (es el caso de A2).
-      **El mecanismo está medido (§4.16) y la máquina existe
-      (`encina-E2-sinsnap`); la casilla sigue SIN marcar a propósito, porque la
-      instaló el seed de la medición y no el seed definitivo.** Cuando se marque,
-      hay que mirar tres cosas y no dos: que no exista la orden `snap`, que no
-      exista el lanzador, y que `resolver_desktop firefox_firefox.desktop`
-      responda `NINGUNA` — no `?`, que es lo que respondía antes de arreglar
-      `lib.sh`. Y no vale `dpkg -l | grep -i snap`: da falsa alarma con
-      `libsnapd-glib`, `gir1.2-snapd-2`, `xdg-desktop-portal` y una extensión de
-      GNOME que ordena ventanas (§4.16h).
-      **SIN MARCAR el 2026-08-10, y el motivo es un hallazgo de la casilla, no
-      de la máquina (§4.18k).** Las dos primeras cosas están medidas sobre la
-      máquina del seed definitivo: no hay orden `snap`, no hay lanzador, no hay
-      `/var/lib/snapd` ni `/snap`, y `snapd` está en `un`. **La tercera no la
-      puede cumplir ninguna máquina de Encina OS:** `firefox_firefox.desktop`
-      responde `/usr/bin/firefox %u` porque ese identificador lo resuelve la
-      **sombra que instala `encina-firefox-native`** —medido con
-      `dpkg -S`—, cuyo trabajo entero era ganarle por precedencia al lanzador
-      del Snap. La casilla se escribió con §4.16i, que se midió sobre una
-      máquina **sin ningún paquete de Encina**, donde `NINGUNA` sí era correcto.
-      **No se afloja aquí:** esta casilla y el defecto de los dos iconos
-      (§4.17h) son la misma cosa vista por dos sitios, y las dos se cierran
-      arreglando la sombra en `encina-firefox-native`, que tiene su propia
-      definición de terminado. Lo que sí está medido es que el identificador
-      **no resuelve a nada bajo `/snap/`**, que es lo que la casilla quería
-      preguntar
+      Y no vale `dpkg -l | grep -i snap`: da falsa alarma con `libsnapd-glib`,
+      `gir1.2-snapd-2`, `xdg-desktop-portal` y una extensión de GNOME que ordena
+      ventanas (§4.16h).
+      **LA TERCERA CONDICIÓN ESTABA MAL ESCRITA, Y SE CORRIGE CON SU MOTIVO
+      (§4.19d) — no se afloja.** Pedía que `resolver_desktop firefox_firefox.desktop`
+      respondiera `NINGUNA`, y se redactó con §4.16i, medido sobre una máquina
+      **sin ningún paquete de Encina**, donde `NINGUNA` era correcto porque no
+      había ni Snap ni sombra. **Lo que la delata no es que ninguna máquina de
+      Encina la cumpliera, sino algo peor, y está medido:** `NINGUNA` solo se
+      alcanza quitando la sombra o poniéndole `Hidden`, y quitar la sombra hace
+      que en una máquina **con** Snap el identificador vuelva a resolver a
+      `/snap/bin/firefox %u`. **Tal como estaba, la casilla exigía un estado que
+      solo se consigue reabriendo A2.** Lo que quería preguntar es que **no
+      resuelva a nada bajo `/snap/`**, y eso es lo que pregunta ahora.
+      **Y se le añade una cuarta condición que no tenía nadie: cuántos iconos de
+      Firefox ve el usuario.** Ninguna de las doce casillas lo preguntaba, y por
+      eso el duplicado de §4.17h vivió desde A2 sin que nadie lo viera.
+      **MARCADA el 2026-08-10 (§4.19g)**, sobre `encina-E2-0.2.1`, máquina nueva
+      instalada de una pasada por el seed reconstruido con
+      `encina-firefox-native` **0.2.1**: no existe la orden `snap` —control:
+      `command -v bash` → `/usr/bin/bash`—, no existe el lanzador, ni
+      `/var/lib/snapd`, ni `/snap`, `snapd` está en `un`,
+      `firefox_firefox.desktop` → `/usr/bin/firefox %u` (fuera de `/snap/`), con
+      su control de que el resolvedor **sabe decir `NINGUNA`** ante un
+      identificador que no existe (trampa 11), y **1 icono de Firefox** de 25
+      aplicaciones visibles, que es el control de que el inventario no está mudo
 - [x] **Firefox es el nativo y está en español**, por la vía de §4.10: versión
       **sin** epoch y `/usr/bin/firefox` fuera de `/snap/`. *Roto:* versión
       `1:…` = sigue siendo el deb de transición.
@@ -1069,15 +1130,24 @@ E3 hereda la deuda con nombre: poner esa palabra sin hipervisor.
 secuencia de §6.4 se traslada al seed **tal cual**, con el aviso de que en una
 máquina sin Snap el paso 4 es también el navegador.
 
-**Y queda una tarea nueva, que NO es de E2 y por eso no bloquea el seed:** el
-usuario ve **dos iconos de Firefox** —el de Mozilla y la sombra de
-`encina-firefox-native`, que sin Snap ya no tiene a quién ganar—. **Está medido en
-los dos mundos y el duplicado ya existía en E1** (§4.17h), así que es un defecto
-de `encina-firefox-native`, no de la entrega. Ninguna de las doce casillas de
-§6.4 lo miraba: todas preguntaban *a qué resuelve* el identificador y ninguna
-*cuántos iconos hay*. **Desde el 2026-08-10 esa tarea tiene además una casilla
-esperándola:** la tercera condición de «Sin Snap» no puede dar verde mientras la
-sombra siga puesta (§4.18k).
+**Los dos iconos de Firefox: CERRADO el 2026-08-10** (§4.19). Era un defecto de
+`encina-firefox-native` y no de la entrega —el duplicado ya existía en E1
+(§4.17h)—, y se arregla con `NoDisplay=true` en la sombra
+(`encina-firefox-native` **0.2.1**), que es **el único estado que deja un icono
+en los dos mundos sin reabrir A2**: quitar la sombra devuelve
+`/snap/bin/firefox %u` en una máquina con Snap, y `Hidden=true` deja muerto el
+icono anclado. `NoDisplay` oculta pero no desactiva.
+
+**Y de paso se arregló la casilla, que estaba al revés, no floja:** pedía
+`NINGUNA`, y `NINGUNA` solo se alcanza reabriendo A2 o matando el icono. Ahora
+pregunta lo que quería preguntar —que no resuelva bajo `/snap/`— y añade la
+condición que no tenía nadie: **cuántos iconos ve el usuario**. Ninguna de las
+doce casillas de §6.4 contaba iconos; todas preguntaban a qué resuelve el
+identificador, y por eso el duplicado vivió desde A2.
+
+**Consecuencia obligatoria y hecha:** cambiar el paquete cambia una de las cuatro
+huellas del seed, así que se reconstruyó el volumen (`b8269e52…`) y **se remidió
+§4.18 con una instalación entera en una máquina nueva**, `encina-E2-0.2.1`.
 
 ### 6bis.4 Dónde vive el seed, y qué hace cada fichero
 
@@ -1181,8 +1251,8 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las doce trampas de
-  `SCRIPTS.md` son doce formas de que esto salga caro, y las nueve dan **falsos
+  `scripts/`, para la CI y para la receta de imagen. Las catorce trampas de
+  `SCRIPTS.md` son catorce formas de que esto salga caro, y las nueve dan **falsos
   negativos o comprobaciones que no comprueban**. **La novena es del propio
   método** y se pagó abriendo E2: un control también necesita su señal de que
   llegó a ejecutarse.

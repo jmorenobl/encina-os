@@ -618,3 +618,99 @@ medición por la mitad**, y si la orden hubiera ido después de escribir algo y
 antes de comprobarlo, el resultado sería un «no está» falso. Se evita matando por
 PID —el que devuelve `$!`— en vez de por patrón, o anclando el patrón a algo que
 solo tenga el proceso de verdad.
+
+## Y dos más, midiendo la sombra del lanzador (2026-08-10)
+
+Las dos salieron midiendo `MEDICIONES.md` §4.19, y las dos son mías del mismo día.
+
+**13. Una mutación que falla en silencio convierte cuatro estados en uno, y el
+paso de restaurar lo certifica.** El guion que compara «como está / con
+`NoDisplay` / sin el fichero / con `Hidden`» hacía cada cambio con `sudo`. En
+`encina-E2-completa` el usuario `encina` **no tiene sudo sin contraseña**, así que
+los cuatro `sudo` fallaron, los cuatro «estados» eran el mismo, y el resultado se
+leía como un hallazgo perfectamente coherente: «`NoDisplay` no hace nada en esta
+máquina».
+
+Y lo venenoso no es eso, es el final:
+
+```
+=========== restaurar ===========
+  huella tras restaurar: 16aedbd1…
+  [OK] la maquina queda como estaba          <- verdad, y por el peor motivo
+```
+
+La comprobación de restauración **dio `[OK]` porque nadie había tocado nada**. Es
+la familia de la trampa 5 —la misma respuesta en un sistema sano y en uno roto—
+puesta justo donde uno baja la guardia. La regla: **una mutación no es un efecto
+secundario, es un paso que se verifica antes de leer su resultado**, y si no se
+aplicó no se imprime ningún número:
+
+```
+if [ "$(grep -c '^NoDisplay=true' "$F")" -eq 1 ]; then
+    echo "  [MUTACION APLICADA]"; mirar
+else
+    echo "  [MUTACION NO APLICADA] no se mide nada"
+fi
+```
+
+El detalle que la delató por casualidad: un `grep -n` de control imprimía el
+número de línea, y en la máquina buena salía `70:NoDisplay=true` y en ésta solo
+las cuatro líneas de comentario que hablan de `NoDisplay` (trampa 3 otra vez).
+**Sin ese número de línea, la pasada entera habría pasado por medición.**
+
+**14. Dos VMs a la vez se pelean por `192.168.64.3`, y ninguna avisa.** Está
+escrito «no arrancar dos a la vez» y por esto: `encina-dev` y `encina-E1-meta`
+encendidas al mismo tiempo, `ssh jorge@192.168.64.3` contestando unas veces una y
+otras la otra. Un `ls` de un directorio que sí existía respondió «no existe»,
+desde la máquina equivocada.
+
+No estropeó ninguna medición **porque cada salida lleva su huella de identidad
+dentro**, que es exactamente para lo que se ponen:
+
+```
+encina-E1-meta   los cuatro paquetes de Encina    snap firefox 147.0.3-1 rev 7764
+encina-dev       ninguno                          snap firefox 153.0.3-1 rev 8735
+```
+
+Y hay más motivo del que parecía: **el `hostname` no distingue nada**.
+`encina-E1-meta` se llama `encina-dev` por dentro —es un clon y nadie lo cambió—,
+y la máquina nueva de §4.19 se llama `encina-e2-completa` igual que la vieja,
+porque el nombre lo pone el seed. **Identificar una VM por su nombre, el de UTM o
+el de dentro, no vale; se identifica por lo que tiene instalado y por sus
+testigos.**
+
+## Cómo se rehace el seed cuando cambia un `.deb` (2026-08-10)
+
+Vale para cualquier cambio de paquete, y son cuatro cosas, no una
+(`MEDICIONES.md` §4.19g):
+
+1. **`imagen/encina-seed.sh`**: la huella (`H_FFNATIVE=…`) **y** el nombre del
+   fichero, que lleva la versión dentro.
+2. **`imagen/fabricar-seed.sh`**: el nombre en el array `FICHEROS`.
+3. **El índice `Packages`**, regenerado con `dpkg-scanpackages` **en una VM**
+   —no existe en macOS—, porque lleva `Version`, `Size`, `Filename` y `SHA256`.
+4. **Los otros tres `.deb` se sacan del volumen del seed anterior**, no de
+   `debian-packages/` de este repositorio: es la trampa de §4.13, y allí hay
+   ficheros con la misma versión y **otros bytes**.
+
+Antes de fabricar el bueno, **fabrica uno malo a propósito** —el `.deb` viejo con
+el nombre nuevo— y comprueba que la herramienta se niega. Cuesta diez segundos:
+
+```
+[FALLO] huella distinta en encina-firefox-native_0.2.1_all.deb
+        esperada 972ec932…   real c2de429a…
+```
+
+Y para la VM nueva, dos cosas que costaron un arranque fallido cada una:
+
+- **`efi_vars.fd` no puede estar vacío**: QEMU aborta con `cfi.pflash01 device
+  '/machine/virt.flash1' requires 67108864 bytes, pflash1 block backend provides
+  0 bytes`. Se crea disperso de 64 MiB con `truncate`.
+- **La ISO se enlaza DURO dentro del bundle, no simbólico.** UTM le concede a
+  QEMU los ficheros que son unidades de la VM; un enlace simbólico saca la ruta
+  real fuera de esa concesión. Duro no cuesta disco: es el mismo volumen.
+- Y los valores de `config.plist` son enumerados con nombres exactos
+  (`UsbBusSupport: '3.0'`, no `'Usb3_0'`; `DirectoryShareMode: 'WebDAV'`). Si uno
+  no le gusta, **UTM no da error: la VM simplemente no aparece en la lista.** Lo
+  barato es partir del `config.plist` de una VM que ya funciona y cambiar solo lo
+  necesario.

@@ -1,3 +1,26 @@
+encina-firefox-native (0.2.1) noble; urgency=medium
+
+  * Poner NoDisplay=true en la sombra del lanzador del Snap: el usuario
+    veia DOS iconos identicos llamados Firefox. Medido en los dos mundos
+    el 2026-08-10 (MEDICIONES.md 4.19): el duplicado ya existia con
+    Snap, o sea que es un defecto de este paquete y no de la entrega, y
+    ninguna de las doce casillas lo miraba porque todas preguntaban a
+    que resuelve el identificador y ninguna cuantos iconos hay. La 0.2.0
+    quito NoDisplay porque hacia desaparecer el icono del dock de una
+    sesion ya abierta, y acepto el duplicado a cambio; ese trato dejo de
+    valer al pasar el producto a ser la imagen (D3) y dejar la imagen de
+    tener Snap, porque entonces el duplicado lo ve todo usuario y
+    siempre. Las alternativas quedan descartadas por medicion y no por
+    criterio: quitar el fichero hace que en una maquina con Snap el
+    identificador vuelva a resolver a /snap/bin/firefox, que es A2
+    reabierto entero, y Hidden=true lo deja en NINGUNA y mata el icono
+    anclado. NoDisplay oculta sin desactivar: el identificador sigue
+    dando /usr/bin/firefox. Se invierten las dos comprobaciones que
+    exigian lo contrario, en 07-firefox-construir.sh y en 08-firefox-
+    instalar.sh.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Mon, 10 Aug 2026 18:06:03 +0200
+
 encina-firefox-native (0.2.0) noble; urgency=medium
 
   * Hacer que el icono del escritorio abra Firefox nativo y no el Snap.

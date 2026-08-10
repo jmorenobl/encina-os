@@ -280,24 +280,34 @@ sustituye nada: añade un tercer lanzador."
 Firefox el binario no existe. Sin TryExec el icono abriría la nada, y sería
 peor que no haber hecho nada."
     fi
-    # NoDisplay tiene que estar AUSENTE, y esto no es una preferencia estética:
-    # con NoDisplay=true, instalar el paquete en una sesión ya iniciada hace
-    # DESAPARECER el icono del dock. GNOME Shell vigila /usr/share/applications
-    # por inotify y retira el icono al instante, pero los favoritos por defecto
-    # solo los relee al iniciar sesión, así que el override que lo repone no
-    # actúa hasta entonces. Se entera de lo que quita el icono, no de lo que lo
-    # repone. Comprobado en la VM: el lanzador desapareció.
+    # NoDisplay tiene que estar PRESENTE. ESTA COMPROBACIÓN ESTUVO INVERTIDA
+    # HASTA LA 0.2.1, y el motivo del cambio está medido, no razonado:
+    # `MEDICIONES.md` §4.19, en las DOS máquinas y con el mismo método.
+    #
+    # Lo que decía antes: con NoDisplay, instalar en una sesión ya abierta hacía
+    # desaparecer el icono del dock, así que se prefería ver dos «Firefox».
+    # Ese trato dejó de valer cuando el producto pasó a ser la imagen (D3) y la
+    # imagen dejó de tener Snap (E2): el duplicado dejó de ser un feo pasajero
+    # de quien actualiza su Ubuntu y pasó a ser lo que ve todo usuario, siempre.
+    #
+    # Y lo medido descarta las alternativas: SIN este fichero, en una máquina con
+    # Snap el identificador vuelve a resolver a /snap/bin/firefox %u —A2 entero
+    # otra vez—; con Hidden=true pasa a NINGUNA y el icono anclado se queda
+    # muerto. Con NoDisplay=true sigue resolviendo a /usr/bin/firefox %u: oculta
+    # sin desactivar, que es justo lo que hace falta.
     if grep -q '^NoDisplay=true' "$SOMBRA"; then
-        fallo "La sombra lleva NoDisplay=true" \
-"Con NoDisplay, instalar el paquete en una sesión abierta deja al usuario sin
-icono de Firefox hasta que cierre sesión, porque GNOME Shell se entera por
-inotify de que la entrada deja de mostrarse pero no relee los favoritos por
-defecto hasta el siguiente inicio de sesión.
-
-Sin NoDisplay salen dos «Firefox» en el buscador, y es feo, pero los dos
-abren /usr/bin/firefox: ya no hay elección equivocada posible."
+        ok "Lleva NoDisplay=true: un solo icono, y el identificador sigue vivo"
     else
-        ok "No lleva NoDisplay: el icono anclado sigue vivo y pasa a abrir el nativo"
+        fallo "La sombra no lleva NoDisplay=true" \
+"Sin NoDisplay el usuario ve DOS «Firefox» idénticos, y en el producto —que es
+la imagen, y no tiene Snap— los ve siempre. Medido en los dos mundos el
+2026-08-10 (MEDICIONES.md §4.19).
+
+Y no vale quitar el fichero ni poner Hidden=true: sin él, en una máquina con
+Snap el identificador vuelve a resolver a /snap/bin/firefox %u, que es A2
+reabierto; con Hidden pasa a NINGUNA y el icono anclado se queda muerto.
+NoDisplay oculta sin desactivar: el identificador sigue dando
+/usr/bin/firefox %u."
     fi
     if grep -qE '^Exec=/usr/bin/firefox' "$SOMBRA"; then
         ok "Redirige a /usr/bin/firefox, no al Snap"

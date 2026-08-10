@@ -35,32 +35,55 @@
 # receta de imagen. El Snap sigue instalado, con su perfil intacto, y arranca
 # con `snap run firefox`.
 #
-# POR QUE REDIRIGE EN LUGAR DE OCULTARSE, Y POR QUE NO LLEVA NoDisplay.
+# ---------------------------------------------------------------------------
+# POR QUE LLEVA NoDisplay=true. Medido el 2026-08-10, MEDICIONES.md 4.19.
 #
-# La primera version llevaba NoDisplay=true, para que no aparecieran dos
-# «Firefox» en el buscador. Fue un error, y se vio en cuanto se probo: al
-# instalar el paquete en una sesion ya iniciada, EL ICONO DEL DOCK DESAPARECIO.
+# La 0.2.0 lo quito, y el motivo que se escribio entonces era este: con
+# NoDisplay, instalar el paquete en una sesion ya iniciada hacia DESAPARECER el
+# icono del dock, porque GNOME Shell vigila /usr/share/applications por inotify
+# y se entera al instante de que la entrada deja de mostrarse, pero los
+# favoritos por DEFECTO solo los relee al iniciar sesion, asi que el
+# gschema.override que repone el icono no actuaba hasta entonces. Se acepto a
+# cambio ver dos «Firefox» en el buscador, con el argumento de que ya no habia
+# eleccion equivocada posible porque los dos abren /usr/bin/firefox.
 #
-# El motivo es una asimetria de GNOME Shell:
+# Ese trato dejo de valer cuando el producto paso a ser la imagen (D3, reescrita
+# el 2026-08-08) y la imagen dejo de tener Snap (E2). Entonces el duplicado no
+# es un feo pasajero de quien actualiza su Ubuntu: es lo que ve TODO usuario del
+# producto, siempre. Y el 2026-08-10 se midio el espacio entero de arreglos en
+# las DOS maquinas, con la misma biblioteca que dibuja la rejilla
+# (Gio.AppInfo.get_all() + should_show()):
 #
-#   - Vigila /usr/share/applications por inotify, asi que se entera AL INSTANTE
-#     de que este fichero pasa a NoDisplay, y retira el icono anclado.
-#   - Los favoritos por defecto los lee UNA VEZ, al arrancar la sesion.
-#     Recompilar los esquemas no notifica a un proceso en marcha el cambio de
-#     un valor por DEFECTO, asi que el gschema.override que repone el icono no
-#     surte efecto hasta el siguiente inicio de sesion.
+#                    con Snap (encina-E1-meta)        sin Snap (encina-E2-completa)
+#   como estaba      2 iconos, id -> /usr/bin/firefox  2 iconos, id -> /usr/bin/firefox
+#   NoDisplay=true   1 icono,  id -> /usr/bin/firefox  1 icono,  id -> /usr/bin/firefox
+#   sin este fichero 2 iconos, id -> /snap/bin/firefox 1 icono,  id -> NINGUNA
+#   Hidden=true      1 icono,  id -> NINGUNA
 #
-# Es decir: se entera de lo que quita el icono, no de lo que lo repone. El
-# usuario se queda sin lanzador de Firefox hasta que cierra sesion, y para
-# quien instala esto sobre su Ubuntu eso se lee como «me han roto el equipo».
+# LO QUE ESA TABLA DECIDE, y es lo que hay que leer antes de volver a tocarlo:
 #
-# Sin NoDisplay, ese mismo inotify juega a favor: el icono anclado sigue
-# existiendo y pasa a abrir Firefox nativo en el acto, sin reiniciar sesion.
+#   - NoDisplay OCULTA, PERO NO DESACTIVA. Con el puesto, el identificador
+#     firefox_firefox.desktop SIGUE resolviendo a /usr/bin/firefox %u. O sea que
+#     un dock que tenga anclado ese identificador —el de Ubuntu de fabrica—
+#     sigue abriendo Firefox nativo. La sustitucion de A2 no se toca.
+#   - BORRAR ESTE FICHERO REABRE A2. En una maquina con Snap, sin el, el mismo
+#     identificador vuelve a resolver a /snap/bin/firefox %u. Es el fallo
+#     original, entero.
+#   - Hidden=true NO SIRVE. Significa «borrado», no «oculto»: la entrada se
+#     ignora del todo y el identificador pasa a NINGUNA, con lo que el icono
+#     anclado se queda muerto.
 #
-# EL COSTE, dicho claramente: en el buscador de aplicaciones aparecen dos
-# «Firefox», este y firefox.desktop. Es feo, pero ya no hay eleccion
-# equivocada posible: LOS DOS abren /usr/bin/firefox. El problema original no
-# era que hubiera dos iconos, era que uno de ellos abria el Snap.
+# LO QUE SIGUE COSTANDO, dicho sin adornos. Al instalar el paquete por primera
+# vez sobre una sesion grafica ya abierta cuyo dock tenga anclado el
+# identificador del Snap, GNOME Shell puede dejar de pintar ese icono hasta el
+# siguiente inicio de sesion. Lo que SI se midio el 2026-08-10 acota el dano:
+# con la sesion viva y ese identificador en los favoritos DEL USUARIO, poner
+# NoDisplay no reescribio /org/gnome/shell/favorite-apps en su dconf en 30 s, o
+# sea que la lista no se corrompe y el icono vuelve al siguiente inicio de
+# sesion; y la entrada, oculta, sigue abriendo Firefox nativo. Si desaparece o
+# no de la pantalla no se ha mirado: la captura por DBus de GNOME responde
+# «Screenshot is not allowed» y el dock es una superficie Wayland, asi que eso
+# es [OJOS] y esta declarado como tal.
 #
 # TryExec hace que la entrada se ignore si /usr/bin/firefox no existe. Hace
 # falta porque este paquete NO instala Firefox (R10): entre instalar el
@@ -75,6 +98,7 @@ Exec=/usr/bin/firefox %u
 TryExec=/usr/bin/firefox
 Icon=firefox
 Terminal=false
+NoDisplay=true
 Categories=Network;WebBrowser;
 StartupNotify=true
 StartupWMClass=firefox

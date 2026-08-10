@@ -143,28 +143,49 @@ mantiene el bloqueo mientras corre un script de mantenedor, asi que `snap
 remove` desde el `postinst` es un interbloqueo. La eliminacion de verdad sigue
 correspondiendo a la receta de imagen.
 
-### El coste: dos «Firefox» en el buscador
+### Un solo icono: `NoDisplay=true`, y por que se quito y se volvio a poner
 
-La sombra **no** lleva `NoDisplay`, asi que aparece en el buscador de
-aplicaciones junto a `firefox.desktop`: dos entradas llamadas «Firefox». Es feo
-y es deliberado.
+**Desde la 0.2.1 la sombra lleva `NoDisplay=true` y el usuario ve un solo
+«Firefox».** Antes veia dos, los dos con el mismo nombre y los dos abriendo
+`/usr/bin/firefox`.
 
-La primera version si llevaba `NoDisplay=true`, y al instalarla en una sesion ya
-iniciada **el icono del dock desaparecio**. GNOME Shell vigila
+La 0.2.0 lo habia quitado por un motivo real: al instalar el paquete en una
+sesion ya iniciada **el icono del dock desaparecia**. GNOME Shell vigila
 `/usr/share/applications` por inotify y retira el icono al instante, pero los
-favoritos por defecto solo los relee al iniciar sesion: recompilar los esquemas
-no notifica a un proceso vivo el cambio de un valor por *defecto*. Se entera de
-lo que quita el icono y no de lo que lo repone, asi que el usuario se queda sin
-lanzador de Firefox hasta cerrar sesion. Para quien instala esto sobre su Ubuntu
-eso se lee como «me han roto el equipo».
+favoritos por *defecto* solo los relee al iniciar sesion, asi que el
+`gschema.override` que lo repone no actua hasta entonces. Se acepto el duplicado
+a cambio, con el argumento de que ya no habia eleccion equivocada posible.
 
-Con el duplicado no hay eleccion equivocada posible: **los dos abren
-`/usr/bin/firefox`**. El problema original nunca fue que hubiera dos iconos, era
-que uno de ellos abria el Snap.
+**Ese trato dejo de valer** cuando el producto paso a ser la imagen (D3) y la
+imagen dejo de tener Snap: entonces el duplicado no lo sufre quien actualiza su
+Ubuntu, lo ve **todo** usuario y siempre. El 2026-08-10 se midio el espacio
+entero de arreglos en las dos maquinas, con la biblioteca que dibuja la rejilla
+(`MEDICIONES.md` §4.19):
 
-`07-firefox-construir.sh` falla si alguien vuelve a poner `NoDisplay`, y
-`08-firefox-instalar.sh` comprueba que la entrada se sigue mostrando: apuntar
-al sitio correcto no basta si el icono desaparece.
+|                  | con Snap                          | sin Snap                          |
+|------------------|-----------------------------------|-----------------------------------|
+| como estaba      | 2 iconos, id → `/usr/bin/firefox` | 2 iconos, id → `/usr/bin/firefox` |
+| `NoDisplay=true` | **1 icono**, id → `/usr/bin/firefox` | **1 icono**, id → `/usr/bin/firefox` |
+| sin el fichero   | 2 iconos, id → **`/snap/bin/firefox`** | 1 icono, id → `NINGUNA`      |
+| `Hidden=true`    | 1 icono, id → `NINGUNA`           | —                                 |
+
+Lo que decide: **`NoDisplay` oculta pero no desactiva.** Con el puesto el
+identificador sigue resolviendo a `/usr/bin/firefox %u`, asi que a quien tuviera
+anclado el Firefox del Snap el icono le sigue funcionando y abre el correcto.
+**Borrar el fichero reabre el fallo original** en una maquina con Snap, y
+`Hidden=true` significa «borrado», no «oculto», y deja el icono anclado muerto.
+
+**Lo que sigue costando, dicho claro:** en la *primera* instalacion sobre una
+sesion grafica abierta cuyo dock tenga anclado el identificador del Snap, GNOME
+Shell puede dejar de pintar ese icono hasta el siguiente inicio de sesion. Esta
+medido que **no** reescribe `favorite-apps` en el dconf del usuario, o sea que la
+lista no se corrompe y el icono vuelve al volver a entrar. Si desaparece de la
+pantalla o no, no se ha podido medir sin ojos.
+
+`07-firefox-construir.sh` falla si alguien vuelve a **quitar** `NoDisplay`, y
+`08-firefox-instalar.sh` comprueba las dos cosas por separado: que la entrada
+este oculta **y** que el identificador siga resolviendo. Oculta y desactivada no
+son lo mismo, y confundirlas es lo que costo la 0.2.0.
 
 ### Lo que queda sin resolver
 

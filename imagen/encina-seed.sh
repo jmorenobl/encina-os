@@ -44,7 +44,7 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # no taparlo.
 H_AUTOFIRMA=d5a0ebe11a45a738f5d406e60ba2226d6e7c8d03df2eebb07b50843e92c79d03
 H_BRANDING=d4205134392abd5c345b13d9977f27034fbcd9f083e941a1795fa2dd1ab21a10
-H_FFNATIVE=3880b8aa4f219bbc9f874f646cd9baf81c48a1d51e18f70675250fd5da2e6818
+H_FFNATIVE=972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2
 H_META=e15ce56f1e7a43f1eb37daa1a6454e837ca2d54e7423cd1adfaaa4a065b13327
 
 # existe(): -e para lo normal, -L para el enlace roto o absoluto (trampa 10)
@@ -112,7 +112,7 @@ run ls -la /target/srv/encina-repo/
 say "-- huellas de §4.15, comparadas una a una:"
 huella /target/srv/encina-repo/autofirma_1.9.1+encina2_all.deb      "$H_AUTOFIRMA"
 huella /target/srv/encina-repo/encina-branding_0.1.7_all.deb        "$H_BRANDING"
-huella /target/srv/encina-repo/encina-firefox-native_0.2.0_all.deb  "$H_FFNATIVE"
+huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
 huella /target/srv/encina-repo/encina-meta_0.1.1_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"
 huella /target/srv/encina-repo/encina-meta_0.1.1_all.deb \
