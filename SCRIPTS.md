@@ -754,3 +754,64 @@ H=$(openssl passwd -6 -salt "$SALT" encina)
 Es de la familia de la 5 y de la 13: **una herramienta que responde algo
 plausible en vez de fallar**. La defensa es la misma de siempre: comprobar el
 resultado contra lo que tiene que dar **y** contra lo que no.
+
+---
+
+## Y dos más, abriendo E3 (2026-08-10)
+
+**16. Un volumen `CIDATA` olvidado le gana al seed que hay dentro de la ISO, y la instalación sale bien.**
+Leído en el propio instalador (`MEDICIONES.md` §4.21c): `select_autoinstall`
+mira cinco sitios **por orden**, el seed de cloud-init es el **cuarto** y el que
+viaja dentro de la ISO es el **quinto**.
+
+```
+1. argumento de línea de órdenes del servidor
+2. subiquity.autoinstallpath=...
+3. /autoinstall.yaml
+4. /run/subiquity/cloud.autoinstall.yaml   <- el CIDATA. GANA
+5. /cdrom/autoinstall.yaml                 <- el de la ISO
+```
+
+En una máquina nueva, o con la ISO recién grabada, esto no se nota nunca. **En
+este laboratorio sí**, porque los volúmenes `CIDATA` de E2 están a mano y una VM
+puede llevar uno enganchado de una medición anterior. Entonces la instalación
+**sale bien** —máquina completa, verificador en verde— y está midiendo **el seed
+equivocado**: el de E2, no el de la ISO de E3.
+
+Es de la familia de la 5: **la misma respuesta en un sistema sano y en uno
+roto**. Y su defensa no puede ser el resultado, porque el resultado es idéntico:
+
+```
+# el testigo va en el arranque, no en la maquina
+grep -c "append" debug.log          # 0 esperado en E3
+grep -o "\-drive [^ ]*" debug.log   # exactamente dos: la ISO y el disco de destino
+```
+
+O sea: **la prueba de que la ISO se bastó sola es lo que NO había conectado**, y
+eso solo se ve desde fuera, antes de arrancar.
+
+**17. `unsquashfs` en el Mac revienta a mitad, y no es la imagen.**
+Leyendo el código del instalador que viaja dentro de la ISO (§4.21e):
+
+```
+FATAL ERROR: dir_scan: failed to make directory
+  .../usr/lib/aarch64-linux-gnu/perl/5.34.0/sys, because File exists
+```
+
+No hay nada corrupto: el sistema de ficheros del Mac **no distingue mayúsculas**,
+y Perl trae `sys/` y `Sys/`. El mensaje habla de un fichero que «ya existe» y
+apunta a un fallo de extracción, que es justo lo que no es.
+
+Dos consecuencias prácticas:
+
+- **Extraer solo la ruta que se quiere leer**, no el árbol entero:
+  `unsquashfs -d salida imagen.squashfs /ruta/exacta`. Es más rápido y no toca la
+  colisión.
+- **Si de verdad hace falta el árbol completo**, hay que extraerlo sobre una
+  imagen de disco sensible a mayúsculas, no sobre el disco del Mac.
+
+Y lo que importa del método: **una extracción que aborta a mitad no invalida lo
+leído si lo leído salió antes del aborto** — pero hay que decir dónde paró y
+comprobar que el fichero que se cita estaba entero. Aquí `bin/subiquity/` y
+`meta/snap.yaml` se extraen antes, y la versión del snap se transcribe para que
+se pueda repetir.

@@ -61,8 +61,8 @@ producto que puedas aplicar a una máquina que ya tienes.
 | Hito | Qué te daría | Estado |
 |---|---|---|
 | **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho, 12 de 12.** La que decide: una máquina virgen instalada con la secuencia firma de verdad. La última casilla se cerró ya dentro de E2 |
-| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto, y el seed ya funciona entero.** El 10 de agosto de 2026 una máquina se instaló sola en menos de 11 minutos: los cuatro paquetes desde un repositorio que viaja **dentro del propio volumen del seed**, **sin el Snap de Firefox**, y Firefox de Mozilla en español. La ISO oficial no se toca. Lo que falta es la firma en una sede sobre esa máquina, que es lo que decide |
-| **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
+| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Hecho, 6 de 6 (10 de agosto de 2026).** Una máquina se instala sola en menos de 11 minutos: los cuatro paquetes desde un repositorio que viaja **dentro del propio volumen del seed**, **sin el Snap de Firefox**, y Firefox de Mozilla en español. La ISO oficial no se toca. Y la casilla que decide, marcada: **una firma real en `valide.redsara.es`** sobre un clon de esa máquina, destruido después |
+| **E3** — ISO que se instala como Ubuntu | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | **Abierto el 10 de agosto de 2026.** **Se instala como se instala Ubuntu:** te pregunta idioma, teclado, disco, usuario y contraseña, y lo único que trae puesto de fábrica es Encina — el repositorio con los cuatro paquetes, sin el Snap de Firefox, y Firefox nativo en español. **No lleva ningún usuario ni ninguna contraseña dentro:** los pones tú al instalar. El seed va **dentro** de la ISO, donde el instalador lo busca (`/cdrom/autoinstall.yaml`). Falta lo caro: reempaquetar la imagen sin romperla. **Con una limitación dicha por delante:** las máquinas virtuales del autor **no aplican Secure Boot**, así que aquí no se puede demostrar que la ISO arranque en un equipo que sí lo tenga activo |
 | **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
 | **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |
 | **E6** — amd64 | **Si tu equipo es Intel o AMD, lo necesitas** | Sin abrir |
@@ -358,7 +358,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las quince trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las diecisiete trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

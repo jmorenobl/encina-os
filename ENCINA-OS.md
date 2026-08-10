@@ -14,7 +14,7 @@ sección 7 («Empieza aquí») y nada más.
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
 | `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de cada paquete y de la imagen | Al lanzar trabajo con Claude Code |
 | `MEDICIONES.md` | Lo medido, con las salidas literales | Antes de volver a investigar algo. Casi siempre ya está medido |
-| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las quince trampas | Antes de ejecutar nada en la VM |
+| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las diecisiete trampas | Antes de ejecutar nada en la VM |
 | `README.md` | Qué es el proyecto, para quien llega de fuera | Al enseñar el repositorio |
 | `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
 
@@ -168,7 +168,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 |---|---|---|---|
 | **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO, 12 de 12 (2026-08-09, cerrada la última el 2026-08-10).** La que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no era cumplible con `.deb` sueltos y **se cumplió en E2 con el repo local** (§4.15) |
 | **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3. **El 2026-08-10 (§4.16) se cerró la casilla técnica que faltaba: el Snap SÍ se quita desde el seed**, con `apt-get purge snapd` por `curtin in-target`, y el escritorio sobrevive; **la vía obvia, `snap remove`, no sirve y encima dice que sí**. **El seed de verdad está escrito y medido entero el 2026-08-10 (§4.18): `imagen/autoinstall.yaml` instala una máquina completa —repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español— en menos de 11 minutos y sin humano dentro. 4 de 6 casillas marcadas.** **El 2026-08-10 (§4.19) se cierra la quinta: 5 de 6.** La casilla «Sin Snap» no se aflojó — se descubrió que **estaba escrita al revés**: pedía que `firefox_firefox.desktop` no resolviera a nada, y ese estado **solo se alcanza reabriendo A2**, porque sin la sombra el identificador vuelve a dar `/snap/bin/firefox %u`. Se corrigió con su motivo, se le añadió la condición que faltaba —**cuántos iconos de Firefox ve el usuario**— y se arregló la sombra en `encina-firefox-native` 0.2.1. Con el `.deb` nuevo cambió una de las cuatro huellas del seed, así que se reconstruyó el volumen y **se remidió §4.18 entero** con una instalación nueva y desatendida: 34 comprobaciones correctas y ningún fallo. **Y E2 QUEDA TERMINADO EL MISMO DÍA, 6 DE 6** (§4.20): la firma `[OJOS]` salió en `valide.redsara.es` sobre un clon efímero de `encina-E2-0.2.1` —máquina 100 % producto del seed— que se destruyó después. Antes hubo que arreglar un defecto del propio seed: **la contraseña del usuario no la sabía nadie**, porque en el YAML solo va el hash y hasta entonces todo se había medido por `ssh` con clave. Se regeneró en el seed versionado —no a mano sobre la máquina, que habría sido tocarla— y la máquina se rehízo entera: **10 min 43 s** y, con la contraseña ya conocida, el verificador pudo correr **como root**: **35 correctas, 0 fallos, 0 avisos, 0 omitidas** |
-| **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
+| **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | **ABIERTO el 2026-08-10.** Sus dos mediciones de apertura están hechas y las dos salieron baratas (`MEDICIONES.md` §4.21), **antes de tocar `xorriso`**. *(1)* **El banco de UTM no aplica Secure Boot, y no es que esté desactivado: el firmware no lo implementa** —`edk2-aarch64-code.fd`, sin `PK`, `KEK`, `db` ni `SetupMode`, y `mokutil` dice «este sistema no lo soporta»—. **Queda declarado como límite, como D9 con amd64**, y de ahí sale una regla: E3 **no toca los tres binarios firmados**, porque si los rompiera este banco no se daría cuenta. *(2)* **`/cdrom/autoinstall.yaml` es el quinto sitio donde el instalador busca el seed**, leído en el código que viaja en esta ISO, y `/cdrom` es el medio (medido en casper). O sea que **el seed va dentro de la ISO y no hace falta `CIDATA`**. Y sale una consecuencia que nadie había escrito: **el `CIDATA` va cuarto, así que un volumen conectado le gana al seed de la ISO** — bueno para el producto, trampa para la medición. La palabra `autoinstall` va **suelta** en `boot/grub/grub.cfg`, que es **el único `grub.cfg` de todo el medio**, y **está cubierto por `md5sum.txt`**. **Y EL MISMO DÍA SE DECIDIÓ SU FORMA, que es lo que de verdad la define: la ISO PREGUNTA, como Ubuntu** (`AGENTS.md` §6ter.0, decisión de Jorge). E2 tenía que instalar sin nadie delante porque eso **era su criterio de validación, no el producto** —§10 lo dice con esas palabras—, y E3 había heredado el criterio como si fuera el producto: de ahí salía un usuario escrito dentro de la ISO, y de ahí la contraseña. **La contraseña no era un problema que resolver: era el síntoma.** Con `interactive-sections` el instalador pregunta idioma, teclado, red, disco, usuario y zona horaria, y el seed aporta **solo lo de Encina** — **salvo `source`, que va fijo a `ubuntu-desktop-minimal` a propósito**, porque Encina OS se construye sobre la mínima y lo que va encima lo declara `encina-meta` (E4). **Tres consecuencias, y las tres abaratan E3:** desaparece la contraseña; **desaparece la deuda del GRUB** —el clic de confirmación es la pantalla normal de «instalar ahora» cuando hay alguien delante—, y con ella el `md5sum.txt`; y lo único que sigue haciendo falta es meter el seed dentro de la ISO, que es justo lo medido. **Y se puede quitar la identidad sin romper nada, leído y no supuesto:** ni `encina-seed.sh` ni `verificar-e2.sh` nombran al usuario ni usan `/home`, que es consecuencia directa de R1 |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
 | **E5** | Imagen propia (`live-build`/`debos`) | El destino declarado. Solo compra marcar el propio instalador y controlar el conjunto base | Sin abrir |
 | **E6** | amd64 | Cuando haya con qué probarlo (D9). Repetir el positivo de extremo a extremo allí | Sin abrir |
@@ -232,12 +232,82 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-**Esa tarea es E2, y E2 ya está abierto.** E1 está terminado del todo: la casilla
-que decide se marcó el 2026-08-09 con una firma real sobre un clon virgen
-(`MEDICIONES.md` §4.13), y la última que quedaba —`autoremove`— se cerró el
-2026-08-10 dentro de E2, con el repo local (§4.15). **12 de 12.**
+**Esa tarea es E3, abierto el 2026-08-10.** E1 (12 de 12) y E2 (6 de 6) están
+terminados; lo que queda de esta sección es el registro de cómo se llegó, que se
+conserva porque explica **por qué** la receta es la que es.
 
-**Lo que E2 ya tiene medido, y no hay que volver a preguntarlo**
+**Lo que E3 ya tiene medido el día que se abre, y no hay que volver a
+preguntarlo** (`MEDICIONES.md` §4.21, las dos mediciones baratas hechas **antes
+de tocar `xorriso`**):
+
+1. **El banco de UTM no aplica Secure Boot, y no puede.** No está desactivado:
+   el firmware que UTM arranca —`edk2-aarch64-code.fd`, leído de la orden de
+   QEMU real, no del fichero de configuración— es un EDK II compilado sin él. No
+   existen `PK`, `KEK`, `db` ni `SetupMode`, `mokutil` responde *«This system
+   doesn't support Secure Boot»*, y el núcleo dice `secureboot: Secure boot
+   disabled`. Todo con el control de que sí se ven las otras 32 variables EFI y
+   se lee una de verdad.
+2. **Pero la cadena firmada está y se recorre:** `MokListRT` y `SbatLevelRT`
+   existen, y las escribe el `shim`. **De ahí sale la regla dura de E3: no se
+   toca ninguno de los tres binarios firmados** (`bootaa64.efi`, `grubaa64.efi`,
+   `mmaa64.efi`), porque si se rompieran **este banco no se daría cuenta**.
+3. **Y de ahí sale un límite declarado, no una deuda:** E3 **no puede** demostrar
+   aquí que la ISO arranque en una máquina con Secure Boot activo. Se dice, como
+   D9 dice lo de amd64, y no se disfraza de casilla verde.
+4. **El seed va dentro de la ISO: `/cdrom/autoinstall.yaml`.** Es el **quinto**
+   sitio que mira `select_autoinstall` (`server.py:889-924`), la ruta es literal
+   (`server.py:73-75`, con raíz `/` en ejecución real), y **`/cdrom` es el
+   medio**, medido en el casper que viaja en esta misma ISO. **E3 no necesita el
+   volumen `CIDATA` para nada.**
+5. **El `CIDATA` va CUARTO, o sea que le gana al seed de la ISO.** A favor: la
+   ISO de E3 sigue siendo anulable sin tocarla. En contra, y hay que escribirlo
+   en la medición: **un volumen olvidado en la VM secuestraría la prueba de E3 en
+   silencio**, y la instalación saldría bien midiendo el seed equivocado.
+6. **Si alguna vez hiciera falta la palabra, va en `boot/grub/grub.cfg`, suelta**,
+   en la línea `linux /casper/vmlinuz`. Es **el único `grub.cfg` de todo el
+   medio**: la partición EFI tiene tres binarios y **cero** ficheros de
+   configuración, y el GRUB firmado no lleva el menú dentro (con su control de
+   que `strings` sí encuentra cosas en ese binario). **Y `md5sum.txt` cubre ese
+   fichero**: quien lo edite y no lo actualice deja una ISO que arranca y que
+   falla la comprobación de integridad del propio medio. **Con la forma decidida
+   (punto 7), E3 no lo necesita y no lo toca.**
+
+7. **LA FORMA DE E3, decidida el 2026-08-10: la ISO PREGUNTA, como Ubuntu**
+   (`AGENTS.md` §6ter.0). Idioma, teclado, red, disco, usuario y zona horaria los
+   elige quien instala —las seis secciones van listadas por su nombre real en el
+   código de esta ISO—, y el seed aporta **solo lo de Encina**. **Con una
+   excepción deliberada: `source` no se pregunta y va fijo a
+   `ubuntu-desktop-minimal`**, con `codecs` y `drivers` en `false`. No es una
+   preferencia de instalación: **Encina OS se construye sobre la mínima**, y lo
+   que va encima se declara en `encina-meta`, que es el eje de E4. Si se
+   preguntara, dos máquinas de Encina OS no serían la misma cosa. Por eso la
+   lista es explícita y no `['*']`, que haría interactivo también `source`.
+   **El motivo del resto, y corrige una inercia de este documento:** lo
+   desatendido era el **criterio de validación de E2, no el producto** —§10 lo
+   dice—, y E3 lo había heredado como si fuera el producto; de ahí un usuario
+   escrito dentro de la ISO, y de ahí la contraseña. **La contraseña no era un
+   problema que resolver: era el síntoma.** Consecuencias: desaparece la
+   contraseña, **desaparece la deuda del GRUB** y con ella el `md5sum.txt`, y lo
+   único que queda es meter el seed dentro de la ISO. **Y quitar la identidad no
+   rompe nada, leído y no supuesto:** ni `encina-seed.sh` ni `verificar-e2.sh`
+   nombran al usuario ni usan `/home`, que es consecuencia directa de R1.
+   **El precio, dicho sin maquillar:** la casilla de E2 era «nadie la toca»; la
+   de E3 no puede serlo y pasa a ser «una persona contesta lo que Ubuntu
+   pregunta, y nada más». Por eso **el seed de E2 se conserva tal cual**: es la
+   única prueba que queda de que la receta funciona sin humano.
+
+**Lo que queda por medir en E3, en orden de riesgo:**
+
+1. **Que el instalador *de escritorio* honre `interactive-sections`.** Está en el
+   código de esta ISO —`server.py:236`, `controller.py:113-127`, y el punto HTTP
+   que consulta el cliente gráfico—, pero **leído no es medido**. **Se contesta
+   con un volumen `CIDATA` y el banco de E2, sin tocar `xorriso`**, y esa es la
+   siguiente tarea.
+2. **Que `xorriso` sepa reconstruir esta ISO** conservando la ESP y El Torito.
+3. **Qué pasa si quien instala elige la instalación completa** en vez de la
+   mínima, ahora que el seed ya no impone `source:`.
+
+**Lo que E2 tiene medido, y sigue valiendo entero**
 (`MEDICIONES.md` §4.14 y §4.15):
 
 1. **La ISO oficial de Ubuntu Desktop 24.04.4 arm64 honra un `autoinstall`
@@ -280,8 +350,8 @@ escribir el seed.
    AutoFirma mete la CA en el perfil igual en una máquina sin Snap** (§4.18l).
 
 **E2 ESTÁ TERMINADO, 6 de 6 (2026-08-10).** La firma salió. Lo que sigue de esta
-lista es el registro de cómo se llegó, y **la siguiente tarea es E3**, que sigue
-sin abrir y no se especifica aquí.
+lista es el registro de cómo se llegó, y **la siguiente tarea es E3**, abierto el
+mismo día y especificado en `AGENTS.md` §6ter.
 
 9. **La sombra `.desktop` está arreglada y la casilla «Sin Snap» marcada**
    (2026-08-10, §4.19): `encina-firefox-native` **0.2.1** con `NoDisplay=true`,
@@ -298,13 +368,15 @@ sin abrir y no se especifica aquí.
     en el almacén NSS del perfil que Firefox usa de verdad, **con la misma huella
     que la del paquete en disco**.
 
-**El siguiente paso es E3, y todavía no está abierto.** No se especifica aquí.
-Hereda dos deudas con nombre: **poner la palabra `autoinstall` sin hipervisor**
-—más barata de lo que parecía, porque el instalador acepta el seed en
-`/cdrom/autoinstall.yaml`— y **la contraseña**: E2 se cierra con `encina`, que es
-débil y además pública porque va en el `autoinstall.yaml` versionado. Para una
-receta validada en un hipervisor con máquinas desechables es aceptable y fue una
-decisión tomada; **para una ISO que se le da a alguien, no lo es.**
+**E3 ESTÁ ABIERTO desde el 2026-08-10**, y se especifica en `AGENTS.md` §6ter.
+**Las dos deudas que heredaba se han caído el mismo día, y las dos por el mismo
+motivo.** La primera era poner la palabra `autoinstall` sin hipervisor: **ya no
+hace falta ponerla**, porque con la ISO preguntando hay alguien delante y el clic
+de confirmación es la pantalla normal de «instalar ahora». La segunda era la
+contraseña: **no había que resolverla, había que quitar su causa**, que era un
+usuario escrito dentro de la ISO. `encina` sigue viva donde tiene sentido —el
+seed de laboratorio, servido con `CIDATA`, débil y pública a propósito— y **no
+entra en ninguna ISO**.
 
 **Los dos iconos de Firefox y la casilla que dependía de ellos: CERRADOS el
 2026-08-10** (§4.19). Eran la misma cosa vista por dos sitios, y las dos se
@@ -420,7 +492,7 @@ incremento; es exactamente lo que la pregunta compra.
 
 - **Una comprobación que pasa no vale nada si no sabes contra qué ha pasado.**
   Cuando una dé `[OK]`, comprueba que habría dado `[FALLO]` de haber estado mal.
-  Las quince trampas de `SCRIPTS.md` son quince formas de que esto salga caro, y
+  Las diecisiete trampas de `SCRIPTS.md` son diecisiete formas de que esto salga caro, y
   aplican igual dentro de un `autoinstall.yaml`. **La novena salió justo aquí, al
   abrir E2:** un control necesita su propia señal de que llegó a ejecutarse.
 - **Todo lo verificable sin pantalla no basta.** En A2, con las siete
@@ -454,6 +526,12 @@ Tres matices:
   seed— sin gestión de claves, y la receta que se escriba así es la definitiva.
 - **D13 sigue vigente.** Ninguna de las barreras de la firma se cierra desde
   `encina-branding` ni desde `encina-firefox-native`, por muy fácil que parezca.
+- **Desde el 2026-08-10, reempaquetar la ISO oficial con `xorriso` ya NO está
+  fuera de alcance: es E3 y está abierto.** Lo que sigue fuera, y no cambia, es
+  **`live-build`, `debos` y Cubic**: los dos primeros son E5, y Cubic no entra
+  nunca (D4). La frontera es exacta —E3 **reempaqueta** la imagen oficial y no
+  toca ni uno de sus tres binarios firmados (§10); en cuanto haya que
+  **rehacerla**, eso es E5.
 
 ---
 
@@ -660,7 +738,32 @@ definición de terminado**, porque es fácil escribir una casilla imposible:
   orden, y el quinto es **`/cdrom/autoinstall.yaml`, «autoinstall baked into the
   iso»**. O sea que E3 no necesita el volumen `CIDATA` para nada: el seed va
   dentro de la ISO, y la palabra —**suelta**, que `autoinstall=1` no vale— en su
-  `grub.cfg`.
+  `grub.cfg`. **El 2026-08-10 esa lectura se completó** (§4.21): la ruta es
+  literal y `/cdrom` es el medio; el `grub.cfg` que manda es
+  **`boot/grub/grub.cfg`, el único del medio**; y **el `CIDATA` va cuarto, o sea
+  que le gana al seed de la ISO**, que es a la vez una propiedad del producto y
+  una trampa para la medición.
+- **E3. Y su criterio de apertura, contestado el mismo día que se abrió.** La
+  pregunta de §10 —«¿qué comando demuestra que esto es viable?»— tenía **una
+  respuesta más barata que `xorriso`**, y es la siguiente tarea: **fabricar el
+  seed de E3 en un volumen `CIDATA` y arrancar la ISO oficial con él**. Eso
+  contesta si el instalador de escritorio honra `interactive-sections` y si las
+  `late-commands` siguen corriendo, **usando el banco de E2 tal cual y sin tocar
+  la ISO**. Si esa respuesta fuera que no, E3 cambia de forma **antes** de
+  reempaquetar nada, que es exactamente lo que este criterio existe para comprar.
+- **E3, el criterio de parada propiamente dicho: `xorriso`.** Si reconstruir esta
+  ISO conservando la ESP y El Torito no sale —o sale una imagen que arranca en el
+  banco pero solo porque el banco no verifica nada—, **parar y no insistir por la
+  vía de editar la imagen a mano ni con Cubic** (D4 sigue rigiendo). La salida en
+  ese caso **no** es aflojar la casilla: es reconocer que la entrega necesita
+  construir la imagen en vez de remasterizarla, que es E5, y decirlo.
+  **Y un criterio propio, que sale de §4.21 y no existía:** E3 **no puede**
+  demostrar en este banco que la ISO arranque con Secure Boot activo, porque el
+  firmware de UTM no lo implementa. Eso **no** dispara el criterio de parada —es
+  un límite declarado, como D9 con amd64—, pero **sí** prohíbe una cosa: tocar
+  `bootaa64.efi`, `grubaa64.efi` o `mmaa64.efi`. Si alguna vez E3 pareciera
+  exigirlo, ahí sí hay que parar: significaría que la ISO se está rehaciendo, no
+  reempaquetando, y eso es E5.
 - **E5.** Si a las dos semanas de abrir `live-build`/`debos` no hay una imagen
   que arranque, cerrarlo y quedarse en E3. E3 ya entrega el producto; E5 solo lo
   envuelve mejor. **Es donde este tipo de proyecto muere.**
