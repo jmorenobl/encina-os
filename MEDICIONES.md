@@ -62,6 +62,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
 | §4.23 | **E3: la ISO existe y se instala** | Sí. **Es la medición que cierra E3.** Una ISO construida por `imagen/fabricar-iso.sh`, en una **VM creada desde cero** con dos unidades y ni una más, produce Encina OS entero contestando solo las cinco pantallas: **36 correctas, 0 fallos**. La línea que decide es `REPO ELEGIDO -> /cdrom/encina-repo`. La construcción es **reproducible** y saca un defecto de la definición de terminado: el instalador se ve en inglés |
+| §4.24 | **E2 remedido: la vía `CIDATA` del guion de las dos vías** | Sí. `imagen/autoinstall.yaml` cambió al enseñarle a `encina-seed.sh` las dos vías, y **sigue produciendo la misma máquina: 35 correctas, 0 fallos**. Con §4.23a, el guion queda medido **por sus dos ramas**. Trae el control que hacía falta —el `user-data` sacado del volumen **construido**, porque el de ayer daría el mismo verde sin medir nada— y un hallazgo de instrumento: `Image` no es byte a byte `/casper/vmlinuz`, **es su `gunzip`** |
 | §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
@@ -4663,10 +4664,10 @@ precio**: E3 dejaría de ser «solo añadir ficheros» y habría que rehacer
 - **Qué pasa si alguien conecta un `CIDATA`** a esta ISO: por precedencia le
   ganaría al seed de dentro (§4.21c). Sigue sin probarse.
 - **Secure Boot en hardware real**: el límite declarado de §4.21b, intacto.
-- **Que `imagen/autoinstall.yaml` —el seed de E2— sigue produciendo lo mismo.**
-  Cambió al enseñar a `encina-seed.sh` las dos vías del repo, así que **ya no es
-  byte a byte el que produjo `encina-E2-0.2.1`**, y por el precedente de §4.19g
-  hay que remedirlo. Sale barato: la forma de E2 es desatendida.
+- ~~**Que `imagen/autoinstall.yaml` —el seed de E2— sigue produciendo lo
+  mismo.**~~ **CONTESTADO el 2026-08-10 en §4.24: sí lo sigue produciendo**, 35
+  correctas y 0 fallos sobre una VM creada desde cero, y con eso el guion de las
+  dos vías queda medido por sus dos ramas.
 
 ---
 
@@ -4733,6 +4734,97 @@ enseñar, no razonar.
 **Lo que esta medición NO contesta**, dicho antes para que no se cuele después:
 nada sobre la ISO de E3 —esa está medida en §4.23 y no se toca aquí—, y nada
 sobre el idioma del instalador, que es la novena casilla y va después.
+
+#### (b) Las cinco, cumplidas, y las huellas de lo que se usó
+
+**`imagen/autoinstall.yaml` sigue produciendo la misma máquina. 35 correctas,
+0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c.
+
+| # | Predicción | Lo que salió |
+|---|---|---|
+| 1 | el guion no se niega | las cuatro huellas dos veces, `Packages` describe cuatro y ni uno más, y `coinciden (11106 bytes de guion, 14808 de base64)` |
+| 2 | se apaga sola, con la palabra suelta | `-append autoinstall`, **una sola vez** en el `debug.log`, y la VM parada sola |
+| 3 | **la línea que decide** | `CIDATA -> /dev/vdb` · `REPO ELEGIDO -> /mnt/encina-seed/encina-repo` |
+| 4 | las cuatro huellas dentro | cuatro `[HUELLA  OK ]`, **y los dos controles `[HUELLA MALA]`** |
+| 5 | el verificador | `[OK] 35   [FALLO] 0   [AVISO] 0   [OMIT] 0` |
+
+**Las huellas, para que esto se pueda repetir y para que no se pueda confundir
+un volumen con otro:**
+
+```
+seed viejo (el que produjo encina-E2-0.2.1)   ebcda148a3f1fc3c374bb9a49bccd3ff…
+seed nuevo (el de esta medicion)              13aa8f59d4ad38eb544df82638813847…
+user-data extraido del volumen CONSTRUIDO     270c099680fab82f10854d3a7b188955…
+imagen/autoinstall.yaml                       270c099680fab82f10854d3a7b188955…   <- iguales
+user-data del volumen viejo                   f094083bf025029e62ae188453566de2…   <- el control los distingue
+```
+
+**Y el control que esta medición necesitaba**, porque arrancar con el volumen de
+ayer habría dado el mismo verde sin medir nada: el `user-data` **sacado del
+volumen construido** es byte a byte `imagen/autoinstall.yaml`, y la misma
+comparación contra el YAML viejo dice que **no**. Los dos se diferencian en 7 261
+bytes, que son los de la late-command del guion.
+
+**La máquina y los tiempos**, del registro y no de la pantalla:
+
+```
+VM   encina-E2-2vias   UUID 2060C1BE-…-C383AEDF0F4A   MAC 76:CE:28:E7:F7:AA   .13
+encendida            2026-08-10T21:54:33Z
+testigo instalador   2026-08-10T22:01:24Z
+testigo in-target    2026-08-10T22:01:25Z   uname=aarch64 id=0
+testigo del seed     2026-08-10T22:03:03Z   <- 8 min 30 s, y nadie contesto nada
+```
+
+**El nombre de la máquina no identifica nada, y aquí se ve:** `hostname` dice
+`encina-e2-completa`, que es el que fija el seed de E2 y el que llevan todas las
+máquinas que salen de él. Lo que distingue a ésta son los testigos con fecha.
+
+#### (c) El error de QEMU salió otra vez, y esta vez lo vio Jorge
+
+**`QEMU error: drive…, #block561: Invalid argument`, dos veces durante la
+instalación.** Es el defecto del **banco** de §4.23f —`discard=unmap` sobre el
+fichero disperso que crea `dd … seek=40g` en APFS—, y sale en todas las VMs
+fabricadas así. Se comprobó **donde se vería si hubiera hecho daño**, con su
+control de que sabe leer otro contador:
+
+```
+/sys/fs/ext4/vda2/errors_count   -> 0        (control) warning_count -> 0
+dmesg | grep -cE "I/O error|blk_update_request"  -> 0
+```
+
+**Lo que sí hay que decir sin maquillarlo:** el diálogo es de **UTM**, no del
+invitado, y Jorge lo descartó con `OK`. O sea que **la ventana estuvo abierta y
+alguien pulsó algo del anfitrión**. No es contestar una pantalla del instalador
+—las etapas siguen siendo `done,loading` y el bloque 1 del verificador está en
+verde—, pero la casilla de E2 dice «nadie la toca» y esto merece quedar escrito
+tal cual, no dado por equivalente.
+
+#### (d) Un control lateral que mordió, y conviene no volver a pagarlo
+
+Antes de arrancar se comprobó que `Image` e `initrd` de `e2-medios` son los de
+**esta** ISO. El `initrd` coincide byte a byte con `/casper/initrd`. **`Image`
+no**, y eso parece un núcleo de otra imagen:
+
+```
+/casper/vmlinuz               000d59171b8e49f31f55c0d52123571c…   gzip
+e2-medios/Image               a1586ff3cb7ced7c40dcb0aba5bf320e…   Linux kernel ARM64 boot executable
+gunzip -c /casper/vmlinuz     a1586ff3cb7ced7c40dcb0aba5bf320e…   <- es el mismo
+```
+
+**`Image` ES el `vmlinuz` de esta ISO, descomprimido**, porque QEMU en aarch64
+quiere el núcleo crudo. Sin descomprimir antes de comparar, la comprobación
+habría dicho «no es de esta ISO» y habría sido falsa — la misma clase de trampa
+que el PEM contra el DER de §4.20.
+
+#### (e) Lo que esto cierra y lo que no
+
+- **Cierra** el punto abierto de §4.23g: `imagen/autoinstall.yaml` sigue
+  produciendo la misma máquina, y **la vía `CIDATA` del guion de las dos vías
+  está medida**. Con §4.23a —que midió la vía `/cdrom`— el guion queda medido
+  **por sus dos ramas**, que es lo que hacía falta antes de tocar la ISO.
+- **No toca** E2 como incremento: sigue 6 de 6. Esto no es una casilla nueva, es
+  el precedente de §4.19g aplicado a un cambio del guion.
+- **No dice nada** del idioma del instalador, que es la novena casilla de E3.
 
 ---
 

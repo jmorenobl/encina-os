@@ -861,6 +861,40 @@ otra mitad. Aquí nadie borró nada; una lista incompleta pareció una VM perdid
 
 ---
 
+## Y una decimonovena, remidiendo E2 (2026-08-10)
+
+**19. `Image` no es byte a byte `/casper/vmlinuz`, y parece un núcleo de otra ISO.**
+Antes de arrancar la VM desatendida se comprobó que los medios de `e2-medios`
+salen de la ISO oficial. El `initrd` coincide; `Image` **no**:
+
+```
+/casper/vmlinuz            000d5917…   gzip compressed data
+e2-medios/Image            a1586ff3…   Linux kernel ARM64 boot executable Image
+gunzip -c /casper/vmlinuz  a1586ff3…   <- es el mismo fichero
+```
+
+En aarch64 el `vmlinuz` de la ISO va **comprimido** y QEMU quiere el núcleo
+crudo, así que `Image` es su `gunzip`. **Hay que normalizar los dos lados antes
+de comparar**, exactamente como el PEM contra el DER de §4.20: sin eso sale un
+«este núcleo no es de esta ISO» perfectamente creíble y falso.
+
+**Y de paso, cómo se leen los guiones de casper sin arrancar nada**, que hace
+falta cada vez que hay que medir el instalador y no se deduce del fichero:
+
+```
+file initrd        -> ASCII cpio archive     <- y engana: son DOS archivos pegados
+```
+
+El primero es el firmware, sin comprimir; `cpio -it` se para al llegar a su
+`TRAILER!!!` y parece que ahí se acaba todo. El segundo empieza justo después,
+alineado, y es **zstd** (magia `28b52ffd`). Se localiza recorriendo las cabeceras
+`070701` hasta el `TRAILER!!!` y saltando los ceros de relleno; a partir de ahí,
+`zstd -dc | cpio -id` da `scripts/casper` y `scripts/casper-bottom/*`. No hay
+colisión de mayúsculas en ese árbol, así que en el Mac se extrae entero sin
+tropezar con la trampa 17.
+
+---
+
 ## Cómo mirar y pilotar una VM de UTM sin ojos (2026-08-10)
 
 Salió midiendo la forma de E3 (`MEDICIONES.md` §4.22), donde la sesión viva **no
