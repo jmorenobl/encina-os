@@ -61,7 +61,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.18 | **El seed de verdad, escrito y medido entero** | Sí. Es la receta de E2 —`imagen/`— y la máquina que produce, en una sola pasada y sin humano. Contesta lo que §4.16l dejaba pendiente (**hay red desde el chroot**) y lo que §4.17i dejaba colgando (**el vigilante de AutoFirma funciona sin Snap**). Y **enmienda una casilla de `AGENTS.md` §6bis.3**: la tercera condición de «Sin Snap» no la puede cumplir ninguna máquina de Encina OS mientras `encina-firefox-native` ponga su sombra `.desktop` |
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
-| §4.22 | **E3: el instalador de escritorio SÍ honra `interactive-sections`** | Sí. Es la primera medición de E3 con máquina, hecha **antes de tocar `xorriso`**. La forma del producto funciona: enseña **solo** las cinco pantallas pedidas y aplica del seed el idioma y la instalación mínima. **Sabe mezclar**, que era la duda. Y la prueba es **anterior** a cualquier manipulación: 18:41 contra 18:51 |
+| §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
@@ -4342,7 +4342,7 @@ hubo que abrir un canal. **Tres trampas por el camino, las tres nuevas:**
 Con eso, el canal de lectura fue un `python3 -m http.server` **de solo lectura**
 dentro de la sesión viva, y los registros se trajeron con `curl` desde el Mac.
 
-#### (e) Lo que esta medición NO contesta
+#### (e) Lo que la PRIMERA MITAD no contestaba — y se contestó el mismo día en (f)
 
 - **Que las `late-commands` corran.** El instalador está **esperando en la
   primera pantalla**, así que el trabajo de Encina no ha empezado: **0 MB
@@ -4359,6 +4359,152 @@ dentro de la sesión viva, y los registros se trajeron con `curl` desde el Mac.
   root— así que **no sirve para la medición completa**. La VM se paró y se
   rearrancó con el disco todavía a **0 MB**, para que la instalación de verdad
   salga de un entorno limpio.
+
+#### (f) SEGUNDA MITAD: la instalación entera, contestada por una persona
+
+**Sobre la VM rearrancada limpia**, Jorge contestó las cinco pantallas y nada
+más. **Es `[OJOS]` por diseño del producto**, no por falta de instrumentación: la
+casilla de E2 era «nadie la toca» y la de E3 es «una persona contesta lo que
+Ubuntu pregunta». Puso usuario `encina`, contraseña `encina` y nombre de equipo
+`Encina`; el teclado, `es`.
+
+**Y el resultado se lee sin depender de ninguna pantalla, que es lo que lo hace
+una medición: `telemetry` dice exactamente por qué pantallas pasó.**
+
+```
+"Stages": { "1":"keyboard", "513":"network", "515":"storage", "528":"identity",
+            "553":"timezone", "556":"confirm", "558":"install", "976":"done" }
+"PartitionMethod": "use_device"
+```
+
+**Las cinco pedidas, en orden, y ni una más.** No aparece `locale` ni `source`,
+que son las dos que el seed fija. Es la confirmación de extremo a extremo de lo
+que (c) leía en el registro: **el instalador de escritorio sabe mezclar**.
+
+**La máquina que sale es la de E2**, verificada **como root** con
+`imagen/verificar-e2.sh` traído desde el Mac:
+
+```
+=== Resumen ===
+  [OK] 33   [FALLO] 2   [AVISO] 0   [OMIT] 0
+```
+
+Los 33 correctos son los que importan y son idénticos a los de §4.20c: sin Snap
+—no existe la orden, ni `/snap`, ni el lanzador; `firefox_firefox.desktop` →
+`/usr/bin/firefox %u`; **1 icono** de Firefox sobre 25 aplicaciones visibles—;
+`firefox 153.0.3~build1` sin epoch con el `.xpi` de `langpack-es-ES` y el anclaje
+a prioridad 1000; los cuatro paquetes `install ok installed` con los tres
+dependientes en `showauto` y `encina-meta` en `showmanual`; y la máquina entera
+—`is-system-running: running`, ninguna unidad fallida, `graphical.target` activo
+y un saludador de GDM vivo—. Los tres testigos están, y el del seed dice que
+llegó al final:
+
+```
+encina-e2-testigo-seed: encina-seed llego al final 2026-08-10T19:20:50Z
+/etc/encina-seed.log: 1916 lineas, «=== 14. FIN ===», rc=0
+```
+
+**Lo que el seed fijaba, fijado, y sin nadie que lo eligiera en pantalla:**
+
+```
+/etc/default/locale     LANG=es_ES.UTF-8        <- el sistema instalado, en espanol
+/etc/default/keyboard   XKBLAYOUT="es"          <- esto SI lo eligio Jorge
+/etc/passwd             encina  uid 1000        <- el unico usuario, creado por el
+/usr/sbin/sshd          no existe               <- el seed de E3 no pone servidor ssh
+```
+
+#### (g) LOS DOS FALLOS NO SON DE LA MÁQUINA: SON DEL INSTRUMENTO
+
+```
+[FALLO]  las etapas por las que paso el instalador
+         | esperado: done,loading
+         | obtenido: confirm,done,identity,install,keyboard,network,storage,timezone
+[FALLO]  hay pantallas de instalacion a mano en telemetry
+```
+
+**`verificar-e2.sh` se llama así por algo: su bloque 1 codifica el criterio de
+E2**, que era «esto lo gobernó un seed y nadie tocó nada». En E3 eso **tiene que
+fallar**, porque el producto pregunta. **No se afloja la comprobación: se le pone
+la de E3**, que además es **más exigente** que la de E2 —E2 solo pedía que no
+hubiera pantallas; E3 puede pedir **exactamente cuáles** y fallar si sobra una—:
+
+*Sano en E3:* las etapas son exactamente `keyboard, network, storage, identity,
+timezone` más `confirm, install, done`. *Roto:* aparece `locale` o `source` —el
+seed dejó de fijarlos— o falta alguna de las cinco.
+
+Es el mismo error de método que §4.19d, con la diferencia de que aquí se vio a la
+primera: **una casilla escrita para un incremento no vale para el siguiente sin
+releerla**. Queda como trabajo inmediato dar a `verificar-e2.sh` un modo para las
+dos formas, sin tocar el de E2.
+
+#### (h) Dos cosas que salieron de propina, y una es del producto
+
+**1. El instalador se ve en inglés, y el sistema instalado en español.** Es
+consecuencia directa de sacar `locale` de `interactive-sections`: sin pantalla de
+idioma, el interfaz se queda en el idioma por defecto de la sesión viva. **Tiene
+arreglo, y está leído en el casper de esta misma ISO**
+(`casper-bottom/14locales`):
+
+```sh
+locale=*)
+    locale=${x#locale=}
+    set_locale="true"
+...
+LANG=$(grep "^${locale}" /root/usr/share/i18n/SUPPORTED | grep UTF-8 | sed -e 's, .*,,' -e q)
+printf 'LANG="%s"\n' "${LANG}" > /root/etc/default/locale
+chroot /root /usr/sbin/locale-gen --keep-existing
+```
+
+O sea: **`locale=es_ES.UTF-8` en la línea del núcleo pone la sesión viva en
+español**. Y encaja con que la ISO trae capas de idioma dedicadas
+—`casper/minimal.standard.es.squashfs`, en el listado de §4.21—.
+
+**El precio, y hay que decirlo antes de que parezca gratis: esa palabra va en
+`boot/grub/grub.cfg`, así que E3 deja de ser «solo añadir ficheros» y pasa a
+modificar uno.** Vuelve a aplicar §4.21d: **`md5sum.txt` cubre ese fichero** y hay
+que rehacerlo. La regla de no tocar los tres binarios firmados sigue intacta;
+`grub.cfg` no está firmado. **No medido todavía:** que el interfaz Flutter siga a
+`LANG`. Se comprueba de una vez cuando exista la ISO reempaquetada.
+
+**2. Un `QEMU error: … #block908: Invalid argument` durante la instalación, dos
+veces, y NO es del producto.** El identificador señala **el disco de destino**, y
+la orden que UTM le pasa lleva `discard=unmap,detect-zeroes=unmap`: al formatear,
+el sistema de ficheros manda un descarte, QEMU intenta agujerear el fichero
+disperso creado con `dd … seek=40g` sobre APFS y macOS contesta `Invalid
+argument`. **Es del banco, no de la ISO ni del seed.** Y no hizo daño, comprobado
+donde se vería:
+
+```
+/sys/fs/ext4/vda2/errors_count  ->  0
+```
+
+#### (i) Notas de laboratorio, y un falso positivo mío
+
+- **`curl` NO está en la instalación mínima.** El primer intento de traer el
+  verificador falló por eso, y el síntoma fue engañoso —`bash: /tmp/v.sh: No
+  existe el archivo`—, que apunta al fichero y no a la orden que no existe. Se
+  hizo con `python3 -c urllib.request`, que sí está.
+- **Un falso positivo mío, cazado y anotado:** comprobé si había servidor `ssh`
+  con `curl -s -o /dev/null <url>/etc/ssh/sshd_config` **mirando el código de
+  salida**, y dio «existe». Es falso: `curl` sale con 0 al recibir un **404**, y
+  lo que descargó fue la página de error. La comprobación buena mira el **código
+  HTTP** (`-w %{http_code}`), y entonces `/usr/sbin/sshd` responde **404**: no hay
+  servidor ssh. Familia de la trampa 5, en el instrumento de medida.
+- **El teclado del sistema instalado es `es`**, así que los códigos crudos de
+  EE.UU. vuelven a descolocarse; `sudo loadkeys us` en la consola **sí** lo
+  arregla aquí, porque en este lado el problema es del invitado y no del
+  anfitrión.
+
+#### (j) Lo que sigue sin contestar
+
+- **Que el seed valga desde `/cdrom`.** Aquí llegó por `CIDATA`, que es el
+  **cuarto** sitio. El quinto necesita `xorriso` y es lo único que queda de E3.
+- **Que el interfaz del instalador salga en español** con `locale=` en el
+  `grub.cfg`. Leído, no medido.
+- **Qué pasa si alguien conecta un `CIDATA`** a la ISO de E3: por orden de
+  precedencia le ganaría (§4.21c). No se ha probado.
+- **Nada de la firma.** Esta máquina no ha firmado; la casilla `[OJOS]` de E2 ya
+  está marcada y E3 no la repite.
 
 ---
 
