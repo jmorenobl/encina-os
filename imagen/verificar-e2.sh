@@ -3,7 +3,18 @@
 #
 # Se ejecuta EN LA MAQUINA INSTALADA, arrancada de su disco, y COMO ROOT:
 #
-#     sudo ./verificar-e2.sh
+#     sudo ./verificar-e2.sh                # forma E2: desatendida, nadie la toca
+#     sudo ./verificar-e2.sh --forma e3     # forma E3: la ISO pregunta cinco cosas
+#
+# EL NOMBRE ES HISTORICO y se conserva a proposito: este guion verifica LA
+# MAQUINA, y las dos formas producen la misma maquina. Lo unico que cambia entre
+# ellas es COMO se goberno la instalacion, que es el bloque 1.
+#
+# POR QUE HAY DOS FORMAS, y no es que la de E3 sea mas floja (MEDICIONES.md
+# §4.22g): el bloque 1 codificaba el criterio de E2 -"esto lo goberno un seed y
+# nadie toco nada"- y en E3 eso TIENE que fallar, porque el producto pregunta.
+# La de E3 es de hecho MAS exigente: E2 solo podia pedir que no hubiera
+# pantallas; E3 pide EXACTAMENTE cuales y falla si sobra una.
 #
 # Root no es capricho: /var/log/installer/telemetry es 0600 de root, y es la
 # comprobacion que distingue una instalacion gobernada por un seed de una
@@ -19,6 +30,19 @@
 # (§4.14g). Eso se demuestra desde fuera, con la maquina apagandose sola.
 
 set -uo pipefail
+
+FORMA=e2
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --forma) FORMA="${2:-}"; shift 2 ;;
+        -h|--help) sed -n '1,30p' "$0"; exit 0 ;;
+        *) echo "[FALLO] argumento desconocido: $1"; exit 2 ;;
+    esac
+done
+case "$FORMA" in
+    e2|e3) ;;
+    *) echo "[FALLO] --forma solo acepta e2 o e3 (recibido: '$FORMA')"; exit 2 ;;
+esac
 
 N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0
 titulo()  { echo; echo "=== $* ==="; }
@@ -60,17 +84,43 @@ echo "  hostname: $(hostname)     kernel: $(uname -m)     $(lsb_release -ds 2>/d
 if [ "$(id -u)" = 0 ]; then ok "corriendo como root, se puede leer telemetry"
 else aviso "no eres root: la casilla de telemetry saldra [OMIT]"; fi
 
-titulo "1. La instalacion la goberno un seed"
-# sano: dos entradas, 'loading' y 'done'. roto: aparecen identity, storage o
-# confirm, que son las pantallas que contesta un humano (§4.14g).
+if [ "$FORMA" = e2 ]; then
+    titulo "1. La instalacion la goberno un seed, y nadie contesto nada (forma E2)"
+else
+    titulo "1. El seed lo goberno todo menos las cinco pantallas de E3 (forma E3)"
+fi
+# E2 -- sano: dos entradas, 'loading' y 'done'. roto: aparecen identity, storage
+# o confirm, que son las pantallas que contesta un humano (§4.14g).
+# E3 -- sano: EXACTAMENTE las cinco de interactive-sections mas confirm, install
+# y done, medidas en §4.22f. roto: falta una, sobra una, o aparecen 'locale' o
+# 'source', que serian que el seed dejo de fijarlas y las pregunta.
 T=/var/log/installer/telemetry
 if [ -r "$T" ]; then
     ETAPAS=$(python3 -c 'import json,sys;print(",".join(sorted(json.load(open(sys.argv[1]))["Stages"].values())))' "$T" 2>/dev/null)
-    igual "las etapas por las que paso el instalador" "done,loading" "$ETAPAS"
-    if grep -qE '"(identity|storage|confirm|keyboard)"' "$T"; then
-        fallo "hay pantallas de instalacion a mano en telemetry" "$(cat "$T")"
+    if [ "$FORMA" = e2 ]; then
+        igual "las etapas por las que paso el instalador" "done,loading" "$ETAPAS"
+        if grep -qE '"(identity|storage|confirm|keyboard)"' "$T"; then
+            fallo "hay pantallas de instalacion a mano en telemetry" "$(cat "$T")"
+        else
+            ok "no aparece ninguna pantalla contestada a mano"
+        fi
     else
-        ok "no aparece ninguna pantalla contestada a mano"
+        igual "las etapas por las que paso el instalador" \
+              "confirm,done,identity,install,keyboard,network,storage,timezone" "$ETAPAS"
+        # LO QUE E2 NO PODIA PREGUNTAR: que las dos que fija el seed NO se hayan
+        # preguntado. Si alguna aparece, el producto dejo de ser el mismo en dos
+        # maquinas distintas, que es justo lo que 'source' y 'locale' evitan.
+        if grep -qE '"(locale|source)"' "$T"; then
+            fallo "se pregunto algo que el seed tiene que fijar" "$(cat "$T")"
+        else
+            ok "ni el idioma ni el tipo de instalacion se preguntaron"
+        fi
+        # CONTROL: que ese grep sepa encontrar una etapa que SI esta
+        if grep -q '"keyboard"' "$T"; then
+            ok "control: el mismo grep si encuentra 'keyboard' en telemetry"
+        else
+            fallo "CONTROL ROTO: no encuentra 'keyboard', que tiene que estar"
+        fi
     fi
 else
     omitido "no se puede leer $T (hace falta root)"
