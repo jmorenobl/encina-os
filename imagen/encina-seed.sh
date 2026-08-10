@@ -93,19 +93,42 @@ run id -u
 run which curtin
 
 say ""
-say "=== 1. EL VOLUMEN DEL SEED, localizado POR ETIQUETA (no por /dev/vdX) ==="
+say "=== 1. DONDE ESTA EL REPO: las dos vias, y se dice cual se uso ==="
+# E2: el repo viaja en un volumen aparte etiquetado CIDATA, y se busca POR
+#     ETIQUETA, nunca por /dev/vdX (§4.18g).
+# E3: el repo viaja DENTRO de la ISO, y casper monta el medio en /cdrom, que
+#     esta LEIDO en el casper de la propia ISO (§4.21c), no supuesto.
+# Se prueban en ese orden a proposito: si alguien conecta un CIDATA a la ISO de
+# E3, manda el CIDATA -- que es exactamente la precedencia que aplica el
+# instalador con el seed (§4.21c), asi que las dos cosas se comportan igual.
 run blkid
 DEV=$(blkid -t LABEL=CIDATA -o device 2>/dev/null | head -1)
 say "  CIDATA -> ${DEV:-<no encontrado>}"
-mkdir -p /mnt/encina-seed
-run mount -o ro -t auto "$DEV" /mnt/encina-seed
-run ls -la /mnt/encina-seed/
-run ls -la /mnt/encina-seed/encina-repo/
+REPO=
+if [ -n "$DEV" ]; then
+    mkdir -p /mnt/encina-seed
+    run mount -o ro -t auto "$DEV" /mnt/encina-seed
+    run ls -la /mnt/encina-seed/
+    [ -d /mnt/encina-seed/encina-repo ] && REPO=/mnt/encina-seed/encina-repo
+fi
+if [ -z "$REPO" ] && [ -d /cdrom/encina-repo ]; then
+    REPO=/cdrom/encina-repo
+fi
+say "  REPO ELEGIDO -> ${REPO:-<NINGUNO>}"
+if [ -z "$REPO" ]; then
+    say "  !! no hay repo por ninguna de las dos vias. Las huellas de mas abajo"
+    say "  !! van a salir MALAS, que es como se vera esto sin tener que creerme."
+    REPO=/repo-que-no-existe
+fi
+run ls -la "$REPO/"
 
 say ""
 say "=== 2. EL REPO LOCAL SIN FIRMAR, del volumen al objetivo ==="
 mkdir -p /target/srv/encina-repo
-run sh -c 'cp /mnt/encina-seed/encina-repo/* /target/srv/encina-repo/'
+# OJO: el glob '*' es del interprete y NO casa con los ficheros que empiezan
+# por punto, que es lo que deja fuera los AppleDouble '._x' que escribe macOS
+# (§4.18m). Un 'cp -a' o un 'rsync' SI los meteria en el repositorio de apt.
+run sh -c "cp $REPO/* /target/srv/encina-repo/"
 run chmod 0755 /target/srv/encina-repo
 run sh -c 'chmod 0644 /target/srv/encina-repo/*'
 run ls -la /target/srv/encina-repo/
