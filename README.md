@@ -61,7 +61,7 @@ producto que puedas aplicar a una máquina que ya tienes.
 | Hito | Qué te daría | Estado |
 |---|---|---|
 | **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho, 12 de 12.** La que decide: una máquina virgen instalada con la secuencia firma de verdad. La última casilla se cerró ya dentro de E2 |
-| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto.** Medido que la ISO oficial de Ubuntu honra el seed y ejecuta las `late-commands`; medido también que, sin una palabra en la línea de órdenes del núcleo, el instalador se para a pedir un clic |
+| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto.** Medido que la ISO oficial de Ubuntu honra el seed y ejecuta las `late-commands`; medido también que, sin una palabra en la línea de órdenes del núcleo, el instalador se para a pedir un clic. Y ya existe la primera máquina **sin el Snap de Firefox**, quitado desde el propio seed y con el escritorio intacto |
 | **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
 | **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
 | **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |

@@ -899,6 +899,19 @@ sin saberlo.
   (R4, D11). Ahí sí está permitido, y cierra dos barreras de golpe: B3, que
   **ningún `.deb` puede tocar**, y B4, que se cierra sola al desaparecer el
   perfil del Snap (medido con control en `encina-autofirma/MEDICIONES.md` M6).
+  **Y desde el 2026-08-10 ya no es una intención: está medido que se puede, y
+  por qué vía** (`MEDICIONES.md` §4.16). La orden que lo hace, desde una
+  `late-command`, es una sola:
+
+  ```
+  curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y purge snapd
+  ```
+
+  **La vía obvia —`snap remove`— NO sirve, y lo peligroso es que no falla:**
+  dice `firefox eliminado` con `rc=0` porque `curtin` bind-monta el `/run` del
+  instalador dentro de `/target`, así que se lo quita **al entorno vivo del
+  instalador**, no al objetivo. La prueba, en la misma orden: cliente `2.76` del
+  objetivo contra demonio `2.73` del instalador (§4.16e).
 - **D13 intacta:** nada de esto se cierra desde `encina-branding` ni desde
   `encina-firefox-native`.
 
@@ -926,6 +939,16 @@ Todo en `MEDICIONES.md` §4.14, sobre la ISO oficial
 - **El repositorio local no puede vivir en un `$HOME`**: apt baja a usuario `_apt`
   y un `/home/x` en `drwxr-x---` lo deja mudo, sin error reconocible (§4.15).
 
+**Y lo medido el 2026-08-10, que cierra una pregunta y abre otra** (§4.16):
+
+| Pregunta | Respuesta |
+|---|---|
+| ¿Hay alguna clave del `autoinstall.yaml` que quite el clic de confirmación? | **No, y no es una suposición: está leído** en el código que viaja dentro de la ISO. La puerta es `if "autoinstall" in self.app.kernel_cmdline` (`install.py:587-597`), y `model.confirm()` solo se llama desde ahí y desde el manejador HTTP que pulsa el botón. Con `interactive-sections` ausente el instalador **ya** es no interactivo y se para igual |
+| ¿Cómo hay que escribir esa palabra? | **Suelta.** El analizador (`cmd/server.py:32-52`) mete lo que lleva `=` en otro sitio, e `in` solo mira los testigos sueltos: **`autoinstall=1` NO vale**, ni `subiquity.autoinstallpath=…` |
+| ¿Se puede quitar el Snap desde el seed? | **Sí**, con `apt-get purge snapd` por `curtin in-target`. Deja el objetivo sin `/var/lib/snapd`, sin `/snap`, sin lanzador y sin unidades, y **el escritorio sobrevive** (`ubuntu-desktop-minimal` y `gnome-shell` en `ii`, saludador de GDM `Type=wayland Class=greeter State=active`) |
+| ¿Por qué sobrevive el escritorio? | Porque `snapd` y `firefox` son **`Recommends`** de `ubuntu-desktop-minimal`, no `Depends`. Medido con `dpkg-query` sobre el paquete instalado |
+| ¿Y el `.deb` `firefox` de transición? | **Se va con el purgado**, porque depende de `snapd`. Eso **invalida la premisa (a) de §4.10**: ya no hay nada que sustituir, Firefox nativo tendría que *instalarse*. **Sin medir**, y es lo primero que hay que comprobar al escribir el seed |
+
 ### 6bis.3 Definición de terminado de E2
 
 Cada casilla, con lo que daría en un sistema sano y en uno roto. **No marcar
@@ -942,6 +965,15 @@ ninguna sin la salida literal.**
       `/var/lib/snapd/desktop/applications/firefox_firefox.desktop` no existe.
       *Roto:* cualquiera de las dos cosas presente — y ojo, que el icono puede
       seguir en el dock aunque el paquete se haya ido (es el caso de A2).
+      **El mecanismo está medido (§4.16) y la máquina existe
+      (`encina-E2-sinsnap`); la casilla sigue SIN marcar a propósito, porque la
+      instaló el seed de la medición y no el seed definitivo.** Cuando se marque,
+      hay que mirar tres cosas y no dos: que no exista la orden `snap`, que no
+      exista el lanzador, y que `resolver_desktop firefox_firefox.desktop`
+      responda `NINGUNA` — no `?`, que es lo que respondía antes de arreglar
+      `lib.sh`. Y no vale `dpkg -l | grep -i snap`: da falsa alarma con
+      `libsnapd-glib`, `gir1.2-snapd-2`, `xdg-desktop-portal` y una extensión de
+      GNOME que ordena ventanas (§4.16h).
 - [ ] **Firefox es el nativo y está en español**, por la vía de §4.10: versión
       **sin** epoch y `/usr/bin/firefox` fuera de `/snap/`. *Roto:* versión
       `1:…` = sigue siendo el deb de transición.
@@ -957,6 +989,15 @@ ninguna sin la salida literal.**
 **Antes de escribir el seed hay que elegir cómo llega el parámetro `autoinstall`
 a la máquina.** Las tres salidas y sus consecuencias están en `ENCINA-OS.md` §10.
 No es un detalle de implementación: decide si la última casilla se puede cumplir.
+**El 2026-08-10 se comprobó por lectura del código que no hay una cuarta salida
+por seed** (§4.16a): la elección sigue siendo entre las tres escritas, y sigue
+siendo de Jorge.
+
+**Y una que se añade a la lista de lo que hay que comprobar al escribir el seed,
+porque la medición del Snap la ha abierto:** con `snapd` purgado desaparece
+también el `.deb` `firefox` de transición, así que **la premisa (a) de §4.10 deja
+de valer** y Firefox nativo ya no llega por sustitución. Hay que medir por qué
+vía llega entonces, **antes** de dar la secuencia de §6.4 por trasladada al seed.
 
 ---
 

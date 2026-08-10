@@ -466,3 +466,51 @@ muerta. La forma correcta lleva **dos señales independientes**: una que demuest
 que el sistema llegó donde tenía que llegar —aquí, `lease` de DHCP y el `getty`
 de la serie— y otra que mida lo que se quería medir —el disco intacto—. Es la
 misma familia que la 5 y la 8, aplicada al control en vez de a la comprobación.
+
+## Y dos más, del instalador desatendido (2026-08-10)
+
+Salieron midiendo si el Snap se puede quitar desde el seed (`MEDICIONES.md`
+§4.16). Las dos son de escribir comprobaciones **sobre un sistema que todavía no
+ha arrancado**, que es el sitio donde va a vivir la receta de imagen de E2 y E3.
+
+**10. Bajo `/target`, `[ -e ]` sigue los enlaces absolutos hacia la raíz DEL
+INSTALADOR.** Una `late-command` corre en el entorno del instalador con el
+sistema instalado montado en `/target`. Muchas unidades de systemd habilitadas
+son enlaces **absolutos**, leído del propio `minimal.squashfs` de la ISO:
+
+```
+.../multi-user.target.wants/snap-firefox-7764.mount -> /etc/systemd/system/snap-firefox-7764.mount
+```
+
+Así que `[ -e /target/etc/systemd/system/multi-user.target.wants/snap-firefox-7764.mount ]`
+no pregunta por `/target/etc/...`: pregunta por `/etc/...` **del instalador**. En
+§4.16f eso contó un cambio en el objetivo que no había ocurrido —el enlace seguía
+donde estaba, y lo que había desaparecido era el fichero de la otra máquina—. Se
+evita con `[ -e ]` sobre `-L` (preguntar por el enlace, no por su destino), o
+entrando al chroot con `curtin in-target` para que la raíz sea la que se cree que
+es. **Y el corolario general, que es lo caro:** en una `late-command`, un `rc=0`
+no dice nada sobre el objetivo. Lo único que lo dice es mirar `/target` desde
+fuera del chroot, **antes y después**.
+
+**11. Una excepción de PyGObject convirtió una de las dos respuestas en la
+tercera.** `resolver_desktop` de `lib.sh` prometía tres salidas: la orden `Exec`,
+`NINGUNA` si el identificador no resuelve, y `?` si no se ha podido averiguar.
+**`NINGUNA` no se podía imprimir nunca**: `g_desktop_app_info_new()` devuelve
+NULL cuando no resuelve, y PyGObject convierte ese NULL en
+`TypeError: constructor returned NULL`, no en un `None`. El intérprete moría, se
+disparaba el `|| echo "?"`, y «el lanzador del Snap ya no está» respondía igual
+que «no lo sé» — en la comprobación que decide la casilla «Sin Snap». Arreglado
+con un `except TypeError`, y las tres salidas medidas (§4.16i).
+
+**Y la señal de que llevaba roto desde el principio, comprobada en el propio
+repositorio:** `08-firefox-instalar.sh` tiene un `case` con una rama `NINGUNA)`
+que **no se podía alcanzar jamás**. Los dos consumidores mejoran con el arreglo y
+ninguno se rompe: en `08`, lo que antes caía en `*)` («no se ha podido resolver,
+¿falta python3-gi?») ahora cae en su rama correcta; en `09-firefox-verificar.sh`
+el `[FALLO]` pasa de decir «resuelve a: ?» a decir «resuelve a: NINGUNA», que es
+lo que de verdad ocurre. Una rama de `case` que nunca se ejecuta es un síntoma
+barato de esta trampa, y se busca leyendo.
+
+Las dos son de la familia de la 5: **una comprobación que no puede dar una de sus
+respuestas no es una comprobación**, y no se nota mirándola, se nota
+obligándola a dar las dos.

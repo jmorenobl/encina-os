@@ -50,12 +50,13 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.7 | ¿El `.deb` corregido hace innecesario el Firefox nativo? | **Sí, y es la sección más importante para el producto de hoy.** La respuesta es no |
 | §4.8 | Forma del fork: tres repositorios | Ejecutada. Histórico |
 | §4.9 | El primer positivo de extremo a extremo, y las seis barreras | Sí. **Pero la VM donde ocurrió ya no existe**: se destruyó porque contenía un certificado personal de la FNMT (`ENCINA-OS.md` §9.1). El positivo está medido; el estado bueno no es conservable |
-| §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c** |
+| §4.10 | R10 y `encina-meta`: por qué vía llega Firefox nativo | Sí **para las máquinas con Snap**, que son todas las de E1. Es lo que decide que E1 no se para, y corrige el motivo escrito en `AGENTS.md` §6.3. **Su apartado (h) queda corregido por §4.11c**, y **su premisa (a) deja de valer en una máquina sin Snap** (§4.16j): al purgar `snapd` se va también el `.deb` `firefox` de transición, así que ya no hay nada que sustituir |
 | §4.11 | E1 ejecutado en una VM con escritorio | Sí. Cierra lo que §4.10 dejaba deducido, y tumba el `Recommends: libreoffice-l10n-es` con su motivo escrito |
 | §4.12 | El positivo sobre una máquina virgen instalada por la secuencia | Sí. Las seis barreras cerradas ahí, **y el defecto de orden que dejaba AutoFirma sin CA en el navegador — cerrado el 2026-08-09, con la enmienda dentro del propio apartado (a)**. Contiene además la única técnica conocida para mirar la pantalla de una VM sin ojos |
 | §4.13 | La casilla que decide de E1, marcada: la secuencia de tres órdenes basta | Sí. Es el positivo que cierra E1, y **no se puede volver a contrastar contra ninguna máquina**: la VM llevaba certificado personal y se destruyó (§9.1) |
 | §4.14 | E2: la ISO oficial de escritorio honra un `autoinstall` mínimo, y a qué precio | Sí. Es la medición de apertura de E2, y **corrige a `DIARIO.md` y a `ENCINA-OS.md` §6**, que daban por hecho que la línea base se había instalado por `autoinstall` |
 | §4.15 | El repo local sin firmar, y la casilla novena de E1 | Sí. **Cierra la última casilla de `AGENTS.md` §6.4**, y con el mecanismo de verdad en vez del A/B del 2026-08-08 |
+| §4.16 | E2: ninguna clave del seed quita el clic (leído), y el Snap sí se quita desde el seed (medido) | Sí. Da la orden concreta que quita el Snap y **descarta la vía obvia, que no falla sino que miente**. Su apartado (j) **deja sin efecto la premisa (a) de §4.10 en una máquina sin Snap**, y eso está sin medir |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -851,6 +852,17 @@ que la máquina se quede sin navegador?**
 nombre `firefox` **ya está instalado** en toda Ubuntu de escritorio, apuntando a
 un deb de transición al Snap, y el anclaje de `encina-firefox-native` reasigna
 ese nombre al deb de Mozilla. Nadie instala Firefox: se sustituye el que ya hay.
+
+> **Enmienda del 2026-08-10, y no anula esta sección: le pone frontera.** Esa
+> premisa (a) —«el nombre `firefox` ya está instalado»— **es cierta en toda
+> máquina con Snap, que son todas las de E1, y deja de serlo en cuanto E2 quite
+> el Snap.** El `.deb` de transición **depende de `snapd`**, así que
+> `apt-get purge snapd` se lo lleva, y la máquina se queda con
+> `firefox: Installed: (none)` (§4.16j). Ahí ya no hay nada que sustituir:
+> Firefox nativo tendría que **instalarse**. Probablemente sea más simple —el
+> anclaje se encuentra el nombre libre— pero **no está medido**, y lo que esta
+> sección concluye por la vía de la sustitución no se puede dar por bueno en una
+> máquina sin Snap sin volver a medirlo.
 
 **Dónde se midió.** Contenedor `ubuntu:24.04` **arm64 nativo** en el Mac
 (`dpkg --print-architecture` → `arm64`), con los índices reales de
@@ -2211,6 +2223,507 @@ tres, que es justo lo que se predijo el 2026-08-08.
   `echo "linea" | sudo -S tee fichero` escribe **la contraseña** en el fichero, no
   la línea, y no falla: dejó `encina-local.list` vacío y costó una vuelta
   entenderlo. Es de la familia de la trampa 1.
+
+---
+
+### 4.16 E2 — Ninguna clave del seed quita el clic (leído), y el Snap SÍ se quita desde el seed (medido) (2026-08-10)
+
+Dos preguntas en un día. La primera se contestó **leyendo**, sin gastar ni una
+máquina, porque el código del instalador viaja dentro de la ISO que ya estaba
+bajada. La segunda es la casilla «Sin Snap» de `AGENTS.md` §6bis.3, que R4 y D11
+llevaban aplazando desde el principio con un «eso se hace en la receta de
+imagen» que nadie había medido.
+
+**Respuestas cortas.** *(1)* **No existe** ninguna clave de `autoinstall.yaml`
+que quite el clic de confirmación: la puerta está en la línea de órdenes del
+núcleo y en ningún otro sitio. *(2)* **Sí se puede** quitar el Snap desde el
+seed, pero **no por la vía obvia**, que además no falla, sino que dice que sí
+mientras se lo quita a otra máquina.
+
+#### (a) Lo primero, y salió gratis: no hay ninguna clave que quite el clic
+
+`tar` de macOS lee ISO9660 sin montar nada, y el instalador de escritorio de
+24.04 **es un snap** que viaja en la capa viva:
+
+```
+$ tar -xOf ubuntu-24.04.4-desktop-arm64.iso casper/filesystem.manifest | grep bootstrap
+snap:ubuntu-desktop-bootstrap	24.04/stable/ubuntu-24.04.4	495
+```
+
+Ese snap está dentro de `casper/minimal.standard.live.squashfs`, en
+`/var/lib/snapd/snaps/ubuntu-desktop-bootstrap_495.snap`, y **lleva dentro el
+código fuente entero de subiquity en Python**, no compilado:
+
+```
+$ cat meta/snap.yaml | head -3
+name: ubuntu-desktop-bootstrap
+version: 0+git.4bc1f4077
+summary: Ubuntu Desktop Bootstrap
+$ ls bin/subiquity/ | head
+autoinstall-schema.json  subiquity/  subiquitycore/  system_setup/  ...
+```
+
+**El esquema que trae ESTA ISO**, primer nivel completo, y no hay ninguna clave
+de confirmación:
+
+```
+active-directory, apt, codecs, debconf-selections, drivers, early-commands,
+error-commands, identity, interactive-sections, kernel, keyboard, late-commands,
+locale, network, oem, packages, proxy, refresh-installer, reporting, shutdown,
+snaps, source, ssh, storage, timezone, ubuntu-advantage, ubuntu-pro, updates,
+user-data, version
+```
+
+**Y la puerta, literal**, en `subiquity/server/controllers/install.py:587-597`:
+
+```python
+                self.app.update_state(ApplicationState.WAITING)
+                await self.model.wait_install()
+
+                if not self.app.interactive:
+                    if "autoinstall" in self.app.kernel_cmdline:
+                        await self.model.confirm()
+
+                self.app.update_state(ApplicationState.NEEDS_CONFIRMATION)
+
+                if await self.model.wait_confirmation():
+                    break
+```
+
+Tres cosas se leen ahí, y las tres importan:
+
+1. `self.app.interactive` **ya es falso** con nuestro seed: sale de
+   `server.py:729`, `self.interactive = bool(self.autoinstall_config.get("interactive-sections"))`,
+   y el seed no lleva esa clave. O sea que **no interactivo no basta**: el
+   instalador de escritorio se para igual.
+2. Lo único que le hace confirmarse a sí mismo es **`"autoinstall" in
+   self.app.kernel_cmdline`**, y `kernel_cmdline` se construye leyendo
+   `/proc/cmdline` (`subiquity/cmd/server.py:88`). Ninguna clave del YAML puede
+   tocar eso.
+3. `model.confirm()` se llama **solo desde dos sitios** en todo el árbol: esa
+   línea, y el manejador HTTP `confirm_POST` de `server.py:103-105`, que es lo
+   que pulsa el botón.
+
+**Y un detalle que decide cómo se escribe esa palabra**, leído del analizador,
+`subiquity/cmd/server.py:32-52`:
+
+```python
+        for tok in shlex.split(cmdline):
+            if "=" in tok:
+                k, v = tok.split("=", 1)
+                r._values[k] = v
+            else:
+                r._tokens.add(tok)
+    ...
+    def __contains__(self, item):
+        return item in self._tokens
+```
+
+`in` mira **solo los testigos sin `=`**. Luego la palabra tiene que ir **suelta**:
+`autoinstall` sí, y **`autoinstall=1` NO**, ni tampoco
+`subiquity.autoinstallpath=/loquesea`, que va a `_values` y sirve para *dónde*
+está el seed, no para saltarse el clic. Quien escriba el `grub.cfg` de E3 se
+juega la casilla en ese carácter.
+
+**Conclusión: la salida (1) de `ENCINA-OS.md` §10 no se puede evitar por seed.**
+No es que no se haya encontrado la clave: es que la decisión está tomada en el
+código y se ha leído. La elección entre las tres salidas sigue siendo de Jorge.
+
+*Una pista que esto abre y que NO se ha medido, escrita para que no se pierda:*
+`confirm_POST` es un manejador HTTP sobre el zócalo del servidor de subiquity, y
+las `early-commands` del propio seed corren como root en el entorno del
+instalador **antes** de que se llegue a esa espera. Si una `early-command`
+pudiera hablar con ese zócalo, habría una cuarta salida que no necesita ni
+hipervisor ni reempaquetar la ISO. **No está medido, no está probado y no se
+recomienda**; se apunta porque salió de la lectura y porque, si algún día se
+mide, cambia §10.
+
+#### (b) Qué se daría por sano y qué por roto, escrito antes de medir
+
+| # | Lo que se prueba | Sano | Roto |
+|---|---|---|---|
+| P1 | `curtin in-target -- snap remove --purge firefox` | — | **se predijo que falla**: `curtin` bind-monta `/run` del instalador dentro de `/target` (leído en `curtin/util.py:775`), así que el cliente `snap` de dentro del chroot habla con el snapd del entorno **vivo**. Señal que lo distingue: inventario de `/target` antes y después, tomado **sin** chroot |
+| P2 | `curtin in-target -- apt-get -y purge snapd` | rc=0 y en `/target` desaparecen el `.snap`, el lanzador, las unidades `snap-*.mount` y `/snap`; `ubuntu-desktop-minimal` sobrevive | rc≠0, o rc=0 y quedan ficheros porque el `postrm` no pudo desmontar sin systemd |
+| P3 | La máquina resultante | arranca, sin orden `snap`, sin lanzador, y con sesión gráfica | no arranca, o arranca sin escritorio |
+
+Que `ubuntu-desktop-minimal` sobreviviera no era suposición: se midió antes, en
+`encina-E2-seed`, **sin modificar nada**, y con su control:
+
+```
+$ LC_ALL=C sudo apt-get -s purge snapd | grep -E "^(Purg|Remv)"
+Purg firefox [1:1snap1-0ubuntu5]
+Purg snapd [2.76+ubuntu24.04.1]
+$ LC_ALL=C dpkg-query -W -f='Depends: ${Depends}\nRecommends: ${Recommends}\n' ubuntu-desktop-minimal | tr ',' '\n' | grep -nE '^(Depends|Recommends):| firefox| snapd'
+1:Depends: alsa-base
+56:Recommends: apport-gtk
+72: firefox
+138: snapd
+$ LC_ALL=C sudo apt-get -s purge paquete-que-no-existe | tail -1
+E: Unable to locate package paquete-que-no-existe     <- la simulacion no esta ciega
+```
+
+`snapd` y `firefox` son **`Recommends`**, no `Depends`, y por eso apt no se lleva
+el escritorio por delante.
+
+#### (c) El montaje, y qué máquina se ha gastado
+
+Se ha reutilizado `encina-E2-control` —la del control de §4.14i, que el encargo
+marcaba como candidata a borrar—, y **queda renombrada `encina-E2-sinsnap`**. O
+sea que **el control de §4.14i ya no existe como máquina**; lo que queda de él
+es lo escrito allí. `encina-E2-desatendida` no se ha tocado.
+
+El seed de la medición es el mínimo de §4.14 **con dos cambios y ni uno más**:
+
+```
+$ diff user-data-minimo.yaml user-data-medicion-snap.yaml
+22c22
+<     hostname: encina-e2
+---
+>     hostname: encina-e2-sinsnap
+31a32
+>     - sh -c 'echo IyEvYmluL3NoCiMgTWVkaWNpb24gRTIgKDIwMjYtMDgtMTApOiBzZSBw… | base64 -d > /tmp/medicion-snap.sh; sh /tmp/medicion-snap.sh; true'
+```
+
+El guion va en base64 en una sola `late-command` a propósito: así no hay ni una
+comilla que YAML o el intérprete puedan interpretar de otra manera, y el guion se
+conserva legible aparte (`e2-medios/medicion-snap.sh`). Termina siempre en 0,
+porque una `late-command` que aborta se lleva la instalación por delante y deja
+la medición sin datos.
+
+```
+seed:  seed-cidata-snap.img   FAT12 etiquetado CIDATA, 8 MiB
+       user-data 6032 B, meta-data 63 B
+       sha256 3fcddd266a4c3c54b15f0390f8f8f7763bdcffeea99387393ceabe96d83824ef
+ISO:   c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe   <- la de §4.14, identica
+Image: a1586ff3cb7ced7c40dcb0aba5bf320ebb94a46d1a6505eb03157a8f9525632d
+initrd:948d5f0449382571eceb32fbbcd5652dff2f9359e69e5f5ec10432b098776b28
+```
+
+La instalación fue **desatendida**, por la vía B de §4.14h (`-append autoinstall`,
+`-no-reboot`), y nadie tocó nada:
+
+```
+10:00:00Z  arranca
+10:01:32Z  disco = 2 190 999 552 bytes (2089 MB)   <- instalando de verdad
+           arp -an -> 192.168.64.7 viva            <- segunda senal (trampa 9)
+10:08:32Z  se apaga sola                            8 min 32 s, disco 9667 MB
+```
+
+Anclaje con §4.14, del propio log del instalador:
+
+```
+2026-08-10 10:00:45,756 DEBUG subiquity.server.server:866 autoinstall found in cloud-config
+```
+
+#### (d) Cómo llega el Snap al sistema instalado, leído del medio — y no es lo que se suponía
+
+El encargo apuntaba a «atacar el seed de snapd (`/var/lib/snapd/seed/`) para que
+el Snap no llegue a instalarse en el primer arranque». **Leyendo
+`casper/minimal.squashfs`, que es literalmente el sistema que se copia al disco,
+eso no basta**: la imagen no viene *sembrada*, viene **pre-sembrada**.
+
+```
+$ python3 -c "…json.load(open('var/lib/snapd/state.json'))…"
+preseeded: True
+seeded: None
+snaps: ['bare','core22','firefox','gnome-42-2204','gtk-common-themes','snap-store','snapd','snapd-desktop-integration']
+cambios: [('1', 'seed', 'Initialize system state', 0)]      <- estado 0 = pendiente
+nº tareas: 178      tareas que mencionan firefox: 49
+```
+
+Y los artefactos del pre-sembrado ya están puestos en la imagen: los `.snap` en
+`/var/lib/snapd/snaps/`, los perfiles de AppArmor, `/snap/firefox/7764`, las
+unidades `snap-firefox-7764.mount` **ya habilitadas**, y el lanzador
+`/var/lib/snapd/desktop/applications/firefox_firefox.desktop`. Borrar el seed a
+mano dejaría `state.json` con 49 tareas apuntando a un snap que ya no está.
+
+#### (e) La vía obvia no falla: dice que sí, y se lo quita a otra máquina
+
+```
+$ curtin in-target -- snap remove --purge firefox
+firefox eliminado
+  rc=0
+```
+
+**rc=0 y «firefox eliminado».** Y el objetivo, intacto:
+
+```
+=== 3. INVENTARIO DEL OBJETIVO, DESPUES DE LA VIA OBVIA ===
+[PRESENTE] /target/var/lib/snapd/snaps/firefox_7764.snap
+[PRESENTE] /target/var/lib/snapd/seed/snaps/firefox_7764.snap
+[PRESENTE] /target/var/lib/snapd/desktop/applications/firefox_firefox.desktop
+[PRESENTE] /target/snap/firefox/current
+[AUSENTE ] /target/var/lib/snapd/snaps/fichero-que-no-existe-jamas  <- control
+```
+
+**La prueba de a quién se lo quitó**, y es de las que no admiten discusión:
+
+```
+$ curtin in-target -- snap version
+snap          2.76+ubuntu24.04.1        <- el cliente, del OBJETIVO
+snapd         2.73+ubuntu24.04          <- el demonio, del entorno VIVO
+$ curtin in-target -- ls -l /run/snapd.socket
+srw-rw-rw- 1 root root 0 Aug 10 10:00 /run/snapd.socket
+```
+
+Dos versiones distintas en la misma orden: el binario sale del chroot y el
+demonio del instalador, porque `curtin` bind-monta `/run`. Y en el `snap list`
+de después —que es el del entorno vivo, aunque se pida con `in-target`— firefox
+ya no está, mientras `thunderbird` y `ubuntu-desktop-bootstrap` siguen.
+
+**Una corrección mía, y va escrita porque casi se me cuela.** Antes de medir
+afirmé, leyendo el `.squashfs` de la capa viva, que el entorno del instalador
+«solo tiene un snap, el instalador». **Es falso**: casper apila varias capas, y
+el entorno vivo trae los ocho más `thunderbird` y el propio instalador:
+
+```
+$ ls -l /var/lib/snapd/snaps/          # en el entorno del instalador, medido
+firefox_7764.snap  thunderbird_958.snap  ubuntu-desktop-bootstrap_495.snap  …
+```
+
+Lo que estaba mal no era la conclusión —la vía obvia no sirve— sino el motivo que
+yo le había puesto. Si el entorno vivo no hubiera tenido firefox, la orden habría
+dicho «no está instalado» y el error habría sido igual de invisible.
+
+**Moraleja, que es la que hay que llevarse:** una `late-command` que dice `rc=0`
+no demuestra nada sobre el objetivo. Lo único que lo demuestra es mirar
+`/target` desde fuera del chroot, antes y después.
+
+#### (f) Y de ahí salió una trampa nueva, que estuvo a punto de contar un cambio falso
+
+En el inventario del paso 3, **una línea sí cambió**:
+
+```
+[AUSENTE ] /target/etc/systemd/system/multi-user.target.wants/snap-firefox-7764.mount
+```
+
+Parecía que `snap remove` sí había tocado el objetivo. **No lo tocó.** El fichero
+es un enlace **absoluto**, leído del propio `minimal.squashfs`:
+
+```
+lrwxrwxrwx  .../multi-user.target.wants/snap-firefox-7764.mount -> /etc/systemd/system/snap-firefox-7764.mount
+-rw-r--r--  .../etc/systemd/system/snap-firefox-7764.mount   329 bytes
+```
+
+Un `[ -e /target/…/enlace ]` ejecutado **en el entorno del instalador** resuelve
+ese `/etc/...` contra la raíz **del instalador**, no contra `/target`. Y el
+`snap remove` acababa de borrar ahí ese fichero. O sea: el enlace del objetivo
+seguía en su sitio, y la comprobación dijo AUSENTE. Es la **trampa 10** de
+`SCRIPTS.md`.
+
+#### (g) La vía por paquete: funciona, y del todo
+
+```
+$ curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y purge snapd
+The following packages will be REMOVED:
+  firefox* snapd*
+0 upgraded, 0 newly installed, 2 to remove and 88 not upgraded.
+E: Can not write log (Is /dev/pts mounted?) - posix_openpt (19: No such device)
+Removing firefox (1:1snap1-0ubuntu5) ...
+Removing snapd (2.76+ubuntu24.04.1) ...
+/usr/sbin/policy-rc.d returned 101, not running 'stop snapd.apparmor.service …'
+/usr/sbin/policy-rc.d returned 101, not running 'stop snapd.service'
+Running in chroot, ignoring command 'daemon-reload'
+Purging configuration files for snapd (2.76+ubuntu24.04.1) ...
+Running in chroot, ignoring command 'stop'
+Waiting until unit snap-bare-5.mount is stopped [attempt 1] … [attempt 20]
+Removing snap bare and revision 5
+…
+  rc=0
+```
+
+**Sin systemd vivo, `snap-mgmt` no puede parar ni desmontar nada** —lo dice él
+mismo, veinte intentos por unidad— **y aun así termina el trabajo**, porque en el
+objetivo esas unidades nunca llegaron a arrancar: no hay nada montado que
+desmontar. El `E: Can not write log` es del `apt` sin `/dev/pts` y no impide
+nada. Y el inventario de después:
+
+```
+=== 5. INVENTARIO DEL OBJETIVO, DESPUES DEL PURGADO ===
+[AUSENTE ] /target/var/lib/snapd/snaps/firefox_7764.snap
+[AUSENTE ] /target/var/lib/snapd/seed/snaps/firefox_7764.snap
+[AUSENTE ] /target/var/lib/snapd/desktop/applications/firefox_firefox.desktop
+[AUSENTE ] /target/etc/systemd/system/snap-firefox-7764.mount
+[AUSENTE ] /target/snap/firefox/current
+[AUSENTE ] /target/var/lib/snapd/state.json
+[AUSENTE ] /target/usr/bin/firefox
+
+$ ls -la /target/var/lib/snapd   -> No such file or directory   rc=2
+$ ls -la /target/snap            -> No such file or directory   rc=2
+$ ls /target/etc/systemd/system/ | grep -i snap   -> (vacio)     rc=1
+
+$ curtin in-target -- dpkg -l snapd firefox
+un  firefox        <none>   <none>
+un  snapd          <none>   <none>
+$ curtin in-target -- dpkg -l ubuntu-desktop-minimal gnome-shell
+ii  gnome-shell            46.0-0ubuntu6~24.04.13  arm64
+ii  ubuntu-desktop-minimal 1.539.2                 arm64
+```
+
+El mismo inventario dio nueve `[PRESENTE]` antes de tocar nada y un `[AUSENTE]`
+en su control, así que sabe decir las dos cosas.
+
+#### (h) La máquina que sale, verificada con sus controles
+
+Sobre `encina-E2-sinsnap` arrancada **desde el disco**, con la ISO fuera y sin
+núcleo externo:
+
+```
+$ hostname; id
+encina-e2-sinsnap
+uid=1000(encina) gid=1000(encina) grupos=1000(encina),4(adm),24(cdrom),27(sudo),…
+
+$ command -v snap  ->  AUSENTE: no hay orden snap
+  control: command -v bash -> PRESENTE /usr/bin/bash
+
+[AUSENTE ] /var/lib/snapd/desktop/applications/firefox_firefox.desktop
+[AUSENTE ] /var/lib/snapd/desktop
+[AUSENTE ] /var/lib/snapd
+[AUSENTE ] /snap
+[AUSENTE ] /usr/bin/firefox
+  control: [PRESENTE] /usr/bin/gnome-shell
+
+$ ls /etc/systemd/system/ | grep -i snap   -> ninguna
+
+$ sudo cat /var/log/installer/telemetry
+{"1": "loading", "409": "done"}          <- dos entradas: la goberno un seed
+
+$ systemctl is-system-running   -> running
+$ systemctl list-units --state=failed --no-legend  -> (ninguna)
+```
+
+**Y el escritorio está vivo de verdad, no solo «gdm active»:**
+
+```
+$ loginctl list-sessions --no-legend
+ 5   1000 encina -     -    active
+c1    120 gdm    seat0 tty1 active
+$ loginctl show-session c1 -p User -p Name -p Type -p Class -p State -p Seat
+User=120 Name=gdm Seat=seat0 Type=wayland Class=greeter State=active
+$ systemctl is-active graphical.target   -> active
+$ systemctl is-active rescue.target      -> inactive     <- el control
+```
+
+**Lo que NO he mirado en pantalla:** la captura que UTM guarda es la del final de
+la instalación —el instalador en «Copiando archivos…», sin haber pasado por
+ninguna pantalla de confirmación, que ya es un dato— y la de después del apagado
+dice «Display output is not active». El saludador de GDM está demostrado por
+`loginctl`, no por una foto.
+
+**Un aviso para quien escriba la comprobación de la casilla:** `dpkg -l | grep -i
+snap` **da falsa alarma** en esta máquina, y es de la familia de la trampa 5:
+
+```
+ii  gir1.2-snapd-2:arm64      Typelib file for libsnapd-glib1
+ii  libsnapd-glib-2-1:arm64   GLib snapd library
+ii  gnome-shell-extension-ubuntu-tiling-assistant   … adds a Windows-like snap assist to GNOME Shell
+ii  xdg-desktop-portal        desktop integration portal for Flatpak and Snap
+```
+
+Ninguno es snapd: dos son bibliotecas, uno es una extensión de ventanas y el
+cuarto es un portal. `snapd` **no** está (`un`, ver (g)). Lo mismo con
+`systemctl list-units | grep -i snap`, que casa con `e2scrub_reap.service`
+—«Remove Stale Online ext4 Metadata Check **Snap**shots»— y con nada más.
+
+#### (i) El defecto de `resolver_desktop`, que esta casilla sacó a la luz
+
+La casilla «Sin Snap» dice que hay que mirar la **precedencia real** del
+lanzador, no solo si el fichero está (trampa 4, y el caso A2 donde las siete
+comprobaciones estaban verdes y el icono seguía abriendo el Snap). `lib.sh`
+tiene `resolver_desktop` para eso, y **estaba roto de una forma que esta casilla
+no habría detectado**:
+
+```
+$ python3 -c 'import gi; gi.require_version("Gio","2.0"); from gi.repository import Gio; \
+              a=Gio.DesktopAppInfo.new("firefox_firefox.desktop"); print(a or "NINGUNA")'
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+TypeError: constructor returned NULL
+   rc=1
+```
+
+`g_desktop_app_info_new()` devuelve NULL cuando el identificador no resuelve, y
+**PyGObject convierte ese NULL en una excepción**, no en un `None`. Con el
+`|| echo "?"` que tenía la función, el resultado era `?` —«no se ha podido
+averiguar»— y **`NINGUNA` no se podía imprimir jamás**. O sea: «el lanzador del
+Snap ya no está» y «no lo sé» daban la misma respuesta, que es exactamente el
+modo de fallo de las trampas 5 y 8.
+
+Arreglado en `scripts/lib.sh` con un `except TypeError`, y **las tres salidas
+medidas** sobre esta máquina, con el `XDG_DATA_DIRS` por defecto, que es el
+**más favorable al Snap** porque incluye `/var/lib/snapd/desktop`:
+
+```
+1) el que no resuelve : firefox_firefox.desktop    -> NINGUNA
+2) el que si resuelve : org.gnome.Nautilus.desktop -> nautilus --new-window %U
+3) el que no se sabe  : sin interprete             -> ?
+```
+
+*Lo que esta medición no da:* el `XDG_DATA_DIRS` de una sesión gráfica **de
+usuario** abierta, porque esta máquina no tiene autologin y nadie ha entrado. La
+lista usada es la de por defecto, que contiene el directorio del Snap, así que un
+`NINGUNA` ahí es más fuerte, no más débil.
+
+#### (j) Lo que esto le cuesta a la premisa (a) de §4.10, y hay que decidirlo al escribir el seed
+
+El `.deb` `firefox` de transición **depende de `snapd`**, así que el purgado se lo
+lleva:
+
+```
+$ curtin in-target -- env LC_ALL=C apt-cache policy firefox
+firefox:
+  Installed: (none)
+  Candidate: 1:1snap1-0ubuntu5
+     1:1snap1-0ubuntu5 500  http://ports.ubuntu.com/ubuntu-ports noble/main
+```
+
+La premisa (a) de §4.10 decía que Firefox nativo llega **por sustitución** del
+deb de transición, no por instalación. **En una máquina así ya no hay nada que
+sustituir.** No es un problema —probablemente sea más simple, porque el anclaje
+de `encina-firefox-native` se encuentra el nombre libre— pero **es una premisa de
+§4.10 que deja de valer, y no se ha medido qué pasa en su lugar**. Es la primera
+cosa que hay que comprobar al escribir el seed completo.
+
+#### (k) Notas de laboratorio, que costaron más que la medición
+
+- **`-kernel` en UTM solo funciona con ficheros declarados como *unidad*.** Cinco
+  intentos fallaron con `qemu-aarch64-softmmu: failed to load ".../Image"` con el
+  fichero presente, válido (`ARMd` en el desplazamiento 0x38) y dentro del
+  contenedor de UTM. Lo que lo aclaró fue un experimento discriminante: apuntar
+  `-kernel` a un fichero que **sí** es unidad (`seed-cidata-snap.img`) — y la VM
+  arrancó. UTM está en la caja de arena de la App Store y solo le concede a QEMU
+  el acceso a los ficheros de las unidades. **La solución es declarar `Image` e
+  `initrd` como unidades `CD` de solo lectura** y dejar los argumentos apuntando
+  a esas mismas rutas. *(La primera hipótesis —que el renombrado del bundle había
+  invalidado un marcador— era falsa: revertir el nombre no arregló nada. Se dice
+  porque se perdió tiempo ahí.)*
+- **El campo `file urls` del registro `qemu argument` de AppleScript no basta**, y
+  además `update configuration` **borra del bundle todo lo que no sea unidad**,
+  incluso lo que acabas de referenciar. La trampa de §4.14 sigue vigente y ahora
+  se entiende mejor: no es «primero argumentos y luego ficheros», es «los
+  ficheros tienen que ser unidades».
+- **Un experimento discriminante mal elegido miente.** El primero fue apuntar
+  `-kernel` a la ISO —que sí es unidad— y dio el mismo error; parecía cerrar la
+  hipótesis de acceso, y no la cerraba: son 3,5 GB y `-kernel` lee el fichero
+  entero en memoria. Se repitió con un fichero de 8 MB y salió lo contrario.
+- **En `encina-E2-sinsnap` no hay `sudo` sin contraseña**, al revés que en
+  `encina-E2-seed`, donde se puso a mano en §4.15. El seed mínimo no lo
+  configura. La contraseña desechable es la de siempre.
+
+#### (l) Lo que esta medición NO contesta
+
+- **No se ha escrito el seed de verdad.** Aquí solo se ha medido el mecanismo de
+  quitar el Snap, con un seed que no trae ningún `.deb` de Encina.
+- **No se ha probado la vía estrecha**: quitar *solo* el snap de Firefox dejando
+  snapd y los otros siete. El camino leído sería `snap-preseed --reset` sobre
+  `/target` más cirugía en `seed.yaml`, y **no se ha medido**. Lo medido purga
+  snapd entero, que cumple la casilla con holgura pero **también se lleva
+  `snap-store` y `snapd-desktop-integration`**, y eso es una decisión de producto
+  que no se toma aquí.
+- **No se ha medido `apt` contra la red desde una `late-command`.** El purgado no
+  necesita red; el repo local y `encina-meta` son otra cosa.
+- **La firma en `valide.redsara.es` sigue sin hacerse**, y sigue siendo [OJOS].
+- **amd64, nada.** D9 sigue igual.
 
 ---
 

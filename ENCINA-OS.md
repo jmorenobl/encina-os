@@ -167,7 +167,7 @@ de menor a mayor riesgo, no de menor a mayor interés.
 | # | Incremento | Qué lo da por terminado | Estado |
 |---|---|---|---|
 | **E1** | `encina-meta` | Una secuencia documentada —los cuatro `.deb`, `apt update`, `full-upgrade` más el idioma— deja branding, Firefox nativo y AutoFirma funcionando. Hereda el residuo de l10n de D12. **Medido el 2026-08-08 (`MEDICIONES.md` §4.10): «un solo `apt install`» no era posible, y declarar `firefox` para conseguirlo lo estropea en silencio** | **HECHO, 12 de 12 (2026-08-09, cerrada la última el 2026-08-10).** La que importa: la secuencia de tres órdenes, ejecutada tal cual sobre un clon virgen, deja una máquina que firma — mirado en pantalla (§4.13). La novena —`apt purge` + `autoremove`— no era cumplible con `.deb` sueltos y **se cumplió en E2 con el repo local** (§4.15) |
-| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3 |
+| **E2** | Instalación desatendida | `autoinstall.yaml` + repo local sin firmar sobre la ISO oficial de Ubuntu arm64. **Sin Snap.** Terminado cuando salga una firma en `valide.redsara.es` sobre una máquina que nadie ha tocado a mano | **ABIERTO el 2026-08-09.** Su medición de apertura está hecha (`MEDICIONES.md` §4.14): la ISO oficial honra un `autoinstall` mínimo servido en un volumen `CIDATA` y ejecuta las `late-commands`. **Y trae un precio medido:** sin `autoinstall` en la línea de órdenes del núcleo, el instalador de escritorio **se para a esperar un clic**, así que «que nadie la toque» obliga a poner ese parámetro — y ponerlo sin hipervisor por medio es reempaquetar la ISO, que es E3. **El 2026-08-10 (§4.16) se cerró la casilla técnica que faltaba: el Snap SÍ se quita desde el seed**, con `apt-get purge snapd` por `curtin in-target`, y el escritorio sobrevive; **la vía obvia, `snap remove`, no sirve y encima dice que sí**. Falta escribir el seed de verdad |
 | **E3** | ISO que arranca sola | La ISO oficial reempaquetada con el seed embebido. Se la puedes dar a alguien —o a ti dentro de seis meses— y arranca | Sin abrir |
 | **E4** | Aplicaciones de serie | Lo que quieras que Encina OS traiga puesto, como `Depends:`/`Recommends:` de `encina-meta`. Es el eje por el que crece el producto | Sin abrir |
 | **E5** | Imagen propia (`live-build`/`debos`) | El destino declarado. Solo compra marcar el propio instalador y controlar el conjunto base | Sin abrir |
@@ -251,12 +251,29 @@ que decide se marcó el 2026-08-09 con una firma real sobre un clon virgen
 4. **El repo local sin firmar funciona**: `dpkg-scanpackages` + `[trusted=yes]`,
    `apt install encina-meta` a secas, y los otros tres entran marcados
    automáticos.
+5. **El Snap se puede quitar desde el seed, y por una vía concreta** (§4.16):
+   `curtin in-target -- apt-get -y purge snapd` en una `late-command`. Deja el
+   objetivo sin `/var/lib/snapd`, sin `/snap`, sin el lanzador y sin unidades, y
+   **el escritorio sigue vivo** porque `snapd` es `Recommends` de
+   `ubuntu-desktop-minimal`, no `Depends`. **La vía obvia —`snap remove`— NO
+   sirve y no falla: dice `firefox eliminado` y `rc=0` mientras se lo quita al
+   entorno vivo del instalador.**
+6. **No hay ninguna clave del seed que quite el clic**, y eso está **leído** en
+   el código que viaja dentro de la ISO, no deducido (§4.16a). O sea que la
+   decisión de §10 sigue siendo entre tres salidas y no hay una cuarta gratis.
 
 **El siguiente paso concreto, y es uno solo:** escribir el `autoinstall.yaml` de
 verdad —el que trae el repo local con los cuatro `.deb`, instala `encina-meta` y
-**quita el Snap de Firefox**, que es donde sí está permitido (R4, D11)— y medir
-que la máquina resultante llega entera. La firma en `valide.redsara.es` viene
-después, y va en un clon efímero que se destruye (§9.1).
+quita el Snap con la orden ya medida— y comprobar que la máquina resultante llega
+entera. La firma en `valide.redsara.es` viene después, y va en un clon efímero
+que se destruye (§9.1).
+
+**Y ese paso arranca con una pregunta abierta que la medición del Snap ha
+creado:** purgar `snapd` **se lleva también el `.deb` `firefox` de transición**,
+porque depende de él. La premisa (a) de §4.10 —que Firefox nativo llega **por
+sustitución** de ese deb, no por instalación— **deja de valer en una máquina sin
+Snap**. Probablemente sea más simple, pero **no está medido**, y hay que medirlo
+antes de dar la secuencia de §6.4 por trasladada al seed.
 
 **Y una consecuencia de forma, que hay que decidir antes de escribir el seed:**
 el punto 3 mueve la frontera entre E2 y E3. «Que nadie la toque a mano» obliga a
@@ -404,9 +421,14 @@ Tres matices:
   usuario `jorge` con `sudo` sin contraseña y la IP `192.168.64.3`. **El hostname
   no distingue nada entre ellas.** Para saber en cuál estás, lo que funciona es
   «paquetes instalados + versión del Snap de Firefox + qué perfiles existen».
-- **Las tres de E2** no son clones: **nacen de la ISO oficial**, con hostname
-  `encina-e2`, usuario `encina` y una IP propia cada una (`.4`, `.5`, `.7`). Se
-  entra con la clave efímera de la medición, no con la de siempre.
+- **Las tres de E2** no son clones: **nacen de la ISO oficial**, con usuario
+  `encina` y una IP propia cada una (`.4`, `.5`, `.7`). Se entra con la clave
+  efímera de la medición, no con la de siempre. Dos comparten hostname
+  `encina-e2`; la tercera, `encina-E2-sinsnap`, se llama `encina-e2-sinsnap`
+  desde su propio seed, **y aun así hay que identificarla por huella**: la que
+  distingue las tres es `/var/log/installer/telemetry` (`896:done` la del clic,
+  `552:done` la desatendida, `409:done` la sin Snap) y sus testigos de
+  `late-command`.
 
 **No arrancar dos a la vez.** Se listan y se arrancan con `utmctl list` y
 `utmctl start <nombre>`, sin abrir la interfaz de UTM.
@@ -425,7 +447,7 @@ Tres matices:
 | ~~`encina-firma-efimera`~~ (2026-08-09) | **La casilla que decide.** Otro clon virgen, mismo nombre, con la secuencia ya de tres órdenes: 29/0/1/1, la CA llegando sola, y la firma mirada en pantalla (§4.13) | `gpu-pci` | **Destruida el 2026-08-09.** Mismo motivo, misma regla: llevaba el certificado personal |
 | `encina-E2-seed` | **Vía A de E2.** No es un clon: **nace de la ISO oficial**, instalada por el seed `CIDATA` con un clic en «Ready to install» (§4.14d). Es también donde se cerró la casilla novena con el repo local en `/srv/encina-repo` (§4.15) | `gpu-pci` | **En uso.** Su estado tras §4.15: `encina-meta` purgado y los otros tres puestos y marcados automáticos. **Sin ningún certificado personal.** Lleva un `sudoers.d` sin contraseña puesto para medir, y `dpkg-dev` purgado |
 | `encina-E2-desatendida` | **Vía B de E2, y el testigo que importa: instalada sin que nadie la tocara**, con `autoinstall` en la línea de órdenes y `-no-reboot` (§4.14h). Sus dos testigos de `late-commands` están dentro | `gpu-pci` | **Parada.** Se queda: es la única máquina del proyecto que nadie ha tocado a mano. **Sin certificado personal** |
-| `encina-E2-control` | **El control de §4.14i.** Idéntica a la anterior salvo la palabra `autoinstall`. Su disco sigue **vacío**, y eso es el resultado | `gpu-pci` | **Parada.** Su valor está en el registro, no en el disco: candidata a borrar cuando E2 avance |
+| ~~`encina-E2-control`~~ → `encina-E2-sinsnap` | **Era el control de §4.14i**, cuyo valor estaba en el registro y no en el disco. **Se consumió el 2026-08-10** para medir si el Snap se puede quitar desde el seed (§4.16), y **ya no es un control**: lo que queda de aquel control es lo escrito en §4.14i | `gpu-pci` | **Parada.** Ahora es **la primera máquina de Encina OS sin Snap**: instalada desatendida en 8 min 32 s, sin `/var/lib/snapd`, sin `/snap`, sin orden `snap`, con el saludador de GDM vivo. Hostname propio `encina-e2-sinsnap`, IP `.7`. **Sin certificado personal**, y **sin `sudo` sin contraseña** (al revés que `encina-E2-seed`) |
 
 **La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de
 AutoFirma no se dibuja.** Medido el 2026-08-08 en la misma VM cambiando solo la
@@ -506,6 +528,17 @@ definición de terminado**, porque es fácil escribir una casilla imposible:
   volver a tener un humano dentro y **no** es lo que E2 prometía.
   **No elegir es la peor**: deja el seed escrito contra una casilla que no se
   puede cumplir.
+  **El 2026-08-10 se comprobó que no hay una cuarta salida por seed, y por
+  lectura del código, no por deducción** (`MEDICIONES.md` §4.16a): la puerta es
+  `if "autoinstall" in self.app.kernel_cmdline` en
+  `subiquity/server/controllers/install.py:587-597`, `model.confirm()` solo se
+  llama desde ahí y desde el manejador HTTP del botón, y **con
+  `interactive-sections` ausente el instalador ya es no interactivo y se para
+  igual**. Ninguna clave del YAML toca `/proc/cmdline`. Además, la palabra hay
+  que escribirla **suelta**: el analizador manda lo que lleva `=` a otro sitio,
+  así que **`autoinstall=1` no vale**. *(Queda apuntada una pista no medida y no
+  recomendada: `confirm_POST` es HTTP sobre el zócalo de subiquity y las
+  `early-commands` corren antes. Si alguna vez se mide, §10 cambia.)*
 - **E5.** Si a las dos semanas de abrir `live-build`/`debos` no hay una imagen
   que arranque, cerrarlo y quedarse en E3. E3 ya entrega el producto; E5 solo lo
   envuelve mejor. **Es donde este tipo de proyecto muere.**

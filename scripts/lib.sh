@@ -151,16 +151,29 @@ xdg_data_dirs_sesion() {
 
 # resolver_desktop <identificador.desktop>
 # Imprime la orden Exec a la que resuelve ese identificador, o NINGUNA si no
-# resuelve a nada (ocultado, o descartado por TryExec), o ? si no se ha podido
-# averiguar. Se le pregunta a la misma biblioteca que usa el escritorio, en vez
-# de deducirlo leyendo ficheros: la precedencia la resuelve GIO, no nosotros.
+# resuelve a nada (ausente, ocultado, o descartado por TryExec), o ? si no se ha
+# podido averiguar. Se le pregunta a la misma biblioteca que usa el escritorio,
+# en vez de deducirlo leyendo ficheros: la precedencia la resuelve GIO, no
+# nosotros.
+#
+# El `except TypeError` no es adorno y costó una casilla (MEDICIONES.md §4.16i):
+# cuando el identificador no resuelve, `g_desktop_app_info_new()` devuelve NULL,
+# y PyGObject convierte eso en `TypeError: constructor returned NULL` en vez de
+# en un None. Sin capturarlo, el intérprete moría, se disparaba el `|| echo "?"`
+# y esta función NO PODÍA IMPRIMIR NUNCA «NINGUNA»: el caso «el lanzador del
+# Snap ya no está» y el caso «no he podido averiguarlo» daban la misma respuesta,
+# que es justo la casilla «Sin Snap» de AGENTS.md §6bis.3. Las tres salidas están
+# medidas sobre `encina-E2-sinsnap`.
 resolver_desktop() {
     XDG_DATA_DIRS="$(xdg_data_dirs_sesion)" XDG_CURRENT_DESKTOP=ubuntu:GNOME \
     python3 - "$1" <<'PY' 2>/dev/null || echo "?"
 import sys, gi
 gi.require_version("Gio", "2.0")
 from gi.repository import Gio
-a = Gio.DesktopAppInfo.new(sys.argv[1])
+try:
+    a = Gio.DesktopAppInfo.new(sys.argv[1])
+except TypeError:      # el constructor devolvió NULL: no resuelve a nada
+    a = None
 print(a.get_commandline() if a else "NINGUNA")
 PY
 }
