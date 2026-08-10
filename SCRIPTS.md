@@ -895,6 +895,45 @@ tropezar con la trampa 17.
 
 ---
 
+## Y una vigésima, midiendo una máquina que no tiene `ssh` (2026-08-10)
+
+**20. El canal que no depende de la red: un volumen FAT conectado DESPUÉS de instalar.**
+El seed de la entrega de E3 **no lleva servidor `ssh` a propósito**, así que no
+se puede entrar desde el Mac. El canal de red de §4.22 depende del cortafuegos y
+falla en la dirección que hace falta. Lo que funcionó siempre:
+
+```
+# en el Mac: 16 MiB, FAT, con el verificador dentro; se conecta como segunda unidad
+dd if=/dev/zero of=canal.img bs=1m count=16
+newfs_msdos -F 12 -v CANAL <dispositivo>          # y se copia imagen/verificar-e2.sh
+
+# dentro, tecleado por codigos crudos:
+sudo mount /dev/vdb /mnt
+sudo script -q -c "bash /mnt/v.sh --forma e3" /mnt/salida.txt
+sudo cp /etc/encina-seed.log /mnt/seed.log
+sudo umount /mnt
+```
+
+**Se conecta DESPUÉS de instalar, y eso no es un detalle:** la casilla «dos
+unidades y ni una más» se cierra con el `debug.log` del **arranque de la
+instalación**, que hay que guardar antes de tocar nada. Después ya da igual.
+
+**Y tres cosas que cuestan un rodeo cada una:**
+
+- **Los códigos de teclado son DE POSICIÓN, y la distribución la pone el
+  INVITADO.** El conversor de §4.22 es de EE.UU.; si quien instaló eligió teclado
+  español, `sudo mount /dev/vdb /mnt` llega como **`sudo mount -dev-vdb -mnt`**,
+  porque el código 53 es `/` allí y `-` aquí. **Se ve en pantalla, que es la
+  regla de la trampa 1.** Para el invitado español: `/` es `Shift`+código 8,
+  `"` es `Shift`+código 3, y `-` es el código 53 a secas.
+- **`sh` es `dash`**: `verificar-e2.sh` usa `set -o pipefail` y sale
+  `Illegal option -o pipefail`. Va con `bash`.
+- **`script -q -c` en vez de `>`**, y no por elegancia: el `>` español está en la
+  tecla ISO que ni existe en el mapa de EE.UU. Menos signos raros, menos
+  pulsaciones que perder.
+
+---
+
 ## Cómo mirar y pilotar una VM de UTM sin ojos (2026-08-10)
 
 Salió midiendo la forma de E3 (`MEDICIONES.md` §4.22), donde la sesión viva **no

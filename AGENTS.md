@@ -1357,7 +1357,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       secuencia tecleada a mano. *Sano:* se ejecuta dos veces y produce la misma
       huella, o si no la produce se dice **por qué** y qué byte cambia. *Roto:*
       hace falta acordarse de un paso.
-- [ ] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
+- [x] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
       `-append`** y **con un solo disco además de la ISO** —el de destino—, o sea
       que **no había ningún `CIDATA` conectado**. *Roto:* cualquier `-append`, o
       un segundo `-drive`. **Es el control que importa y es nuevo:** con un
@@ -1389,7 +1389,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       sea autocomplaciente:** con el `md5sum.txt` **oficial** tiene que fallar
       **exactamente una** línea, la de `./boot/grub/grub.cfg` — que es la ISO que
       se entregaría si alguien editara el `grub.cfg` y no pagara el precio.
-- [ ] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
+- [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
       root, **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c,
       **con el usuario que haya elegido quien instaló**, no con uno fijo. *Roto:*
       cualquier diferencia — y sería un hallazgo, porque el trabajo del seed es
@@ -1404,7 +1404,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       repositorio. *Roto:* cualquiera de las cuatro cosas. **Con su control:** la
       búsqueda tiene que saber encontrarlas en el seed de laboratorio, que sí las
       lleva.
-- [ ] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
+- [x] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
       relación con las del proyecto: sin clonar, sin heredar configuración, sin
       que nadie le pase ningún parámetro y **sin más intervención que contestar
       las pantallas que Ubuntu pregunta**. Es la casilla que decide, porque es
@@ -1415,7 +1415,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       entrega es `02ab929d…`, y esta casilla es literalmente «se la puedes dar a
       alguien»: no la puede heredar una ISO de otra.
 
-- [ ] **NOVENA CASILLA, añadida el 2026-08-10 DESPUES de marcar las ocho, con
+- [x] **NOVENA CASILLA, añadida el 2026-08-10 DESPUES de marcar las ocho, con
       su motivo (§4.23e).** *El instalador se ve en el idioma del producto.*
       **Las ocho de arriba se cumplieron enteras y aun así la ISO recibe a quien
       la instala en inglés**, porque sacar `locale` de `interactive-sections`
@@ -1440,6 +1440,11 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       `encina-os-E3-es.iso` (`02ab929d…`) existe, es reproducible y los tres
       binarios firmados siguen intactos. **Lo que queda es mirar la pantalla**, y
       eso es de Jorge.
+      **MARCADA el 2026-08-10 (§4.25d). Lo declara Jorge: «el instalador se ve en
+      español».** Yo no he visto esa pantalla y así queda escrito. Y la máquina
+      que sale es **idéntica** a la de §4.23d —36 correctas, 0 fallos—, que es lo
+      que prueba que el `locale=` **no tocó nada que no tuviera que tocar**: toca
+      la sesión viva, o sea el entorno donde corren las `late-commands`.
 
 **Lo que E3 NO promete, y va escrito para que no se cuele como casilla verde:**
 que la ISO arranque en una máquina con **Secure Boot activo**. Este banco no lo

@@ -62,7 +62,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
 | §4.23 | **E3: la ISO existe y se instala** | Sí. **Es la medición que cierra E3.** Una ISO construida por `imagen/fabricar-iso.sh`, en una **VM creada desde cero** con dos unidades y ni una más, produce Encina OS entero contestando solo las cinco pantallas: **36 correctas, 0 fallos**. La línea que decide es `REPO ELEGIDO -> /cdrom/encina-repo`. La construcción es **reproducible** y saca un defecto de la definición de terminado: el instalador se ve en inglés |
-| §4.25 | **E3: la novena casilla, el instalador en español** | **En curso.** El mecanismo está leído en el `14locales` del `initrd` de esta ISO, el precio de §4.21d **pagado y enseñado** —`md5sum.txt` rehecho, 501 entradas del medio comparadas, y el control de que **con el `md5sum.txt` oficial falla exactamente una línea**—, y la ISO `02ab929d…` existe y es reproducible. **Falta lo único que no puede hacer un guion: mirar la pantalla**, que es `[OJOS]` |
+| §4.25 | **E3: la novena casilla, el instalador en español** | Sí. **Es la medición que cierra E3, 9 de 9.** El mecanismo está leído en el `14locales` del `initrd` de esta ISO, el precio de §4.21d **pagado y enseñado** —`md5sum.txt` rehecho, 501 entradas del medio comparadas, y el control de que **con el `md5sum.txt` oficial falla exactamente una línea**—, y la ISO `02ab929d…` existe y es reproducible. **El instalador se ve en español —lo declara Jorge, `[OJOS]`— y la máquina que sale es idéntica a la de §4.23d: 36 correctas, 0 fallos**. Y trae el método para medir una máquina sin `ssh`: un volumen FAT conectado DESPUÉS de instalar |
 | §4.24 | **E2 remedido: la vía `CIDATA` del guion de las dos vías** | Sí. `imagen/autoinstall.yaml` cambió al enseñarle a `encina-seed.sh` las dos vías, y **sigue produciendo la misma máquina: 35 correctas, 0 fallos**. Con §4.23a, el guion queda medido **por sus dos ramas**. Trae el control que hacía falta —el `user-data` sacado del volumen **construido**, porque el de ayer daría el mismo verde sin medir nada— y un hallazgo de instrumento: `Image` no es byte a byte `/casper/vmlinuz`, **es su `gunzip`** |
 | §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
@@ -4929,6 +4929,84 @@ pantalla del instalador de Ubuntu es normalmente la del idioma — la que este
 producto quita a propósito (§6ter.0). Si sale en inglés, la siguiente pregunta no
 es «cambiar de sitio la palabra» sino **quién decide el idioma del instalador**, y
 se contesta leyendo, como se ha contestado todo lo demás.
+
+#### (d) LAS CUATRO SALIERON, Y LA NOVENA CASILLA SE MARCA
+
+**`[OJOS]`, y lo declara Jorge: «El instalador se ve en español».** Yo no he visto
+esa pantalla y así queda escrito. El riesgo de (c) **no se materializó**: el
+`locale=` de casper basta para el instalador de escritorio.
+
+| # | Predicción | Lo que salió |
+|---|---|---|
+| 1 | el instalador en español | **en español, declarado por Jorge** |
+| 2 | la ISO se basta sola | `-append`: **0** · unidades: `edk2-aarch64-code.fd`, `efi_vars.fd`, `disco.img`, `encina-os-E3-es.iso` — **dos y ni una más**, guardado del `debug.log` del arranque de la instalación |
+| 3 | la máquina que sale | **36 correctas, 0 fallos, 0 avisos, 0 omitidas**, y `CIDATA -> <no encontrado>` · `REPO ELEGIDO -> /cdrom/encina-repo` |
+| 4 | las cinco pantallas | `telemetry` lista **ocho etapas y ninguna es `locale` ni `source`** |
+
+```
+"Stages": { "0":"keyboard", "137":"network", "139":"storage", "141":"identity",
+            "162":"timezone", "164":"confirm", "166":"install", "561":"done" }
+```
+
+**La máquina, identificada por lo que deja escrito y no por su nombre:**
+
+```
+VM   encina-E3-iso-es   ISO 02ab929d…   MAC 76:CE:28:E7:F7:E5   .14
+hostname                encina-QEMU-Virtual-Machine   <- lo eligio el instalador, no el seed
+testigo instalador      2026-08-10T22:27:41Z
+testigo in-target       2026-08-10T22:27:41Z   uname=aarch64 id=0
+testigo del seed        2026-08-10T22:29:21Z
+firefox 153.0.3~build1 sin epoch, langpack-es-ES, 1 icono de 25 aplicaciones visibles
+los cuatro paquetes instalados, graphical.target activo, saludador vivo
+```
+
+**Y lo que la casilla 3 valía de más esta vez:** el `locale=` toca la **sesión
+viva**, o sea el entorno donde corren las `late-commands`. Que la máquina salga
+**idéntica** a la de §4.23d es la prueba de que el arreglo del idioma **no tocó
+nada que no tuviera que tocar**.
+
+#### (e) Cómo se midió una máquina que no tiene `ssh`, y es método
+
+El seed de la entrega **no lleva servidor `ssh` a propósito**, así que no hay
+manera de entrar desde el Mac. Lo que funcionó, y no depende del cortafuegos —que
+es lo que hizo fracasar el canal de red en §4.22—: **un volumen FAT con el
+verificador dentro, conectado DESPUÉS de la instalación**.
+
+```
+canal.img  (16 MiB, FAT, etiqueta CANAL)   9a845b758bc55bfcce72fdaca8aab379…
+  v.sh  =  imagen/verificar-e2.sh          aa4c7952051768ffe47fae39ded68c35…
+
+sudo mount /dev/vdb /mnt
+sudo script -q -c "bash /mnt/v.sh --forma e3" /mnt/salida.txt
+sudo cp /etc/encina-seed.log /mnt/seed.log ; sudo cp /var/log/installer/telemetry /mnt/tele.txt
+sudo umount /mnt
+```
+
+**Se conecta después de instalar a propósito**, y por eso no toca la casilla de
+«dos unidades y ni una más»: esa se cierra con el `debug.log` del arranque de la
+instalación, que está guardado antes de que nada de esto ocurriera.
+
+**Tres cosas que costaron un rodeo cada una** (van a `SCRIPTS.md`, trampa 20):
+
+1. **Los códigos de teclado son DE POSICIÓN y el invitado tiene teclado
+   español**, que es lo que eligió quien instaló. Con el mapa de EE.UU. de
+   §4.22, `sudo mount /dev/vdb /mnt` llegó como **`sudo mount -dev-vdb -mnt`**:
+   el código 53 es `/` en EE.UU. y `-` en España. **Se vio en pantalla, que es la
+   regla**, y el mapa se rehízo con la distribución del invitado.
+2. **`sh` es `dash`** y el verificador usa `set -o pipefail`:
+   `/mnt/v.sh: 32: set: Illegal option -o pipefail`. Va con `bash`.
+3. **`script -q -c` en vez de `>`**, y no por elegancia: el `>` en teclado
+   español es `Shift` del código 86, la tecla que ni siquiera existe en el mapa
+   de EE.UU. Menos signos raros que teclear, menos ocasiones de perder una
+   pulsación.
+
+#### (f) Lo que E3 sigue sin contestar
+
+- **Qué pasa si alguien conecta un `CIDATA`** a esta ISO: por precedencia le
+  ganaría al seed de dentro (§4.21c). Sigue sin probarse.
+- **Secure Boot en hardware real**: el límite declarado de §4.21b, intacto.
+- **Qué pasa si quien instala elige la instalación completa**: el seed fija
+  `source`, así que no se puede elegir. Deja de ser una pregunta abierta.
 
 ---
 
