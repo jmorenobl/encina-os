@@ -61,6 +61,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.18 | **El seed de verdad, escrito y medido entero** | Sí. Es la receta de E2 —`imagen/`— y la máquina que produce, en una sola pasada y sin humano. Contesta lo que §4.16l dejaba pendiente (**hay red desde el chroot**) y lo que §4.17i dejaba colgando (**el vigilante de AutoFirma funciona sin Snap**). Y **enmienda una casilla de `AGENTS.md` §6bis.3**: la tercera condición de «Sin Snap» no la puede cumplir ninguna máquina de Encina OS mientras `encina-firefox-native` ponga su sombra `.desktop` |
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
+| §4.22 | **E3: el instalador de escritorio SÍ honra `interactive-sections`** | Sí. Es la primera medición de E3 con máquina, hecha **antes de tocar `xorriso`**. La forma del producto funciona: enseña **solo** las cinco pantallas pedidas y aplica del seed el idioma y la instalación mínima. **Sabe mezclar**, que era la duda. Y la prueba es **anterior** a cualquier manipulación: 18:41 contra 18:51 |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
@@ -4216,6 +4217,148 @@ que `source`. **El teclado no**, y la distinción es la que importa: el teclado 
 **hardware**, y no todo el que quiere el sistema en español teclea en un teclado
 español. **Queda por medir una consecuencia de esto:** con `locale` no
 interactiva, en qué idioma sale la interfaz **del propio instalador**.
+
+---
+
+### 4.22 E3 — La forma funciona: el instalador de escritorio SÍ honra `interactive-sections`, y sabe mezclar (2026-08-10)
+
+**La primera medición de E3 con máquina de por medio, y se hace ANTES de tocar
+`xorriso` a propósito**, con un volumen `CIDATA` y el banco de E2 tal cual. Separa
+las dos preguntas que no deben mezclarse: *¿es correcta la forma del producto?* y
+*¿sé reempaquetar una ISO?*. Ésta contesta la primera.
+
+**Respuesta corta: SÍ, y con la mezcla que hacía falta.** El instalador **de
+escritorio** enseña **solo** las cinco pantallas pedidas —teclado, red, disco,
+usuario y zona horaria— y aplica del seed las dos que van fijas —idioma
+`es_ES.UTF-8` e instalación mínima—. No hay que elegir entre «todo automático» y
+«todo preguntado».
+
+#### (a) Qué se daría por sano y qué por roto, escrito antes de arrancar
+
+- **Sano:** el instalador de escritorio enseña las cinco pantallas de
+  `interactive-sections`, **y no** la de idioma ni la de «¿qué aplicaciones
+  quieres?», y aun así el seed se aplica.
+- **Roto:** ignora la clave y se comporta como hasta ahora; o la respeta y se
+  atraganta al mezclar; o no enseña nada.
+- **Y una pregunta que solo se puede contestar en el escritorio:** `source` es en
+  el instalador gráfico **la misma pantalla** que los códecs y los controladores.
+  Si `source` no se pregunta, ¿desaparece la pantalla entera o queda a medias?
+
+#### (b) El banco, y lo que llevaba dentro
+
+Volumen fabricado con la herramienta versionada, que además **es la primera vez
+que se usa `--yaml`**:
+
+```
+./imagen/fabricar-seed.sh --yaml imagen/autoinstall-e3.yaml --repo <repo> --salida seed-e3-forma.img
+   [OK] los cuatro .deb, huella a huella          [OK] Packages describe 4 ficheros, ni uno mas
+   [OK] los cuatro .deb sobreviven al volumen     [OK] user-data y meta-data coinciden byte a byte
+   sha256: 18a22ce8c2b767532c0f181ad6c487978fec19c041a2f3d498d68e44489ba317
+```
+
+Los `.deb` **no salen de `debian-packages/`** sino del volumen medido de E2, que
+es la trampa de §4.13; sus cuatro huellas se comprueban dos veces.
+
+La VM, `encina-E3-forma`, se fabricó **sin tocar la interfaz de UTM**: ISO
+oficial como CD, el volumen del seed y un disco disperso de 40 GiB. Y lo que la
+distingue de todas las de E2 se lee en la orden de QEMU, no en el YAML:
+
+```
+$ grep -o "\-append [^ ]*" debug.log
+                          # vacio: SIN -append, o sea SIN la palabra autoinstall
+$ curl http://192.168.64.11:8000/proc/cmdline
+BOOT_IMAGE=/casper/vmlinuz --- quiet splash console=tty0
+```
+
+#### (c) LA RESPUESTA, leída del registro del propio instalador
+
+**Del servidor** (`subiquity-server-debug.log`), que enseña las dos mitades:
+
+```
+18:41:12,200 autoinstall found in cloud-config
+18:41:12,284 load_autoinstall_config only_early True  file /autoinstall.yaml
+18:41:12,583 apply_autoinstall_config: skipping Keyboard as interactive     <- las pedidas, SE SALTAN
+18:41:12,584 apply_autoinstall_config: skipping Network as interactive
+18:41:12,584 model source for install stage is configured                   <- las fijas, SE APLICAN
+18:41:12,585 model locale for postinstall stage is configured
+18:41:13,398 finish: Meta/interactive_sections_GET: SUCCESS: 200
+             ["keyboard", "network", "storage", "identity", "timezone"]
+```
+
+**Y del cliente gráfico** (`ubuntu_bootstrap.log`), que es lo que decide, porque
+el de servidor no prueba nada sobre el escritorio:
+
+```
+18:41:12.681 ApplicationStatus(state: WAITING, cloudInitOk: true, interactive: true)
+18:41:13.398 ==> getInteractiveSections() ["keyboard","network","storage","identity","timezone"]
+18:41:13.398 INFO installer_service: Showing only pages requested by subiquity:
+             {keyboard, network, storage, identity, timezone}
+18:41:13.418 INFO keyboard: Initialized es () keyboard layout
+```
+
+Y el estado, del `telemetry` de la sesión viva:
+
+```
+{"Type":"Flutter","OEM":false,"Media":"Ubuntu 24.04.4 LTS","Stages":{"1":"keyboard"}}
+```
+
+**Cuatro cosas se leen ahí y las cuatro importan:**
+
+1. **`Showing only pages requested by subiquity`** — el instalador de escritorio
+   no solo entiende la clave: **el cliente gráfico la consulta y obedece**. Era
+   lo único que la lectura de §4.21g no podía garantizar.
+2. **Sabe mezclar.** `skipping … as interactive` para las pedidas y
+   `model … is configured` para `source` y `locale`. No es todo o nada.
+3. **La pantalla de «¿qué aplicaciones?» desaparece con `source`**, que era la
+   duda del escritorio: no queda a medias.
+4. **De propina, el idioma forzado arrastra el teclado:** el instalador arranca
+   con `es` ya elegido —`Initialized es () keyboard layout`— aunque el teclado se
+   pregunte. O sea que la pantalla sale con la respuesta correcta puesta y el que
+   tenga otro teclado la cambia, que es exactamente lo que se quería.
+
+**CONTROL DE MÉTODO, y sostiene todo lo anterior: la prueba es ANTERIOR a que yo
+tocara la máquina.** Todas esas líneas están fechadas a las **18:41**, y la
+primera pulsación que yo mandé fue a las **18:51**. Lo que se lee no lo pudo
+provocar ninguna manipulación mía.
+
+#### (d) Cómo se leyó, que costó más que la medición
+
+La sesión viva no tiene `ssh` —y el seed de E3 no lo lleva a propósito—, así que
+hubo que abrir un canal. **Tres trampas por el camino, las tres nuevas:**
+
+- **La pantalla negra NO era un fallo: era el bloqueo de GDM.** Tras unos minutos
+  la sesión viva se bloquea y queda un fondo negro con el cursor de X, que se
+  parece muchísimo a «esto no ha arrancado». Un clic devuelve el saludador
+  —`Live session user`— y detrás está el instalador, intacto. **Antes de dar por
+  muerta una sesión gráfica hay que despertarla.**
+- **Se puede entrar por consola de texto sin contraseña.** `Ctrl+Alt+F3` y
+  usuario `ubuntu` con la contraseña vacía; y desde ahí, `sudo` sin contraseña.
+- **UTM traduce el texto con la distribución del MAC, no con la del invitado.**
+  `input keystroke` con un `-` producía un `/` en el invitado, y `sudo loadkeys us`
+  **no lo arregla**, porque el problema está en el anfitrión. La salida es mandar
+  **códigos de teclado crudos** con `input scan code`, que no pasan por ninguna
+  traducción.
+
+Con eso, el canal de lectura fue un `python3 -m http.server` **de solo lectura**
+dentro de la sesión viva, y los registros se trajeron con `curl` desde el Mac.
+
+#### (e) Lo que esta medición NO contesta
+
+- **Que las `late-commands` corran.** El instalador está **esperando en la
+  primera pantalla**, así que el trabajo de Encina no ha empezado: **0 MB
+  escritos** en el disco de destino, comprobado. Hace falta que alguien conteste
+  las cinco pantallas, y eso es `[OJOS]` **por diseño del producto**: la casilla
+  de E2 era «nadie la toca» y la de E3 es «una persona contesta lo que Ubuntu
+  pregunta, y nada más».
+- **Que el seed valga desde `/cdrom`.** Aquí llegó por `CIDATA` —`autoinstall
+  found in cloud-config`—, que es el **cuarto** sitio. El quinto sigue sin
+  ejercitarse y necesita `xorriso`.
+- **Nada sobre la máquina resultante.** Ni `verificar-e2.sh`, ni el Snap, ni
+  Firefox. Todo eso cuelga de la instalación completa.
+- **Y esta sesión viva quedó manipulada** —consola abierta, un servidor HTTP como
+  root— así que **no sirve para la medición completa**. La VM se paró y se
+  rearrancó con el disco todavía a **0 MB**, para que la instalación de verdad
+  salga de un entorno limpio.
 
 ---
 

@@ -858,3 +858,64 @@ Lo que hay que llevarse, y es método y no anécdota: **`utmctl list` no es un
 inventario del disco, es un inventario del registro**. Antes de dar por perdida
 una VM —o por buena una limpieza— hay que mirar los bundles con `ls`, que es la
 otra mitad. Aquí nadie borró nada; una lista incompleta pareció una VM perdida.
+
+---
+
+## Cómo mirar y pilotar una VM de UTM sin ojos (2026-08-10)
+
+Salió midiendo la forma de E3 (`MEDICIONES.md` §4.22), donde la sesión viva **no
+tiene `ssh`** y el seed de la entrega no lo lleva a propósito. Vale para
+cualquier medición futura sobre un instalador.
+
+**1. Ver la pantalla.** `screencapture` del Mac, con permiso de Grabación de
+Pantalla concedido al proceso. Sin él responde `could not create image from
+display` y **no escribe fichero**, que al menos es un fallo ruidoso:
+
+```
+open -a UTM; sleep 2                      # la ventana tiene que estar delante
+screencapture -x -o pantalla.png
+sips -c 1670 2560 --cropOffset 290 359 pantalla.png --out vm.png   # recortar la ventana
+```
+
+**2. Escribir en la VM, y aquí está la trampa.** UTM tiene `input keystroke`,
+pero **traduce el texto con la distribución del teclado del MAC**, no con la del
+invitado: con el Mac en español, un `-` llega al invitado como `/`. Y
+`sudo loadkeys us` **no lo arregla**, porque el problema está en el anfitrión. Lo
+que sí funciona es mandar **códigos de teclado crudos**, que no pasan por ninguna
+traducción:
+
+```
+osascript -e 'tell application "UTM" to input scan code (virtual machine named "X") codes {30, 158}'
+```
+
+Hay un conversor de texto a códigos de EE.UU. en el guion `teclear.py` que se usó
+en §4.22 —el mapa cabe en diez líneas—. Y `input mouse click at {x, y}` sirve
+para despertar la pantalla sin escribir nada.
+
+**3. Sacar datos, que es lo que de verdad hace falta.** En vez de leer a base de
+capturas, se abre un canal de solo lectura desde dentro y se tira de él con
+`curl` desde el Mac:
+
+```
+sudo python3 -m http.server 8000 --directory /       # dentro del invitado
+curl http://<ip>:8000/var/log/installer/telemetry    # desde el Mac
+```
+
+**Y esto ensucia la sesión viva**, así que se hace para *contestar una pregunta*,
+no para producir la medición definitiva: después se rearranca la VM limpia.
+
+**4. Cómo entrar sin contraseña en una sesión viva:** `Ctrl+Alt+F3`, usuario
+`ubuntu`, contraseña vacía, y `sudo` sin contraseña. Los códigos de las VT son
+`{29, 56, 59+n, ...}` con sus tres sueltas.
+
+**5. La pantalla negra que no es un fallo.** A los pocos minutos la sesión viva
+**se bloquea**: queda un fondo negro con el cursor de X y parece que no ha
+arrancado nada. Un clic devuelve el saludador `Live session user` y detrás sigue
+el instalador, intacto. **Antes de dar por muerta una sesión gráfica, despiértala**
+— y contrástalo con una señal que no dependa de la pantalla, como que la máquina
+tenga IP:
+
+```
+for i in $(seq 2 30); do ping -c1 -W 200 192.168.64.$i >/dev/null 2>&1 & done
+arp -a -n | grep -i "<la MAC de la VM>"
+```
