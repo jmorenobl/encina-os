@@ -4670,6 +4670,72 @@ precio**: E3 dejaría de ser «solo añadir ficheros» y habría que rehacer
 
 ---
 
+### 4.24 E2 remedido — la vía `CIDATA` del guion que aprendió dos vías (2026-08-10)
+
+**Por qué se remide un incremento cerrado.** `imagen/encina-seed.sh` cambió al
+enseñarle las dos vías del repo, así que `imagen/autoinstall.yaml` **ya no es
+byte a byte el que produjo `encina-E2-0.2.1`** (§4.23g). Por el precedente de
+§4.19g, un `.deb` nuevo obligó a rehacer el volumen y a **remedir la instalación
+entera**; aquí lo que cambió es el guion, que pesa más.
+
+**Y no mide «lo de E2», que es lo que hace que valga la pena hacerlo primero.**
+El base64 incrustado en los dos seeds es **el mismo fichero**, comprobado por
+huella y no por lectura:
+
+```
+$ for f in imagen/autoinstall.yaml imagen/autoinstall-e3.yaml; do
+      grep -o "echo [A-Za-z0-9+/=]\{100,\}" $f | sed 's/^echo //' | shasum -a 256; done
+8e8ac75b55378109fffdf7306dbbf11c4fa10677449d20aacf7557f99d844f0a  -
+8e8ac75b55378109fffdf7306dbbf11c4fa10677449d20aacf7557f99d844f0a  -
+```
+
+O sea que esta medición mira **la vía `CIDATA` del mismo guion que viaja dentro
+de la ISO de E3**. La vía `/cdrom` está medida en verde (§4.23a); la `CIDATA` es
+la que cambió y nadie ha vuelto a mirar. Si aquí sale un defecto, el arreglo va
+en `encina-seed.sh` → cambia el base64 → cambia `autoinstall-e3.yaml` → **cambia
+la ISO**. Por eso va antes que la novena casilla de E3.
+
+**El cambio, acotado**, que es todo el diff desde el commit que cerró E2 (`89c98e3`):
+secciones 1 y 2 del guion. Antes montaba `CIDATA` **sin preguntar si existía** y
+copiaba de una ruta literal; ahora elige entre dos vías y copia de `$REPO`. En la
+forma de E2 las dos deberían dar exactamente lo mismo, y eso es lo que hay que
+enseñar, no razonar.
+
+#### (a) Qué se daría por sano y qué por roto, escrito ANTES de medir
+
+| # | Qué se mira | Sano | Roto |
+|---|---|---|---|
+| 1 | `fabricar-seed.sh` sobre el YAML nuevo | construye y **no se niega**: las cuatro huellas de los `.deb` cuadran **dos veces** —antes de construir y releyendo el volumen— y el par YAML/guion no está separado | se niega, o construye con alguna huella mala |
+| 2 | La instalación | la VM **se apaga sola**, nadie abre su ventana, y `-append autoinstall` **suelto** se lee en el `debug.log` de QEMU | hace falta tocar algo, o la palabra no aparece en el `debug.log` |
+| 3 | **La línea que decide esta medición**, en `/etc/encina-seed.log` | `CIDATA -> /dev/vdX` (encontrado **por etiqueta**) y `REPO ELEGIDO -> /mnt/encina-seed/encina-repo` | `REPO ELEGIDO -> <NINGUNO>`, o cualquier otra cosa: sería el defecto que la elección nueva puede haber metido, y es **el único sitio donde se vería** |
+| 4 | Las huellas dentro del registro del seed | los cuatro `[HUELLA  OK ]` | uno solo `[HUELLA MALA]` en los cuatro reales |
+| 5 | `verificar-e2.sh` como root, **sin `--forma`** | **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, idéntico a §4.20c, con etapas `done,loading` | cualquier `[FALLO]`, cualquier `[AVISO]`, cualquier `[OMIT]`, o un número distinto de 35 |
+
+**Y los controles, porque ninguna de las cinco vale sin el suyo:**
+
+- **1, 3 y 4 traen el suyo dentro** y ya están medidos: el comparador de huellas
+  tiene dos entradas que **tienen que salir `[HUELLA MALA]`**, y el inventario
+  del Snap tiene una que tiene que salir `AUSENTE` y otra `PRESENTE`. Si esos
+  cuatro no aparecen como se espera, el registro entero no vale nada (trampa 13).
+- **El control de que se está midiendo el YAML NUEVO y no el volumen viejo**, que
+  es la trampa propia de esta medición: el volumen se **rehace**, se identifica
+  **por huella sha256**, y el `user-data` se extrae **del volumen construido** y
+  se compara byte a byte con `imagen/autoinstall.yaml`. Las dos huellas —la del
+  volumen viejo `seed-e2-0.2.1-pw.img` y la del nuevo— van escritas. Sin esto,
+  arrancar con el volumen de ayer da **exactamente el mismo verde** y no mide nada.
+- **El control de la trampa 16, al revés que en E3:** aquí el `CIDATA` **tiene**
+  que estar, y la prueba de que se usó no es que la instalación salga bien, es la
+  línea 3 nombrando el dispositivo encontrado por etiqueta.
+- **Una sola VM encendida**, comprobado con `utmctl list` antes de arrancar, y la
+  máquina **creada desde cero**: sin clonar nada, para que lo que se mida sea el
+  seed y no un estado heredado (§9.1).
+
+**Lo que esta medición NO contesta**, dicho antes para que no se cuele después:
+nada sobre la ISO de E3 —esa está medida en §4.23 y no se toca aquí—, y nada
+sobre el idioma del instalador, que es la novena casilla y va después.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,
