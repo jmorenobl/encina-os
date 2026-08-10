@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Encina OS — Ubuntu con la firma electrónica española lista de fábrica" width="100%">
+  <img src="assets/banner.png" alt="Encina OS — Ubuntu con las gestiones electrónicas de la administración española listas de fábrica" width="100%">
 </p>
 
 <p align="center">
@@ -7,7 +7,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-EUPL--1.2-3A664E" alt="Licencia EUPL-1.2"></a>
   <img src="https://img.shields.io/badge/base-Ubuntu%2024.04%20LTS-A78B75" alt="Base: Ubuntu 24.04 LTS">
   <img src="https://img.shields.io/badge/arquitectura-arm64-A78B75" alt="Arquitectura: arm64">
-  <img src="https://img.shields.io/badge/estado-a%C3%BAn%20no%20instalable-D6BFA0" alt="Estado: aún no instalable">
+  <img src="https://img.shields.io/badge/estado-receta%20medida%20%C2%B7%20sin%20imagen-D6BFA0" alt="Estado: receta medida, sin imagen">
 </p>
 
 <p align="center">
@@ -19,19 +19,41 @@
 
 ## Qué te aporta
 
-Firmar electrónicamente con la administración española desde una Ubuntu recién
-instalada **no funciona**. Instalas AutoFirma, el instalador dice «éxito», la
-herramienta de reparación oficial dice que tu sistema está sano, pulsas «Firmar»
-y **no ocurre absolutamente nada**: sin diálogo, sin error, sin una línea en el
-registro del sistema.
+En Encina OS, hacer una gestión electrónica con la administración española
+—entrar en la sede con tu certificado, pulsar «Firmar» y que el documento salga
+firmado— **funciona desde el primer arranque**. Sin buscar en foros, sin tocar
+`about:config`, sin entender qué es un perfil de Mozilla ni por qué importa que
+Firefox venga en Snap.
 
-Encina OS es un escritorio Ubuntu LTS en el que eso funciona desde el primer
-arranque. Sin buscar foros, sin tocar `about:config`, sin entender qué es un
-perfil de Mozilla ni por qué importa que Firefox venga en Snap.
+**Y el perímetro va por delante y no en la letra pequeña, porque aquí lo que no
+se mide no se da por bueno:**
 
-**Se dan seis obstáculos encadenados, cada uno capaz de esconder al siguiente**,
-y están medidos en máquina propia, no citados de nadie. Los cierra el sistema, no
-tú. La [tabla completa está más abajo](#el-problema-que-resuelve).
+| | Medido | Todavía no |
+|---|---|---|
+| **Certificado** | Software, de la FNMT | DNIe con lector (`opensc`, PKCS#11): incremento futuro, no deuda |
+| **Navegador** | Firefox | Chrome y Chromium no se han medido, así que no los des por buenos |
+| **Arquitectura** | arm64 | amd64 — si tu equipo es Intel o AMD, todavía no hay nada para ti |
+
+Hay además un límite que **no cierra ningún equipo, sea el que sea**: algunas
+sedes bloquean con su propia política de seguridad el `iframe` que su propio
+JavaScript necesita (B5). Eso se arregla en la sede, no en tu máquina.
+
+**Y hoy no hay imagen publicada**, así que esto todavía no te lo puedes
+descargar: lo que hay es la receta, medida de extremo a extremo.
+[Qué falta para llegar ahí](#cómo-se-usa).
+
+---
+
+## Por qué no funcionaba
+
+Desde una Ubuntu recién instalada, no funciona. Instalas AutoFirma, el
+instalador dice «éxito», la herramienta de reparación oficial dice que tu
+sistema está sano, pulsas «Firmar» y **no ocurre absolutamente nada**: sin
+diálogo, sin error, sin una línea en el registro del sistema.
+
+Debajo hay **seis obstáculos encadenados, cada uno capaz de esconder al
+siguiente**, medidos en máquina propia y no citados de nadie. Los cierra el
+sistema, no tú. [La tabla completa está más abajo](#el-problema-que-resuelve).
 
 ---
 
@@ -108,9 +130,6 @@ Con la secuencia y las advertencias que van con ella:
 ---
 
 ## El problema que resuelve
-
-Medido en máquina propia: **seis obstáculos encadenados**, cada uno capaz de
-esconder al siguiente.
 
 | # | Obstáculo | Quién lo cierra en Encina OS |
 |---|---|---|

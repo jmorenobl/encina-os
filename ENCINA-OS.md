@@ -3,7 +3,7 @@
 **Punto de entrada único del proyecto.** Si no sabes por dónde seguir, lee la
 sección 7 («Empieza aquí») y nada más.
 
-Última actualización: 10 de agosto de 2026
+Última actualización: 11 de agosto de 2026
 
 ---
 
@@ -31,8 +31,23 @@ una línea de trabajo paralela.
 ## 1. Qué es Encina OS
 
 Una distribución de escritorio basada en Ubuntu LTS, pensada para que un usuario
-español la use con la mínima fricción, y en particular para que **la firma
-electrónica funcione sin que nadie tenga que entender por qué no funcionaba**.
+español la use con la mínima fricción, y en particular para que **las gestiones
+electrónicas con la administración española funcionen sin que nadie tenga que
+entender por qué no funcionaban**.
+
+**La unidad de valor es la gestión, no la herramienta.** Nadie quiere que
+AutoFirma arranque: quiere renovar el certificado, presentar un escrito o firmar
+un documento. AutoFirma es un ingrediente con condición de salida (D14), y así
+se nombra.
+
+**Y el alcance de esa frase es el medido, no el deseado**, que es lo que la
+separa del `postinst` oficial de AutoFirma diciendo «éxito» con todo roto: hoy
+cubre **certificado software de la FNMT, en Firefox, sobre arm64**. El DNIe con
+lector es un incremento futuro —como dice el párrafo del alcance, más abajo—,
+Chrome y Chromium no se han medido, y B5 —las sedes que bloquean con su propia
+política de seguridad el `iframe` que su propio JavaScript necesita— **no lo
+cierra ningún equipo**: se arregla en la sede. El README enuncia ese perímetro
+por delante y no en la letra pequeña.
 
 **Se construyen `.deb`; se entrega Encina OS.** Lo que se escribe y se versiona
 aquí son paquetes; lo que se usa es Ubuntu LTS con esos paquetes aplicados. No
