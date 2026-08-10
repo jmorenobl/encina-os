@@ -919,3 +919,39 @@ tenga IP:
 for i in $(seq 2 30); do ping -c1 -W 200 192.168.64.$i >/dev/null 2>&1 & done
 arp -a -n | grep -i "<la MAC de la VM>"
 ```
+
+### Cuatro cosas más, aprendidas midiendo la forma de E3 (2026-08-10)
+
+Van aquí porque cada una costó un rodeo y ninguna se deduce.
+
+**1. `input keystroke` se come caracteres.** Tecleando por códigos crudos salió
+`echo encna | sudo -S …` en vez de `encina`, y la orden fallo por una contraseña
+mal escrita, no por lo que se estaba midiendo. **Nunca des por hecho lo que
+tecleaste: míralo en la pantalla antes de creer el resultado.** Si algo falla de
+forma rara, la primera sospecha es la pulsación perdida, no el sistema.
+
+**2. El invitado no siempre alcanza al Mac.** Un `python3 -m http.server` en el
+anfitrión sirve para pasarle ficheros al invitado… hasta que el cortafuegos de
+macOS deja de permitirlo, y entonces el invitado recibe `[Errno 111] Connection
+refused` mientras `curl` **desde el propio Mac** contesta 200. Las dos cosas son
+ciertas a la vez y confunden mucho. El sentido que sí funcionó siempre es el
+contrario: **servidor dentro del invitado y `curl` desde el Mac**.
+
+**3. Un servidor lanzado en segundo plano muere al acabar la orden.** Si hace
+falta que viva mientras se teclea en el invitado, **todo tiene que ir en una sola
+llamada**: levantarlo, teclear y recoger el resultado.
+
+**4. `curl` NO está en la instalación mínima**, y su ausencia miente: el síntoma
+fue `bash: /tmp/v.sh: No existe el archivo`, que apunta al fichero y no a la
+orden que falta. `python3` sí está —lo usa el propio instalador—, así que para
+traer algo:
+
+```
+python3 -c "import urllib.request as u; u.urlretrieve('http://host:puerto/x','/tmp/x')"
+```
+
+**Y la conclusión de método, que vale más que las cuatro:** cuando medir cuesta
+tanto como esto, **el dato bueno es el que la máquina deja escrito solo**
+—`/var/log/installer/telemetry`, los testigos, `/etc/encina-seed.log`—, no el que
+se arranca a base de teclear. Lo que decidió §4.22 fue un registro con fecha, no
+una pantalla.

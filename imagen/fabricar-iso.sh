@@ -132,10 +132,20 @@ mkdir -p "$TMP/encina-repo"
 cp "$YAML" "$TMP/autoinstall.yaml" || fallo "cp seed"
 cp "$REPO"/*.deb "$REPO"/Packages "$TMP/encina-repo/" || fallo "cp repo"
 rm -f "$SALIDA"
+# LA FECHA DE LO QUE SE ANADE, FIJADA A PROPOSITO: sin esto, la misma orden
+# ejecutada dos veces produce dos ISOs distintas -- 192 bytes en 4 sectores, que
+# son las marcas de tiempo de los ficheros nuevos en sus registros de directorio
+# (medido: 20:08:38 contra 21:35:45). Se les pone la fecha de modificacion de la
+# ISO OFICIAL, que la propia imagen declara en su receta
+# (--modification-date='2026021001455100'), asi que lo anadido hereda la fecha
+# del medio y la construccion es REPRODUCIBLE: misma entrada, misma huella.
+FECHA='2026021001455100'
 xorriso -indev "$ISO" -outdev "$SALIDA" \
         -boot_image any replay \
         -map "$TMP/autoinstall.yaml" /autoinstall.yaml \
         -map "$TMP/encina-repo" /encina-repo \
+        -alter_date_r b "$FECHA" /autoinstall.yaml /encina-repo -- \
+        -alter_date_r c "$FECHA" /autoinstall.yaml /encina-repo -- \
         -commit -end 2>&1 | grep -iE "^xorriso : (FAILURE|SORRY|WARNING)" | head -20
 [ -f "$SALIDA" ] || fallo "xorriso no produjo $SALIDA"
 ok "escrita: $(stat -f %z "$SALIDA") bytes"

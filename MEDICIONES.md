@@ -61,6 +61,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.18 | **El seed de verdad, escrito y medido entero** | Sí. Es la receta de E2 —`imagen/`— y la máquina que produce, en una sola pasada y sin humano. Contesta lo que §4.16l dejaba pendiente (**hay red desde el chroot**) y lo que §4.17i dejaba colgando (**el vigilante de AutoFirma funciona sin Snap**). Y **enmienda una casilla de `AGENTS.md` §6bis.3**: la tercera condición de «Sin Snap» no la puede cumplir ninguna máquina de Encina OS mientras `encina-firefox-native` ponga su sombra `.desktop` |
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
+| §4.23 | **E3: la ISO existe y se instala** | Sí. **Es la medición que cierra E3.** Una ISO construida por `imagen/fabricar-iso.sh`, en una **VM creada desde cero** con dos unidades y ni una más, produce Encina OS entero contestando solo las cinco pantallas: **36 correctas, 0 fallos**. La línea que decide es `REPO ELEGIDO -> /cdrom/encina-repo`. La construcción es **reproducible** y saca un defecto de la definición de terminado: el instalador se ve en inglés |
 | §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
@@ -4505,6 +4506,167 @@ donde se vería:
   precedencia le ganaría (§4.21c). No se ha probado.
 - **Nada de la firma.** Esta máquina no ha firmado; la casilla `[OJOS]` de E2 ya
   está marcada y E3 no la repite.
+
+---
+
+### 4.23 E3 — LA ISO EXISTE, Y SE INSTALA: el seed viaja dentro y se coge de `/cdrom` (2026-08-10)
+
+**La medición que cierra E3.** Una ISO construida por
+`imagen/fabricar-iso.sh` a partir de la oficial, arrancada en una **VM creada
+desde cero** —sin clonar, sin heredar nada, con **dos unidades y ni una más**:
+la ISO y un disco vacío—, produjo una máquina de Encina OS entera contestando
+**solo las cinco pantallas que pregunta Ubuntu**.
+
+**`verificar-e2.sh --forma e3` como root: 36 correctas, 0 fallos, 0 avisos,
+0 omitidas.**
+
+#### (a) La línea que decide, y no es la del resumen
+
+De `/etc/encina-seed.log`, dentro de la máquina instalada:
+
+```
+=== 1. DONDE ESTA EL REPO: las dos vias, y se dice cual se uso ===
+  CIDATA -> <no encontrado>
+  REPO ELEGIDO -> /cdrom/encina-repo
+```
+
+**No había ningún volumen `CIDATA`, y el repositorio salió de dentro de la
+ISO.** Junto con el seed —que el instalador encontró en `/cdrom/autoinstall.yaml`,
+el quinto sitio leído en §4.21c—, eso es E3 entero: **la imagen se basta sola**.
+
+Y el arranque lo confirma desde fuera, que es donde no se puede fingir:
+
+```
+$ grep -o "\-append [^ ]*" debug.log      # vacio: nadie le paso 'autoinstall'
+$ grep -o "file.filename=[^ ,]*" debug.log
+    edk2-aarch64-code.fd   efi_vars.fd   encina-os-E3.iso   disco.img
+```
+
+Dos unidades además del firmware. **Ningún `CIDATA` conectado**, que es el
+control que pedía la trampa 16: con uno enchufado la instalación habría salido
+igual de bien midiendo el seed equivocado.
+
+#### (b) La ISO: qué se le hizo a la oficial, y qué no
+
+`xorriso` **sabe reconstruir esta imagen**, y no hubo que adivinar cómo: la
+receta se la da la propia ISO.
+
+```
+$ xorriso -indev ubuntu-24.04.4-desktop-arm64.iso -report_el_torito as_mkisofs
+-V 'Ubuntu 24.04.4 LTS arm64'   --modification-date='2026021001455100'
+-partition_cyl_align all        -partition_offset 16
+-append_partition 2 0xef --interval:local_fs:6900544d-6914047d::'…iso'
+-iso_mbr_part_type 0xcd         -c '/boot/boot.cat'
+-e '--interval:appended_partition_2_start_1725136s_size_13504d:all::'  -no-emul-boot
+```
+
+Con eso, `-boot_image any replay` reproduce el arranque tal cual. **Lo que el
+guion comprueba, y es lo que hace que la ISO se pueda entregar:**
+
+```
+[OK] bootaa64.efi intacto      [OK] grubaa64.efi intacto      [OK] mmaa64.efi intacto
+[OK] la ESP es byte a byte la oficial en sus 13504 sectores (0616185672c2636e…)
+[OK] los 192 sectores de mas son relleno de alineacion: 0 bytes distintos de cero
+[OK] el seed no lleva identidad, ni contrasena, ni clave ssh
+[OK] control: la misma busqueda SI las encuentra en el seed de laboratorio
+```
+
+**Las huellas de los tres binarios firmados no son un adorno:** el banco **no
+aplica Secure Boot** (§4.21b), así que si se rompieran **aquí no lo notaría
+nadie**, y la huella es la única señal que queda.
+
+**Y `md5sum.txt` es el oficial byte a byte**, porque no se modificó ningún
+fichero: solo se añadieron dos. Comprobado además sobre tres entradas sueltas
+—`boot/grub/grub.cfg`, `casper/vmlinuz`, `.disk/info`—, que siguen cuadrando. La
+comprobación de integridad del propio medio sigue pasando **sin hacer nada**.
+
+#### (c) La construcción es reproducible, y costó tres intentos saberlo
+
+La primera versión del guion daba **dos ISOs distintas con la misma entrada**.
+No se dio por bueno: se localizó qué cambiaba.
+
+| intento | bytes distintos | qué eran |
+|---|---|---|
+| tal cual | **192**, en 4 sectores | las marcas de tiempo RRIP de los ficheros añadidos: `20:08:38` contra `21:35:45` |
+| `-alter_date_r b` | **16** | el **segundero** del registro de directorio ISO9660: `2026-08-10 21:37:26` contra `21:37:45` |
+| `+ -alter_date_r c` | **0** | — |
+
+La fecha que se les pone no es inventada: es **la de modificación de la ISO
+oficial**, `2026021001455100`, que la propia imagen declara en su receta. Lo
+añadido hereda la fecha del medio.
+
+```
+sha256 de dos construcciones seguidas: 13a7d815837162435377bdfba4f32dd3… (las dos)
+```
+
+**La ISO que se instaló de verdad es anterior a ese arreglo** —`0a1127f4…`— y se
+comprobó que la diferencia es exactamente esa y ninguna otra: **256 bytes, todos
+en los sectores 82, 118, 296 y 332**, que son los árboles de directorio ISO9660 y
+Joliet, con **el contenido de todos los ficheros idéntico** (comprobado sobre el
+seed, el índice `Packages`, un `.deb` y `grubaa64.efi`).
+
+#### (d) La máquina que sale
+
+Idéntica a la de E2, y ahora con el instrumento correcto (§4.22g):
+
+```
+=== 1. El seed lo goberno todo menos las cinco pantallas de E3 (forma E3) ===
+  [OK] las etapas (confirm,done,identity,install,keyboard,network,storage,timezone)
+  [OK] ni el idioma ni el tipo de instalacion se preguntaron
+  [OK] control: el mismo grep si encuentra 'keyboard' en telemetry
+  [OK] testigo encina-e2-testigo-seed: encina-seed llego al final 2026-08-10T21:29:28Z
+=== Resumen ===
+  [OK] 36   [FALLO] 0   [AVISO] 0   [OMIT] 0
+```
+
+Sin Snap, **1 icono** de Firefox sobre 25 aplicaciones visibles, `firefox
+153.0.3~build1` sin epoch con el `langpack-es-ES`, los cuatro paquetes con sus
+marcas, `graphical.target` activo y saludador vivo. Y lo que fija el seed, fijado
+sin que nadie lo eligiera: `LANG=es_ES.UTF-8`. El teclado, `es`, **ése sí lo
+eligió Jorge**. Un solo usuario, el que él creó. **Sin servidor ssh**
+(`/usr/sbin/sshd` → 404 por el canal de lectura).
+
+**Y arranca de su propio disco:** se le quitó la ISO de las unidades antes de
+volver a encenderla.
+
+#### (e) EL DEFECTO QUE ESTA MEDICIÓN SACA, y no es pequeño
+
+**El instalador se ve entero en inglés.** Lo vio Jorge y es reproducible: es la
+consecuencia directa de sacar `locale` de `interactive-sections` (§4.22h). El
+sistema instalado queda en español —`LANG=es_ES.UTF-8`—, pero **la primera cosa
+que ve quien recibe la ISO está en un idioma que el producto no habla**.
+
+**La definición de terminado de E3 no lo pedía, así que no lo detuvo. Eso es un
+defecto de la definición, no del producto**, y es exactamente el error de §4.19d:
+una casilla que deja pasar un estado que nadie querría entregar. Se propone
+añadirla, con el arreglo ya leído en el casper de esta ISO
+(`casper-bottom/14locales`): `locale=es_ES.UTF-8` en el `grub.cfg`, **con su
+precio**: E3 dejaría de ser «solo añadir ficheros» y habría que rehacer
+`md5sum.txt` (§4.21d).
+
+#### (f) Notas de laboratorio
+
+- **Interpreté mal una pantalla y lo digo:** al capturar vi «Copying files…» y
+  escribí que estaba instalando **sin haber preguntado nada**. Era falso: Jorge
+  ya había contestado las cinco pantallas mientras tanto. **La captura de una
+  pantalla no lleva fecha; el registro sí**, y por eso lo que decide en §4.22 fue
+  un `telemetry`, no una imagen.
+- **El `QEMU error … #block…: Invalid argument` volvió a salir dos veces**, en
+  una VM distinta y recién creada. Es del **banco**: `discard=unmap` sobre el
+  fichero disperso que se crea con `dd … seek=40g` en APFS. No hizo daño, y se
+  comprobó donde se vería: `/sys/fs/ext4/vda2/errors_count` → **0**. Sale en
+  todas las VMs que se fabriquen así.
+
+#### (g) Lo que E3 sigue sin contestar
+
+- **El idioma del instalador**, que es (e), y necesita una segunda ISO.
+- **Qué pasa si alguien conecta un `CIDATA`** a esta ISO: por precedencia le
+  ganaría al seed de dentro (§4.21c). Sigue sin probarse.
+- **Secure Boot en hardware real**: el límite declarado de §4.21b, intacto.
+- **Que `imagen/autoinstall.yaml` —el seed de E2— sigue produciendo lo mismo.**
+  Cambió al enseñar a `encina-seed.sh` las dos vías del repo, así que **ya no es
+  byte a byte el que produjo `encina-E2-0.2.1`**, y por el precedente de §4.19g
+  hay que remedirlo. Sale barato: la forma de E2 es desatendida.
 
 ---
 

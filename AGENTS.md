@@ -1333,7 +1333,7 @@ justamente para no llegar al reempaquetado con tres candidatos.
 Cada casilla con lo que daría en un sistema sano y en uno roto. **No marcar
 ninguna sin la salida literal.**
 
-- [ ] **La forma nueva funciona, y se mide ANTES de tocar `xorriso`, con un
+- [x] **La forma nueva funciona, y se mide ANTES de tocar `xorriso`, con un
       volumen `CIDATA`.** Es el paso que separa «¿es esta la forma correcta?» de
       «¿sé reempaquetar una ISO?», y las dos preguntas no se mezclan.
       *Sano:* el instalador **de escritorio** enseña las pantallas de Ubuntu
@@ -1343,45 +1343,62 @@ ninguna sin la salida literal.**
       esta ISO** (`server.py:236`, `controller.py:113-127`, y el punto HTTP
       `interactive_sections_GET` que consulta el cliente gráfico), **pero leído
       no es medido**, y el instalador de escritorio no es el de servidor.
-- [ ] **Un guion versionado de este repositorio construye la ISO**, no una
+- [x] **Un guion versionado de este repositorio construye la ISO**, no una
       secuencia tecleada a mano. *Sano:* se ejecuta dos veces y produce la misma
       huella, o si no la produce se dice **por qué** y qué byte cambia. *Roto:*
       hace falta acordarse de un paso.
-- [ ] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
+- [x] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
       `-append`** y **con un solo disco además de la ISO** —el de destino—, o sea
       que **no había ningún `CIDATA` conectado**. *Roto:* cualquier `-append`, o
       un segundo `-drive`. **Es el control que importa y es nuevo:** con un
       `CIDATA` enganchado la instalación saldría bien **midiendo el seed
       equivocado** (§4.21c, trampa 16). **La prueba es lo que NO estaba
       conectado, y eso solo se ve desde fuera y antes de arrancar.**
-- [ ] **La ISO es la oficial reempaquetada, y se demuestra.** *Sano:* los tres
+- [x] **La ISO es la oficial reempaquetada, y se demuestra.** *Sano:* los tres
       binarios firmados con **la misma sha256** que en la ISO oficial, y la lista
       de diferencias del medio cabe en una línea: **solo ficheros añadidos** —el
       `autoinstall.yaml` y el repo local—, **ninguno modificado**. *Roto:*
       cualquier binario firmado con huella distinta — y ojo, que **este banco no
       lo detectaría al arrancar**, así que la huella es la única señal.
-- [ ] **La comprobación de integridad del propio medio sigue pasando.** *Sano:*
+- [x] **La comprobación de integridad del propio medio sigue pasando.** *Sano:*
       las 266 líneas de `md5sum.txt` cuadran, porque no se ha modificado ninguno
       de los ficheros que cubre. *Roto:* cualquiera que falle — y sería un aviso
       de que se ha tocado algo que la forma de §6ter.0 dice que no hay que tocar.
-- [ ] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
+- [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
       root, **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c,
       **con el usuario que haya elegido quien instaló**, no con uno fijo. *Roto:*
       cualquier diferencia — y sería un hallazgo, porque el trabajo del seed es
       el mismo y solo ha cambiado quién contesta las preguntas.
-- [ ] **En la ISO no hay ninguna credencial.** *Sano:* ni `identity:`, ni
+- [x] **En la ISO no hay ninguna credencial.** *Sano:* ni `identity:`, ni
       contraseña, ni hash, ni clave ssh en el seed que viaja dentro — comprobado
       sobre el fichero extraído de la ISO construida, no sobre el del
       repositorio. *Roto:* cualquiera de las cuatro cosas. **Con su control:** la
       búsqueda tiene que saber encontrarlas en el seed de laboratorio, que sí las
       lleva.
-- [ ] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
+- [x] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
       relación con las del proyecto: sin clonar, sin heredar configuración, sin
       que nadie le pase ningún parámetro y **sin más intervención que contestar
       las pantallas que Ubuntu pregunta**. Es la casilla que decide, porque es
       literalmente lo que E3 promete —«se la puedes dar a alguien»— y lo único
       que no se puede comprobar reutilizando el banco. **Va acompañada de lo que
       se contestó**, para que se sepa qué se dio por normal.
+
+- [ ] **NOVENA CASILLA, añadida el 2026-08-10 DESPUES de marcar las ocho, con
+      su motivo (§4.23e).** *El instalador se ve en el idioma del producto.*
+      **Las ocho de arriba se cumplieron enteras y aun así la ISO recibe a quien
+      la instala en inglés**, porque sacar `locale` de `interactive-sections`
+      deja la sesión viva en el idioma por defecto. **Eso es un defecto de esta
+      definición, no del producto**, y es el error de §4.19d otra vez: una
+      casilla que deja pasar un estado que nadie querría entregar. No se añade
+      por gusto: Encina OS existe para la administración española.
+      *Sano:* el instalador sale en español. *Roto:* en inglés, con el sistema
+      instalado en español, que es lo medido hoy.
+      **El arreglo está leído** en `casper-bottom/14locales` de esta ISO:
+      `locale=es_ES.UTF-8` en la línea del núcleo. **Y tiene precio, que hay que
+      pagar entero:** va en `boot/grub/grub.cfg`, así que E3 deja de ser «solo
+      añadir ficheros» y **hay que rehacer `md5sum.txt`** (§4.21d). La casilla de
+      integridad de arriba pasa a comprobar el `md5sum.txt` **nuevo**, no el
+      oficial.
 
 **Lo que E3 NO promete, y va escrito para que no se cuele como casilla verde:**
 que la ISO arranque en una máquina con **Secure Boot activo**. Este banco no lo
