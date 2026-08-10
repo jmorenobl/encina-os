@@ -61,7 +61,7 @@ producto que puedas aplicar a una máquina que ya tienes.
 | Hito | Qué te daría | Estado |
 |---|---|---|
 | **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho, 12 de 12.** La que decide: una máquina virgen instalada con la secuencia firma de verdad. La última casilla se cerró ya dentro de E2 |
-| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto.** Medido que la ISO oficial de Ubuntu honra el seed y ejecuta las `late-commands`; medido también que, sin una palabra en la línea de órdenes del núcleo, el instalador se para a pedir un clic. Y ya existe la primera máquina **sin el Snap de Firefox**, quitado desde el propio seed y con el escritorio intacto |
+| **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Abierto, y el seed ya funciona entero.** El 10 de agosto de 2026 una máquina se instaló sola en menos de 11 minutos: los cuatro paquetes desde un repositorio que viaja **dentro del propio volumen del seed**, **sin el Snap de Firefox**, y Firefox de Mozilla en español. La ISO oficial no se toca. Lo que falta es la firma en una sede sobre esa máquina, que es lo que decide |
 | **E3** — ISO que arranca sola | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | Sin abrir |
 | **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | Sin abrir |
 | **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |
@@ -152,8 +152,8 @@ que pasa el nuestro.
 | `encina-branding` | **Terminado.** v0.1.7, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
 | `encina-firefox-native` | **Terminado.** v0.2.0, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje |
 | `autofirma 1.9.1+encina2` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **Terminado en lo que decide.** v0.1.1, construido y verificado en VM, 11 de 12 casillas. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La casilla que falta (`autoremove`) no es cumplible con `.deb` sueltos y se cierra con la instalación desatendida |
-| Instalación desatendida | Sin abrir |
+| `encina-meta` | **Terminado, 12 de 12.** v0.1.1, construido y verificado en VM. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La última casilla (`autoremove`) no era cumplible con `.deb` sueltos y se cerró con el repositorio local de la instalación desatendida |
+| Instalación desatendida | **Abierta, y el seed ya instala una máquina entera sola.** `imagen/autoinstall.yaml` sobre la ISO oficial de Ubuntu, sin tocarla: repositorio local con los cuatro `.deb` dentro del propio volumen del seed, `encina-meta`, **sin Snap**, y Firefox de Mozilla en español. Medido el 10 de agosto de 2026: **menos de 11 minutos y nadie tocó nada**. Falta la firma en una sede sobre esa máquina |
 | Imagen | Sin abrir |
 
 **Arquitectura: solo arm64 por ahora.** Es lo único que se puede medir con el
@@ -310,6 +310,12 @@ debian-packages/
                   # Ni src/, ni scripts de mantenedor, ni overrides de lintian:
                   # un metapaquete con contenido son dos paquetes mal separados
 scripts/          # los catorce scripts + lib.sh
+imagen/           # la receta de la instalación desatendida
+  autoinstall.yaml    # el seed que se sirve en un volumen CIDATA
+  encina-seed.sh      # el fuente legible de la late-command que hace el trabajo
+  meta-data
+  fabricar-seed.sh    # fabrica el volumen, comprobando los .deb por huella
+  verificar-e2.sh     # verifica la máquina que sale, con sus controles
 .github/workflows/build.yml
 ```
 
@@ -352,7 +358,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las once trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las doce trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

@@ -969,17 +969,27 @@ Todo en `MEDICIONES.md` §4.14, sobre la ISO oficial
 Cada casilla, con lo que daría en un sistema sano y en uno roto. **No marcar
 ninguna sin la salida literal.**
 
-- [ ] Un `autoinstall.yaml` versionado en este repositorio instala una máquina
+- [x] Un `autoinstall.yaml` versionado en este repositorio instala una máquina
       **sin que nadie conteste ni pulse nada, con el parámetro `autoinstall`
       puesto por el hipervisor** (decidido el 2026-08-10, `ENCINA-OS.md` §10).
       *Sano:* `telemetry` con dos entradas (`loading`, `done`). *Roto:* aparecen
       `identity`, `storage` o `confirm`. **Ojo: `telemetry` no detecta el clic**
       (§4.14g), así que la prueba de que nadie pulsó nada es que la máquina se
       apagó sola por `-no-reboot` sin que nadie abriera su ventana.
-- [ ] Ese seed **trae el repo local sin firmar** con los cuatro `.deb` e instala
+      **Medido el 2026-08-10 (`MEDICIONES.md` §4.18d y §4.18e):** el seed es
+      `imagen/autoinstall.yaml`; `telemetry` da `{"1":"loading","409":"done"}`;
+      arrancó a las `14:40:02Z` y estaba apagada a las `14:50:50Z` — **menos de
+      10 min 48 s y nadie abrió su ventana**—; y que la palabra llegó no se dice
+      leyendo el YAML sino el `debug.log` de QEMU: `-append autoinstall`, suelto
+- [x] Ese seed **trae el repo local sin firmar** con los cuatro `.deb` e instala
       `encina-meta`. *Sano:* los cuatro `install ok installed` y los tres
       dependientes en `apt-mark showauto`. *Roto:* alguno en `showmanual`, que
       es lo que pasaba con `.deb` por ruta.
+      **Medido (§4.18g):** los cuatro `.deb` viajan **dentro del propio volumen
+      del seed** —128 MiB y sigue siendo un fichero—, con las cuatro huellas de
+      §4.15 comprobadas tres veces: en el Mac, en el volumen, y ya copiadas
+      dentro de `/target`. Los cuatro `install ok installed`, tres en `showauto`
+      y `encina-meta` en `showmanual`, **sin tocar ninguna marca**
 - [ ] **Sin Snap.** *Sano:* `snap list` no menciona `firefox`, y
       `/var/lib/snapd/desktop/applications/firefox_firefox.desktop` no existe.
       *Roto:* cualquiera de las dos cosas presente — y ojo, que el icono puede
@@ -993,20 +1003,58 @@ ninguna sin la salida literal.**
       `lib.sh`. Y no vale `dpkg -l | grep -i snap`: da falsa alarma con
       `libsnapd-glib`, `gir1.2-snapd-2`, `xdg-desktop-portal` y una extensión de
       GNOME que ordena ventanas (§4.16h).
-- [ ] **Firefox es el nativo y está en español**, por la vía de §4.10: versión
+      **SIN MARCAR el 2026-08-10, y el motivo es un hallazgo de la casilla, no
+      de la máquina (§4.18k).** Las dos primeras cosas están medidas sobre la
+      máquina del seed definitivo: no hay orden `snap`, no hay lanzador, no hay
+      `/var/lib/snapd` ni `/snap`, y `snapd` está en `un`. **La tercera no la
+      puede cumplir ninguna máquina de Encina OS:** `firefox_firefox.desktop`
+      responde `/usr/bin/firefox %u` porque ese identificador lo resuelve la
+      **sombra que instala `encina-firefox-native`** —medido con
+      `dpkg -S`—, cuyo trabajo entero era ganarle por precedencia al lanzador
+      del Snap. La casilla se escribió con §4.16i, que se midió sobre una
+      máquina **sin ningún paquete de Encina**, donde `NINGUNA` sí era correcto.
+      **No se afloja aquí:** esta casilla y el defecto de los dos iconos
+      (§4.17h) son la misma cosa vista por dos sitios, y las dos se cierran
+      arreglando la sombra en `encina-firefox-native`, que tiene su propia
+      definición de terminado. Lo que sí está medido es que el identificador
+      **no resuelve a nada bajo `/snap/`**, que es lo que la casilla quería
+      preguntar
+- [x] **Firefox es el nativo y está en español**, por la vía de §4.10: versión
       **sin** epoch y `/usr/bin/firefox` fuera de `/snap/`. *Roto:* versión
       `1:…` = sigue siendo el deb de transición.
-- [ ] La secuencia de §6.4 **deja de hacer falta**: lo que allí eran tres
+      **Medido (§4.18i):** `firefox 153.0.3~build1` sin epoch,
+      `/usr/bin/firefox -> ../lib/firefox/firefox`, el `.xpi` de
+      `langpack-es-ES` puesto, y el anclaje de Mozilla sigue a prioridad 1000
+- [x] La secuencia de §6.4 **deja de hacer falta**: lo que allí eran tres
       órdenes lo hace el seed. Si algo de la secuencia no se puede expresar en
       el seed, **eso es un hallazgo y se mide**; no se cambia la secuencia para
       que encaje. **Medido el 2026-08-10 (§4.17): los cuatro pasos se trasladan
       tal cual y ninguno se queda fuera.** Lo que cambia es el reparto: el paso 3
       deja de traer Firefox y lo trae el 4. **No quitar el paso 4 pensando que es
       «solo el idioma».**
+      **Ejecutados por el seed el 2026-08-10 (§4.18i), y con sus controles:** el
+      paso 3 propone 84 paquetes y **ni uno es Firefox** —`firefox` no aparece
+      ni una vez en las 627 líneas de la simulación más el `full-upgrade` real,
+      y `gnome-shell` aparece 16, así que el conteo no está ciego—; el paso 4
+      instala `firefox` **y** `firefox-l10n-es-es`. **Y lo que faltaba por
+      medir, que era el riesgo de verdad: hay red desde dentro del chroot**
+      (§4.18f), porque `curtin in-target` deja dentro el `resolv.conf` del
+      entorno vivo
 - [ ] **[OJOS] Una firma en `valide.redsara.es`** sobre una máquina instalada
       así, **que nadie ha tocado a mano**. Va en un **clon efímero que se
       destruye después** (`ENCINA-OS.md` §9.1), y se comprueba por huella que no
       queda copia del `.p12`.
+      **Lo que colgaba de aquí ya está contestado y quita el riesgo de que fuera
+      imposible (§4.18l): el vigilante de AutoFirma funciona igual en una
+      máquina sin Snap.** Instalado por el seed, cuando **no existía ninguna
+      sesión de usuario** —su `postinst` avisa de que no ha podido quedar
+      vigilando ninguna, y dice la verdad—, deja las dos unidades enlazadas en
+      `default.target.wants`, que arman cualquier sesión posterior. Medido: al
+      abrir Firefox una vez, el almacén NSS nace a las `15:02:52` y la CA entra
+      a las `15:02:54`, **con la misma huella sha256 que la del paquete en
+      disco**, y en el perfil que Firefox usa de verdad. **Ojo al medirlo: hay
+      dos perfiles y `profiles.ini` e `installs.ini` se contradicen (§4.2a); un
+      `head -1` coge el vacío y responde «la CA no está», que es falso**
 
 **Cómo llega el parámetro `autoinstall` a la máquina: DECIDIDO el 2026-08-10 —
 lo pone el hipervisor.** El motivo entero está en `ENCINA-OS.md` §10 y en una
@@ -1027,7 +1075,33 @@ usuario ve **dos iconos de Firefox** —el de Mozilla y la sombra de
 los dos mundos y el duplicado ya existía en E1** (§4.17h), así que es un defecto
 de `encina-firefox-native`, no de la entrega. Ninguna de las doce casillas de
 §6.4 lo miraba: todas preguntaban *a qué resuelve* el identificador y ninguna
-*cuántos iconos hay*.
+*cuántos iconos hay*. **Desde el 2026-08-10 esa tarea tiene además una casilla
+esperándola:** la tercera condición de «Sin Snap» no puede dar verde mientras la
+sombra siga puesta (§4.18k).
+
+### 6bis.4 Dónde vive el seed, y qué hace cada fichero
+
+Escrito y medido entero el 2026-08-10 (`MEDICIONES.md` §4.18). **Son cinco
+ficheros en `imagen/` y ninguno toca la ISO oficial.**
+
+| Fichero | Qué es |
+|---|---|
+| `imagen/autoinstall.yaml` | **El seed.** Identidad, almacenamiento y tres `late-commands`: los dos testigos de §4.14e y la que hace el trabajo |
+| `imagen/encina-seed.sh` | El fuente **legible** de esa tercera, que viaja en base64. Hace, en este orden: monta el volumen por etiqueta, copia el repo a `/srv/encina-repo` **comprobando las cuatro huellas**, purga `snapd`, y ejecuta los pasos 2, 3 y 4 de §6.4. Deja 1900 líneas de registro dentro de `/target` y **nunca sale distinto de 0** |
+| `imagen/meta-data` | `instance-id` y `local-hostname` |
+| `imagen/fabricar-seed.sh` | Fabrica el volumen `CIDATA` en macOS. **Se niega** si un `.deb` no coincide con su huella o si el YAML y el guion se han separado |
+| `imagen/verificar-e2.sh` | Verifica la máquina que sale, **como root**, cada comprobación con su control |
+
+**Tres cosas que no son obvias y cuestan caro si se cambian sin medir:**
+
+- **El guion va en base64 y en una sola `late-command`** a propósito: así no hay
+  ni una comilla que YAML o el intérprete puedan leer de otra manera, y así el
+  registro sale de una pieza. Cada intento cuesta una instalación entera.
+- **Un `rc=0` de una `late-command` no dice nada del objetivo** (trampa 10). Por
+  eso el guion inventaría `/target` **antes y después**, desde fuera del chroot,
+  y con `-e` **y** `-L`.
+- **El repositorio no puede vivir en un `$HOME`** (§4.15). Va en `/srv/encina-repo`,
+  y ahí se queda en la máquina instalada, con su `.list` de `[trusted=yes]`.
 
 ---
 
@@ -1107,8 +1181,8 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las once trampas de
-  `SCRIPTS.md` son once formas de que esto salga caro, y las nueve dan **falsos
+  `scripts/`, para la CI y para la receta de imagen. Las doce trampas de
+  `SCRIPTS.md` son doce formas de que esto salga caro, y las nueve dan **falsos
   negativos o comprobaciones que no comprueban**. **La novena es del propio
   método** y se pagó abriendo E2: un control también necesita su señal de que
   llegó a ejecutarse.

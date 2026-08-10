@@ -191,6 +191,40 @@ quitan los argumentos y las unidades del núcleo y de la ISO, y arranca del disc
 **4. Vigilar con dos señales, nunca una** (trampa 9): que el disco crezca —a los
 90 s van ya un par de miles de MB— **y** que la máquina conteste en la red.
 
+**5. El seed de verdad ya no se fabrica a mano.** Desde el 2026-08-10 lo hace
+`imagen/fabricar-seed.sh`, que aplica los pasos 1 y 5 de aquí arriba y además
+comprueba las cuatro huellas de los `.deb` **antes** de construir y **otra vez**
+releyendo el volumen, y se niega si `autoinstall.yaml` y `encina-seed.sh` se han
+separado (`MEDICIONES.md` §4.18b):
+
+```
+./imagen/fabricar-seed.sh --repo <dir con los 4 .deb y Packages> \
+                          --salida seed-e2-completa.img [--actualizar-yaml]
+```
+
+**Y la VM se puede construir sin tocar la interfaz de UTM**, que es lo que hizo
+§4.18: `config.plist` es un plist normal —se escribe con `plistlib`—, el disco de
+destino puede ser un fichero **crudo y disperso** creado con `dd … seek=40g`
+(**no hay `qemu-img` ejecutable**: en UTM viaja como biblioteca, no como orden), y
+UTM lo ve al reiniciar la aplicación. Los argumentos se ponen después con
+AppleScript, con la propiedad `argument string` de cada registro `qemu argument`:
+
+```
+update configuration of vm with {qemu additional arguments:{ ¬
+   {argument string:"-kernel"}, {argument string:"…/Image"}, ¬
+   {argument string:"-append"}, {argument string:"autoinstall"}, ¬
+   {argument string:"-no-reboot"} }}
+```
+
+**Que la palabra ha llegado no se comprueba en el YAML**: con `DebugLog` puesto,
+UTM escribe la línea de órdenes entera de QEMU en `Data/debug.log`, y ahí se lee
+`-append autoinstall` **suelto**.
+
+**6. La máquina que sale se verifica con `imagen/verificar-e2.sh`**, copiado a la
+VM y ejecutado **como root** (`telemetry` es 0600). Cada comprobación lleva su
+control dentro; el script sale con código distinto de cero si hay un solo
+`[FALLO]` y te recuerda que no marques ninguna casilla.
+
 ## Cómo leer la salida
 
 ```
@@ -563,3 +597,24 @@ barato de esta trampa, y se busca leyendo.
 Las dos son de la familia de la 5: **una comprobación que no puede dar una de sus
 respuestas no es una comprobación**, y no se nota mirándola, se nota
 obligándola a dar las dos.
+
+## Y una duodécima, midiendo el seed completo (2026-08-10)
+
+**12. `pkill -f` casa con la orden que lo ejecuta.** Midiendo el seed de verdad
+(`MEDICIONES.md` §4.18), esta línea, mandada por `ssh`, mató su propia sesión:
+
+```
+ssh … 'nohup firefox --headless … & sleep 45; …; pkill -f "firefox --headless"'
+   -> ssh sale con 255 a mitad de la medicion
+```
+
+`pkill -f` mira **la línea de órdenes entera** de cada proceso, y la del intérprete
+remoto contenía el texto `firefox --headless` porque el guion entero es su
+argumento. O sea que el patrón casó con el proceso que lo estaba ejecutando.
+
+Es la **trampa 3 con otro traje** —el `grep` que casa con tus propios
+comentarios—, y aquí sale más cara porque no da un falso negativo: **corta la
+medición por la mitad**, y si la orden hubiera ido después de escribir algo y
+antes de comprobarlo, el resultado sería un «no está» falso. Se evita matando por
+PID —el que devuelve `$!`— en vez de por patrón, o anclando el patrón a algo que
+solo tenga el proceso de verdad.
