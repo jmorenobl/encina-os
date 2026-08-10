@@ -352,7 +352,7 @@ las dos cosas de las que va el proyecto.
 | [ENCINA-OS.md](ENCINA-OS.md) | Documento maestro: qué es, decisiones cerradas, hoja de ruta y siguiente acción. Si los documentos se contradicen, manda este |
 | [AGENTS.md](AGENTS.md) | Fuente de verdad de la implementación: reglas duras, convenciones y especificación de cada paquete, con su definición de terminado |
 | [MEDICIONES.md](MEDICIONES.md) | Lo medido, con las salidas literales de los comandos. Antes de investigar algo, mirar aquí |
-| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las nueve trampas |
+| [SCRIPTS.md](SCRIPTS.md) | Qué hace cada script, en qué orden, y las once trampas |
 | [DIARIO.md](DIARIO.md) | Dónde se quedó el trabajo |
 
 ## Licencia

@@ -611,6 +611,20 @@ sudo apt full-upgrade          # el paso 3 NO lo hace 'apt upgrade'
 sudo apt install firefox-l10n-es-es
 ```
 
+**En una máquina SIN Snap el paso 4 no es «el idioma»: es el navegador entero.**
+Medido el 2026-08-10 (`MEDICIONES.md` §4.17) sobre una máquina de la que se había
+purgado `snapd`, que se lleva con él el `.deb` `firefox` de transición:
+
+| Paso | Máquina CON Snap (E1) | Máquina SIN Snap (E2) |
+|---|---|---|
+| 3 · `apt full-upgrade` | **sustituye** el deb de transición por el de Mozilla | **no hace nada** para Firefox — 84 paquetes propuestos y ni uno es él |
+| 4 · `apt install firefox-l10n-es-es` | añade el idioma | **instala Firefox entero** y el idioma, por `Depends: firefox (= 153.0.3~build1)` |
+
+Las tres órdenes **no cambian**, y el anclaje funciona igual con el nombre libre
+(`Candidate: 153.0.3~build1` a prioridad 1000 frente al `1:1snap1-0ubuntu5` a
+500). Lo que cambia es que **quitar el paso 4 deja la máquina sin ningún
+Firefox**, y el síntoma no aparece hasta que alguien va a firmar.
+
 **Hubo un cuarto paso entre el 2026-08-08 y el 2026-08-09, y se ha caído porque
 lo arreglaron donde tocaba.** Era «abre Firefox una vez y `sudo dpkg-reconfigure
 autofirma`», y lo obligaba un defecto real (`MEDICIONES.md` §4.12a): el
@@ -947,7 +961,8 @@ Todo en `MEDICIONES.md` §4.14, sobre la ISO oficial
 | ¿Cómo hay que escribir esa palabra? | **Suelta.** El analizador (`cmd/server.py:32-52`) mete lo que lleva `=` en otro sitio, e `in` solo mira los testigos sueltos: **`autoinstall=1` NO vale**, ni `subiquity.autoinstallpath=…` |
 | ¿Se puede quitar el Snap desde el seed? | **Sí**, con `apt-get purge snapd` por `curtin in-target`. Deja el objetivo sin `/var/lib/snapd`, sin `/snap`, sin lanzador y sin unidades, y **el escritorio sobrevive** (`ubuntu-desktop-minimal` y `gnome-shell` en `ii`, saludador de GDM `Type=wayland Class=greeter State=active`) |
 | ¿Por qué sobrevive el escritorio? | Porque `snapd` y `firefox` son **`Recommends`** de `ubuntu-desktop-minimal`, no `Depends`. Medido con `dpkg-query` sobre el paquete instalado |
-| ¿Y el `.deb` `firefox` de transición? | **Se va con el purgado**, porque depende de `snapd`. Eso **invalida la premisa (a) de §4.10**: ya no hay nada que sustituir, Firefox nativo tendría que *instalarse*. **Sin medir**, y es lo primero que hay que comprobar al escribir el seed |
+| ¿Y el `.deb` `firefox` de transición? | **Se va con el purgado**, porque depende de `snapd`. Eso invalida la premisa (a) de §4.10: ya no hay nada que sustituir. **Medido el mismo día (§4.17): la secuencia de §6.4 sigue valiendo, pero el paso 4 pasa a instalar el navegador entero**, no solo el idioma. El anclaje funciona igual con el nombre libre |
+| ¿Y el repo local, sobre una máquina sin Snap? | **Igual que en §4.15**: `apt install encina-meta` mete los cuatro y los otros tres quedan en `showauto`, sin tocar ninguna marca (§4.17c) |
 
 ### 6bis.3 Definición de terminado de E2
 
@@ -955,8 +970,12 @@ Cada casilla, con lo que daría en un sistema sano y en uno roto. **No marcar
 ninguna sin la salida literal.**
 
 - [ ] Un `autoinstall.yaml` versionado en este repositorio instala una máquina
-      **sin que nadie conteste nada**. *Sano:* `telemetry` con dos entradas
-      (`loading`, `done`). *Roto:* aparecen `identity`, `storage` o `confirm`.
+      **sin que nadie conteste ni pulse nada, con el parámetro `autoinstall`
+      puesto por el hipervisor** (decidido el 2026-08-10, `ENCINA-OS.md` §10).
+      *Sano:* `telemetry` con dos entradas (`loading`, `done`). *Roto:* aparecen
+      `identity`, `storage` o `confirm`. **Ojo: `telemetry` no detecta el clic**
+      (§4.14g), así que la prueba de que nadie pulsó nada es que la máquina se
+      apagó sola por `-no-reboot` sin que nadie abriera su ventana.
 - [ ] Ese seed **trae el repo local sin firmar** con los cuatro `.deb` e instala
       `encina-meta`. *Sano:* los cuatro `install ok installed` y los tres
       dependientes en `apt-mark showauto`. *Roto:* alguno en `showmanual`, que
@@ -980,24 +999,35 @@ ninguna sin la salida literal.**
 - [ ] La secuencia de §6.4 **deja de hacer falta**: lo que allí eran tres
       órdenes lo hace el seed. Si algo de la secuencia no se puede expresar en
       el seed, **eso es un hallazgo y se mide**; no se cambia la secuencia para
-      que encaje.
+      que encaje. **Medido el 2026-08-10 (§4.17): los cuatro pasos se trasladan
+      tal cual y ninguno se queda fuera.** Lo que cambia es el reparto: el paso 3
+      deja de traer Firefox y lo trae el 4. **No quitar el paso 4 pensando que es
+      «solo el idioma».**
 - [ ] **[OJOS] Una firma en `valide.redsara.es`** sobre una máquina instalada
       así, **que nadie ha tocado a mano**. Va en un **clon efímero que se
       destruye después** (`ENCINA-OS.md` §9.1), y se comprueba por huella que no
       queda copia del `.p12`.
 
-**Antes de escribir el seed hay que elegir cómo llega el parámetro `autoinstall`
-a la máquina.** Las tres salidas y sus consecuencias están en `ENCINA-OS.md` §10.
-No es un detalle de implementación: decide si la última casilla se puede cumplir.
-**El 2026-08-10 se comprobó por lectura del código que no hay una cuarta salida
-por seed** (§4.16a): la elección sigue siendo entre las tres escritas, y sigue
-siendo de Jorge.
+**Cómo llega el parámetro `autoinstall` a la máquina: DECIDIDO el 2026-08-10 —
+lo pone el hipervisor.** El motivo entero está en `ENCINA-OS.md` §10 y en una
+línea es éste: lo que E2 entrega es la receta, y el hipervisor la valida; lo que
+el hipervisor no prueba —«se la puedes dar a alguien»— es literalmente la
+definición de E3. Reempaquetar la ISO **es** E3, y mezclarlo con E2 haría
+indistinguible un fallo de la ISO de un fallo de la receta. **Las tres salidas no
+cambian ni una línea del `autoinstall.yaml`**, así que elegir no compromete nada.
+E3 hereda la deuda con nombre: poner esa palabra sin hipervisor.
 
-**Y una que se añade a la lista de lo que hay que comprobar al escribir el seed,
-porque la medición del Snap la ha abierto:** con `snapd` purgado desaparece
-también el `.deb` `firefox` de transición, así que **la premisa (a) de §4.10 deja
-de valer** y Firefox nativo ya no llega por sustitución. Hay que medir por qué
-vía llega entonces, **antes** de dar la secuencia de §6.4 por trasladada al seed.
+**Lo que la medición del Snap abrió quedó cerrado el mismo día** (§4.17): la
+secuencia de §6.4 se traslada al seed **tal cual**, con el aviso de que en una
+máquina sin Snap el paso 4 es también el navegador.
+
+**Y queda una tarea nueva, que NO es de E2 y por eso no bloquea el seed:** el
+usuario ve **dos iconos de Firefox** —el de Mozilla y la sombra de
+`encina-firefox-native`, que sin Snap ya no tiene a quién ganar—. **Está medido en
+los dos mundos y el duplicado ya existía en E1** (§4.17h), así que es un defecto
+de `encina-firefox-native`, no de la entrega. Ninguna de las doce casillas de
+§6.4 lo miraba: todas preguntaban *a qué resuelve* el identificador y ninguna
+*cuántos iconos hay*.
 
 ---
 
@@ -1077,8 +1107,8 @@ Si una tarea parece requerir algo de esta lista, **detente y pregunta**.
 - **Antes de escribir una comprobación, responde a las dos preguntas: ¿qué
   salida daría en un sistema sano y qué salida en uno roto?** Si no sabes las
   dos, no la escribas: mídela primero y anótala en `MEDICIONES.md`. Vale para
-  `scripts/`, para la CI y para la receta de imagen. Las nueve trampas de
-  `SCRIPTS.md` son nueve formas de que esto salga caro, y las nueve dan **falsos
+  `scripts/`, para la CI y para la receta de imagen. Las once trampas de
+  `SCRIPTS.md` son once formas de que esto salga caro, y las nueve dan **falsos
   negativos o comprobaciones que no comprueban**. **La novena es del propio
   método** y se pagó abriendo E2: un control también necesita su señal de que
   llegó a ejecutarse.

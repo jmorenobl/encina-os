@@ -14,7 +14,7 @@ sección 7 («Empieza aquí») y nada más.
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
 | `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de cada paquete y de la imagen | Al lanzar trabajo con Claude Code |
 | `MEDICIONES.md` | Lo medido, con las salidas literales | Antes de volver a investigar algo. Casi siempre ya está medido |
-| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las nueve trampas | Antes de ejecutar nada en la VM |
+| `SCRIPTS.md` | Qué hace cada script y en qué orden, y las once trampas | Antes de ejecutar nada en la VM |
 | `README.md` | Qué es el proyecto, para quien llega de fuera | Al enseñar el repositorio |
 | `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
 
@@ -262,24 +262,27 @@ que decide se marcó el 2026-08-09 con una firma real sobre un clon virgen
    el código que viaja dentro de la ISO, no deducido (§4.16a). O sea que la
    decisión de §10 sigue siendo entre tres salidas y no hay una cuarta gratis.
 
+7. **La secuencia de §6.4 se traslada al seed tal cual, y con un aviso** (§4.17):
+   en una máquina sin Snap el paso 3 (`full-upgrade`) **no hace nada** para
+   Firefox, y el paso 4 (`apt install firefox-l10n-es-es`) **instala el navegador
+   entero**, no solo el idioma. El anclaje funciona igual con el nombre libre.
+   Quitar el paso 4 deja la máquina sin ningún Firefox.
+
+**Y la decisión de forma está tomada: el parámetro `autoinstall` lo pone el
+hipervisor** (2026-08-10, §10, con su motivo). No queda nada que decidir antes de
+escribir el seed.
+
 **El siguiente paso concreto, y es uno solo:** escribir el `autoinstall.yaml` de
-verdad —el que trae el repo local con los cuatro `.deb`, instala `encina-meta` y
-quita el Snap con la orden ya medida— y comprobar que la máquina resultante llega
-entera. La firma en `valide.redsara.es` viene después, y va en un clon efímero
-que se destruye (§9.1).
+verdad —el que trae el repo local con los cuatro `.deb` en el propio volumen del
+seed, instala `encina-meta`, quita el Snap con la orden ya medida y ejecuta los
+pasos 2, 3 y 4 de §6.4— y comprobar que la máquina resultante llega entera. La
+firma en `valide.redsara.es` viene después, y va en un clon efímero que se
+destruye (§9.1).
 
-**Y ese paso arranca con una pregunta abierta que la medición del Snap ha
-creado:** purgar `snapd` **se lleva también el `.deb` `firefox` de transición**,
-porque depende de él. La premisa (a) de §4.10 —que Firefox nativo llega **por
-sustitución** de ese deb, no por instalación— **deja de valer en una máquina sin
-Snap**. Probablemente sea más simple, pero **no está medido**, y hay que medirlo
-antes de dar la secuencia de §6.4 por trasladada al seed.
-
-**Y una consecuencia de forma, que hay que decidir antes de escribir el seed:**
-el punto 3 mueve la frontera entre E2 y E3. «Que nadie la toque a mano» obliga a
-poner `autoinstall` en la línea de órdenes, y eso, sin un hipervisor por medio,
-solo se hace **reempaquetando la ISO**, que es E3. Las salidas posibles están en
-§10, en el criterio de parada de E2, ya reescrito con lo medido.
+**Hay además una tarea que NO es de E2 y por eso no bloquea nada:** el usuario ve
+**dos iconos de Firefox**, y está medido que **el duplicado ya existía en E1**
+(§4.17h). Toca a `encina-firefox-native`, cuya sombra `.desktop` se quedó sin
+trabajo el día que desapareció el Snap.
 
 Lo que sigue en esta sección es el registro de E1, que se conserva porque explica
 **por qué** la secuencia de instalación es la que es.
@@ -376,7 +379,7 @@ incremento; es exactamente lo que la pregunta compra.
 
 - **Una comprobación que pasa no vale nada si no sabes contra qué ha pasado.**
   Cuando una dé `[OK]`, comprueba que habría dado `[FALLO]` de haber estado mal.
-  Las nueve trampas de `SCRIPTS.md` son nueve formas de que esto salga caro, y
+  Las once trampas de `SCRIPTS.md` son once formas de que esto salga caro, y
   aplican igual dentro de un `autoinstall.yaml`. **La novena salió justo aquí, al
   abrir E2:** un control necesita su propia señal de que llegó a ejecutarse.
 - **Todo lo verificable sin pantalla no basta.** En A2, con las siete
@@ -415,13 +418,14 @@ Tres matices:
 
 ## 9. Las VMs de UTM
 
-**Son once desde el 2026-08-10**, y ya no forman una sola familia.
+**Son doce desde el 2026-08-10**, y ya no forman una sola familia.
 
 - **Las ocho de E1** —clonadas unas de otras— comparten hostname `encina-dev`,
   usuario `jorge` con `sudo` sin contraseña y la IP `192.168.64.3`. **El hostname
   no distingue nada entre ellas.** Para saber en cuál estás, lo que funciona es
   «paquetes instalados + versión del Snap de Firefox + qué perfiles existen».
-- **Las tres de E2** no son clones: **nacen de la ISO oficial**, con usuario
+- **Las cuatro de E2**: tres **nacen de la ISO oficial** y la cuarta
+  (`encina-E2-firefox`) es clon de una de ellas. Con usuario
   `encina` y una IP propia cada una (`.4`, `.5`, `.7`). Se entra con la clave
   efímera de la medición, no con la de siempre. Dos comparten hostname
   `encina-e2`; la tercera, `encina-E2-sinsnap`, se llama `encina-e2-sinsnap`
@@ -447,6 +451,7 @@ Tres matices:
 | ~~`encina-firma-efimera`~~ (2026-08-09) | **La casilla que decide.** Otro clon virgen, mismo nombre, con la secuencia ya de tres órdenes: 29/0/1/1, la CA llegando sola, y la firma mirada en pantalla (§4.13) | `gpu-pci` | **Destruida el 2026-08-09.** Mismo motivo, misma regla: llevaba el certificado personal |
 | `encina-E2-seed` | **Vía A de E2.** No es un clon: **nace de la ISO oficial**, instalada por el seed `CIDATA` con un clic en «Ready to install» (§4.14d). Es también donde se cerró la casilla novena con el repo local en `/srv/encina-repo` (§4.15) | `gpu-pci` | **En uso.** Su estado tras §4.15: `encina-meta` purgado y los otros tres puestos y marcados automáticos. **Sin ningún certificado personal.** Lleva un `sudoers.d` sin contraseña puesto para medir, y `dpkg-dev` purgado |
 | `encina-E2-desatendida` | **Vía B de E2, y el testigo que importa: instalada sin que nadie la tocara**, con `autoinstall` en la línea de órdenes y `-no-reboot` (§4.14h). Sus dos testigos de `late-commands` están dentro | `gpu-pci` | **Parada.** Se queda: es la única máquina del proyecto que nadie ha tocado a mano. **Sin certificado personal** |
+| `encina-E2-firefox` | **Banco de §4.17.** Clon de `encina-E2-sinsnap` hecho con `duplicate` de UTM para no gastar la línea base. Aquí se midió por qué vía llega Firefox nativo sin deb de transición, y salió el duplicado de iconos | `gpu-pci` | **Parada.** Tiene la secuencia de §6.4 completa puesta **a mano**, así que **no sirve como testigo de nada instalado por seed**. `sudo` sin contraseña puesto para medir. **Sin certificado personal** |
 | ~~`encina-E2-control`~~ → `encina-E2-sinsnap` | **Era el control de §4.14i**, cuyo valor estaba en el registro y no en el disco. **Se consumió el 2026-08-10** para medir si el Snap se puede quitar desde el seed (§4.16), y **ya no es un control**: lo que queda de aquel control es lo escrito en §4.14i | `gpu-pci` | **Parada.** Ahora es **la primera máquina de Encina OS sin Snap**: instalada desatendida en 8 min 32 s, sin `/var/lib/snapd`, sin `/snap`, sin orden `snap`, con el saludador de GDM vivo. Hostname propio `encina-e2-sinsnap`, IP `.7`. **Sin certificado personal**, y **sin `sudo` sin contraseña** (al revés que `encina-E2-seed`) |
 
 **La columna de vídeo es nueva y no es decorativa: con `ramfb-gl`, la interfaz de
@@ -539,6 +544,48 @@ definición de terminado**, porque es fácil escribir una casilla imposible:
   así que **`autoinstall=1` no vale**. *(Queda apuntada una pista no medida y no
   recomendada: `confirm_POST` es HTTP sobre el zócalo de subiquity y las
   `early-commands` corren antes. Si alguna vez se mide, §10 cambia.)*
+
+  ---
+
+  **DECIDIDO el 2026-08-10: la salida es la (1), el hipervisor.** Jorge delegó la
+  elección. Queda escrita aquí con su motivo para que no se vuelva a discutir sin
+  dato nuevo.
+
+  **Por qué la (1).** Lo que E2 entrega es **la receta** —«la receta que se
+  escriba en E2 es la definitiva; E5 la envuelve» (§6)—, y lo desatendido es su
+  criterio de validación, no el producto. El hipervisor **valida exactamente
+  eso**: el 2026-08-10 produjo una máquina instalada en 8 min 32 s sin que nadie
+  tocara nada (§4.16). Lo que no prueba es que se la puedas dar a otra persona —y
+  eso **es literalmente la definición de E3**: «se la puedes dar a alguien». O
+  sea que la (1) no recorta E2: respeta la frontera entre los dos incrementos.
+
+  **Por qué NO la (2), que era la tentadora.** Reempaquetar la ISO **es** E3, no
+  «adelantar lo justo de E3». Y mete una clase de riesgo nueva —cadena de
+  arranque UEFI, El Torito, `xorriso`, y la firma de `shim`/GRUB— que no tiene
+  nada que ver con lo que E2 valida. Si se mezclan, **un fallo de la ISO y un
+  fallo de la receta se vuelven indistinguibles**, que es cambiar dos cosas a la
+  vez: lo que este proyecto prohíbe en todas las demás páginas. Y §6 ya dice
+  dónde muere este tipo de proyecto.
+
+  **Por qué NO la (3).** Vuelve a meter un humano dentro, que es lo único que E2
+  existe para quitar.
+
+  **Y lo que hace que esta elección no cueste nada más adelante:** las tres
+  salidas **no cambian ni una línea del `autoinstall.yaml`**. Cambian cómo se
+  entrega, no qué dice. Así que elegir la (1) hoy no compromete nada de la receta.
+
+  **Cómo queda redactada la casilla de E2**, sin aflojarla y sin mentir: *la
+  máquina se instala sin que nadie conteste ni pulse nada, con el parámetro
+  `autoinstall` **puesto por el hipervisor**.* Lo de «nadie la toca» sigue intacto;
+  lo que se nombra es quién pone la palabra, que la casilla anterior nunca decía.
+
+  **La deuda que hereda E3, con nombre y apellidos:** poner esa misma palabra sin
+  hipervisor. **Y hoy sale más barata de lo que parecía**, por lo leído en
+  `select_autoinstall` (§4.16a): el instalador busca el seed en cinco sitios por
+  orden, y el quinto es **`/cdrom/autoinstall.yaml`, «autoinstall baked into the
+  iso»**. O sea que E3 no necesita el volumen `CIDATA` para nada: el seed va
+  dentro de la ISO, y la palabra —**suelta**, que `autoinstall=1` no vale— en su
+  `grub.cfg`.
 - **E5.** Si a las dos semanas de abrir `live-build`/`debos` no hay una imagen
   que arranque, cerrarlo y quedarse en E3. E3 ya entrega el producto; E5 solo lo
   envuelve mejor. **Es donde este tipo de proyecto muere.**

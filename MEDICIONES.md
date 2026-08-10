@@ -56,7 +56,8 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.13 | La casilla que decide de E1, marcada: la secuencia de tres órdenes basta | Sí. Es el positivo que cierra E1, y **no se puede volver a contrastar contra ninguna máquina**: la VM llevaba certificado personal y se destruyó (§9.1) |
 | §4.14 | E2: la ISO oficial de escritorio honra un `autoinstall` mínimo, y a qué precio | Sí. Es la medición de apertura de E2, y **corrige a `DIARIO.md` y a `ENCINA-OS.md` §6**, que daban por hecho que la línea base se había instalado por `autoinstall` |
 | §4.15 | El repo local sin firmar, y la casilla novena de E1 | Sí. **Cierra la última casilla de `AGENTS.md` §6.4**, y con el mecanismo de verdad en vez del A/B del 2026-08-08 |
-| §4.16 | E2: ninguna clave del seed quita el clic (leído), y el Snap sí se quita desde el seed (medido) | Sí. Da la orden concreta que quita el Snap y **descarta la vía obvia, que no falla sino que miente**. Su apartado (j) **deja sin efecto la premisa (a) de §4.10 en una máquina sin Snap**, y eso está sin medir |
+| §4.16 | E2: ninguna clave del seed quita el clic (leído), y el Snap sí se quita desde el seed (medido) | Sí. Da la orden concreta que quita el Snap y **descarta la vía obvia, que no falla sino que miente**. Lo que su apartado (j) dejaba abierto lo cierra §4.17 |
+| §4.17 | Por qué vía llega Firefox nativo sin deb de transición | Sí. **La secuencia de §6.4 sigue valiendo, pero el paso 4 pasa a ser también el navegador**, no solo el idioma. Y saca un defecto visible **que es de E1, no de E2**: dos iconos de Firefox, medido en los dos mundos |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -2327,7 +2328,9 @@ juega la casilla en ese carácter.
 
 **Conclusión: la salida (1) de `ENCINA-OS.md` §10 no se puede evitar por seed.**
 No es que no se haya encontrado la clave: es que la decisión está tomada en el
-código y se ha leído. La elección entre las tres salidas sigue siendo de Jorge.
+código y se ha leído. *(La elección entre las tres salidas se tomó ese mismo día,
+delegada por Jorge: **es la (1), el hipervisor**, con su motivo escrito en
+`ENCINA-OS.md` §10.)*
 
 *Una pista que esto abre y que NO se ha medido, escrita para que no se pierda:*
 `confirm_POST` es un manejador HTTP sobre el zócalo del servidor de subiquity, y
@@ -2724,6 +2727,246 @@ cosa que hay que comprobar al escribir el seed completo.
   necesita red; el repo local y `encina-meta` son otra cosa.
 - **La firma en `valide.redsara.es` sigue sin hacerse**, y sigue siendo [OJOS].
 - **amd64, nada.** D9 sigue igual.
+
+---
+
+### 4.17 Por qué vía llega Firefox nativo cuando no hay deb de transición (2026-08-10)
+
+La medición del Snap (§4.16j) dejó la premisa (a) de §4.10 sin efecto en una
+máquina sin Snap: al purgar `snapd` se va también el `.deb` `firefox` de
+transición, así que **el nombre `firefox` queda libre y no hay nada que
+sustituir**. Esto lo mide, porque de ello cuelga la secuencia de §6.4 entera.
+
+**Respuesta corta: la secuencia de tres órdenes sigue valiendo tal cual, pero
+cambia de manos.** El paso 3 —`full-upgrade`— deja de traer Firefox, y lo trae el
+paso 4, el que estaba escrito «para el idioma». **Y de propina sale un defecto
+visible que no es de E2 sino de E1, y que nadie había medido: el usuario ve dos
+iconos de Firefox.**
+
+#### (a) Qué se daría por sano y qué por roto, escrito antes de medir
+
+| Resultado | Qué se vería |
+|---|---|
+| **Sano A** (el previsto) | `full-upgrade` **no propone Firefox** y `apt install firefox-l10n-es-es` **arrastra `firefox` de `packages.mozilla.org`**: versión **sin epoch** y `/usr/bin/firefox` fuera de `/snap/` |
+| **Roto** | ni el paso 3 ni el 4 traen Firefox: la máquina se queda **sin navegador**, y §6.4 necesita una orden más |
+| **Roto y silencioso, el peor** | llega el `1:1snap1-0ubuntu5` de `ports` —el deb de transición— que sin `snapd` no puede instalar ningún Snap. El anclaje debería impedirlo, y hay que verificarlo con `apt-cache policy` **tras** el `apt update` |
+
+#### (b) El banco, y una trampa antes de empezar
+
+`encina-E2-firefox`, **clon de `encina-E2-sinsnap`** hecho con `duplicate` de
+UTM, para no gastar la línea base sin Snap. Huella tomada antes de tocarlo:
+
+```
+$ dpkg-query -W encina-meta encina-branding encina-firefox-native autofirma
+   (los cuatro: «no se ha encontrado ningún paquete»)
+$ ls /etc/apt/sources.list.d/     ->  ubuntu.sources  ubuntu.sources.curtin.orig
+$ LC_ALL=C apt-cache policy firefox
+firefox:  Installed: (none)   Candidate: 1:1snap1-0ubuntu5
+     1:1snap1-0ubuntu5 500  http://ports.ubuntu.com/ubuntu-ports noble/main
+$ command -v snap   -> NO          $ ls -d ~/.mozilla  -> ninguno
+$ cat /etc/encina-e2-testigo-medicion-snap
+medicion-snap llego al final 2026-08-10T10:08:19Z     <- es clon de la buena
+$ telemetry  ->  {"1": "loading", "409": "done"}
+```
+
+**Y la trampa, que es la de §4.13 otra vez y casi muerde:** los `.deb` que hay en
+`debian-packages/` **de este repositorio** tienen la misma versión que los
+medidos y **no son los mismos bytes**:
+
+```
+en el arbol:   0e870833…  encina-branding_0.1.7_all.deb
+en §4.15:      d4205134…  encina-branding_0.1.7_all.deb
+en el arbol:   c2de429a…  encina-firefox-native_0.2.0_all.deb
+en §4.15:      3880b8aa…  encina-firefox-native_0.2.0_all.deb
+```
+
+Se descartaron y se usó el juego de `/srv/encina-repo` de `encina-E2-seed`, cuyas
+cuatro huellas coinciden con §4.15 carácter por carácter, **comprobadas otra vez
+ya dentro de la VM de destino**.
+
+#### (c) Paso 1, en la forma de E2: el repo local, sobre una máquina sin Snap
+
+No se usó la forma de §6.4 —los cuatro `.deb` por ruta—, sino la que va a usar el
+seed: repo local sin firmar y **un solo nombre**.
+
+```
+$ sudo apt-get update
+Get:1 file:/srv/encina-repo ./ InRelease     Ign:1 …      <- sin firma, y sigue
+$ LC_ALL=C apt-cache policy encina-meta
+   Candidate: 0.1.1        500 file:/srv/encina-repo ./ Packages
+$ LC_ALL=C apt-cache policy encina-que-no-existe
+                                              # vacio: no esta ciego
+
+$ sudo apt-get install -y encina-meta
+$ dpkg-query -W …
+autofirma 1.9.1+encina2 install ok installed
+encina-branding 0.1.7 install ok installed
+encina-firefox-native 0.2.0 install ok installed
+encina-meta 0.1.1 install ok installed
+$ apt-mark showauto   -> autofirma, encina-branding, encina-firefox-native
+$ apt-mark showmanual -> encina-meta
+```
+
+**§4.15 se reproduce igual en una máquina sin Snap**, sin tocar ninguna marca. Y
+el `postinst` de AutoFirma se comporta como debe, sin perfil de Mozilla todavía:
+
+```
+WARNING: A Mozilla Firefox profile to install the certificate was not detected
+autofirma: Queda vigilando: al abrir Firefox por primera vez la CA se
+autofirma:        instalará sola (2 sesión/es de usuario avisadas).
+autofirma: CA instalada en el almacén del sistema.
+```
+
+#### (d) La respuesta: el anclaje funciona igual con el nombre libre
+
+Tras el paso 2 (`apt update`, ya con el repositorio de Mozilla que puso
+`encina-firefox-native`):
+
+```
+$ cat /etc/apt/preferences.d/*     (efectivo)
+Package: *   Pin: origin packages.mozilla.org   Pin-Priority: 1000
+
+$ LC_ALL=C apt-cache policy firefox
+firefox:
+  Installed: (none)
+  Candidate: 153.0.3~build1                     <- el de Mozilla, NO el 1:1snap1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+     153.0.3~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+```
+
+**El caso «roto y silencioso» queda descartado**: el candidato es el de Mozilla
+aunque no haya nada instalado que sustituir. El anclaje no dependía de la
+sustitución, dependía de la prioridad.
+
+#### (e) El paso 3 deja de hacer su trabajo, y hay que saberlo
+
+```
+$ LC_ALL=C sudo apt-get -s full-upgrade | grep -i firefox
+   (nada)
+$ LC_ALL=C sudo apt-get -s full-upgrade | grep -c "^Inst"
+84                                     <- el control: propone 84 cosas, no esta mudo
+$ sudo apt-get -y full-upgrade
+   …
+$ LC_ALL=C apt-cache policy firefox    ->  Installed: (none)
+```
+
+84 paquetes propuestos y **ni uno es Firefox**. En una máquina con Snap el paso 3
+era **el** paso, el que cambiaba el deb de transición por el de Mozilla. Aquí no
+hace nada para Firefox, y es correcto: no hay nada instalado que actualizar.
+
+#### (f) Lo hace el paso 4, y el mecanismo está en el índice
+
+```
+$ LC_ALL=C apt-cache show firefox-l10n-es-es | grep -E "^(Version|Depends):"
+Version: 153.0.3~build1
+Depends: firefox (= 153.0.3~build1)          <- version exacta
+```
+
+Así que:
+
+```
+$ sudo apt-get install -y firefox-l10n-es-es
+The following NEW packages will be installed:
+  firefox firefox-l10n-es-es
+Setting up firefox (153.0.3~build1) ...
+Setting up firefox-l10n-es-es (153.0.3~build1) ...
+
+$ dpkg-query -W firefox firefox-l10n-es-es
+firefox 153.0.3~build1                       <- SIN epoch: es el de Mozilla
+firefox-l10n-es-es 153.0.3~build1
+$ ls -l /usr/bin/firefox
+lrwxrwxrwx … /usr/bin/firefox -> ../lib/firefox/firefox      <- fuera de /snap/
+$ dpkg -S /usr/bin/firefox      -> firefox: /usr/bin/firefox
+  control: dpkg -S /usr/bin/gnome-shell -> gnome-shell: /usr/bin/gnome-shell
+$ dpkg -L firefox-l10n-es-es | grep xpi
+/usr/lib/firefox/distribution/extensions/langpack-es-ES@firefox.mozilla.org.xpi
+```
+
+**Y la precedencia real de lanzadores, con el `resolver_desktop` ya arreglado**
+(§4.16i), y con el `XDG_DATA_DIRS` que incluye el directorio del Snap:
+
+```
+firefox_firefox.desktop      -> /usr/bin/firefox %u
+firefox.desktop              -> firefox %u
+org.mozilla.firefox.desktop  -> NINGUNA          <- el control, y ya sabe decirlo
+```
+
+#### (g) Conclusión, y el aviso que hay que escribir en §6.4
+
+**La secuencia de §6.4 no cambia ni una letra, pero cambia quién hace qué:**
+
+| Paso | Máquina CON Snap (E1) | Máquina SIN Snap (E2) |
+|---|---|---|
+| 3 · `apt full-upgrade` | **sustituye** el deb de transición por el de Mozilla | **no hace nada** para Firefox |
+| 4 · `apt install firefox-l10n-es-es` | añade el idioma | **instala Firefox entero** y el idioma |
+
+**El aviso, y es serio:** §6.4 presenta el paso 4 como «el idioma, que ningún
+`Depends:` puede declarar». En una máquina sin Snap ese paso **es también el
+navegador**. Quien lo dé por opcional —o quien escriba el seed y decida que el
+idioma se pone «luego»— deja la máquina **sin ningún Firefox**, y el síntoma no
+aparece hasta que alguien va a firmar.
+
+#### (h) De propina, un defecto visible — y NO es de E2, es de E1
+
+Sin Snap hay dos ficheros `.desktop` de Firefox: el de Mozilla
+(`firefox.desktop`) y la **sombra** que pone `encina-firefox-native`
+(`firefox_firefox.desktop`), cuyo trabajo entero era ganarle por precedencia al
+lanzador del Snap. Sin Snap ya no tiene a quién ganar, y el usuario ve dos:
+
+```
+# en encina-E2-firefox (SIN Snap)
+id=firefox_firefox.desktop   nombre=Firefox   visible=True
+id=firefox.desktop           nombre=Firefox   visible=True
+   control: 26 aplicaciones visibles en total
+```
+
+La sombra no lleva `NoDisplay` ni `Hidden`: `Name=Firefox`,
+`Exec=/usr/bin/firefox %u`, `TryExec=/usr/bin/firefox`.
+
+**Antes de escribir que esto es un efecto de quitar el Snap, se midió en el otro
+mundo**, sobre `encina-E1-meta` —máquina **con** Snap y con la secuencia completa
+de E1 puesta— con exactamente el mismo método:
+
+```
+$ dpkg-query -W … firefox firefox-l10n-es-es
+firefox 153.0.3~build1     firefox-l10n-es-es 153.0.3~build1
+$ snap list | grep firefox
+firefox   147.0.3-1   7764   latest/stable/…   mozilla**
+   [PRESENTE] /usr/share/applications/firefox.desktop
+   [PRESENTE] /usr/share/applications/firefox_firefox.desktop
+   [PRESENTE] /var/lib/snapd/desktop/applications/firefox_firefox.desktop
+
+id=firefox_firefox.desktop   nombre=Firefox   visible=True
+id=firefox.desktop           nombre=Firefox   visible=True
+   control: 28 aplicaciones visibles en total
+```
+
+**El duplicado ya estaba en E1.** No lo crea quitar el Snap: quitar el Snap solo
+deja a la sombra sin motivo. Es un defecto de producto, visible para el usuario,
+que **ninguna de las doce casillas de §6.4 miraba** —todas preguntaban a qué
+resuelve el identificador, ninguna preguntaba cuántos iconos hay—, y es
+exactamente la familia de A2: siete comprobaciones en verde y el icono haciendo
+otra cosa.
+
+*No se ha arreglado aquí, a propósito:* el arreglo toca `encina-firefox-native`,
+que es un paquete con su propia definición de terminado y su CI, y hoy la tarea
+era medir por dónde llega Firefox. Queda escrito con las dos mediciones que hacen
+falta para decidir dónde se arregla.
+
+#### (i) Lo que esta medición NO contesta
+
+- **No se ha abierto Firefox**, así que no se ha visto al vigilante de AutoFirma
+  meter la CA en el perfil sobre una máquina sin Snap. Está medido en máquinas
+  **con** Snap (§4.13 y M14–M18 de `encina-autofirma`), no aquí.
+- **Nada de la firma.** Sigue siendo [OJOS] y sigue pendiente.
+- **Esto se hizo a mano, no desde un seed.** Es lo que había que saber antes de
+  escribir el seed; el seed sigue sin escribirse.
+- **El duplicado de iconos no se ha mirado en pantalla**, se ha medido con la
+  misma biblioteca que dibuja la rejilla (`Gio.AppInfo.get_all()` +
+  `should_show()`), en las dos máquinas y con su control.
 
 ---
 
