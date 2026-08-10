@@ -142,6 +142,55 @@ cd ~/encina
 A partir de `01-repo.sh` los scripts viven dentro del repositorio, en
 `~/encina/scripts`, y se versionan con él.
 
+## El laboratorio de E2: fabricar una VM desatendida desde el Mac
+
+Esto no es un script del repositorio, es el procedimiento que hay detrás de
+`MEDICIONES.md` §4.14 y §4.16, y se escribe aquí porque **derivarlo otra vez
+cuesta una tarde**. Los medios viven en
+`~/Library/Containers/com.utmapp.UTM/Data/Documents/e2-medios/`.
+
+**1. El volumen del seed.** Un `CIDATA` es un sistema de ficheros FAT etiquetado
+así con `user-data` y `meta-data` dentro. En macOS se fabrica **crudo**, que es
+lo que QEMU sabe leer:
+
+```
+dd if=/dev/zero of=seed.img bs=1m count=8
+DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount seed.img | awk '{print $1}')
+newfs_msdos -F 12 -v CIDATA "$DEV"
+hdiutil detach "$DEV"
+DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage seed.img | head -1 | awk '{print $1}')
+cp user-data meta-data /Volumes/CIDATA/
+sync; hdiutil detach "$DEV"
+```
+
+`hdiutil create` **no** vale: produce un UDIF, no una imagen cruda. Y hay que
+releer el resultado antes de usarlo, que es gratis y evita medir con un seed
+vacío.
+
+**2. La VM, y el único truco que importa.** Para instalar sin humano hace falta
+la palabra `autoinstall` en la línea de órdenes del núcleo, y eso obliga a
+arrancar con `-kernel`/`-initrd` extraídos de la ISO. **UTM está en la caja de
+arena de la App Store y solo le concede a QEMU el acceso a los ficheros que son
+UNIDADES de la VM**, así que:
+
+- `Image` e `initrd` van **declarados como unidades** (`ImageType: CD`,
+  `ReadOnly: true`) **además** de citados en los argumentos. Sin eso, QEMU dice
+  `failed to load "…/Image"` con el fichero presente, legible y válido.
+- El campo `file urls` del registro `qemu argument` de AppleScript **no basta**.
+- `update configuration` de AppleScript **borra del bundle todo lo que no sea
+  unidad**, incluso lo que acabas de referenciar.
+- Los argumentos son `-kernel <ruta> -initrd <ruta> -append autoinstall
+  -no-reboot`. **`-no-reboot` no es opcional**: sin él la máquina vuelve al
+  instalador en cada arranque y **se come su propia instalación** (§4.14h). Y
+  `-append` admite **una sola palabra**: UTM parte las demás.
+- La palabra va **suelta**. `autoinstall=1` no vale (§4.16a).
+
+**3. Que ha terminado** se sabe porque la VM **se apaga sola**. Después se
+quitan los argumentos y las unidades del núcleo y de la ISO, y arranca del disco.
+
+**4. Vigilar con dos señales, nunca una** (trampa 9): que el disco crezca —a los
+90 s van ya un par de miles de MB— **y** que la máquina conteste en la red.
+
 ## Cómo leer la salida
 
 ```
