@@ -62,6 +62,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.19 | La sombra `.desktop`: un solo icono, y la casilla que pedía romper A2 | Sí. **Corrige la tercera condición de «Sin Snap» de `AGENTS.md` §6bis.3, que estaba escrita al revés**, y le añade la que no tenía nadie: cuántos iconos ve el usuario. El arreglo es `NoDisplay=true` en `encina-firefox-native` 0.2.1, elegido midiendo el espacio entero en los dos mundos |
 | §4.20 | La firma sobre la máquina del seed, y la contraseña que no existía | Sí. **Cierra E2, 6 de 6.** La firma es `[OJOS]` y la declara Jorge. Contiene el defecto del seed —nadie sabía la contraseña— y la trampa 15: `crypt` de Python en macOS cae a DES sin avisar |
 | §4.23 | **E3: la ISO existe y se instala** | Sí. **Es la medición que cierra E3.** Una ISO construida por `imagen/fabricar-iso.sh`, en una **VM creada desde cero** con dos unidades y ni una más, produce Encina OS entero contestando solo las cinco pantallas: **36 correctas, 0 fallos**. La línea que decide es `REPO ELEGIDO -> /cdrom/encina-repo`. La construcción es **reproducible** y saca un defecto de la definición de terminado: el instalador se ve en inglés |
+| §4.25 | **E3: la novena casilla, el instalador en español** | **En curso.** El mecanismo está leído en el `14locales` del `initrd` de esta ISO, el precio de §4.21d **pagado y enseñado** —`md5sum.txt` rehecho, 501 entradas del medio comparadas, y el control de que **con el `md5sum.txt` oficial falla exactamente una línea**—, y la ISO `02ab929d…` existe y es reproducible. **Falta lo único que no puede hacer un guion: mirar la pantalla**, que es `[OJOS]` |
 | §4.24 | **E2 remedido: la vía `CIDATA` del guion de las dos vías** | Sí. `imagen/autoinstall.yaml` cambió al enseñarle a `encina-seed.sh` las dos vías, y **sigue produciendo la misma máquina: 35 correctas, 0 fallos**. Con §4.23a, el guion queda medido **por sus dos ramas**. Trae el control que hacía falta —el `user-data` sacado del volumen **construido**, porque el de ayer daría el mismo verde sin medir nada— y un hallazgo de instrumento: `Image` no es byte a byte `/casper/vmlinuz`, **es su `gunzip`** |
 | §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
@@ -4825,6 +4826,109 @@ que el PEM contra el DER de §4.20.
 - **No toca** E2 como incremento: sigue 6 de 6. Esto no es una casilla nueva, es
   el precedente de §4.19g aplicado a un cambio del guion.
 - **No dice nada** del idioma del instalador, que es la novena casilla de E3.
+
+---
+
+### 4.25 E3 — La novena casilla: el instalador en el idioma del producto (2026-08-10)
+
+**Qué se arregla y por qué es un defecto de la definición, no del producto.** Las
+ocho casillas de §6ter.3 se cumplieron enteras y aun así la ISO recibía en inglés
+a quien la instala (§4.23e). El arreglo estaba **leído** en el casper de la propia
+ISO, y ahora está **hecho**: `locale=es_ES.UTF-8` en la línea del núcleo de
+`boot/grub/grub.cfg`, con su precio pagado entero.
+
+#### (a) El mecanismo, leído en el `initrd` de esta ISO y no supuesto
+
+`scripts/casper-bottom/14locales`, sacado del `initrd` que viaja en la imagen:
+
+```sh
+# commandline
+for x in $(cat /proc/cmdline); do
+    case $x in
+	locale=*)
+	    locale=${x#locale=}
+	    set_locale="true"
+	    ;;
+    esac
+done
+...
+if [ "${set_locale}" ]; then
+    LANG=$(grep "^${locale}" /root/usr/share/i18n/SUPPORTED | grep UTF-8 |sed -e 's, .*,,' -e q)
+    printf 'LANG="%s"\n' "${LANG}" > /root/etc/default/locale
+    printf '%s UTF-8\n' "${LANG}" > /root/etc/locale.gen
+    chroot /root /usr/sbin/locale-gen --keep-existing
+fi
+```
+
+**Tres cosas que decide esta lectura y que no se podían dar por hechas:**
+
+1. **Recorre TODOS los tokens de `/proc/cmdline`**, así que la palabra vale a
+   cualquier lado del `---`. Se pone **antes**, que es la ranura de casper.
+2. **Escribe el `LANG` de la SESIÓN VIVA** y corre `locale-gen` dentro de ella:
+   por eso afecta al instalador, que es lo que se quiere, y no a la máquina
+   destino, que ya lo tenía del seed.
+3. `grep "^es_ES.UTF-8"` sobre `SUPPORTED` casa con `es_ES.UTF-8 UTF-8`, así que
+   la forma **con** `.UTF-8` es la correcta.
+
+**Cómo se lee el casper sin arrancar nada**, porque costó un rodeo y está en
+`SCRIPTS.md` (trampa 19): el `initrd` son **dos archivos pegados** —el primero
+firmware sin comprimir, el segundo **zstd** en el desplazamiento 60952064—, y
+`file` dice «ASCII cpio archive» de los dos.
+
+#### (b) El precio, pagado y enseñado, que es la parte que se podía hacer mal
+
+`imagen/fabricar-iso.sh` ya no solo añade. Modifica dos ficheros y **lo demuestra
+sobre el medio entero**, no sobre los que le convienen:
+
+```
+== 5. el grub.cfg en espanol, y el md5sum.txt que lo cubre
+[OK]    grub.cfg: locale=es_ES.UTF-8 en la linea del nucleo, y no cambia nada mas
+[OK]    md5sum.txt: una linea rehecha (57150973… -> ea5f7d01…), las otras 265 intactas
+== 10. el medio entero, fichero a fichero, contra la oficial
+[OK]    leidas 501 entradas de la oficial y 507 de la nuestra
+[OK]    seis ficheros anadidos, ni uno mas, y ninguno perdido
+[OK]    modificados exactamente dos: /boot/grub/grub.cfg y /md5sum.txt
+[OK]    control: con una huella saboteada, la comparacion la senala
+== 11. la integridad del propio medio, contra el md5sum.txt NUEVO
+[OK]    las 266 lineas de md5sum.txt cuadran con la ISO construida, la del grub.cfg incluida
+[OK]    control: con el md5sum.txt OFICIAL falla exactamente una linea, la del grub.cfg
+```
+
+**El control de la línea 11 es el que convierte §4.21d de advertencia en
+medición:** con el `md5sum.txt` oficial falla **exactamente una** línea, la del
+`grub.cfg`. Eso es, byte a byte, la ISO que se entregaría si alguien editara el
+menú y no rehiciera el índice. Ya no hay que creérselo.
+
+**Y el medio se compara entero por LBA, sin extraer 3,4 GB:** `xorriso -find /
+-type f -exec report_lba` da el desplazamiento y el tamaño de cada fichero, y el
+md5 se calcula buscando dentro de la propia imagen. Una lectura por ISO.
+
+```
+la ISO que se entrega   encina-os-E3-es.iso   02ab929d0336eebc81f7e8a50c7f8d73…
+                        reproducible: dos construcciones seguidas, misma huella
+la anterior (ingles)    encina-os-E3.iso      0a1127f403b4d1ee3e6e03980795bd4e…
+boot/grub/grub.cfg          linux	/casper/vmlinuz locale=es_ES.UTF-8  --- quiet splash console=tty0
+bootaa64.efi / grubaa64.efi / mmaa64.efi      intactos, huella a huella
+```
+
+#### (c) Qué se daría por sano y qué por roto, escrito ANTES de arrancarla
+
+**La casilla es `[OJOS]` y la declara Jorge: yo no veo la pantalla.**
+
+| # | Qué se mira | Sano | Roto |
+|---|---|---|---|
+| 1 | **La casilla novena** | el instalador se ve **en español** desde la primera pantalla | en inglés: entonces el `locale=` de casper **no basta** para el instalador de escritorio, y el hallazgo es que la lectura de (a) era necesaria pero no suficiente |
+| 2 | La ISO se basta sola | `debug.log` **sin `-append`** y con **dos unidades y ni una más** además del firmware: la ISO y el disco vacío | cualquier `-append`, o un tercer `-drive` — con un `CIDATA` olvidado la instalación saldría bien midiendo el seed equivocado (trampa 16) |
+| 3 | La máquina que sale | `verificar-e2.sh --forma e3` como root: **36 correctas, 0 fallos**, y `REPO ELEGIDO -> /cdrom/encina-repo` | cualquier diferencia con §4.23d **es un hallazgo**, porque lo único que ha cambiado es el idioma del instalador: querría decir que el `locale=` tocó algo que no tenía que tocar |
+| 4 | Las cinco pantallas | `telemetry` lista `confirm,done,identity,install,keyboard,network,storage,timezone` y **ni `locale` ni `source`** | que aparezca `locale`: querría decir que el `grub.cfg` ha vuelto interactiva una sección que el seed fija |
+
+**Y el riesgo que se sabe y va escrito antes, no después:** que el instalador de
+escritorio **no** lea el `LANG` de la sesión viva al arrancar. `14locales` deja
+`/etc/default/locale` puesto, pero **quién lo lee no está medido**, y la primera
+pantalla del instalador de Ubuntu es normalmente la del idioma — la que este
+producto quita a propósito (§6ter.0). Si sale en inglés, la siguiente pregunta no
+es «cambiar de sitio la palabra» sino **quién decide el idioma del instalador**, y
+se contesta leyendo, como se ha contestado todo lo demás.
 
 ---
 

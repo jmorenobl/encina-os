@@ -3,22 +3,42 @@
 #
 #     ./fabricar-iso.sh --iso <oficial.iso> --repo <dir> --salida <encina.iso>
 #
-# QUE HACE, Y ES DELIBERADAMENTE POCO: coge la ISO oficial de Ubuntu y le ANADE
-# dos cosas, sin modificar ni un fichero de los que ya trae:
+# QUE HACE: coge la ISO oficial de Ubuntu, le ANADE lo de Encina y MODIFICA dos
+# ficheros, ni uno mas. Los cuatro sitios estan nombrados aqui porque la
+# definicion de terminado de E3 se comprueba contra esta lista.
 #
+# ANADE:
 #     /autoinstall.yaml   <- imagen/autoinstall-e3.yaml, que es donde el
 #                            instalador lo busca: /cdrom/autoinstall.yaml, el
 #                            QUINTO sitio de select_autoinstall (MEDICIONES.md
 #                            §4.21c), leido en el codigo que viaja en la ISO
 #     /encina-repo/       <- los cuatro .deb y su indice Packages
 #
-# POR QUE NO TOCA EL grub.cfg: porque no hace falta. La palabra 'autoinstall'
-# servia para saltarse el clic de confirmacion CUANDO NO HAY NADIE DELANTE, y
-# la ISO de E3 pregunta cinco cosas, asi que hay alguien (AGENTS.md §6ter.0).
-# Si algun dia hiciera falta tocarlo -- por ejemplo para poner el instalador en
-# espanol con 'locale=es_ES.UTF-8' -- HAY QUE REHACER md5sum.txt, que cubre ese
-# fichero (§4.21d). Mientras no se toque, la comprobacion de integridad del
-# propio medio sigue pasando sola.
+# MODIFICA, y hasta el 2026-08-10 no modificaba nada:
+#     /boot/grub/grub.cfg <- 'locale=es_ES.UTF-8' en la linea del nucleo, que es
+#                            lo que pone EL INSTALADOR en espanol. Sin esto la
+#                            ISO recibe en ingles a quien la instala, aunque la
+#                            maquina que sale quede en espanol: es la NOVENA
+#                            casilla de AGENTS.md §6ter.3, anadida despues de
+#                            marcar las ocho porque las ocho la dejaban pasar.
+#                            El mecanismo esta LEIDO, no supuesto, en el
+#                            casper de esta misma ISO: scripts/casper-bottom/
+#                            14locales recorre TODOS los tokens de /proc/cmdline
+#                            y con 'locale=*' escribe LANG en el
+#                            /etc/default/locale de la SESION VIVA y corre
+#                            locale-gen dentro de ella.
+#     /md5sum.txt         <- EL PRECIO, y hay que pagarlo entero (§4.21d):
+#                            md5sum.txt CUBRE ./boot/grub/grub.cfg, asi que
+#                            editarlo y no rehacerlo deja una ISO que arranca
+#                            bien y FALLA la comprobacion de integridad de su
+#                            propio medio. Se reescribe UNA linea, la suya.
+#
+# CONSECUENCIA PARA LA DEFINICION DE TERMINADO: E3 ya no es «solo anadir
+# ficheros», y la casilla de integridad pasa a comprobar el md5sum.txt NUEVO en
+# vez del oficial. Por eso este guion no se cree a si mismo: al final compara la
+# ISO nueva contra la oficial FICHERO A FICHERO -- las 300 y pico entradas del
+# medio, no solo las 266 de md5sum.txt -- y se niega si cambio algo que no sean
+# esos dos, o si aparecio algo que no sean los seis que se anaden.
 #
 # LO QUE NO TOCA NUNCA, Y NO ES PRUDENCIA SINO UNA MEDICION: los tres binarios
 # firmados de la cadena de arranque -- bootaa64.efi (shim), grubaa64.efi y
@@ -41,6 +61,10 @@ YAML="$AQUI/autoinstall-e3.yaml"
 ISO=""; REPO=""; SALIDA=""
 # la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
 H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
+# el idioma del producto, que NO se pregunta (AGENTS.md §6ter.0). Va en el seed
+# como 'locale:' para la maquina que sale, y aqui en el grub.cfg para que el
+# INSTALADOR se vea en el mismo idioma. Los dos sitios dicen lo mismo a proposito.
+LOCALE=es_ES.UTF-8
 
 uso() { sed -n '2,6p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
@@ -124,10 +148,49 @@ for i in 0 1 2; do
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
 done
 
-# --- 5. construir ------------------------------------------------------------
-echo "== 5. xorriso: anadir, sin modificar nada"
+# --- 5. los DOS ficheros que si se modifican, preparados y comprobados aqui ---
+echo "== 5. el grub.cfg en espanol, y el md5sum.txt que lo cubre"
 TMP=$(mktemp -d) || fallo "mktemp"
 trap 'rm -rf "$TMP"' EXIT
+
+tar -xOf "$ISO" boot/grub/grub.cfg > "$TMP/grub.cfg.oficial" \
+    || fallo "no pude leer boot/grub/grub.cfg de la ISO"
+# §4.21d: en todo el medio hay UN solo grub.cfg y una sola linea de nucleo. Si
+# esto deja de ser verdad, la ISO no es la medida y hay que parar, no adivinar.
+n=$(grep -c '/casper/vmlinuz' "$TMP/grub.cfg.oficial")
+[ "$n" -eq 1 ] || fallo "esperaba UNA linea con /casper/vmlinuz y hay $n"
+grep -q 'locale=' "$TMP/grub.cfg.oficial" \
+    && fallo "el grub.cfg oficial ya trae un locale=: parar y mirar por que"
+# la palabra va ANTES del '---', que es la ranura de casper
+sed "s|/casper/vmlinuz|/casper/vmlinuz locale=$LOCALE|" \
+    "$TMP/grub.cfg.oficial" > "$TMP/grub.cfg"
+grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE .*---" "$TMP/grub.cfg" \
+    || fallo "la palabra no quedo en la linea del nucleo antes del ---"
+d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
+[ "$d" -eq 2 ] || fallo "grub.cfg cambia en $d lineas y tenia que cambiar en una"
+ok "grub.cfg: locale=$LOCALE en la linea del nucleo, y no cambia nada mas"
+
+tar -xOf "$ISO" md5sum.txt > "$TMP/md5sum.oficial" \
+    || fallo "no pude leer md5sum.txt de la ISO"
+n=$(grep -c '  \./boot/grub/grub.cfg$' "$TMP/md5sum.oficial")
+[ "$n" -eq 1 ] || fallo "md5sum.txt tiene $n lineas de grub.cfg y esperaba una"
+VIEJO=$(grep '  \./boot/grub/grub.cfg$' "$TMP/md5sum.oficial" | cut -d' ' -f1)
+# CONTROL de que esa linea habla de ESTE fichero y no de otro (§4.21d, medido a
+# mano entonces; aqui se vuelve a medir en cada construccion)
+[ "$(md5 -q "$TMP/grub.cfg.oficial")" = "$VIEJO" ] \
+    || fallo "la linea de md5sum.txt no describe el grub.cfg de esta ISO"
+NUEVO=$(md5 -q "$TMP/grub.cfg")
+[ "$NUEVO" != "$VIEJO" ] || fallo "el grub.cfg modificado tiene el mismo md5"
+sed "s|^$VIEJO  \./boot/grub/grub.cfg\$|$NUEVO  ./boot/grub/grub.cfg|" \
+    "$TMP/md5sum.oficial" > "$TMP/md5sum.txt"
+d=$(diff "$TMP/md5sum.oficial" "$TMP/md5sum.txt" | grep -c '^[<>]')
+[ "$d" -eq 2 ] || fallo "md5sum.txt cambia en $d lineas y tenia que cambiar en una"
+L=$(wc -l < "$TMP/md5sum.oficial" | tr -d ' ')
+[ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$L" ] || fallo "md5sum.txt cambia de tamano"
+ok "md5sum.txt: una linea rehecha (${VIEJO:0:8}… -> ${NUEVO:0:8}…), las otras $((L-1)) intactas"
+
+# --- 6. construir ------------------------------------------------------------
+echo "== 6. xorriso: anadir seis ficheros y reemplazar dos"
 mkdir -p "$TMP/encina-repo"
 cp "$YAML" "$TMP/autoinstall.yaml" || fallo "cp seed"
 cp "$REPO"/*.deb "$REPO"/Packages "$TMP/encina-repo/" || fallo "cp repo"
@@ -142,16 +205,21 @@ rm -f "$SALIDA"
 FECHA='2026021001455100'
 xorriso -indev "$ISO" -outdev "$SALIDA" \
         -boot_image any replay \
+        -overwrite on \
         -map "$TMP/autoinstall.yaml" /autoinstall.yaml \
         -map "$TMP/encina-repo" /encina-repo \
-        -alter_date_r b "$FECHA" /autoinstall.yaml /encina-repo -- \
-        -alter_date_r c "$FECHA" /autoinstall.yaml /encina-repo -- \
+        -map "$TMP/grub.cfg" /boot/grub/grub.cfg \
+        -map "$TMP/md5sum.txt" /md5sum.txt \
+        -alter_date_r b "$FECHA" /autoinstall.yaml /encina-repo \
+                                 /boot/grub/grub.cfg /md5sum.txt -- \
+        -alter_date_r c "$FECHA" /autoinstall.yaml /encina-repo \
+                                 /boot/grub/grub.cfg /md5sum.txt -- \
         -commit -end 2>&1 | grep -iE "^xorriso : (FAILURE|SORRY|WARNING)" | head -20
 [ -f "$SALIDA" ] || fallo "xorriso no produjo $SALIDA"
 ok "escrita: $(stat -f %z "$SALIDA") bytes"
 
-# --- 6. y ahora la parte que importa: comprobar que solo se anadio ----------
-echo "== 6. la cadena firmada, DESPUES (si cambia una, este banco no lo notaria)"
+# --- 7. y ahora la parte que importa: comprobar que solo se anadio ----------
+echo "== 7. la cadena firmada, DESPUES (si cambia una, este banco no lo notaria)"
 for i in 0 1 2; do
     d=$(tar -xOf "$SALIDA" "efi/boot/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
     [ "$d" = "${ANTES[$i]}" ] || fallo "CAMBIO ${EFI[$i]}
@@ -160,7 +228,7 @@ for i in 0 1 2; do
     ok "${EFI[$i]} intacto"
 done
 
-echo "== 7. lo anadido esta, y con las huellas de siempre"
+echo "== 8. lo anadido esta, y con las huellas de siempre"
 tar -xOf "$SALIDA" autoinstall.yaml | diff -q - "$YAML" >/dev/null \
     || fallo "el seed dentro de la ISO no coincide con $YAML"
 ok "/autoinstall.yaml == $(basename "$YAML")"
@@ -175,7 +243,7 @@ if tar -tf "$SALIDA" 2>/dev/null | grep -q "^encina-repo/fichero-que-no-existe";
 fi
 ok "control: un fichero que no se metio no aparece"
 
-echo "== 8. el arranque: la FORMA y el CONTENIDO de la ESP, contra la oficial"
+echo "== 9. el arranque: la FORMA y el CONTENIDO de la ESP, contra la oficial"
 # OJO: los desplazamientos y el tamano de la ESP CAMBIAN por fuerza al anadir
 # ficheros -- la ISO crece y la particion anadida se mueve al final, y xorriso
 # la alinea rellenando con ceros (-partition_cyl_align all). Comparar LBAs seria
@@ -231,6 +299,89 @@ if [ "$SOBRA" -gt 0 ]; then
     [ "$NOCERO" = 0 ] || fallo "los $SOBRA sectores que xorriso anade a la ESP NO son ceros ($NOCERO bytes)"
     ok "los $SOBRA sectores de mas son relleno de alineacion: 0 bytes distintos de cero"
 fi
+
+# --- 10. el medio entero, fichero a fichero ----------------------------------
+# Mientras E3 solo anadia ficheros, «no se modifico nada» se podia argumentar.
+# Desde que toca grub.cfg y md5sum.txt hay que ENSENARLO, y sobre TODAS las
+# entradas del medio, no solo sobre las 266 que md5sum.txt cubre. Se lee cada
+# imagen UNA sola vez: xorriso da el LBA y el tamano de cada fichero y el md5 se
+# calcula buscando dentro de la propia imagen, sin extraer 3,4 GB a disco.
+echo "== 10. el medio entero, fichero a fichero, contra la oficial"
+cat > "$TMP/mapa.py" <<'PY3'
+import sys, hashlib
+f = open(sys.argv[1], "rb")
+for linea in sys.stdin:
+    if not linea.startswith("File data lba:"):
+        continue
+    p = linea.split(",", 4)
+    lba, tam, ruta = int(p[1]), int(p[3]), p[4].strip().strip("'")
+    h = hashlib.md5()
+    f.seek(lba * 2048)
+    leidos = 0
+    while leidos < tam:
+        t = f.read(min(1 << 20, tam - leidos))
+        if not t:
+            break
+        h.update(t)
+        leidos += len(t)
+    if leidos != tam:
+        sys.exit("no pude leer entera: " + ruta)
+    print(h.hexdigest(), ruta)
+PY3
+mapa() {
+    xorriso -indev "$1" -find / -type f -exec report_lba -- 2>/dev/null \
+        | python3 "$TMP/mapa.py" "$1" | LC_ALL=C sort -k2
+}
+mapa "$ISO"    > "$TMP/mapa.oficial" || fallo "no pude mapear la ISO oficial"
+mapa "$SALIDA" > "$TMP/mapa.nuestra" || fallo "no pude mapear la ISO construida"
+# guarda: si alguna ruta llevara espacios, el resto de este bloque mentiria
+awk 'NF!=2 {exit 1}' "$TMP/mapa.oficial" \
+    || fallo "hay rutas con espacios en el medio: esta comprobacion no vale"
+ok "leidas $(wc -l < "$TMP/mapa.oficial" | tr -d ' ') entradas de la oficial y $(wc -l < "$TMP/mapa.nuestra" | tr -d ' ') de la nuestra"
+
+awk '{print $2}' "$TMP/mapa.oficial" | LC_ALL=C sort > "$TMP/rutas.oficial"
+awk '{print $2}' "$TMP/mapa.nuestra" | LC_ALL=C sort > "$TMP/rutas.nuestra"
+{ echo /autoinstall.yaml; echo /encina-repo/Packages
+  for i in 0 1 2 3; do echo "/encina-repo/${FICHEROS[$i]}"; done
+} | LC_ALL=C sort > "$TMP/anadidos.esperados"
+LC_ALL=C comm -13 "$TMP/rutas.oficial" "$TMP/rutas.nuestra" > "$TMP/anadidos"
+LC_ALL=C comm -23 "$TMP/rutas.oficial" "$TMP/rutas.nuestra" > "$TMP/quitados"
+[ ! -s "$TMP/quitados" ] || fallo "la ISO nuestra ha PERDIDO ficheros:
+$(cat "$TMP/quitados")"
+diff -q "$TMP/anadidos.esperados" "$TMP/anadidos" >/dev/null \
+    || fallo "los ficheros anadidos no son los seis esperados:
+$(diff "$TMP/anadidos.esperados" "$TMP/anadidos")"
+ok "seis ficheros anadidos, ni uno mas, y ninguno perdido"
+
+LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
+    | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"
+printf '%s\n' /boot/grub/grub.cfg /md5sum.txt | LC_ALL=C sort > "$TMP/cambiados.esperados"
+diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
+    || fallo "los ficheros modificados no son los dos declarados:
+$(diff "$TMP/cambiados.esperados" "$TMP/cambiados")"
+ok "modificados exactamente dos: /boot/grub/grub.cfg y /md5sum.txt"
+# CONTROL de la comparacion entera: tiene que saber ver un cambio donde lo hay.
+# Se compara la oficial consigo misma cambiandole una huella a mano.
+awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \
+    | LC_ALL=C sort -k2 > "$TMP/mapa.saboteada"
+c=$(LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.saboteada" | awk '$2!=$3' | wc -l | tr -d ' ')
+[ "$c" -eq 1 ] || fallo "CONTROL ROTO: la comparacion no ve una huella cambiada"
+ok "control: con una huella saboteada, la comparacion la senala"
+
+echo "== 11. la integridad del propio medio, contra el md5sum.txt NUEVO"
+tar -xOf "$SALIDA" md5sum.txt | sed 's|  \./|  /|' | LC_ALL=C sort -k2 > "$TMP/md5.declarado"
+d=$(wc -l < "$TMP/md5.declarado" | tr -d ' ')
+c=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.declarado" "$TMP/mapa.nuestra" | wc -l | tr -d ' ')
+[ "$c" -eq "$d" ] || fallo "solo se pudieron comparar $c de $d lineas de md5sum.txt"
+m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.declarado" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
+[ "$m" -eq 0 ] || fallo "$m de las $d lineas de md5sum.txt NO cuadran con el medio"
+ok "las $d lineas de md5sum.txt cuadran con la ISO construida, la del grub.cfg incluida"
+# CONTROL: con el md5sum.txt OFICIAL, la del grub.cfg tiene que fallar -- que es
+# exactamente la ISO que se entregaria si alguien se saltara el precio de §4.21d
+sed 's|  \./|  /|' "$TMP/md5sum.oficial" | LC_ALL=C sort -k2 > "$TMP/md5.oficial.rutas"
+m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.oficial.rutas" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
+[ "$m" -eq 1 ] || fallo "CONTROL ROTO: con el md5sum.txt oficial esperaba 1 fallo y hay $m"
+ok "control: con el md5sum.txt OFICIAL falla exactamente una linea, la del grub.cfg"
 
 echo
 echo "iso:    $SALIDA"

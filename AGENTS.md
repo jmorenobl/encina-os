@@ -1333,6 +1333,16 @@ justamente para no llegar al reempaquetado con tres candidatos.
 Cada casilla con lo que daría en un sistema sano y en uno roto. **No marcar
 ninguna sin la salida literal.**
 
+**CONTRA QUÉ ISO ESTÁ MARCADA CADA UNA, que desde el 2026-08-10 hay dos y sin
+esto la lista mentiría.** Las ocho se marcaron contra `encina-os-E3.iso`
+(`0a1127f4…`), la del instalador en inglés. La novena obliga a una ISO nueva,
+`encina-os-E3-es.iso` (`02ab929d…`), y **una ISO distinta es otro artefacto**:
+las casillas que hablan del **fichero** se remarcan solas al construirla —el
+guion las comprueba todas en cada construcción, y con la nueva salieron verdes—,
+pero las tres que hablan de **arrancarla** no las puede marcar ningún guion, así
+que **vuelven a abrirse** y se cierran con la misma instalación que cierra la
+novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
+
 - [x] **La forma nueva funciona, y se mide ANTES de tocar `xorriso`, con un
       volumen `CIDATA`.** Es el paso que separa «¿es esta la forma correcta?» de
       «¿sé reempaquetar una ISO?», y las dos preguntas no se mezclan.
@@ -1347,41 +1357,63 @@ ninguna sin la salida literal.**
       secuencia tecleada a mano. *Sano:* se ejecuta dos veces y produce la misma
       huella, o si no la produce se dice **por qué** y qué byte cambia. *Roto:*
       hace falta acordarse de un paso.
-- [x] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
+- [ ] **La ISO no necesita nada de fuera.** *Sano:* el `debug.log` de QEMU **sin
       `-append`** y **con un solo disco además de la ISO** —el de destino—, o sea
       que **no había ningún `CIDATA` conectado**. *Roto:* cualquier `-append`, o
       un segundo `-drive`. **Es el control que importa y es nuevo:** con un
       `CIDATA` enganchado la instalación saldría bien **midiendo el seed
       equivocado** (§4.21c, trampa 16). **La prueba es lo que NO estaba
       conectado, y eso solo se ve desde fuera y antes de arrancar.**
-- [x] **La ISO es la oficial reempaquetada, y se demuestra.** *Sano:* los tres
-      binarios firmados con **la misma sha256** que en la ISO oficial, y la lista
-      de diferencias del medio cabe en una línea: **solo ficheros añadidos** —el
-      `autoinstall.yaml` y el repo local—, **ninguno modificado**. *Roto:*
-      cualquier binario firmado con huella distinta — y ojo, que **este banco no
-      lo detectaría al arrancar**, así que la huella es la única señal.
-- [x] **La comprobación de integridad del propio medio sigue pasando.** *Sano:*
-      las 266 líneas de `md5sum.txt` cuadran, porque no se ha modificado ninguno
-      de los ficheros que cubre. *Roto:* cualquiera que falle — y sería un aviso
-      de que se ha tocado algo que la forma de §6ter.0 dice que no hay que tocar.
-- [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
+      **Reabierta el 2026-08-10:** se marcó con el `debug.log` de la ISO
+      `0a1127f4…`, y el `debug.log` de otra ISO es otro `debug.log`.
+- [x] **La ISO es la oficial reempaquetada, y se demuestra.** **REESCRITA el
+      2026-08-10 con su motivo, al añadir la novena casilla:** decía «solo
+      ficheros añadidos, ninguno modificado», y eso dejaba de ser verdad en
+      cuanto el instalador tenía que hablar español. No se afloja — se hace **más
+      exigente**, porque ahora hay que enseñar *qué* cambió y no solo *que* nada
+      cambió. *Sano:* los tres binarios firmados con **la misma sha256** que en
+      la ISO oficial, y la lista de diferencias del medio entero —las **501**
+      entradas, no solo las 266 de `md5sum.txt`— es exactamente ésta: **seis
+      ficheros añadidos** (`/autoinstall.yaml` y los cinco de `/encina-repo/`),
+      **dos modificados y nombrados** (`/boot/grub/grub.cfg` y `/md5sum.txt`),
+      **ninguno perdido**. *Roto:* cualquier binario firmado con huella distinta
+      —y ojo, que **este banco no lo detectaría al arrancar**, así que la huella
+      es la única señal—, o **un solo fichero cambiado que no sea uno de esos
+      dos**. **Con su control:** la comparación tiene que señalar una huella
+      saboteada a mano.
+- [x] **La comprobación de integridad del propio medio sigue pasando, contra el
+      `md5sum.txt` NUEVO.** **REESCRITA a la vez que la de arriba, y es el precio
+      de §4.21d pagado entero.** *Sano:* las 266 líneas del `md5sum.txt` **que
+      viaja en la ISO construida** cuadran con el medio, la del `grub.cfg`
+      incluida. *Roto:* cualquiera que falle. **Y el control que hace que esto no
+      sea autocomplaciente:** con el `md5sum.txt` **oficial** tiene que fallar
+      **exactamente una** línea, la de `./boot/grub/grub.cfg` — que es la ISO que
+      se entregaría si alguien editara el `grub.cfg` y no pagara el precio.
+- [ ] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
       root, **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c,
       **con el usuario que haya elegido quien instaló**, no con uno fijo. *Roto:*
       cualquier diferencia — y sería un hallazgo, porque el trabajo del seed es
       el mismo y solo ha cambiado quién contesta las preguntas.
+      **Reabierta el 2026-08-10:** la máquina que la marcó salió de `0a1127f4…`.
+      Y **ahora la casilla dice más de lo que decía**, porque el `locale=` del
+      `grub.cfg` toca la sesión viva: si esa máquina saliera distinta, el arreglo
+      del idioma habría cambiado algo que no tenía que cambiar.
 - [x] **En la ISO no hay ninguna credencial.** *Sano:* ni `identity:`, ni
       contraseña, ni hash, ni clave ssh en el seed que viaja dentro — comprobado
       sobre el fichero extraído de la ISO construida, no sobre el del
       repositorio. *Roto:* cualquiera de las cuatro cosas. **Con su control:** la
       búsqueda tiene que saber encontrarlas en el seed de laboratorio, que sí las
       lleva.
-- [x] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
+- [ ] **[OJOS] La ISO se entrega y se instala en una VM creada desde cero**, sin
       relación con las del proyecto: sin clonar, sin heredar configuración, sin
       que nadie le pase ningún parámetro y **sin más intervención que contestar
       las pantallas que Ubuntu pregunta**. Es la casilla que decide, porque es
       literalmente lo que E3 promete —«se la puedes dar a alguien»— y lo único
       que no se puede comprobar reutilizando el banco. **Va acompañada de lo que
       se contestó**, para que se sepa qué se dio por normal.
+      **Reabierta el 2026-08-10:** se marcó instalando `0a1127f4…`. La ISO que se
+      entrega es `02ab929d…`, y esta casilla es literalmente «se la puedes dar a
+      alguien»: no la puede heredar una ISO de otra.
 
 - [ ] **NOVENA CASILLA, añadida el 2026-08-10 DESPUES de marcar las ocho, con
       su motivo (§4.23e).** *El instalador se ve en el idioma del producto.*
@@ -1399,6 +1431,15 @@ ninguna sin la salida literal.**
       añadir ficheros» y **hay que rehacer `md5sum.txt`** (§4.21d). La casilla de
       integridad de arriba pasa a comprobar el `md5sum.txt` **nuevo**, no el
       oficial.
+      **EL PRECIO YA ESTÁ PAGADO, y lo que falta es exactamente lo que no puede
+      pagar ningún guion** (2026-08-10, §4.25): `imagen/fabricar-iso.sh` pone la
+      palabra, rehace la línea de `md5sum.txt`, y **enseña que no cambió nada
+      más** comparando las 501 entradas del medio contra la oficial —seis
+      añadidos, dos modificados y nombrados, ninguno perdido—, con el control de
+      que **con el `md5sum.txt` oficial falla exactamente una línea**. La ISO
+      `encina-os-E3-es.iso` (`02ab929d…`) existe, es reproducible y los tres
+      binarios firmados siguen intactos. **Lo que queda es mirar la pantalla**, y
+      eso es de Jorge.
 
 **Lo que E3 NO promete, y va escrito para que no se cuele como casilla verde:**
 que la ISO arranque en una máquina con **Secure Boot activo**. Este banco no lo
@@ -1416,7 +1457,7 @@ Nada de esto existe todavía; se escribe según se mida.
 | `imagen/autoinstall.yaml` | **El de E2, y se queda como está.** Es la única prueba que queda de que la receta entera funciona **sin humano**, y sigue corriendo con `CIDATA` en el banco. Su contraseña de laboratorio es legítima ahí y **no viaja a ninguna ISO** |
 | `imagen/encina-seed.sh` | **El mismo, sin cambios.** Los dos seeds llevan su base64 y `fabricar-seed.sh` se sigue negando si se separan |
 | `imagen/verificar-e2.sh` | **El mismo, sin cambios**: la máquina que sale tiene que ser la misma |
-| `imagen/fabricar-iso.sh` | **No existe todavía.** Construirá la ISO a partir de la oficial **añadiendo ficheros y sin modificar ninguno**: el seed y el repo local. Comprueba las huellas de los tres binarios firmados antes y después, y **se niega** si algo no cuadra, como `fabricar-seed.sh` |
+| `imagen/fabricar-iso.sh` | **Escrito el 2026-08-10, y ampliado el mismo día.** Construye la ISO a partir de la oficial **añadiendo seis ficheros —el seed y el repo local— y modificando dos, nombrados: `boot/grub/grub.cfg` (el `locale=` del instalador) y `md5sum.txt` (su precio, §4.21d)**. Comprueba las huellas de los tres binarios firmados antes y después, compara **las 501 entradas del medio** contra la oficial, verifica las 266 líneas de `md5sum.txt` contra la ISO construida, y **se niega** si algo no cuadra, como `fabricar-seed.sh`. Es reproducible: misma entrada, misma huella |
 
 **Un apaño pequeño que hace falta antes del paso 1:** `fabricar-seed.sh` tiene la
 ruta `autoinstall.yaml` fija (`$AQUI/autoinstall.yaml`). Para fabricar el volumen
