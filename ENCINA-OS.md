@@ -430,14 +430,13 @@ Tres matices:
 
 ## 9. Las VMs de UTM
 
-**Son trece desde el 2026-08-10**, y ya no forman una sola familia.
+**Son diez desde el 2026-08-10**, y ya no forman una sola familia.
 
 - **Las ocho de E1** —clonadas unas de otras— comparten hostname `encina-dev`,
   usuario `jorge` con `sudo` sin contraseña y la IP `192.168.64.3`. **El hostname
   no distingue nada entre ellas.** Para saber en cuál estás, lo que funciona es
   «paquetes instalados + versión del Snap de Firefox + qué perfiles existen».
-- **Las cinco de E2**: cuatro **nacen de la ISO oficial** y la quinta
-  (`encina-E2-firefox`) es clon de una de ellas. Con usuario
+- **Las cuatro de E2**, todas **nacidas de la ISO oficial**, con usuario
   `encina` y una IP propia cada una (`.4`, `.5`, `.7`, `.8`). Se entra con la
   clave efímera de la medición, no con la de siempre. Dos comparten hostname
   `encina-e2`; `encina-E2-sinsnap` y `encina-E2-completa` traen el suyo desde su
@@ -459,14 +458,14 @@ Tres matices:
 | `encina-E1-vigilante` | **Donde se cerró el defecto de §4.12a.** Clon virgen instalado por la secuencia de E1 **sin el cuarto paso**, con `autofirma 1.9.1+encina2`: la CA del socket llegó sola al perfil al abrir Firefox (M18 de `encina-autofirma`). **Sin ningún certificado personal**, así que no le aplican las precauciones de §9.1 | `gpu-pci` | **Parada.** Se queda de momento: es el testigo del arreglo. **No sirve para reproducir el caso virgen otra vez** —ya tiene la CA dentro—, para eso hay que clonar de nuevo. El autologin de GDM que hizo falta quedó revertido y verificado por huella (`ceee968c…10af`) |
 | `encina-limpia-respaldo` | Ubuntu 24.04.4 arm64 de fábrica, sin nada. Firefox nunca abierto | `gpu-pci` | Se queda: línea base virgen, y de ella se clona. **Cambiada el 2026-08-08** para que los clones no nazcan con AutoFirma invisible (§4.12g) |
 | `encina-autofirma-rota` | AutoFirma 1.9 **oficial** sobre Firefox nativo, con la cadena causal medida | `gpu-pci` | Se queda: es la mitad roja de las mediciones, y la base del positivo de §4.9 |
-| `encina-dev-firefox` | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Redundante.** Candidata a borrar |
+| ~~`encina-dev-firefox`~~ | «Hoy en el mismo estado que la anterior» | `gpu-pci` | **Borrada el 2026-08-10** en la limpieza. Era redundante con `encina-autofirma-rota`, que se queda |
 | `encina-snap-fabrica` | Ubuntu de fábrica + Snap. Caso positivo de la CA correcta y caso de prueba de B3 | `ramfb-gl` | **Ya no es candidata a borrar, y no por el Snap:** es el **único testigo de `ramfb-gl`** que queda, o sea el único sitio donde se puede reproducir que AutoFirma no se dibuja (§4.12g) |
-| `encina-A2-verificada` | Red de seguridad de A2 | `gpu-pci` | A2 está en git y en CI verde. **Candidata** |
+| ~~`encina-A2-verificada`~~ | Red de seguridad de A2 | `gpu-pci` | **Borrada el 2026-08-10** en la limpieza. A2 está en git y en CI verde |
 | ~~`encina-firma-efimera`~~ (2026-08-08) | El positivo de E1, sobre máquina virgen, con la secuencia que aún necesitaba un cuarto paso | `ramfb-gl` | **Destruida el 2026-08-08**, como manda §9.1: llevaba dentro el certificado personal |
 | ~~`encina-firma-efimera`~~ (2026-08-09) | **La casilla que decide.** Otro clon virgen, mismo nombre, con la secuencia ya de tres órdenes: 29/0/1/1, la CA llegando sola, y la firma mirada en pantalla (§4.13) | `gpu-pci` | **Destruida el 2026-08-09.** Mismo motivo, misma regla: llevaba el certificado personal |
 | `encina-E2-seed` | **Vía A de E2.** No es un clon: **nace de la ISO oficial**, instalada por el seed `CIDATA` con un clic en «Ready to install» (§4.14d). Es también donde se cerró la casilla novena con el repo local en `/srv/encina-repo` (§4.15) | `gpu-pci` | **En uso.** Su estado tras §4.15: `encina-meta` purgado y los otros tres puestos y marcados automáticos. **Sin ningún certificado personal.** Lleva un `sudoers.d` sin contraseña puesto para medir, y `dpkg-dev` purgado |
 | `encina-E2-desatendida` | **Vía B de E2, y el testigo que importa: instalada sin que nadie la tocara**, con `autoinstall` en la línea de órdenes y `-no-reboot` (§4.14h). Sus dos testigos de `late-commands` están dentro | `gpu-pci` | **Parada.** Se queda: es la única máquina del proyecto que nadie ha tocado a mano. **Sin certificado personal** |
-| `encina-E2-firefox` | **Banco de §4.17.** Clon de `encina-E2-sinsnap` hecho con `duplicate` de UTM para no gastar la línea base. Aquí se midió por qué vía llega Firefox nativo sin deb de transición, y salió el duplicado de iconos | `gpu-pci` | **Parada.** Tiene la secuencia de §6.4 completa puesta **a mano**, así que **no sirve como testigo de nada instalado por seed**. `sudo` sin contraseña puesto para medir. **Sin certificado personal** |
+| ~~`encina-E2-firefox`~~ | **Fue el banco de §4.17**, clon de `encina-E2-sinsnap`. Allí se midió por qué vía llega Firefox nativo sin deb de transición, y salió el duplicado de iconos | `gpu-pci` | **Borrada el 2026-08-10** en la limpieza. Su medición está escrita en §4.17, y su estado final lo reproduce `encina-E2-completa` **por seed** en vez de a mano |
 | `encina-E2-completa` | **LA MÁQUINA DE E2, y la primera Encina OS entera instalada sola.** Nace de la ISO oficial con el seed definitivo `imagen/autoinstall.yaml` (§4.18): repo local con los cuatro `.deb` dentro del propio volumen, `encina-meta`, sin Snap, Firefox nativo en español. Hostname `encina-e2-completa`, IP `.8`. Su bundle de UTM se construyó a mano | `gpu-pci` | **Parada.** Se queda: es de aquí de donde sale el clon efímero de la firma. **Sin ningún certificado personal.** **Ya no es virgen de Firefox**: se abrió una vez, a propósito, para medir el vigilante de AutoFirma (§4.18l). Lleva dentro su propio registro de instalación en `/etc/encina-seed.log`, 1916 líneas |
 | ~~`encina-E2-control`~~ → `encina-E2-sinsnap` | **Era el control de §4.14i**, cuyo valor estaba en el registro y no en el disco. **Se consumió el 2026-08-10** para medir si el Snap se puede quitar desde el seed (§4.16), y **ya no es un control**: lo que queda de aquel control es lo escrito en §4.14i | `gpu-pci` | **Parada.** Ahora es **la primera máquina de Encina OS sin Snap**: instalada desatendida en 8 min 32 s, sin `/var/lib/snapd`, sin `/snap`, sin orden `snap`, con el saludador de GDM vivo. Hostname propio `encina-e2-sinsnap`, IP `.7`. **Sin certificado personal**, y **sin `sudo` sin contraseña** (al revés que `encina-E2-seed`) |
 
@@ -491,6 +490,32 @@ estados conocidos antes de usarla (§4.12e):
 ```
 sudo dmesg | grep '\[drm\] features:'      # +virgl = ramfb-gl ; -virgl = gpu-pci
 ```
+
+### 9.a Cuánto ocupan de verdad, que no es lo que dice `du`
+
+**Medido el 2026-08-10, haciendo limpieza, y no es un detalle:** se borraron tres
+VMs que sumaban **34,8 GB según `du`** y el disco solo devolvió **unos 2 GiB**.
+
+El motivo es que **un clon de APFS no ocupa nada y `du` lo cuenta entero**, y las
+VMs de este proyecto están clonadas unas de otras —las de E1 entre sí, y
+`encina-E2-firefox` con el `duplicate` de UTM (§4.17b)—. Medido con su control,
+que es lo que separa las dos mitades:
+
+```
+cp    fichero copia   ->  el disco baja 2000 MB    du: 2000 MB
+cp -c fichero clon    ->  el disco baja      0 MB    du: 2000 MB   <- la mentira
+borrar el clon        ->  el disco sube      0 MB
+```
+
+`cp` normal **no** clona, así que la comparación no es una suposición: la misma
+orden con y sin `-c` da resultados opuestos, y `du` responde lo mismo en los dos
+casos.
+
+**Consecuencia práctica, para la próxima limpieza:** borrar un clon libera solo
+lo que ha divergido. Lo que devuelve espacio de verdad son las máquinas
+**independientes** —las cuatro de E2 nacen cada una de la ISO, así que no
+comparten bloques con nadie— o **una familia entera** de clones. Y **no se puede
+elegir por tamaño mirando `du`**: hay que saber quién es clon de quién.
 
 ### 9.1 No hay estado bueno conservable, y es a propósito
 
