@@ -99,7 +99,7 @@ redacción y la cuarta se enmienda.
 |---|---|
 | `encina-branding` | **Construido, instalado y probado.** v0.1.6, 10/10 de la definición de terminado en VM Ubuntu 24.04 arm64, cuatro comprobaciones miradas en pantalla |
 | `encina-firefox-native` | **Construido, instalado y probado.** v0.2.1 (2026-08-10), que pone `NoDisplay=true` en la sombra y deja **un solo icono de Firefox** en las dos máquinas, con y sin Snap, sin reabrir A2 (§4.19). La definición de terminado pasa de siete casillas a nueve: las dos nuevas cuentan *cuántos* iconos hay y comprueban que ocultar no es desactivar. **Es condición necesaria del producto, y está medido por qué** (§4) |
-| `autofirma 1.9.1+encina2` | **Construido, probado, y con el primer positivo de extremo a extremo del proyecto.** En `~/Projects/encina-autofirma`, anclado en `v1.9.1`, CI verde en amd64 y arm64. **`+encina2`, del 2026-08-09, cierra el defecto de `MEDICIONES.md` §4.12a**: dos unidades de systemd de usuario meten la CA del socket en el perfil de Mozilla cuando el perfil aparece, así que la secuencia de E1 vuelve a ser de tres órdenes (M14–M18 de aquel repositorio) |
+| `autofirma 1.9.1+encina2` | **Construido, probado, y con el primer positivo de extremo a extremo del proyecto.** En `~/Projects/encina-autofirma`, anclado en `v1.9.1`, CI verde en amd64 y arm64. **`+encina2`, del 2026-08-09, cierra el defecto de `MEDICIONES.md` §4.12a**: dos unidades de systemd de usuario meten la CA del socket en el perfil de Mozilla cuando el perfil aparece, así que la secuencia de E1 vuelve a ser de tres órdenes (M14–M18 de aquel repositorio). **Y ya no es la última versión, aunque sí la que viaja en el medio de la entrega** (2026-08-12): **`+encina3`** (`2d985724…`, M19) quita el almacén NSS de root que el paquete dejaba dentro de los perfiles —eran **tres puertas**, y la tercera era desinstalar—, y **`+encina4`** (`faeca3a9…`, M20) hace que la espera del vigilante sea **por raíz**, que es lo que cierra §4.29e. **Estado real, preguntado y no leído:** `+encina3` está en `main` de aquel repositorio **y su CI está en ROJO** —`[FALLO] la CA no ha llegado sola en 30 s`, `medir-automatismo-systemd` arm64, que **es §4.29e apareciendo sola en el runner**—; **`+encina4` está en la rama `m20-espera-por-raiz`, verde en las dos arquitecturas y SIN FUSIONAR**. Fusionarla es lo que devuelve `main` al verde, y es decisión pendiente |
 | Forks de AutoFirma | `jmorenobl/{clienteafirma, jmulticard, clienteafirma-external}`. **CINCO PRs, y las CINCO ABIERTAS** contra `ctt-gob-es/clienteafirma`: **#552** `control-recommends`, **#553** `perfiles-xdg-configurador`, **#554** `nss-multiarch` y **#555** `esquema-afirma-firefox-moderno`, las cuatro el **2026-08-07** (22:17–22:19Z); y **#556** `no-fabricar-almacen-nss`, la que sale de §4.29c, el **2026-08-11** (22:04Z). **Esta celda decía «cuatro PRs escritas; abrirlas está pendiente», y era falsa desde el día que se escribió**: se descubrió al ir a abrir la quinta, porque `gh pr create` contestó *«a pull request for branch … already exists»* (M19j de `encina-autofirma`). Se comprueba con `gh pr list --repo ctt-gob-es/clienteafirma --author jmorenobl --state all` |
 | Repositorio git | `jmorenobl/encina-os`, **ya público** (comprobado el 2026-08-09: `gh repo view` da `"visibility":"PUBLIC"`), como pedía D5. **`jmorenobl/encina-autofirma` sigue privado**, y por eso la secuencia de instalación todavía no la puede completar alguien de fuera |
 | Integración continua | `.github/workflows/build.yml`, una entrada de matriz por paquete. Verde por `push` y por `workflow_dispatch` |
@@ -325,6 +325,14 @@ tres cosas, en este orden, y las dos primeras cuestan mucho menos que la tercera
    punto 1, el `--yaml` pendiente de `fabricar-seed.sh` (§6ter.4) y
    `imagen/verificar-e2.sh` reescrito —la casilla «Sin Snap» se sustituye y el
    control de «25 aplicaciones visibles» deja de valer 25—.
+   **Y el `.deb` que tiene que viajar dentro es `autofirma 1.9.1+encina4`
+   (`faeca3a9…`)**, no el `+encina2` que lleva hoy el medio: es la razón por la
+   que `+encina3` y `+encina4` se hicieron **antes** de esta vuelta, porque el
+   ritual de rehacer el seed son cuatro cosas y se paga **por vuelta**.
+   **Cuidado al construir:** `encina-autofirma/salida/` tiene ya **tres** `.deb`
+   de `autofirma` —`d5a0ebe1…`, `2d985724…`, `faeca3a9…`—, así que la trampa de
+   §4.13 es peor que nunca: **se elige por ruta entera y se comprueba la huella,
+   nunca con `ls -t | head -1`**.
 
 **Lo que sigue pendiente de decidir, y es producto:** qué ofimática exactamente
 —`writer + calc` o la suite, y **obligatoriamente con `libreoffice-l10n-es` y

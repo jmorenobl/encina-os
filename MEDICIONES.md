@@ -5850,14 +5850,36 @@ un perfil de Snap presente `hay_perfiles()` sigue dando verdad **desde otra
 raíz** y la espera se sigue saltando justo cuando nace el perfil nativo. **Ajeno
 ≠ de otra raíz.**
 
-**La forma del arreglo, si alguna vez se hace:** la espera tiene que ser **por
-raíz** —esperar si alguna raíz vigilada tiene directorio de Mozilla y **ningún
-almacén mío en esa raíz**—, y se puede medir en contenedor sin VM, declarando que
-lo que se prueba es **la lógica de la espera** y no la llegada de la CA: para eso
-un almacén creado con `certutil -N` como el usuario vale, y no choca con la regla
-del almacén fabricado, que es sobre otra cosa. **Y si se hace, va antes de la
-vuelta de E4**, por la misma economía que puso `+encina3` antes: el ritual de las
-cuatro cosas del seed se paga por vuelta.
+~~**La forma del arreglo, si alguna vez se hace:**~~ **HECHO EL 2026-08-12, en
+`autofirma 1.9.1+encina4`** (M20 de `encina-autofirma`), y **se hizo porque la
+medición dijo que sale barato, no porque lo pareciera.** La espera es ahora **por
+raíz**, y este apartado queda cerrado con tres números que no eran míos:
+
+```
+sin raiz de Snap delante (control)   8044 ms   CA en el perfil nativo: 1
+con almacen de Snap delante          21 ms     CA en el perfil nativo: 0   <- esto era 4.29e
+con +encina4                         8080 ms   CA en el perfil nativo: 1   por huella
+```
+
+**8044 ms contra 21 ms es este apartado entero**, y es la primera vez que el
+defecto se ve **fallar**: aquí ganó la carrera por un flanco tardío, y en
+contenedor, sin ese flanco, se pierde.
+
+**Y lo que yo no había previsto, que es lo que hacía peligroso el arreglo:**
+esperar por raíz **a secas** habría sido peor que el defecto —una raíz fantasma
+cuesta **20153 ms** en cada disparo—. Lo que lo hace barato no es la espera sino
+**una ventana**: `AUTOFIRMA_VENTANA_RAIZ=30`, y el 30 **está medido y no
+elegido** —1 s del nacimiento de la raíz a que exista `cert9.db` con el Firefox
+nativo, 2 s en M18, 1 s en §4.29e: quince veces el peor de los tres—. Con la
+ventana, la raíz fantasma vuelve a costar 21 ms y el peor caso son 30 s, no 90.
+
+**Lo que sigue SIN medir, y es justo el escenario de este apartado:** todo eso
+está hecho **en contenedor**. **Nadie ha visto a `+encina4` funcionando en una
+máquina con un Snap de Firefox de verdad** — eso es esta sección, y va con VM.
+Lo que cambia para la casilla de E4 es de dónde cuelga la afirmación: «la CA
+llega sola» vuelve a apoyarse en el mecanismo de M15(F) **y no en la carambola
+de flancos**, pero apoyarse en un mecanismo medido en contenedor no es lo mismo
+que haberlo visto en el estado (c).
 
 #### (f) Q3 — el que se usó el último, y la prueba discrimina en tres direcciones
 

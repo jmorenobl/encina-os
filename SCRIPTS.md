@@ -714,6 +714,12 @@ Vale para cualquier cambio de paquete, y son cuatro cosas, no una
 2. **`imagen/fabricar-seed.sh`**: el nombre en el array `FICHEROS`.
 3. **El índice `Packages`**, regenerado con `dpkg-scanpackages` **en una VM**
    —no existe en macOS—, porque lleva `Version`, `Size`, `Filename` y `SHA256`.
+0. **AVISO DEL 2026-08-12, y es lo primero porque es lo que más fácil sale mal:**
+   `encina-autofirma/salida/` tiene ya **TRES** `.deb` de `autofirma`
+   —`d5a0ebe1…` (`+encina2`), `2d985724…` (`+encina3`) y `faeca3a9…`
+   (`+encina4`)—. **Se elige por ruta entera y se comprueba la huella**; con
+   `ls -t | head -1` construirías una cosa distinta de la que crees, y es la
+   trampa de §4.13 con tres candidatos en vez de dos.
 4. **Los otros tres `.deb` se sacan del volumen del seed anterior**, no de
    `debian-packages/` de este repositorio: es la trampa de §4.13, y allí hay
    ficheros con la misma versión y **otros bytes**.
@@ -1112,3 +1118,48 @@ Y el control de que quedó consistente son **las dos mitades**: que
 `utmctl list` y `ls -d *.utm` den el mismo número, y que cada nombre listado
 tenga su bundle en disco. Un registro con una entrada de más es exactamente la
 trampa 18 al revés.
+
+---
+
+## Y dos más, midiendo la espera por raíz (2026-08-12)
+
+Las dos son de M20 de `encina-autofirma`, las dos son **del instrumento y no del
+sistema**, y las dos las cazó un control que estaba puesto para otra cosa. Van
+juntas porque enseñan lo mismo por dos caminos: **un instrumento que se equivoca
+no da un número raro, da el número que esperabas.**
+
+**22. `PID=$(...)` no espera al subshell: espera a que se cierre la tubería, y un
+trabajo en segundo plano la mantiene abierta.** Midiendo cuánto tarda el vigilante
+en instalar la CA, el control «sin raíz de Snap» dio **32 ms** cuando tenía que dar
+unos 8 s. El almacén diferido —el que aparece unos segundos después, para simular
+a Firefox creándolo— se lanzaba así:
+
+```
+PID=$(lanzar_almacen_diferido & echo $!)      # <- la sustitucion no vuelve hasta
+                                              #    que se cierra la tuberia, y el
+                                              #    trabajo en segundo plano la
+                                              #    tiene cogida
+```
+
+La sustitución de órdenes lee hasta EOF, y el proceso en segundo plano hereda el
+descriptor de escritura, así que `$(...)` **no vuelve cuando el subshell termina:
+vuelve cuando ese descriptor se cierra**. Resultado: el ayudante arrancaba con el
+perfil **ya hecho**, y entonces **contesta lo mismo con el mecanismo bueno y con el
+malo** — trampa 5, pero dentro del instrumento, que es donde no se busca. Se evita
+lanzando el trabajo y leyendo `$!` **sin** sustitución de órdenes, o redirigiendo
+la salida del trabajo a `/dev/null` para no dejarle la tubería.
+
+**23. Un contador que lee el `journal` en un contenedor cuenta cero, y el cero
+parece la respuesta.** Contando cuántas veces arranca el servicio mientras la
+unidad `.path` recibe once flancos, la cuenta salía **«0 arranques para 11
+flancos»** — que es *muy* parecido a la respuesta buena («no se apila»), y por eso
+casi cuela. La causa no era el mecanismo: era que **en el contenedor el `journal`
+no se lee**, así que el contador no podía dar otra cosa. Lo cazó su **control de
+mudez** —comprobar que la fuente sabe devolver algo distinto de cero antes de creerse
+un cero—. La versión buena cuenta por una marca que escribe el propio servicio, y
+entonces sí contesta: **once flancos dan un arranque, la unidad sigue `active` y
+`Result=success`**, que es la pregunta que M15(E) dejó abierta.
+
+**La regla que sale de las dos, y vale para cualquier medición futura:** antes de
+creerte un número, oblígale a dar el otro. Si tu control no sabe fallar, no es un
+control; y si tu fuente no sabe decir «algo», su «nada» no significa nada.
