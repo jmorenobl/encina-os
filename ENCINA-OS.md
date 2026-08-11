@@ -262,14 +262,32 @@ es que la máquina no puede crecer.**
 **LA SIGUIENTE TAREA NO ES E4, y el orden lo decidió Jorge el mismo día.** Son
 tres cosas, en este orden, y las dos primeras cuestan mucho menos que la tercera:
 
-1. **EL AGUJERO DE RED, que es de E3 y no de E4.** El navegador entero —76,4 MB—
-   baja de `packages.mozilla.org` durante la instalación, `network` es una de las
-   cinco pantallas que contesta quien instala, y `encina-seed.sh` **nunca sale
-   distinto de 0**. Luego quien instale sin red se llevaría una Encina OS **sin
-   navegador y con el instalador diciendo que fue bien** (§4.26e). **Está
-   deducido, no medido**, y se empieza **por lectura** —qué hace el `.deb` de
-   transición al purgarlo, y qué pasa con los pasos 3 a 6 sin red— antes de
-   gastar la VM que lo demostraría.
+1. ~~**EL AGUJERO DE RED, que es de E3 y no de E4.**~~ **LEÍDO EL 2026-08-11, y
+   sale más grande de lo que decía §4.26e** (`MEDICIONES.md` §4.27). La lectura se
+   hizo **en el propio medio de la entrega, sin arrancar nada**, y con el control
+   de que el conjunto que se deriva de sus manifiestos reproduce la foto de
+   §4.26g. Tres cosas:
+   *(1)* **Purgar `snapd` se lleva el `.deb` de transición**, así que el paso 1 ya
+   deja la máquina sin ningún Firefox (§4.16g, medido).
+   *(2)* **Sin red no falta el navegador: falta todo Encina.** `autofirma` pide un
+   JRE y `libnss3-tools`, `encina-meta` pide `hunspell-es`, y **ninguno de los tres
+   viaja en el medio** —ni en el `pool/`, y el objetivo no tiene fuente `cdrom`—,
+   así que apt, que es todo o nada, **no instala ni uno de los cuatro `.deb`**. La
+   entrega sin red es Ubuntu sin navegador, y **peor que la Ubuntu de la que
+   salió**, que al menos conservaba el Snap. Sigue siendo deducción: lo medido es
+   el medio, no la máquina, y el sano y el roto están escritos en §4.27d.
+   *(3)* **El defecto de fondo no es la red: es que el seed no sabía decir que
+   no.** *«Nunca sale distinto de 0»* es una regla del **instrumento** —se escribió
+   para no quedarse sin datos midiendo— que acabó dentro de la ISO que se entrega.
+   Tercera vez que aparece un criterio de validación disfrazado de producto.
+   **Hecho el mismo día, sin gastar VM (nivel 1):** el seed **comprueba lo que ha
+   dejado** y escribe `/etc/encina-estado` (`COMPLETO`/`INCOMPLETO` y qué falta),
+   con su control dentro; `verificar-e2.sh` lo lee; los dos YAML rehechos y
+   comprobados por el camino de vuelta. **Lo que falta, y va en la vuelta de E4:**
+   decidir si una instalación incompleta **falla a la vista** (nivel 2, es
+   producto), y **que el medio lleve lo que hoy baja de internet** (nivel 3), que
+   es la misma obra que decide E4. **Ninguna ISO nueva: la entrega sigue siendo
+   `02ab929d…` y sigue teniendo el agujero.**
 2. **LA PUERTA DE LA CONVIVENCIA (c), en `encina-E1-meta`.** Con un perfil de
    Snap de Firefox creado a propósito, ¿el vigilante de `autofirma 1.9.1+encina2`
    sigue metiendo la CA en el perfil **nativo**? M6 lo midió **sin** ese perfil.

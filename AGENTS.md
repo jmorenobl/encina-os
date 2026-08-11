@@ -1205,10 +1205,30 @@ ficheros en `imagen/` y ninguno toca la ISO oficial.**
 | Fichero | Qué es |
 |---|---|
 | `imagen/autoinstall.yaml` | **El seed.** Identidad, almacenamiento y tres `late-commands`: los dos testigos de §4.14e y la que hace el trabajo |
-| `imagen/encina-seed.sh` | El fuente **legible** de esa tercera, que viaja en base64. Hace, en este orden: monta el volumen por etiqueta, copia el repo a `/srv/encina-repo` **comprobando las cuatro huellas**, purga `snapd`, y ejecuta los pasos 2, 3 y 4 de §6.4. Deja 1900 líneas de registro dentro de `/target` y **nunca sale distinto de 0** |
+| `imagen/encina-seed.sh` | El fuente **legible** de esa tercera, que viaja en base64. Hace, en este orden: monta el volumen por etiqueta, copia el repo a `/srv/encina-repo` **comprobando las cuatro huellas**, purga `snapd`, ejecuta los pasos 2, 3 y 4 de §6.4 y **comprueba lo que ha dejado** (bloque 14, desde el 2026-08-11). Deja 1900 líneas de registro dentro de `/target` y **nunca sale distinto de 0** |
 | `imagen/meta-data` | `instance-id` y `local-hostname` |
 | `imagen/fabricar-seed.sh` | Fabrica el volumen `CIDATA` en macOS. **Se niega** si un `.deb` no coincide con su huella o si el YAML y el guion se han separado |
-| `imagen/verificar-e2.sh` | Verifica la máquina que sale, **como root**, cada comprobación con su control |
+| `imagen/verificar-e2.sh` | Verifica la máquina que sale, **como root**, cada comprobación con su control. Su bloque 6 lee el veredicto del seed |
+
+**EL VEREDICTO DEL SEED, nuevo el 2026-08-11** (`MEDICIONES.md` §4.27). Hasta ese
+día el guion hacía sus seis pasos, apuntaba seis `rc` en un fichero que nadie lee
+y escribía «llegué al final» **aunque no hubiera llegado nada más**. Sin red no
+entra **ni uno** de los cuatro `.deb` —apt es todo o nada, y ni el JRE que pide
+`autofirma`, ni `libnss3-tools`, ni `hunspell-es` viajan en el medio— y la
+instalación **terminaba diciendo que fue bien**: trampa 5. Ahora el guion pregunta
+al objetivo por `dpkg` y deja **`/etc/encina-estado`** con
+`ENCINA_ESTADO=COMPLETO|INCOMPLETO` y `ENCINA_FALTA=<lo que falta>`, con su
+control dentro —un paquete inventado— que hace que un comprobador ciego **no
+pueda certificar nada**. El testigo del seed termina desde entonces en `estado=…`,
+y es lo que le permite a `verificar-e2.sh` distinguir «esta máquina no puede
+contestar» (seed anterior, `[OMIT]`) de «esta máquina tenía que contestar y no
+está el fichero» (`[FALLO]`).
+
+**Y una regla de este guion queda marcada como pendiente de decidir, no como
+buena:** *«nunca sale distinto de 0»* se escribió para **medir** (§4.16), y en el
+producto significa que una instalación incompleta termina bien igual. Que falle a
+la vista es una línea, está escrita como comentario en el propio guion y **no**
+puesta: es el nivel 2 de §4.27 y se decide con la vuelta de E4.
 
 **Tres cosas que no son obvias y cuestan caro si se cambian sin medir:**
 

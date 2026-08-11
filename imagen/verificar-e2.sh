@@ -276,6 +276,45 @@ for s in $SES; do
 done
 igual "hay un saludador grafico vivo" "si" "$GREETER"
 
+titulo "6. El veredicto que dejo el seed (§4.27)"
+# POR QUE ESTA CASILLA EXISTE, y es la que faltaba desde el primer dia: hasta el
+# 2026-08-11 nadie preguntaba AL FINAL si la maquina habia quedado entera. Sin
+# red no entra ni uno de los cuatro .deb -apt es todo o nada, y el JRE de
+# autofirma, libnss3-tools y hunspell-es no viajan en el medio (§4.27c)- y la
+# instalacion terminaba diciendo que fue bien. Trampa 5.
+#
+# sano: ENCINA_ESTADO=COMPLETO y ENCINA_FALTA vacio.
+# roto: INCOMPLETO, y entonces ENCINA_FALTA nombra lo que falta.
+#
+# Y OJO CON LA AUSENCIA DEL FICHERO, que son dos cosas distintas y no se pueden
+# leer igual: una maquina instalada por un seed anterior a §4.27 NO PUEDE
+# contestar -y eso es [OMIT], no [OK]-, mientras que una instalada por el seed
+# de hoy y sin el fichero es un [FALLO] de verdad. Lo que las separa es lo que
+# la propia maquina dejo escrito: el testigo del seed nuevo termina en 'estado='.
+E=/etc/encina-estado
+T_SEED=/etc/encina-e2-testigo-seed
+if esta "$E"; then
+    ESTADO=$(sed -n 's/^ENCINA_ESTADO=//p' "$E")
+    QUE=$(sed -n 's/^ENCINA_FALTA=//p' "$E")
+    igual "el veredicto que dejo el seed" "COMPLETO" "${ESTADO:-<vacio>}"
+    if [ -z "$QUE" ]; then
+        ok "el seed no echo nada en falta"
+    else
+        fallo "el seed dice que a esta maquina le falta algo" "ENCINA_FALTA=$QUE"
+    fi
+    # CONTROL: que este bloque lee el fichero de verdad y no da vacio a todo
+    if [ -n "$(sed -n 's/^ENCINA_FECHA=//p' "$E")" ]; then
+        ok "control: se leen las claves de $E ($(sed -n 's/^ENCINA_FECHA=//p' "$E"))"
+    else
+        fallo "CONTROL ROTO: no se lee ninguna clave de $E"
+    fi
+elif grep -q 'estado=' "$T_SEED" 2>/dev/null; then
+    fallo "no existe $E y esta maquina la instalo un seed que lo escribe" \
+"El testigo dice: $(cat "$T_SEED")"
+else
+    omitido "esta maquina la instalo un seed anterior a §4.27: no sabe contestar"
+fi
+
 titulo "Resumen"
 echo "  [OK] $N_OK   [FALLO] $N_MAL   [AVISO] $N_AVI   [OMIT] $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then

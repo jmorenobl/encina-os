@@ -7,9 +7,14 @@
 #     instalado montado en /target. Lo que toque el objetivo va por
 #     'curtin in-target', y lo que mire el objetivo mira /target DESDE FUERA.
 #   - NUNCA sale distinto de 0. Una late-command que aborta se lleva la
-#     instalacion por delante y deja la medicion sin datos (§4.16).
+#     instalacion por delante y deja la medicion sin datos (§4.16). OJO: eso es
+#     una regla del INSTRUMENTO, no del producto, y tiene precio -- ver el
+#     bloque 14 y la decision pendiente del final.
 #   - Deja su propio registro dentro de /target, porque cada intento cuesta una
 #     instalacion entera y no se puede depurar a medias.
+#   - Y DESDE EL 2026-08-11 (§4.27) COMPRUEBA LO QUE HA DEJADO Y LO DICE, en
+#     /etc/encina-estado: sin red no entra ni uno de los cuatro .deb y hasta hoy
+#     la instalacion terminaba diciendo que fue bien.
 #
 # TRAMPAS QUE ESTAN APLICADAS AQUI, y no son decorativas:
 #
@@ -229,14 +234,101 @@ run curtin in-target -- sh -c "dpkg -L firefox-l10n-es-es | grep xpi"
 inventario_snap
 
 say ""
-say "=== 14. FIN ==="
+say "=== 14. EL VEREDICTO: el seed comprueba lo que ha dejado, y lo dice ==="
+# POR QUE EXISTE ESTE BLOQUE (MEDICIONES.md §4.27):
+#
+# Hasta el 2026-08-11 este guion hacia seis pasos, apuntaba seis 'rc' en un
+# fichero que nadie lee, y escribia el testigo de "llegue al final" aunque no
+# hubiera llegado nada mas. SIN RED no entra NI UNO de los cuatro .deb -- apt es
+# todo o nada, y ni el JRE que pide autofirma, ni libnss3-tools, ni hunspell-es
+# viajan en el medio (§4.27c) -- y la instalacion terminaba diciendo que fue
+# bien. Es la trampa 5: la misma respuesta en un sistema sano y en uno roto.
+#
+# UN rc=0 NO DICE NADA DEL OBJETIVO (trampa 10). Lo que lo dice es el objetivo,
+# preguntado por dpkg, que es exactamente lo que hace esto. Y lleva su control,
+# porque un comprobador que dijera "lo tiene" a todo valdria lo mismo que nada.
+FALTA=""
+tiene() {  # $1 = paquete. Anota en FALTA lo que no este instalado.
+    est=$(curtin in-target -- dpkg-query -W -f='${Status}' "$1" 2>/dev/null)
+    case "$est" in
+        *"install ok installed"*) say "[TIENE   ] $1" ;;
+        *) say "[NO TIENE] $1  estado=${est:-<no instalado>}"; FALTA="$FALTA $1" ;;
+    esac
+}
+for p in encina-meta encina-branding encina-firefox-native autofirma \
+         firefox firefox-l10n-es-es
+do
+    tiene "$p"
+done
+say "-- control: un paquete inventado tiene que salir NO TIENE"
+ANTES="$FALTA"
+tiene encina-paquete-que-no-existe-jamas
+if [ "$FALTA" = "$ANTES" ]; then
+    say "[CONTROL ROTO] dice TENER un paquete que no existe: el veredicto no vale"
+    FALTA="$FALTA comprobador-roto"
+else
+    say "[control  OK ] sabe decir que no"
+    FALTA="$ANTES"
+fi
+
+say "-- y que navegador queda, que es lo que se lleva el usuario:"
+V=$(curtin in-target -- dpkg-query -W -f='${Version}' firefox 2>/dev/null)
+D=$(curtin in-target -- readlink -f /usr/bin/firefox 2>/dev/null)
+say "  firefox version=${V:-<ninguno>}   /usr/bin/firefox -> ${D:-<no existe>}"
+# version con epoch '1:' = sigue siendo el deb de transicion al Snap (§4.10);
+# destino bajo /snap/ = el navegador que se abre es el confinado, que es B3 y B4
+case "$V" in
+    1:*) say "  !! es el deb de transicion al Snap, no el de Mozilla"
+         FALTA="$FALTA firefox-de-transicion" ;;
+esac
+case "$D" in
+    /snap/*) say "  !! el navegador cae dentro de /snap/"
+             FALTA="$FALTA firefox-dentro-de-snap" ;;
+esac
+
+if [ -z "$FALTA" ]; then ESTADO=COMPLETO; else ESTADO=INCOMPLETO; fi
+say "  ESTADO -> $ESTADO   FALTA ->${FALTA:- nada}"
+
+{
+    echo "# Encina OS. Lo escribe imagen/encina-seed.sh al terminar la instalacion."
+    echo "#"
+    echo "# COMPLETO   = estan los cuatro paquetes de Encina y un Firefox nativo."
+    echo "# INCOMPLETO = LA INSTALACION TERMINO IGUAL, y a esta maquina le falta algo."
+    echo "#              El motivo mas probable es que no hubiera red: el navegador"
+    echo "#              y las dependencias de autofirma bajan de internet, y no"
+    echo "#              viajan en el medio (MEDICIONES.md §4.27)."
+    echo "#"
+    echo "# El detalle, paso a paso, esta en /etc/encina-seed.log."
+    echo "ENCINA_ESTADO=$ESTADO"
+    echo "ENCINA_FALTA=${FALTA# }"
+    echo "ENCINA_FECHA=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} >/target/etc/encina-estado
+run cat /target/etc/encina-estado
+
+say ""
+say "=== 15. FIN ==="
 run date -u +%Y-%m-%dT%H:%M:%SZ
 
 umount /mnt/encina-seed 2>/dev/null
 
-# copia a un sitio obvio, y testigo de que este guion llego al final
+# copia a un sitio obvio, y testigo de que este guion llego al final. Desde
+# §4.27 el testigo dice ADEMAS con que estado llego: "llegue al final" era
+# verdad y aun asi no significaba que la maquina estuviera entera.
 cp "$L" /target/etc/encina-seed.log 2>/dev/null
-echo "encina-seed llego al final $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+echo "encina-seed llego al final $(date -u +%Y-%m-%dT%H:%M:%SZ) estado=$ESTADO" \
     >/target/etc/encina-e2-testigo-seed
 
+# LO QUE ESTE GUION SIGUE SIN HACER, Y ES DECISION DE PRODUCTO PENDIENTE
+# (§4.27, nivel 2): con ESTADO=INCOMPLETO la instalacion termina bien igual, y
+# quien instala no se entera hasta que abre la maquina. Que falle A LA VISTA es
+# UNA LINEA -- poner aqui debajo
+#
+#     [ "$ESTADO" = COMPLETO ] || exit 1
+#
+# -- y NO se ha puesto por dos motivos, ninguno de ellos pereza: cambia la regla
+# escrita en la cabecera de este guion ("NUNCA sale distinto de 0", §4.16), que
+# se escribio para no quedarse sin datos midiendo; y esta sin medir que hace
+# subiquity con una late-command que falla al final -- si deja la maquina, si
+# deja este registro dentro, y que ve la persona que instala. Se decide y se
+# mide en la vuelta de E4.
 exit 0
