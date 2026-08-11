@@ -5744,6 +5744,20 @@ reinstalación o `dpkg-reconfigure`—. En el orden del producto —el paquete a
 que el navegador— el configurador no encuentra ningún perfil, no crea nada, y todo
 lo hace el vigilante como usuario. **Va a `encina-autofirma`, no a esta puerta.**
 
+**ARREGLADO EL MISMO DÍA, en `autofirma 1.9.1+encina3`** (M19 de
+`encina-autofirma`) — **y de paso corrige este apartado, que se quedaba corto.**
+Aquí se escribió que el defecto nace en el **paso 2** del `postinst`. Eran **tres
+puertas**, y la que las une no se ve leyendo: **`certutil -D` también crea el
+almacén** —sale con `rc=255` y *«could not find certificate»* y aun así deja
+`cert9.db`, `key4.db` y `pkcs11.txt` detrás—, así que el paso 0 del `postinst` y
+el `prerm`, que ejecutan `uninstall.sh`, hacían lo mismo por el camino de
+**desinstalar**. Suprimir solo el paso 2 habría dejado el defecto vivo por el
+lado que nadie mira, **y la limpieza habría parecido funcionar**. Las tres
+suprimidas: un solo dueño, el vigilante, como el usuario. Y la segunda
+consecuencia queda cerrada con su control —las comprobaciones nuevas sobre
+`+encina2` dan `OK=55 FALLO=7`, y entre los siete está la frase literal de este
+apartado: *«el vigilante sale con 1: la unidad quedaría en rojo para siempre»*—.
+
 #### (d) Q2 — SÍ, y en dos segundos: el caso realista del producto
 
 Perfil nativo existente y usado; aparece el del Snap porque el usuario abre ese
@@ -5801,6 +5815,25 @@ Groups`—, así que **hubo un flanco posterior a la creación de `cert9.db`**. 
 lo que queda es una carambola con muchas oportunidades.** No falla hoy y no hay
 que tocarlo hoy; pero **la casilla que diga «la CA llega sola» ya no puede
 apoyarse en la espera de 90 s** en una máquina con Snap.
+
+**Y `+encina3` NO cierra esto, aunque lo parezca. Escrito aquí para que nadie lo
+dé por cerrado leyendo el título de M19(g).** Aquella medición encontró el mismo
+síntoma por otra causa —`hay_perfiles()` daba verdad con el almacén de **root**
+delante— y lo arregló exigiendo que el `cert9.db` **sea del usuario**. Eso mata el
+caso del almacén **ajeno**, no el de **otra raíz**: el `cert9.db` del perfil del
+Snap **es del usuario**, medido en (d) —`-rw------- 1 jorge jorge`—, así que con
+un perfil de Snap presente `hay_perfiles()` sigue dando verdad **desde otra
+raíz** y la espera se sigue saltando justo cuando nace el perfil nativo. **Ajeno
+≠ de otra raíz.**
+
+**La forma del arreglo, si alguna vez se hace:** la espera tiene que ser **por
+raíz** —esperar si alguna raíz vigilada tiene directorio de Mozilla y **ningún
+almacén mío en esa raíz**—, y se puede medir en contenedor sin VM, declarando que
+lo que se prueba es **la lógica de la espera** y no la llegada de la CA: para eso
+un almacén creado con `certutil -N` como el usuario vale, y no choca con la regla
+del almacén fabricado, que es sobre otra cosa. **Y si se hace, va antes de la
+vuelta de E4**, por la misma economía que puso `+encina3` antes: el ritual de las
+cuatro cosas del seed se paga por vuelta.
 
 #### (f) Q3 — el que se usó el último, y la prueba discrimina en tres direcciones
 
