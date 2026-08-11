@@ -1064,7 +1064,14 @@ la comprobación de enlaces inútil aquí.
 - **Y por eso el orden correcto es medir el retorno, no predecirlo**: se anota
   `df`, se borra, se vuelve a anotar. El número que va a la medición es la resta.
 
-**Cómo se borra una VM, que `utmctl` no sabe** (no tiene subcomando `delete`), y
+**CORREGIDO EL 2026-08-11 (`MEDICIONES.md` §4.29h): `utmctl` SÍ sabe borrar.**
+`utmctl delete <uuid>` existe en la versión instalada —sale en `utmctl --help`—,
+borra el bundle **y** limpia el registro: comprobado por las dos mitades, 9 en
+`utmctl list` y 9 bundles en disco, sin entrada fantasma y con `plutil -lint` en
+verde. El respaldo del `plist` **antes** de borrar sigue siendo obligatorio, y el
+procedimiento manual de abajo sigue valiendo como red de seguridad.
+
+**Cómo se borra una VM a mano** (era: «que `utmctl` no sabe»), y
 con la trampa 18 aplicada para que no quede un fantasma en el registro:
 
 ```
