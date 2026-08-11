@@ -1028,3 +1028,55 @@ tanto como esto, **el dato bueno es el que la máquina deja escrito solo**
 —`/var/log/installer/telemetry`, los testigos, `/etc/encina-seed.log`—, no el que
 se arranca a base de teclear. Lo que decidió §4.22 fue un registro con fecha, no
 una pantalla.
+
+---
+
+## Y una vigesimoprimera, limpiando el banco (2026-08-11)
+
+**21. Borras 3,4 GB de medios y el disco devuelve 0,44 GiB.**
+Es `ENCINA-OS.md` §9.a por un sitio que no estaba escrito: **no son solo las VMs
+las que se clonan entre sí, es también el directorio de medios**. El `Data/` de
+cada bundle de UTM lleva **un clon de APFS de su ISO**, así que borrar la copia de
+`e2-medios` no libera nada mientras el bundle siga vivo.
+
+```
+libres antes             8,21 GiB
+rm de 3,67 GB de medios  8,65 GiB    <- 0,44 GiB devueltos
+rm de las dos VMs       33,57 GiB    <- ahi llegaron los 3,4 GB de la ISO
+```
+
+**Y las dos explicaciones fáciles quedan descartadas, con su control:**
+
+```
+stat -f "%l enlaces" *.iso              -> 1 en todas    (no son enlaces duros)
+tmutil listlocalsnapshots /             -> vacio          (no son instantaneas)
+```
+
+Un clon de APFS **muestra 1 enlace** y comparte bloques, que es justo lo que hace
+la comprobación de enlaces inútil aquí.
+
+**Lo que hay que llevarse, y es método:**
+
+- **Borrar un medio y borrar su VM no son dos ahorros, son uno.** Al planificar
+  una limpieza, cuenta la ISO **una sola vez**.
+- **Lo único que no miente es `df` antes y después.** Ni `du`, ni `stat`, ni la
+  suma de lo que crees que has borrado.
+- **Y por eso el orden correcto es medir el retorno, no predecirlo**: se anota
+  `df`, se borra, se vuelve a anotar. El número que va a la medición es la resta.
+
+**Cómo se borra una VM, que `utmctl` no sabe** (no tiene subcomando `delete`), y
+con la trampa 18 aplicada para que no quede un fantasma en el registro:
+
+```
+osascript -e 'quit app "UTM"'
+P=~/Library/Containers/com.utmapp.UTM/Data/Library/Preferences/com.utmapp.UTM.plist
+cp "$P" respaldo.plist                       # el respaldo va ANTES
+rm -rf ".../encina-LA-QUE-SEA.utm"
+/usr/libexec/PlistBuddy -c "Delete :Registry:<UUID>" "$P"
+plutil -lint "$P" && open -a UTM
+```
+
+Y el control de que quedó consistente son **las dos mitades**: que
+`utmctl list` y `ls -d *.utm` den el mismo número, y que cada nombre listado
+tenga su bundle en disco. Un registro con una entrada de más es exactamente la
+trampa 18 al revés.

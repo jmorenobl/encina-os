@@ -584,6 +584,28 @@ se decida si Encina OS trae LibreOffice de serie, y entonces con
 `libreoffice-help-es` al lado. `hyphen-es` y `mythes-es` se quedan: los dos
 declaran solo `Depends: dictionaries-common` y no arrastran nada.
 
+**Y E4 la reclama: el 2026-08-11 se decidió que la ofimática entra en el básico**
+(`ENCINA-OS.md` §6 y §7), porque la máquina de la entrega **no tiene con qué abrir
+un `.odt`, un `.doc`, un `.docx`, un `.xls` ni un `.csv`** — `xdg-mime` devuelve
+`<NINGUNO>` en los cinco (`MEDICIONES.md` §4.26c). **Lo que falta es solo el
+alcance**, y su precio está medido: `libreoffice-writer` solo son **46 paquetes**
+nuevos, y `writer + calc + libreoffice-l10n-es + libreoffice-help-es` son **54**
+(§4.26d). **El paquete de ayuda no es opcional**: sin él se abre el hueco de l10n
+que este mismo párrafo documenta.
+
+**Tres avisos más para el día que se toque este bloque**, todos medidos el
+2026-08-11 sobre `encina-E2-2vias` con `apt-get -s` y con sus controles:
+
+- **`thunderbird-locale-es` sigue metiendo `snapd`**, o sea que el aviso de §4.10h
+  ya no es una cita sino una medición de hoy. Con D16 eso deja de ser un veto,
+  pero **tiene que ir declarado**, no colarse por vía transitiva.
+- **`gnome-software` también arrastra `snapd`**, y **no existe
+  `gnome-software-plugin-deb`** en los índices de 24.04: solo `-plugin-snap` y
+  `-plugin-flatpak`. Las alternativas sin Snap son `gnome-packagekit` y
+  `synaptic`, tres paquetes cada una.
+- **`simple-scan` es un solo paquete** y `sane-utils` ya está instalado sin que
+  nada lo use.
+
 **Dos avisos medidos el 2026-08-08** (`MEDICIONES.md` §4.10), antes de copiar ese
 bloque tal cual:
 

@@ -6,7 +6,7 @@ correcciones incluidas. Reproducir estas mediciones cuesta sesiones de máquina
 virtual, y buena parte ya no se puede reproducir porque el `.deb` oficial de
 AutoFirma que las produjo ha dejado de ser el que Encina OS usa.
 
-Última actualización: 10 de agosto de 2026.
+Última actualización: 11 de agosto de 2026.
 
 **La numeración `§4.x` y `§9` se conserva a propósito.** Estas secciones vivían
 en `ENCINA-OS.md` hasta el 2026-08-08 y se citan por ese nombre desde
@@ -66,6 +66,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.24 | **E2 remedido: la vía `CIDATA` del guion de las dos vías** | Sí. `imagen/autoinstall.yaml` cambió al enseñarle a `encina-seed.sh` las dos vías, y **sigue produciendo la misma máquina: 35 correctas, 0 fallos**. Con §4.23a, el guion queda medido **por sus dos ramas**. Trae el control que hacía falta —el `user-data` sacado del volumen **construido**, porque el de ayer daría el mismo verde sin medir nada— y un hallazgo de instrumento: `Image` no es byte a byte `/casper/vmlinuz`, **es su `gunzip`** |
 | §4.22 | **E3: la forma del producto, medida entera** | Sí. Hecha **antes de tocar `xorriso`**, con `CIDATA` y el banco de E2. El instalador de escritorio **sabe mezclar**: enseña solo las cinco pantallas pedidas —confirmado por `telemetry`, que las lista— y aplica del seed el idioma y la instalación mínima. La máquina que sale es **la de E2**: 33 correctas. **Y los 2 fallos son del instrumento, no de la máquina**: el bloque 1 de `verificar-e2.sh` codifica el criterio de E2, que E3 no puede cumplir por diseño |
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
+| §4.26 | **E4: la medición de apertura, y la pregunta del Snap** | Sí. **Es la medición que abre E4** y la primera que nombra las **25 aplicaciones** que trae la entrega, que hasta hoy solo se contaban. El criterio de §10 **no suprime E4**: hay tres huecos con su comando —ofimática, escáner y **ninguna forma de instalar nada**—. Saca además dos cosas que no son de E4: la entrega **depende de la red en duro** (el navegador, 76,4 MB, baja de `packages.mozilla.org`) y **`gnome-software` arrastra `snapd`**. Y contesta que **el Snap sí puede convivir**, porque es el estado en el que se firmó en §4.13 |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -5010,6 +5011,300 @@ instalación, que está guardado antes de que nada de esto ocurriera.
 
 ---
 
+### 4.26 E4 — La medición de apertura: qué le falta a la máquina que sale de la ISO (2026-08-11)
+
+**El criterio general de §10 aplicado a E4**, antes de abrirlo y antes de tocar
+`encina-meta`: *¿qué comando demuestra que este problema existe?* Para E4 la
+pregunta es «qué le falta HOY a la máquina de la entrega para que alguien la
+use», y se contesta sobre esa máquina, no sobre una lista de deseos. **La
+respuesta es que E4 tiene caso, y el hueco grande no es el que parecía.**
+
+#### (a) El instrumento, y el control que lo habilita — escrito ANTES de medir
+
+La máquina de la entrega, `encina-E3-iso-es`, **no tiene `ssh`**: medirla cuesta
+el procedimiento de §4.25e y la gasta como testigo de la novena casilla. Se midió
+sobre **`encina-E2-2vias`** —que sí lo tiene— con **el control declarado por
+adelantado**: su recuento de aplicaciones visibles tenía que dar **25**, el mismo
+número escrito en §4.23d y §4.25d para las dos máquinas de E3, o el instrumento
+quedaba rechazado.
+
+**Las diferencias entre el instrumento y la máquina de la entrega, nombradas y no
+supuestas** (leídas en los dos YAML): `imagen/autoinstall.yaml` e
+`imagen/autoinstall-e3.yaml` fijan **los mismos** `locale: es_ES.UTF-8`,
+`source: ubuntu-desktop-minimal`, `codecs: false`, `drivers: false` y **las mismas
+tres `late-commands`**. El de E2 añade `identity`, `storage` y
+`ssh: install-server: true`. O sea: **una sola diferencia en el conjunto
+instalado, `openssh-server`, y no tiene `.desktop`.**
+
+```
+testigo del seed   encina-seed llego al final 2026-08-10T22:03:03Z   <- el de §4.24
+VISIBLES = 25      FIREFOX = 1      (total con ocultas: 89)
+control: dpkg-query de un paquete inventado -> "no se ha encontrado"
+```
+
+**El control se cumplió: 25 y 1.** El instrumento vale.
+
+#### (b) Las 25 «aplicaciones de serie», que nadie había nombrado nunca
+
+`Gio.AppInfo.get_all()` con `should_show()`, el mismo del bloque de iconos de
+`imagen/verificar-e2.sh` — que **cuenta** las visibles como control y nunca las
+**nombra**:
+
+```
+ 1 Additional Drivers          10 Files                    19 Settings
+ 2 Advanced Network Config.    11 Firefox                  20 Software & Updates
+ 3 AutoFirma                   12 Fonts                    21 Software Updater
+ 4 Calculator                  13 Help                     22 Startup Applications
+ 5 Characters                  14 Image Viewer             23 System Monitor
+ 6 Clocks                      15 Language Support         24 Terminal
+ 7 Disk Usage Analyzer         16 Logs                     25 Text Editor
+ 8 Disks                       17 Passwords and Keys
+ 9 Document Viewer             18 Power Statistics
+```
+
+**Veinte de las veinticinco son utilidades del sistema.** Para el trabajo por el
+que Encina OS existe hay cinco: Firefox, AutoFirma, Files, Document Viewer y
+Text Editor.
+
+#### (c) La cadena *recibir → abrir → firmar → guardar*, eslabón a eslabón
+
+| Eslabón | Estado | La salida que lo dice |
+|---|---|---|
+| Recibir | cierra | Firefox |
+| Abrir un PDF | cierra, **mal atado** | `application/pdf -> firefox.desktop`. **Evince está instalado y no es el manejador por defecto**: el producto trae un visor que nunca se abre |
+| Abrir un ZIP | cierra | `application/zip -> org.gnome.Nautilus.desktop`, sin `file-roller` |
+| **Abrir .odt / .doc / .docx / .xls / .csv** | **NO CIERRA** | `-> <NINGUNO>` en los cinco, y `libreoffice-core` ausente |
+| Firmar | cierra | `autofirma 1.9.1+encina2` |
+| Guardar / devolver | cierra | Firefox |
+| Imprimir | cierra | `cups` **activo** (control: `dbus` también activo) y panel de impresoras en Settings |
+| **Escanear** | **NO CIERRA** | `simple-scan` AUSENTE, con `sane-utils` instalado y sin nada que lo use |
+| **Instalar cualquier otra cosa** | **NO CIERRA** | `gnome-software` AUSENTE · `snap` AUSENTE · `flatpak` AUSENTE · `apt` presente (control) |
+
+**El control de todas las ausencias, sin el cual ninguna vale:** el mismo comando
+devuelve presencia para lo que sí está (`firefox: install ok installed`;
+`apt-get -s install nautilus` → 0 nuevos) y error para lo inventado
+(`E: Unable to locate package paquete-que-no-existe-jamas`; `xdg-mime` de un tipo
+falso → vacío). El inventario sabe decir «sí», así que su «no» significa algo.
+
+**El veredicto de §10, con su comando:**
+
+```
+$ xdg-mime query default application/vnd.oasis.opendocument.text
+                                              # <NINGUNO>
+$ command -v gnome-software snap flatpak
+                                              # los tres AUSENTES
+```
+
+**E4 no es una suposición.** Pero el hueco grande no es *qué aplicaciones*: es
+que **la máquina no puede crecer**. Sin tienda, sin Snap y sin Flatpak, el único
+camino para añadir algo es teclear `apt` en un terminal. Eso convierte la lista
+de E4 en la entrega entera y no en un punto de partida.
+
+#### (d) Cuánto cuesta cada candidato, y la trampa de §4.10h reproducida
+
+`apt-get -s install` sobre el instrumento. **No se hizo `apt-get update`**: eso sí
+habría modificado la máquina, así que los índices son los del 2026-08-10.
+
+| Candidato | Paquetes nuevos | ¿Devuelve el Snap? |
+|---|---|---|
+| `file-roller` | 2 | no |
+| `simple-scan` | 1 | no |
+| `gnome-calendar` | 2 | no |
+| `libreoffice-writer` solo | 46 | no |
+| `writer + calc + l10n-es + help-es` | 54 | no |
+| **`gnome-software`** | 4 | **SÍ — `Inst snapd 2.76+ubuntu24.04.1`** |
+| `gnome-packagekit` | 3 | no |
+| `synaptic` | 3 | no |
+| `thunderbird` | 2 | **SÍ — `Inst snapd`** |
+| `thunderbird-locale-es` | 3 | **SÍ — `Inst snapd`** |
+| *control:* `nautilus`, ya instalado | 0 | — |
+| *control:* paquete inexistente | 0, con `E:` | — |
+
+**Dos hallazgos:**
+
+1. **La tienda obvia reintroduce el Snap.** `gnome-software` en 24.04 arrastra
+   `snapd`, o sea el motivo por el que este producto existe. Los índices solo
+   ofrecen `gnome-software-plugin-flatpak` y `-plugin-snap`: **no existe
+   `-plugin-deb`**. Las dos vías que no lo devuelven son `gnome-packagekit` y
+   `synaptic`, tres paquetes cada una.
+2. **El aviso de §4.10h deja de ser una cita y pasa a ser una medición de hoy:**
+   `thunderbird-locale-es` mete `snapd`.
+
+**Lo que esta tabla NO da:** los MB. `apt-get -s` no imprimió `Need to get` con la
+caché en ese estado, y no se forzó porque no cambia ninguna decisión —lo que
+decide es el recuento y la bandera de `snapd`—. El dato exacto es un comando el
+día que se abra E4.
+
+#### (e) EL HALLAZGO QUE NO ES DE E4: la entrega depende de la red, y en duro
+
+Del registro del seed de la propia máquina, `/etc/encina-seed.log`, 1 917 líneas:
+
+```
+141 lineas Get:     36 de file:/srv/encina-repo (el medio)
+                   100 de http://ports.ubuntu.com
+                     5 de https://packages.mozilla.org
+Get:1 https://packages.mozilla.org/apt … firefox arm64 153.0.3~build1 [76.4 MB]
+Get:2 https://packages.mozilla.org/apt … firefox-l10n-es-es           [437 kB]
+purge snapd rc=0 · update rc=0 · install encina-meta rc=0 · update rc=0
+full-upgrade rc=0 · install firefox-l10n-es-es rc=0
+control: el registro sabe ensenar rc distintos de 0 (lineas 556, 559, 561, 597)
+```
+
+**El navegador entero, 76,4 MB, bajó de la red.** Y `network` es **una de las
+cinco secciones que contesta quien instala**.
+
+**De ahí sale una deducción, y va marcada como deducción:** `encina-seed.sh`
+**nunca sale distinto de 0** —por diseño (§4.16)— y §4.17f dice que sin el paso 6
+no queda **ningún** Firefox. Luego **quien instale la ISO sin red se llevaría una
+Encina OS sin navegador, y el instalador le diría que ha ido bien.** Es la familia
+de la trampa 5: la misma respuesta en un sistema sano y en uno roto.
+
+**No está medido.** El comando que lo demostraría es instalar la ISO contestando
+«no» en la pantalla de red y leer el registro; cuesta una VM nueva. **Y si se
+confirma es un defecto de la definición de terminado de E3, no de E4**, igual que
+el instalador en inglés de §4.23e.
+
+#### (f) Lo que NO se da por medido, y por qué
+
+**Los nombres de las aplicaciones salieron en inglés en las tres combinaciones de
+locale probadas**, con `LANG`, `LANGUAGE` y `LC_ALL`. Los datos:
+
+```
+88 de 91 .desktop de /usr/share/applications NO llevan Name[es]
+  (los tres que si: autofirma, vim, xdg-desktop-portal-gtk)
+delegan en X-Ubuntu-Gettext-Domain=<dominio>, y la traduccion EXISTE:
+  gettext('Files') con el dominio nautilus -> "Archivos"
+LANG del sistema: es_ES.UTF-8    locales generados: es_ES.utf8 (control: 25 en total)
+check-language-support -l es -> vacio (control: --show-installed no esta mudo)
+```
+
+**No se da por roto.** El instrumento es una sesión `ssh`, y `SCRIPTS.md` avisa
+exactamente de esto: una sesión `ssh` no es una sesión de escritorio. **Es
+`[OJOS]`, cuesta una captura de pantalla**, y si sale en inglés es un defecto de
+la misma familia que la novena casilla de E3.
+
+#### (g) La foto de la máquina, para que se pueda comparar dentro de seis meses
+
+```
+disco                       9,4 GB de 39 GB
+/srv/encina-repo            44 MB permanentes, con 'deb [trusted=yes] file:...'
+fuentes de apt              encina-local.list, mozilla.sources, ubuntu.sources
+                            + ubuntu.sources.curtin.orig   <- residuo del instalador
+unattended-upgrades         PRESENTE      update-notifier PRESENTE
+cups activo · gvfs · gvfs-backends · xdg-desktop-portal-gnome · evince   PRESENTES
+file-roller · libreoffice-core · gnome-software · simple-scan            AUSENTES
+```
+
+#### (h) Y la pregunta que abrió Jorge al leer esto: ¿puede convivir el Snap?
+
+**Sí, y no es una hipótesis: es el estado en el que se demostró E1.** La huella de
+virginidad de §4.13 —la máquina donde salió la firma en `valide.redsara.es`— dice
+`snap firefox: firefox 147.0.3-1 7764` y `perfiles Mozilla: los tres AUSENTES`.
+**Quitar el Snap nunca fue condición de que la firma funcione**; la condición es
+que el Firefox que se abre sea el nativo, y de eso se ocupa
+`encina-firefox-native`, cuya sombra `NoDisplay=true` está medida **en los dos
+mundos** (§4.19): con Snap presente, un solo icono y `firefox_firefox.desktop`
+resolviendo a `/usr/bin/firefox %u`.
+
+**La frontera no es `snapd`: son cuatro estados y no valen lo mismo.**
+
+| Estado | ¿Medido? | Veredicto |
+|---|---|---|
+| **a.** sin `snapd` | sí — E2 6/6, E3 9/9 | lo de hoy |
+| **b.** `snapd` sí, Snap de Firefox no | **no medido** | lo deseable a futuro |
+| **c.** `snapd` + Snap de Firefox instalado y **nunca abierto** | sí — `encina-E1-meta` y la firma de §4.13 | **funciona** |
+| **d.** `snapd` + Snap de Firefox **con perfil usado** | sí — §4.3, §4.4, A2 entero | **roto, y en silencio** |
+
+**Lo que rompe es un Firefox de Snap que alguien abre**, por B3 —dentro del Snap
+no ve `afirma.desktop` ni `/usr/bin/autofirma`, y no falla: *no hace nada*— y por
+B4 —AutoFirma busca el certificado en el perfil del Snap—. En el estado (c) eso
+no ocurre por accidente, y por un motivo medido: **el único icono de Firefox que
+el usuario ve abre el nativo.**
+
+**Y una delimitación de §4.16e, que no es una corrección:** aquella medición
+concluye que la vía obvia —`snap remove --purge firefox`— «no sirve y encima dice
+que sí», y sigue entera **para el seed**. Su causa está en la propia sección:
+`curtin` bind-monta `/run`, así que el cliente del chroot le habló al demonio del
+**entorno vivo del instalador** (`snap 2.76` del objetivo contra `snapd 2.73` del
+instalador, en la misma orden). **Eso es un defecto del entorno de instalación, no
+de la orden.** En una máquina ya arrancada, con su propio `snapd`, no tiene por
+qué mentir — **y no está medido**, que es justo lo que separa el estado (b) de ser
+alcanzable hoy.
+
+**Lo que queda por medir antes de decidir la tienda, y es la puerta de (c):** con
+un perfil de Snap de Firefox creado a propósito, ¿el vigilante de
+`autofirma 1.9.1+encina2` sigue metiendo la CA en el perfil **nativo**? M6 lo midió
+**sin** perfil de Snap. El banco existe y está declarado: `encina-E1-meta`, la
+única máquina con Snap **y** con los paquetes de Encina, ya con la 0.2.1.
+
+#### (i) La limpieza del banco, y la trampa que sacó
+
+**Devueltos 25,35 GiB reales**, medidos con `df` antes y después, que es lo único
+que no miente (§9.a).
+
+```
+libres antes            8,21 GiB
+tras borrar los medios  8,65 GiB     <- 3,67 GB borrados, 0,44 GiB devueltos (!)
+tras borrar las dos VMs 33,57 GiB
+```
+
+**LA TRAMPA, y es §9.a por un sitio nuevo: el directorio de medios miente igual
+que las VMs.** Borrar `encina-os-E3.iso` de `e2-medios` devolvió 0,44 GiB de 3,4 GB
+porque **el `Data/` de cada bundle tiene un clon de APFS de su ISO**. No son
+enlaces duros —`stat` da **1 enlace** en todos, con su control— y no hay
+instantáneas locales (`tmutil listlocalsnapshots /` → vacío). **Consecuencia
+práctica: borrar un medio y borrar su VM no son dos ahorros, son uno.** Los 3,4 GB
+llegaron con el bundle.
+
+**Recibo de lo destruido, por huella:**
+
+```
+encina-os-E3.iso        0a1127f403b4d1ee…   la ISO inglesa, sustituida por 02ab929d…
+seed-e3-forma.img       18a22ce8c2b76753…   el seed de §4.22, cuya VM ya no existia
+seed-e2-0.2.1-pw.img    ebcda148a3f1fc3c…   el seed viejo; su control ya corrio en §4.24
+seed-cidata.img         f5ecde113184f470…   §4.14
+seed-cidata-snap.img    3fcddd266a4c3c54…   §4.16
+VM encina-E3-iso        UUID EBC222AB-…     la maquina de §4.23
+VM encina-E2-0.2.1      UUID D60D020A-…     la maquina de §4.19g
+```
+
+Lo que se queda, comprobado por huella y no por nombre: `02ab929d…`,
+`c2610520…`, `13aa8f59…`, `9a845b75…`, `a1586ff3…`, y los ficheros de texto de
+`e2-medios`, que son documentación y no ocupan nada.
+
+**La condición que habilitó borrar `encina-E2-0.2.1`**, medida antes y no supuesta:
+`encina-E2-2vias` es **virgen de Firefox**, así que hereda el papel de origen del
+clon efímero de la firma (§9.1).
+
+```
+ausentes ~/.mozilla · ~/.config/mozilla · ~/snap · ~/.cache/mozilla
+0 profiles.ini · 0 cert9.db · 0 .p12/.pfx
+control: el find sabe encontrar algo (.bashrc -> 1) y sabe decir cero (inventado -> 0)
+```
+
+**Y la que NO se borró, con su motivo:** `encina-E2-sinsnap` se queda. Con 33,5 GiB
+la vuelta de E4 está pagada de sobra, y al pasar a la convivencia (c) **todas las
+máquinas nuevas tendrán Snap**: ésa y `encina-E2-2vias` serían las dos últimas sin
+él, y la segunda tiene un papel que no se puede gastar. Lo irreversible no se hace
+cuando no compra nada hoy. Es la siguiente candidata, y vale ~13 GB reales porque
+lleva dentro su propio clon de la ISO oficial.
+
+**El registro de UTM quedó consistente** (trampa 18): 9 en `utmctl list`, 9 bundles
+en disco, cero fantasmas, con las dos entradas borradas por UUID y `plutil -lint`
+en verde.
+
+#### (j) Lo que esta medición NO contesta
+
+- **Si la instalación sin red rompe la entrega.** Deducido en (e), no medido.
+- **Si el usuario ve los nombres de las aplicaciones en español.** `[OJOS]`, (f).
+- **Si el vigilante de AutoFirma acierta el perfil con los dos presentes.** Es la
+  puerta de (c), y el banco es `encina-E1-meta`.
+- **Los MB de cada candidato.** Solo hay recuentos de paquetes.
+- **Nada de la ISO**: no se construyó ninguna y `02ab929d…` sigue siendo la
+  entrega.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,
@@ -5112,6 +5407,8 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **`apt upgrade` no cambia el Snap por el nativo** | El anclaje está bien puesto y Firefox sigue siendo el de transición | Es un *downgrade* formal, por el epoch `1:`. Solo lo hace `full-upgrade`, y con `-y` hace falta `--allow-downgrades`. `unattended-upgrades` no lo dará nunca (§4.10c) |
 | **Firefox nativo llega en inglés y nadie lo nota hasta abrirlo** | Todo en verde, `apt policy` correcto, y la interfaz en inglés | `firefox-l10n-es-es` **solo** existe en el repositorio de Mozilla: `Candidate: (none)` en Ubuntu, y `firefox-locale-es` de Ubuntu es otro transitorio al Snap. Ningún paquete de Encina puede declararlo sin violar R10, y el `full-upgrade` no lo arrastra (§4.10f) |
 | **Un `Recommends:` de l10n instala un Snap** | Se pide el idioma de Thunderbird y entra `snapd` | `thunderbird-locale-es` es un transitorio (`2:1snap1-…`) que depende de `thunderbird`, que lleva `Pre-Depends: debconf, snapd` (§4.10h) |
+| **La tienda de software devuelve el Snap** | Se quiere «un escritorio que crece», se declara `gnome-software`, y entra `snapd` con él | En 24.04 `gnome-software` lleva `snapd` entre sus dependencias, y los índices **no** ofrecen ningún `gnome-software-plugin-deb`: solo `-plugin-snap` y `-plugin-flatpak`. Medido el 2026-08-11 (§4.26d), con el control de que `gnome-packagekit` y `synaptic` **no** lo arrastran. Y si entra, «Firefox» en la tienda es el Snap, que es la única vía medida al estado (d) — el que no firma |
+| **Se borra un medio de 3,4 GB y el disco devuelve 0,44 GiB** | `rm` de una ISO de `e2-medios`, y `df` casi no se mueve | Es §9.a por un sitio nuevo: el `Data/` de cada bundle de UTM tiene un **clon de APFS** de su ISO, así que los bloques siguen referenciados. **No son enlaces duros** —`stat` da 1 enlace— ni instantáneas locales (`tmutil listlocalsnapshots /` vacío). Borrar un medio y borrar su VM **no son dos ahorros, son uno**. Lo único que no miente es `df` antes y después (§4.26i) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
