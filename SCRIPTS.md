@@ -470,6 +470,31 @@ rc=255 dejando el directorio intacto—, pero ese rc≠0 parece un fallo del sis
 y es un «aquí no hay almacén». Cualquier script que recorra perfiles de navegador
 solo usa `-L`, y trata ese error como `[OMIT]`, no como `[FALLO]`.
 
+**AMPLIADA EL 2026-08-11, y la moraleja de arriba ya no basta.** Los cuatro
+verbos, medidos con sus dos controles (M19(a) de `encina-autofirma`):
+
+```
+-A  rc=0    -> cert9.db key4.db pkcs11.txt      CREA   (control positivo)
+-L  rc=255  -> (nada)                           no crea (control negativo)
+-K  rc=255  -> (nada)                           no crea
+-D  rc=255  -> cert9.db key4.db pkcs11.txt      CREA   <- el que no sospechaba nadie
+```
+
+**`certutil -D` también crea el almacén**: sale con 255 y *«could not find
+certificate named …»* y aun así deja los tres ficheros detrás. **Y aquí el que
+fabricaba no era un diagnóstico: era un DESINSTALADOR** —el `uninstall.sh` que
+`autofirma` ejecutaba como root desde el `postinst` y desde el `prerm`—, y por eso
+nadie lo miraba. El defecto vivió dos versiones (`MEDICIONES.md` §4.29c) y tenía
+**tres puertas**; quitar solo la evidente lo habría dejado vivo por el camino de
+desinstalar, **y la limpieza habría parecido funcionar**.
+
+**La moraleja, en su forma nueva:** no basta con desconfiar de los verbos que
+inspeccionan. **Hay que preguntarle a cada verbo qué deja detrás, incluidos los
+que borran y sobre todo los que fallan**, y la pregunta se contesta con `ls` antes
+y después, no leyendo el manual. Y el dato que lo hace barato: `-D` y `-L`
+distinguen sus casos **por código de salida**, así que ninguna comprobación tiene
+que mirar el texto del mensaje —que además la ataría al idioma de NSS—.
+
 ## Y una octava, que ningún contenedor habría enseñado (2026-08-09)
 
 Salió midiendo el vigilante de `autofirma 1.9.1+encina2` (M18 de

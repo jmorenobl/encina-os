@@ -272,6 +272,24 @@ directorio sin `cert9.db` falla con ese error y rc=255 **sin crear nada**; es
 `certutil -A` el que crea la base de datos. Explica a la vez el error que §4.1 vio
 en el `prerm` de AutoFirma y cómo `ev2eu1nn.default` acabó teniendo un `cert9.db`.
 
+**COMPLETADO EL 2026-08-11, y lo que faltaba costó un defecto que duró dos
+versiones (§4.29c): `certutil -D` TAMBIÉN la crea.** Medido con los cuatro verbos
+y sus dos controles en M19(a) de `encina-autofirma`:
+
+```
+-A (añadir)            rc=0    ficheros tras la orden: cert9.db key4.db pkcs11.txt   <- control positivo
+-L (listar)            rc=255  ficheros tras la orden: (ninguno)                     <- control negativo
+-D (borrar por apodo)  rc=255  ficheros tras la orden: cert9.db key4.db pkcs11.txt   <- lo que faltaba
+-K (listar claves)     rc=255  ficheros tras la orden: (ninguno)
+```
+
+`-D` sale con 255 y con *«could not find certificate named "SocketAutoFirma"»* y
+**aun así deja los tres ficheros detrás**. O sea que **la frase de arriba era
+cierta y estaba incompleta**, y por eso el defecto de §4.29c tenía **tres puertas
+y no una**: `-D` es lo que lleva `uninstall.sh`, que se ejecutaba como root desde
+el paso 0 del `postinst` y desde el `prerm`. Se reproduce en contenedor en
+treinta segundos y no hace falta ninguna VM.
+
 **Lo que sigue sin medirse tras esta tanda:** que Firefox lea de verdad
 `/usr/lib/firefox/defaults/pref/` (deducido de cómo se construye el paquete de
 Mozilla, no medido); que `installs.ini` gane a `Default=1` (deducido); y el
@@ -553,6 +571,12 @@ Idénticos en `v1.9` y `v1.9.2`. **No hay CLA, ni `CONTRIBUTING.md`, ni plantill
 de PR**, así que no hay traba formal para contribuir.
 
 **Las cuatro PRs, de menor a mayor riesgo de rechazo:**
+
+> **Nota del 2026-08-11, y esta tabla se queda como está porque es el registro de
+> cómo se planearon aquel día:** son **cinco** y **las cinco están abiertas** —
+> #552, #553, #554 y #555 el 2026-08-07, y #556 (`no-fabricar-almacen-nss`, la que
+> sale de §4.29c) el 2026-08-11. El estado vivo está en `ENCINA-OS.md`, filas
+> «Forks de AutoFirma» y B∥, y se pregunta con `gh pr list`, no a este documento.
 
 | | Qué | Tamaño | Nota |
 |---|---|---|---|
@@ -6114,7 +6138,7 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un certificado con el nombre correcto y la clave equivocada** | El perfil «tiene» `SocketAutoFirma` y el socket sigue sin validar | Cada reinstalación genera un par nuevo; la CA vieja se queda. Mismo `CN`, mismo apodo, distinta huella (§4.2b). **Se compara por huella SHA-256, nunca por nombre** |
 | **El control negativo no es negativo** | `openssl verify` sin almacén de confianza responde `OK` | OpenSSL 3.x tiene un tercer origen, `-CAstore`, activo por defecto, que lee `/etc/ssl/certs` — donde el `postinst` de AutoFirma dejó su CA. Hace falta `-no-CAstore`, o mejor, verificar contra una CA *equivocada*, que falla por el motivo correcto |
 | **`grep` de una subcadena que no existe** | Una comprobación de ausencia sale siempre «ausente» | `grep -i afirma` **no** casa con `SocketAutoFirma`: antes de la `F` hay una `o`, así que la subcadena es `oFirma`. Familia de la trampa 3 de `SCRIPTS.md` |
-| **`certutil` crea lo que iba a inspeccionar** | Un diagnóstico deja bases de datos NSS nuevas por los perfiles | `certutil -A` crea `cert9.db` si no existe; `-L` no (falla con `SEC_ERROR_BAD_DATABASE`, rc=255, sin tocar nada). Una herramienta de diagnóstico solo usa `-L`, y trata ese error como «sin almacén», no como fallo |
+| **`certutil` crea lo que iba a inspeccionar — y también lo que iba a BORRAR** | Un diagnóstico deja bases de datos NSS nuevas por los perfiles… y un **desinstalador** también | **Crean: `-A` (rc=0) y `-D` (rc=255)**. **No crean: `-L` y `-K`**, que fallan con `SEC_ERROR_BAD_DATABASE` y rc=255 sin tocar nada. Los cuatro medidos con sus dos controles en M19(a) de `encina-autofirma`. Una herramienta de diagnóstico solo usa `-L`, y trata ese error como «sin almacén», no como fallo. **Y lo de `-D` es lo traicionero, porque costó un defecto que duró dos versiones (§4.29c): un verbo que BORRA y que además SALE CON ERROR es el último del que se sospecha que cree algo** — sale con 255 y *«could not find certificate named …»* y aun así deja `cert9.db`, `key4.db` y `pkcs11.txt` detrás |
 | **La preferencia del navegador ya no existe** | Se pone el fichero en la ruta correcta y sigue sin pasar nada al pulsar «Firmar» | `network.protocol-handler.app.<esquema>` **ha desaparecido** de Firefox (0 apariciones en `libxul` de la 153). Hace falta `expose.<esquema>=false`, que es lo que le dice a Firefox que el esquema no le corresponde. Sin ella `expose-all` vale `true` y el navegador se queda el URI (§4.9a) |
 | **«No se han encontrado certificados válidos» con el certificado delante** | `certutil -L` lo ve en el perfil y AutoFirma no | AutoFirma no encuentra las bibliotecas NSS: solo busca en `/usr/lib/x86_64-linux-gnu` y `/usr/lib/i386-linux-gnu`. En arm64 falla con «No se ha podido determinar la localizacion de NSS en UNIX», y el diálogo no menciona NSS por ninguna parte (§4.9c) |
 | **La sede se bloquea a sí misma** | Todo correcto en la máquina y la firma no arranca; nada en pantalla | La CSP de la sede no incluye `afirma:` en `frame-src`, y `autoscript.js` invoca el esquema por iframe en Firefox de escritorio. Solo se ve en la consola del navegador (§4.9b) |
