@@ -68,6 +68,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.21 | **E3: las dos mediciones baratas de apertura** | Sí. Es la medición de apertura de E3. **El banco de UTM no aplica Secure Boot y no puede** —queda declarado como límite—, y **`/cdrom/autoinstall.yaml` es el quinto sitio que mira el instalador**, leído en el código de esta ISO, con la consecuencia de que **un volumen `CIDATA` conectado le gana** |
 | §4.26 | **E4: la medición de apertura, y la pregunta del Snap** | Sí. **Es la medición que abre E4** y la primera que nombra las **25 aplicaciones** que trae la entrega, que hasta hoy solo se contaban. El criterio de §10 **no suprime E4**: hay tres huecos con su comando —ofimática, escáner y **ninguna forma de instalar nada**—. Saca además dos cosas que no son de E4: la entrega **depende de la red en duro** (el navegador, 76,4 MB, baja de `packages.mozilla.org`) y **`gnome-software` arrastra `snapd`**. Y contesta que **el Snap sí puede convivir**, porque es el estado en el que se firmó en §4.13 |
 | §4.27 | **E3: el agujero de red, leído antes de gastar la VM** | Sí, y **no marca ninguna casilla**: es el paso 1 de `ENCINA-OS.md` §7 hecho por lectura. Leído en el propio medio de la entrega (`02ab929d…`, sus manifiestos y su `pool/`), con el control de que el conjunto derivado reproduce la foto de §4.26g. **Corrige a §4.26e por lo alto:** sin red no falta el navegador, falta **todo Encina** —`autofirma` pide un JRE y `libnss3-tools`, `encina-meta` pide `hunspell-es`, y nada de eso viaja en el medio—, así que apt, que es todo o nada, no instala ni uno de los cuatro `.deb`. Trae **el sano y el roto escritos antes de medir** y el precio |
+| §4.28 | **¿B3 se arregla en AutoFirma en vez de en el navegador?** | Sí, y **cierra la pregunta: no se puede**, leído en las fuentes del fork (v1.9.1) sin gastar VM. No es el confinamiento: **el puerto lo elige la página al azar —tres de 16 384— y se lo dice a la aplicación por la URI `afirma://` que el Snap no entrega**, así que un AutoFirma residente es inalcanzable por construcción. Y encima habría que quitarle sus dos temporizadores y su `halt(0)` —bifurcación permanente, contra D14— y **saltarse la comprobación de `idsession`**. Consecuencia para E4: la condición de D16 —el Firefox que se puede abrir es el nativo— **no es cosmética, es la defensa entera** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -5522,6 +5523,108 @@ caracteres).
   `/cdrom/encina-repo`, que ya existe y ya está medido. **Va en la vuelta de E4**,
   porque E4 decide qué más lleva el medio y hacerlo dos veces es exactamente lo
   que prohíbe el criterio del precio de §10.
+
+---
+
+### 4.28 ¿Y si B3 se arreglara en AutoFirma en vez de en el navegador? (2026-08-11)
+
+**La duda es de Jorge y está bien puesta**, porque las mediciones de este proyecto
+la apoyaban a medias: §4.3 midió que **el almacén NSS del Snap es correcto** y
+§4.4 que lo único que rompe el confinamiento es que Firefox **no ve
+`afirma.desktop` ni `/usr/bin/autofirma`**. O sea que dentro del Snap el eslabón
+roto **no es firmar: es arrancar**. Y el protocolo `afirma:` solo existe para
+*lanzar* el programa — después la sede habla con él por un websocket a
+`127.0.0.1`, que un snap con el plug `network` **sí puede** abrir. Luego la
+pregunta era legítima: **si AutoFirma ya estuviera escuchando, ¿sobraría B3?**
+
+**Contestada por lectura, sin VM y sin construir nada**, sobre las fuentes
+ancladas del propio fork (`jmorenobl/clienteafirma`, tag **v1.9.1**, el mismo que
+compila `construir-deb.sh`).
+
+#### (a) La respuesta corta: NO, y no es por el confinamiento
+
+**El puerto lo elige la página y se lo dice a la aplicación por la URI que el
+Snap no puede entregar.** `autoscript.js:2424` pide tres puertos **al azar**:
+
+```
+autoscript.js:1955-1978  getRandomPorts()  -> TRES aleatorios unicos del rango
+autoscript.js:1908,1911  DEFAULT_MIN_PORT = 49152 … MAX_PORT = 65535
+autoscript.js:2469       "afirma://websocket?ports=" + portsLine + "&idsession=" + idSession
+autoscript.js:2486-2492  waitAppAndProcessRequest -> solo prueba ESOS tres puertos
+```
+
+Y del lado de la aplicación, el puerto sale de ahí y de ningún otro sitio:
+`ServiceInvocationManager.java:117`, `tryPorts(channelInfo.getPorts(), …)`, con
+`channelInfo` construido al analizar la URI.
+
+**Luego un AutoFirma residente es inalcanzable por construcción:** escuche donde
+escuche, la página solo llama a tres puertos de **16 384**, elegidos después, y no
+tiene forma de enterarse de cuál usa el que ya está vivo. La probabilidad de
+acertar es **3/16384**, un 0,018 %. No es una barrera de seguridad ni de
+confinamiento: es que **el canal se negocia por la vía que el Snap corta**.
+
+**El control de que este código es el que corre de verdad**, y no una copia del
+repositorio que la sede no sirva: la consola medida contra `valide.redsara.es`
+(M11 de `encina-autofirma`) dijo *«Tratamos de conectar con el cliente a traves de
+WebSockets en los puertos 65429,57281,55579»* — **tres** puertos, y **los tres**
+dentro de 49152–65535. Coincide con `getRandomPorts` línea por línea.
+
+#### (b) Y aunque el puerto se resolviera, la aplicación está hecha para morirse
+
+```
+AfirmaWebSocketServer.java:51        INITIAL_INACTIVITY_TIMEOUT = 30000  (30 s)
+AfirmaWebSocketServer.java:126-129   onClose -> "Cerramos la aplicacion" -> halt(0)
+ServiceInvocationManager.java:132-138 temporizador de 90 s -> halt(0)
+```
+
+Volverla residente **no es corregir un defecto: es cambiar el modelo de la
+aplicación** —quitarle los dos temporizadores y el `halt(0)`—, y eso no lo acepta
+nadie aguas arriba. Con D14 sobre la mesa, convertiría un puente temporal en una
+**bifurcación permanente**, que es justo lo que D14 existe para evitar.
+
+#### (c) Y hay un tercer motivo, que es de seguridad y va en contra
+
+La versión 4 del protocolo **ata el socket a la página que lo pidió**:
+
+```
+AfirmaWebSocketServerV4Sup.java  exige que la peticion venga de 127.0.0.1
+                                 y que traiga el idsession correcto… PERO:
+   if (this.sessionId != null && !this.sessionId.equals(getSessionId(message)))
+AfirmaWebSocketServerManager.java:79,84  new …(port, channelInfo.getIdSession(), …)
+```
+
+**Si el `idsession` es nulo, la comprobación se salta entera** — y en el servidor
+de la versión 1 (`AfirmaWebSocketServer.java:146-157`) **no se comprueba nunca**:
+responde `OK` a cualquier eco y pasa cualquier otra cosa a
+`ProtocolInvocationLauncher.launch`. O sea que un AutoFirma residente lanzado sin
+sesión **atendería a cualquier página local**. Hacerlo para servir al Snap sería
+**debilitar justo la comprobación que upstream añadió**.
+
+#### (d) Lo que sí queda contestado, y cambia el peso de una casilla
+
+**B3 no tiene arreglo posible desde nuestro lado**, y ahora se sabe *por qué* y no
+solo *que*. Las tres salidas que existen **son de otros**: que la sede fije el
+rango de puertos (`setPortRange`, `autoscript.js:974`), que Firefox enrute los
+esquemas desconocidos por el portal (Mozilla/Canonical), o que el Snap permita
+lanzar manejadores del anfitrión (Canonical).
+
+**Y de aquí sale lo que de verdad importa para E4:** con la tienda vuelve el Snap
+de Firefox al alcance del usuario (D16), y **un usuario que abra ese Firefox y
+firme fallará en silencio, sin que exista arreglo por nuestra parte**. Luego la
+condición de D16 —*el Firefox que el usuario puede abrir es el nativo: un solo
+icono*— **no es cosmética: es la defensa entera**. La casilla que sustituye a «Sin
+Snap» no se puede aflojar ni un milímetro, y ahora tiene su motivo medido.
+
+#### (e) Lo que esta lectura NO contesta
+
+- **Si el vigilante de `+encina2` mete la CA también en el perfil del Snap**, y
+  **de qué perfil lee AutoFirma el certificado con los dos presentes** —hoy lo fija
+  el lanzador con `AFIRMA_NSS_PROFILES_INI` (M6), apuntando al nativo—. Son las dos
+  patas que quedan de la puerta de la convivencia, y **se miden en el paso 2**,
+  sobre un **duplicado** de `encina-E1-meta`: crear ahí un perfil de Snap la
+  convierte en el estado (d) y gastaría el único testigo del estado (c) del banco.
+- **Nada de la sede real:** se leyó el `autoscript.js` del repositorio, y el
+  control de que coincide con lo servido es la consola de M11, no un diff.
 
 ---
 

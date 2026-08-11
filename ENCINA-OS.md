@@ -149,6 +149,16 @@ equipo. Solo afecta a qué sede sirve para validar: `valide.redsara.es` sí,
    `afirma.desktop` ni `/usr/bin/autofirma`, porque su `XDG_DATA_DIRS` no
    incluye `/usr/share` del anfitrión. No falla: **no hace nada.** Por eso
    `encina-firefox-native` no es un accesorio y por eso la imagen quita el Snap.
+   **Y tampoco lo arregla AutoFirma, leído en sus fuentes el 2026-08-11**
+   (`MEDICIONES.md` §4.28): la salida evidente —dejar AutoFirma escuchando siempre,
+   que haría innecesario el manejador— **es imposible por el protocolo, no por el
+   confinamiento**: la página elige **tres puertos al azar de 16 384** y se los
+   dice a la aplicación **por la misma URI `afirma://` que el Snap no entrega**.
+   Un AutoFirma residente es inalcanzable por construcción. **Consecuencia para
+   E4:** cuando la tienda devuelva el Snap de Firefox al alcance del usuario
+   (D16), el que lo abra y firme fallará en silencio **y no hay arreglo posible
+   por nuestra parte**, así que «un solo icono, y abre el nativo» no es
+   cosmética: **es la defensa entera**.
 2. **Quitar el Snap cierra B3 y B4 a la vez**, y B4 está medido con control
    (`encina-autofirma/MEDICIONES.md` M6): sin perfil de Snap, AutoFirma acierta
    con el nativo él solo.
@@ -288,11 +298,18 @@ tres cosas, en este orden, y las dos primeras cuestan mucho menos que la tercera
    producto), y **que el medio lleve lo que hoy baja de internet** (nivel 3), que
    es la misma obra que decide E4. **Ninguna ISO nueva: la entrega sigue siendo
    `02ab929d…` y sigue teniendo el agujero.**
-2. **LA PUERTA DE LA CONVIVENCIA (c), en `encina-E1-meta`.** Con un perfil de
-   Snap de Firefox creado a propósito, ¿el vigilante de `autofirma 1.9.1+encina2`
-   sigue metiendo la CA en el perfil **nativo**? M6 lo midió **sin** ese perfil.
-   **Va antes de elegir la tienda**, porque la tienda es la vía por la que
-   aparece ese perfil. Cuesta una VM que ya existe y ninguna instalación nueva.
+2. **LA PUERTA DE LA CONVIVENCIA (c), y ya son TRES preguntas, no una.** Con un
+   perfil de Snap de Firefox creado a propósito: *(1)* ¿el vigilante de
+   `autofirma 1.9.1+encina2` sigue metiendo la CA en el perfil **nativo**? M6 lo
+   midió **sin** ese perfil. *(2)* ¿la mete **también** en el del Snap? *(3)* ¿de
+   qué perfil lee AutoFirma el certificado con los dos presentes, si hoy lo fija
+   el lanzador con `AFIRMA_NSS_PROFILES_INI` apuntando al nativo? Las dos últimas
+   salen de §4.28 y **cuestan lo mismo que la primera**. **Va antes de elegir la
+   tienda**, porque la tienda es la vía por la que aparece ese perfil. Cuesta una
+   VM que ya existe y ninguna instalación nueva — **pero se mide sobre un
+   DUPLICADO de `encina-E1-meta`, no sobre ella**: crear ahí un perfil de Snap la
+   pasa al estado (d) y gastaría **el único testigo del estado (c)** que queda en
+   el banco. Por §9.a un clon de esa familia no ocupa casi nada real.
 3. **UNA SOLA VUELTA DE E4, con todo dentro.** El precio es **por vuelta y no por
    paquete**, así que en la misma van: la convivencia (c) de D16, las
    aplicaciones decididas, la tienda que salga del punto 2, lo que salga del

@@ -71,12 +71,22 @@ tocarle nada más—, pero lo que hay es la receta, no el producto.
 Cuando esté, el uso previsto es este y no otro:
 
 1. Descargas una imagen ISO de Encina OS.
-2. La instalas como instalarías Ubuntu.
+2. La instalas como instalarías Ubuntu, **con el equipo conectado a internet**.
 3. Entras, abres la sede electrónica, pulsas «Firmar», y firma.
 
 No hay paso 4. **No se instala sobre tu Ubuntu actual**: lo que se entrega es el
 sistema. Los `.deb` de este repositorio son ingredientes del producto, no un
 producto que puedas aplicar a una máquina que ya tienes.
+
+**Por qué esa conexión no es opcional, dicho por delante y no en letra pequeña:**
+el navegador y las dependencias del cliente de firma **se descargan durante la
+instalación**, no viajan dentro de la imagen. Si instalas sin red, la instalación
+**termina igual y sin avisar**, y la máquina se queda sin ellos: desde el 11 de
+agosto de 2026 el sistema deja escrito su propio veredicto en
+`/etc/encina-estado`, pero eso lo lees **después**. Que la imagen se baste a sí
+misma está en el plan y se paga con el siguiente incremento; hasta entonces es un
+límite declarado, no una sorpresa. El detalle está en
+[MEDICIONES.md](MEDICIONES.md) §4.27.
 
 ### Qué falta para llegar ahí
 

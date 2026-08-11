@@ -593,6 +593,21 @@ nuevos, y `writer + calc + libreoffice-l10n-es + libreoffice-help-es` son **54**
 (§4.26d). **El paquete de ayuda no es opcional**: sin él se abre el hueco de l10n
 que este mismo párrafo documenta.
 
+**UNA MINA QUE ESPERA EN LA VUELTA DE E4, y cuesta la vuelta entera si se pisa**
+(escrita el 2026-08-11, deducida de dos mediciones que ya existen). Con D16 el
+seed **deja de purgar `snapd`** —la forma (c) exige que esté—, y eso devuelve el
+`.deb` de transición `firefox 1:1snap1-…` a la máquina durante la instalación.
+Entonces el reparto de §4.17 se invierte otra vez: **el paso que sustituye el
+navegador vuelve a ser el `full-upgrade`**, y el paso 4 vuelve a ser solo el
+idioma. **Y ahí está la mina:** ese cambio es un *downgrade* formal por el epoch
+`1:`, así que con `-y` **hace falta `--allow-downgrades`** (§4.10c, medido, y está
+en la lista de trampas). El `full-upgrade` de `imagen/encina-seed.sh` **no lleva
+ese flag** —y hoy no lo necesita, porque después de purgar no hay nada que
+degradar—. Sin él, el paso **no falla ruidosamente**: deja la máquina con el deb
+de transición, o sea abriendo el Snap, o sea **el estado (d), el que no firma**.
+Con el veredicto de §4.27 dentro, al menos saldría `INCOMPLETO` con
+`firefox-de-transicion`, pero la vuelta ya estaría gastada.
+
 **Tres avisos más para el día que se toque este bloque**, todos medidos el
 2026-08-11 sobre `encina-E2-2vias` con `apt-get -s` y con sus controles:
 
