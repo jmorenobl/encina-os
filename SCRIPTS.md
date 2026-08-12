@@ -1333,3 +1333,68 @@ Lo que se quería saber era *«el escritorio arranca»*. Ahora vale el saludador
 **o** una sesión gráfica de usuario, **se dice cuál de las dos se vio** —que es
 más informativo que el sí/no de antes— y lleva su control de que `loginctl` no
 está mudo. **No se aflojó: se corrigió, porque estaba mal escrita.**
+
+---
+
+## Y dos más, firmando de verdad sobre la forma (c) (2026-08-12)
+
+Las dos son de `MEDICIONES.md` §4.33, y las dos **son mías**.
+
+**29. `utmctl clone` NO regenera la MAC, así que un clon y su origen son
+indistinguibles por los dos caminos a la vez.** Ya estaba escrito que el clon
+contesta en la **misma IP**; lo que no estaba es que también trae la **misma
+MAC**:
+
+```
+encina-E4-meta        MacAddress 76:CE:28:76:DC:40
+encina-firma-efimera  MacAddress 76:CE:28:76:DC:40
+```
+
+Eso rompe el truco del punto 5 de «Cómo mirar y pilotar una VM sin ojos»
+—`arp -a -n | grep "<la MAC de la VM>"`—, que **no discrimina un clon de su
+origen**, y rompe también la huella de dentro: un clon recién nacido tiene, por
+definición, la misma huella de paquetes y testigos que su padre. Es la trampa 14
+llevada al extremo: allí dos VMs distintas se peleaban por una IP y las separaba
+su huella; **aquí no hay huella que las separe**.
+
+**Y esto muerde justo donde más caro sale**, porque el clon efímero de la firma
+lleva dentro un certificado personal y su origen es un banco que se perdería si
+lo tocara. Lo que sí funciona, **gratis y sin encender nada**, es preguntarle al
+anfitrión cuándo se escribió por última vez la imagen de disco de la original:
+
+```
+/usr/bin/find "$B/<VM>.utm/Data" -type f -exec /usr/bin/stat -f '%Sm %z %N' -t '%F %T' {} \;
+
+encina-E4-meta/Data/disco.img        2026-08-12 11:19:15   <- horas antes de la sesion
+encina-firma-efimera/Data/disco.img  2026-08-12 20:31:11   <- la que estuvo viva
+```
+
+**La regla: cuando dos VMs no se pueden distinguir desde dentro, la prueba está
+fuera.** Y el orden correcto es escribir un testigo dentro del clon **en el
+primer minuto**, antes de que entre nada, para que a partir de ahí sí haya
+huella. *(Y un detalle del instrumento que también sirve: `utmctl ip-address`
+distingue las dos con dos mensajes distintos —`The QEMU guest agent is not
+running` para la encendida, `The virtual machine is not running` para la
+parada—.)*
+
+**30. Dos umbrales escritos por mí que no podían dar una de sus dos respuestas, y
+los dos en la misma huella.** La familia de la 5 y de la 11, quinta aparición.
+
+- **«0 `.p12` en el disco»** no puede salir «sano» en **ninguna** máquina con
+  AutoFirma instalado: el configurador fabrica
+  `/usr/share/autofirma/autofirma.pfx`, y encima `dpkg -S` no lo reconoce porque
+  no viaja en el paquete. El umbral que sí discrimina es el de §4.13: **0 en
+  HOME**.
+- **El contador de iconos que no aplica el ensombrecido de `XDG_DATA_DIRS`**
+  cuenta ficheros, no iconos, y dijo **2** donde la máquina tiene **1**. La
+  sombra de `encina-firefox-native` vive en `/usr/share/applications`, que gana a
+  `/var/lib/snapd/desktop/applications`, y lleva `NoDisplay=true`; contando por
+  fichero, el de abajo parece visible. **Para contar iconos hay que resolver por
+  nombre de fichero en el orden de precedencia**, o usar el inventario de §4.19c
+  que ya lo hace — y aun así la columna que decide es la de los ojos (trampa 26).
+
+**Lo que hay que llevarse:** el peligro de estas dos no es que fallen, es que
+**una salió «rota» y la otra «sana» siendo las dos falsas**, y las dos iban dentro
+de una huella de virginidad que se toma justo antes de gastar una VM con un
+certificado personal dentro. **Un umbral se prueba contra sus dos respuestas el
+día que se escribe, no el día que estorba.**

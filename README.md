@@ -95,7 +95,7 @@ límite declarado, no una sorpresa. El detalle está en
 | **E1** — `encina-meta` | Un solo nombre que declara el conjunto | **Hecho, 12 de 12.** La que decide: una máquina virgen instalada con la secuencia firma de verdad. La última casilla se cerró ya dentro de E2 |
 | **E2** — Instalación desatendida | Un `autoinstall.yaml` que monta el sistema solo | **Hecho, 6 de 6 (10 de agosto de 2026).** Una máquina se instala sola en menos de 11 minutos: los cuatro paquetes desde un repositorio que viaja **dentro del propio volumen del seed**, **sin el Snap de Firefox**, y Firefox de Mozilla en español. La ISO oficial no se toca. Y la casilla que decide, marcada: **una firma real en `valide.redsara.es`** sobre un clon de esa máquina, destruido después |
 | **E3** — ISO que se instala como Ubuntu | **Aquí es donde lo puedes usar tú:** una ISO que le puedes dar a alguien | **Abierto el 10 de agosto de 2026.** **Se instala como se instala Ubuntu:** te pregunta teclado, red, disco, usuario y zona horaria, y lo único que trae puesto de fábrica es Encina — el repositorio con los cuatro paquetes, sin el Snap de Firefox, y Firefox nativo en español. **No lleva ningún usuario ni ninguna contraseña dentro:** los pones tú al instalar. **Dos cosas no se preguntan, a propósito, porque son el producto y no una preferencia:** el sistema se instala **en español** y sobre la **instalación mínima** de Ubuntu — Encina OS se construye encima de esa base, y lo que se le añada se declarará en `encina-meta` (E4). El seed va **dentro** de la ISO, donde el instalador lo busca (`/cdrom/autoinstall.yaml`). Falta lo caro: reempaquetar la imagen sin romperla. **Con una limitación dicha por delante:** las máquinas virtuales del autor **no aplican Secure Boot**, así que aquí no se puede demostrar que la ISO arranque en un equipo que sí lo tenga activo |
-| **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | **La vuelta está dada (12 de agosto de 2026).** Encina OS deja de ser una máquina que firma y pasa a ser **un escritorio que crece**: trae **una tienda** (`gnome-software`), **un escáner** (`simple-scan`) y **el PDF atado al visor**, y **no** trae suite ofimática ni cliente de correo — los elige quien lo use, que para eso está la tienda. **Y el Snap vuelve, declarado y con los ojos abiertos:** la tienda lo arrastra de todas formas, así que en vez de tenerlo por la puerta de atrás está puesto a propósito, con la condición que importa medida — **el único icono de Firefox que se ve abre el nativo, y el Snap de Firefox no se abre nunca**. La máquina se instala sola en **9 min 52 s** y pasa **48 comprobaciones de 48**. **Lo que esta vuelta encontró y no arregla, dicho por delante:** sin conexión a internet **la instalación no termina** —el núcleo de Linux no viaja en la imagen, lo descarga el instalador— y eso se ve, en español, en vez de dejar una máquina a medias |
+| **E4** — Aplicaciones de serie | Un escritorio completo, no solo la firma | **La vuelta está dada (12 de agosto de 2026).** Encina OS deja de ser una máquina que firma y pasa a ser **un escritorio que crece**: trae **una tienda** (`gnome-software`), **un escáner** (`simple-scan`) y **el PDF atado al visor**, y **no** trae suite ofimática ni cliente de correo — los elige quien lo use, que para eso está la tienda. **Y el Snap vuelve, declarado y con los ojos abiertos:** la tienda lo arrastra de todas formas, así que en vez de tenerlo por la puerta de atrás está puesto a propósito, con la condición que importa medida — **el único icono de Firefox que se ve abre el nativo, y el Snap de Firefox no se abre nunca**. La máquina se instala sola en **9 min 52 s** y pasa **48 comprobaciones de 48**. **Lo que esta vuelta encontró y no arregla, dicho por delante:** sin conexión a internet **la instalación no termina** —el núcleo de Linux no viaja en la imagen, lo descarga el instalador— y eso se ve, en español, en vez de dejar una máquina a medias. **Y la prueba que faltaba está hecha (12 de agosto de 2026): sobre este escritorio, con la tienda y con el Snap dentro, una firma real en `valide.redsara.es` sale bien** — con certificado de verdad, mirada en pantalla, y sobre una máquina que se destruyó después |
 | **E5** — Imagen propia | El destino declarado: instalador propio y control del conjunto base | Sin abrir |
 | **E6** — amd64 | **Si tu equipo es Intel o AMD, lo necesitas** | Sin abrir |
 
@@ -131,7 +131,7 @@ Con la secuencia y las advertencias que van con ella:
   aparece el perfil de Firefox**, que es horas después de instalarse.
 - **Tres de los cuatro `.deb` se construyen desde este repositorio**, con los
   scripts de [más abajo](#cómo-construir-y-probar).
-- **El cuarto, `autofirma 1.9.1+encina2`, vive en `encina-autofirma`, que hoy es
+- **El cuarto, `autofirma 1.9.1+encina4`, vive en `encina-autofirma`, que hoy es
   un repositorio privado.** Se hará público cuando se publique la imagen: hacerlo
   antes activa obligaciones de mantenimiento hacia un público que ahora mismo es
   el autor ([ENCINA-OS.md](ENCINA-OS.md), D5). Mientras tanto, esta secuencia no
@@ -143,16 +143,26 @@ Con la secuencia y las advertencias que van con ella:
 
 | # | Obstáculo | Quién lo cierra en Encina OS |
 |---|---|---|
-| B1a | Las preferencias del esquema `afirma:` están donde la compilación de Mozilla no las lee | `autofirma 1.9.1+encina2` |
-| B1b | La preferencia con la que AutoFirma lanza el programa ya no existe en Firefox 153 | `autofirma 1.9.1+encina2` |
-| B2 | El certificado del canal seguro se instala en el perfil de navegador equivocado | `autofirma 1.9.1+encina2` |
-| B3 | Dentro del Snap, Firefox **no ve** el programa que debería abrir | `encina-firefox-native`, y quitar el Snap en la imagen |
-| B4 | AutoFirma busca tu certificado en el perfil del Snap, que está vacío | `autofirma 1.9.1+encina2`, y quitar el Snap lo cierra solo |
-| B6 | Las bibliotecas NSS no se encuentran fuera de x86 | `autofirma 1.9.1+encina2` |
+| B1a | Las preferencias del esquema `afirma:` están donde la compilación de Mozilla no las lee | `autofirma 1.9.1+encina4` |
+| B1b | La preferencia con la que AutoFirma lanza el programa ya no existe en Firefox 153 | `autofirma 1.9.1+encina4` |
+| B2 | El certificado del canal seguro se instala en el perfil de navegador equivocado | `autofirma 1.9.1+encina4` |
+| B3 | Dentro del Snap, Firefox **no ve** el programa que debería abrir | `encina-firefox-native`: el único icono de Firefox que se ve abre **el nativo** |
+| B4 | AutoFirma busca tu certificado en el perfil del Snap, que está vacío | `autofirma 1.9.1+encina4`, con el lanzador apuntando al perfil nativo |
+| B6 | Las bibliotecas NSS no se encuentran fuera de x86 | `autofirma 1.9.1+encina4` |
 
 Hay un séptimo, B5, que **no lo puede cerrar nadie desde el equipo**: algunas
 sedes electrónicas bloquean con su propia política de seguridad el `iframe` que
 su propio JavaScript necesita.
+
+**Dos de esas filas decían hasta el 12 de agosto de 2026 «y quitar el Snap lo
+cierra solo», y ha dejado de ser verdad:** desde esa fecha Encina OS trae una
+tienda, la tienda trae `snapd`, y **el Snap de Firefox se queda instalado**
+(D16). La defensa ya no es quitarlo: es que **el único icono de Firefox que ves
+abre el nativo, y el Snap de Firefox no se abre nunca**. Se dice sin maquillar
+porque tiene un precio real: si alguien instala el Firefox del Snap desde la
+tienda, lo abre y firma, **falla en silencio y eso no lo puede arreglar este
+proyecto** — la salida está en manos de la sede, de Mozilla o de Canonical
+([MEDICIONES.md](MEDICIONES.md) §4.28).
 
 Las salidas literales de todas estas mediciones están en
 [MEDICIONES.md](MEDICIONES.md).
@@ -178,10 +188,10 @@ que pasa el nuestro.
 
 | Pieza | Estado |
 |---|---|
-| `encina-branding` | **Terminado.** v0.1.7, identidad visual: fondos, tema de Plymouth, logotipo de GDM |
+| `encina-branding` | **Terminado.** v0.1.8, identidad visual —fondos, tema de Plymouth, logotipo de GDM— y, desde el 12 de agosto de 2026, el **PDF atado al visor** en vez de al navegador |
 | `encina-firefox-native` | **Terminado.** v0.2.1, Firefox de Mozilla en lugar del Snap, con repositorio, clave verificada por huella y anclaje. Desde el 10 de agosto de 2026 el usuario ve **un solo icono de Firefox** y no dos |
-| `autofirma 1.9.1+encina2` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64 |
-| `encina-meta` | **Terminado, 12 de 12.** v0.1.1, construido y verificado en VM. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La última casilla (`autoremove`) no era cumplible con `.deb` sueltos y se cerró con el repositorio local de la instalación desatendida |
+| `autofirma 1.9.1+encina4` | **Terminado y con el primer positivo de extremo a extremo.** En un repositorio aparte, con CI verde en amd64 y arm64. **Y con un positivo propio del 12 de agosto de 2026**: firma real en `valide.redsara.es` sobre una máquina **con el Snap dentro**, con la CA del canal seguro llegando sola al perfil nativo en 2 segundos, comprobada por huella |
+| `encina-meta` | **Terminado, 12 de 12.** v0.2.0, construido y verificado en VM. El 9 de agosto de 2026, sobre una máquina virgen instalada con las tres órdenes de abajo **y nada más**, salió una firma real en una sede de verdad, mirada en pantalla. La última casilla (`autoremove`) no era cumplible con `.deb` sueltos y se cerró con el repositorio local de la instalación desatendida. Desde el 12 de agosto declara además las aplicaciones de serie: tienda, escáner y visor |
 | Instalación desatendida | **Terminada, 6 de 6 (10 de agosto de 2026).** `imagen/autoinstall.yaml` sobre la ISO oficial de Ubuntu, sin tocarla: repositorio local con los cuatro `.deb` dentro del propio volumen del seed, `encina-meta`, **sin Snap**, y Firefox de Mozilla en español. Medido el 10 de agosto de 2026: **menos de 11 minutos y nadie tocó nada**. **Y esa misma tarde salió la firma** en `valide.redsara.es`, sobre un clon efímero de esa máquina que se destruyó después: el navegador que firmó era el nativo, fuera de `/snap/`, y la CA de AutoFirma estaba donde tenía que estar, comprobada por huella |
 | Imagen | Sin abrir |
 

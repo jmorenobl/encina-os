@@ -1767,6 +1767,27 @@ ninguna sin la salida literal.**
       identity, timezone` + `loading, confirm, install, done`, **sin `locale` ni
       `source`**. La máquina: **47 correctas y 2 fallos, los dos del verificador
       y corregidos** (§4.32g).
+- [x] **[OJOS] LA FIRMA REAL SALE SOBRE LA FORMA (c).** **Casilla nueva, añadida
+      el 2026-08-12 y marcada el mismo día**, y se dice por qué no estaba antes:
+      D16 y D18 metieron el Snap al alcance del usuario, y hasta hoy **la única
+      firma real del proyecto sobre una máquina con Snap era la de §4.13**, que
+      salió con `+encina2`, sin tienda y sobre la máquina de E1 — o sea que E4 se
+      apoyaba en un positivo de otra forma. *Sano:* «Fichero firmado
+      correctamente» **mirado en pantalla** en `valide.redsara.es`, con
+      certificado real, sobre un **clon efímero** de la máquina de E4, y con las
+      tres cosas demostradas y no supuestas: el binario que corre está **fuera de
+      `/snap/`**, la CA llega **sola** al perfil nativo comparada **por huella
+      sha256**, y **la forma (c) sigue en pie después de firmar** (0 perfiles bajo
+      `~/snap/`, revisión del Snap sin tocar). *Roto:* cualquier otra cosa en
+      pantalla, o un `exe` bajo `/snap/`, o un perfil de Snap aparecido por el
+      camino. **Va con certificado personal, así que es un experimento de un solo
+      uso y la VM SE DESTRUYE** (`ENCINA-OS.md` §9.1): no deja estado bueno contra
+      el que contrastar, y ninguna casilla futura puede pedirlo.
+      **MARCADA (`MEDICIONES.md` §4.33):** `exe -> /usr/lib/firefox/firefox-bin`
+      con el control de que la comprobación sabe decir `/snap/`; CA en el nativo
+      en **2 s** con huella `73f752a4…` idéntica y `Result=success`; las seis
+      barreras en el registro de AutoFirma y **10 s** de la URI a la firma; y la
+      forma (c) intacta al terminar. La VM se destruyó y devolvió **2,008 GiB**
 
 **Lo que NO es una casilla de E4, y conviene decirlo:** el número de aplicaciones
 visibles. El control es que **el inventario sepa contar** (§4.19c), no que dé el
