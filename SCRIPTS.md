@@ -1091,6 +1091,41 @@ invitado está vivo y **lo que no llega son tus pulsaciones** — no lo contrari
 Y las coordenadas del ratón son **del invitado**, así que hay que deducir la
 escala mirando dónde se quedó el cursor, no suponerla.
 
+**Y LA QUINTA QUEDÓ CONTESTADA EL 2026-08-12** (`MEDICIONES.md` §4.32h), así que
+las cinco pantallas **sí se pueden pilotar**. Eran **tres cosas distintas**, no
+una, y hay que hacer las tres:
+
+1. **El ratón de UTM no llega, y el teclado de `System Events` sí.** Con la
+   ventana delante, `input mouse click` deja el cursor del invitado donde estaba;
+   `osascript -e 'tell application "System Events" to tell process "UTM" to key
+   code 36'` **sí** entra. La prueba que no se puede fingir: ese `Return` abrió
+   el diálogo «Detectar disposición de teclado» del instalador.
+2. **`Ctrl+Alt` NUNCA llega al invitado: es el atajo de UTM** para soltar el
+   ratón, y lo intercepta el anfitrión —sale su propio diálogo «Mouse
+   capturado»—. Por eso `Ctrl+Alt+T` no abre ningún terminal. Lo que funciona es
+   **`Alt+F2`** → «Ejecutar una orden».
+3. **Hay que reactivar UTM y comprobar que es el proceso frontal ANTES DE CADA
+   ENVÍO.** `System Events` entrega al proceso **frontal**, no al que se nombra;
+   si otra aplicación toma el foco, las teclas se van a otro sitio **sin ningún
+   error**. El control cuesta una línea:
+
+```
+osascript -e 'tell application "UTM" to activate'
+osascript -e 'tell application "System Events" to get name of first process whose frontmost is true'
+```
+
+**Y la defensa de la trampa de los caracteres comidos (punto 1 de arriba):
+teclear carácter a carácter con 0,2 s.** `keystroke "encinacinco"` dejó
+**`encinacin`** en el campo —y así se quedó el hostname de esa máquina—; con la
+pausa, `gnome-terminal` salió entero:
+
+```applescript
+repeat with c in characters of "gnome-terminal"
+  keystroke (c as text)
+  delay 0.2
+end repeat
+```
+
 **LA SALIDA BARATA, cuando lo que hace falta es medir el MEDIO y no las
 pantallas:** un volumen `CIDATA` con **el YAML y ningún `encina-repo` dentro`**.
 El `CIDATA` gana el seed (trampa 16, usada a favor) y la instalación va
@@ -1266,3 +1301,35 @@ variable. §4.26f ya lo avisaba para los nombres de las aplicaciones y nadie lo
 llevó a la fila de al lado de la misma tabla. **La regla:** cuando el instrumento
 sea `ssh` y la pregunta sea del escritorio, se mide **en las dos columnas** —con
 la variable y sin ella— o se marca `[OJOS]` desde el primer día.
+
+---
+
+## Y dos más, cerrando la ISO de E4 (2026-08-12)
+
+Las dos salieron midiendo `MEDICIONES.md` §4.32, y las dos son **comprobaciones
+que no podían dar una de sus dos respuestas** — la familia de la 5 y de la 11,
+que ya va por la cuarta aparición.
+
+**27. Una lista de etapas exacta a la que le falta la etapa que siempre está.**
+`verificar-e2.sh --forma e3` esperaba
+`confirm,done,identity,install,keyboard,network,storage,timezone` y la máquina
+dio esa misma lista **más `loading`**, que toda instalación escribe — la rama E2
+del mismo guion, dos líneas más arriba, **ya la esperaba**. El fallo entró al
+reescribir el verificador en la vuelta de E4 y **estuvo invisible un día entero
+porque desde entonces no se había medido ninguna máquina de forma E3**.
+
+La regla que sale, y no es «revisa las listas»: **una comprobación reescrita hay
+que dispararla contra las dos formas que dice cubrir antes de creerla**. Si una
+rama no se ejecuta desde que se tocó, no está medida — está escrita.
+
+**28. Preguntar por el mecanismo en vez de por lo que se quiere saber.** La
+comprobación decía *«hay un saludador gráfico vivo»* y esperaba `si`. Pero una
+máquina de forma E3 **no lleva `ssh`** a propósito, así que se mide **desde
+dentro de una sesión gráfica** (trampa 20) — y mientras hay alguien dentro, GDM
+**no tiene saludador**: tiene una sesión de usuario. O sea que en el único sitio
+donde hay que usarla, **sólo sabía contestar `no`**.
+
+Lo que se quería saber era *«el escritorio arranca»*. Ahora vale el saludador
+**o** una sesión gráfica de usuario, **se dice cuál de las dos se vio** —que es
+más informativo que el sí/no de antes— y lleva su control de que `loginctl` no
+está mudo. **No se aflojó: se corrigió, porque estaba mal escrita.**

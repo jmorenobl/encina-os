@@ -1717,8 +1717,25 @@ ninguna sin la salida literal.**
         apareció porque el control preguntó** por qué no estaba en la cosecha.
       - [ ] *Mitad que no se cierra por aquí, y es de E3:* una instalación sin
         red **no llega al seed**. Medido (§4.31l): el disco se para en 4 461 MB y
-        la pantalla dice *«Se produjo un problema»*. Cerrarlo pide una sección
-        `apt:` en el seed y ~700 MB de núcleo en el medio.
+        la pantalla dice *«Se produjo un problema»*. ~~Cerrarlo pide una sección
+        `apt:` en el seed y ~700 MB de núcleo en el medio.~~
+        **LEÍDA HASTA EL FINAL EL 2026-08-12 (§4.32), y las dos mitades de esa
+        frase eran falsas.** *(1)* **La sección `apt:` NO sirve:** en el camino
+        sin red `subiquity` **borra a propósito** todas las partes de
+        `sources.list.d` que hereda el objetivo (`apt.py`), así que la fuente
+        existiría con red —donde no hace falta— y no sin ella. *(2)* **No hacía
+        falta ninguna fuente nueva:** el objetivo **ya lee el medio** por
+        `file:/cdrom` cuando `curtin` instala el núcleo, y el registro lo enseña
+        sirviéndole **GRUB entero**. Lo que falta es el núcleo **dentro del
+        archivo indexado** (`/dists` + `/pool`), y eso lo cierra la **firma de
+        Canonical**: tocar `Packages` rompe `Release`, y la línea que escribe
+        `subiquity` no lleva `[trusted=yes]`. *(3)* **No son ~700 MB: son
+        1 089 MB medidos**, y `linux-firmware` (655 MB) es `Depends:`.
+        **Queda declarado como límite, igual que D9 con amd64**, con una salida
+        nombrada y **no medida**: re-firmar el `dists/` del medio con clave
+        propia y hacerla viajar en `apt: sources: {key:}`, que sobrevive al
+        borrado porque va a `trusted.gpg.d`. **Es de E3 y es de Jorge decidir si
+        se compra.**
 - [x] **[OJOS] Los nombres de las aplicaciones en español** (§4.26f). *Sano:*
       «Archivos», «Terminal», «Visor de documentos». *Roto:* en inglés, y
       entonces es un defecto de la familia de la novena casilla de E3. **Cuesta
@@ -1735,13 +1752,21 @@ ninguna sin la salida literal.**
       verde entero, el instalador **en español**, y la máquina que sale da
       **48 correctas, 0 fallos**. *Roto:* cualquier control de `fabricar-iso.sh`
       en rojo, o una máquina distinta de la de `encina-E4-meta`.
-      **MARCADA a medias, y se dice cuál mitad:** `encina-os-E4-es.iso`
+      ~~**MARCADA a medias, y se dice cuál mitad:**~~ **MARCADA ENTERA EL
+      2026-08-12 (§4.32).** *Lo que ya estaba:* `encina-os-E4-es.iso`
       (`aa1ac76a…`) arranca, su instalador se ve en español, y una instalación
       desatendida con un `CIDATA` **sin repo dentro** deja
       `REPO ELEGIDO -> /cdrom/encina-repo`, 29 ficheros copiados y
-      `ESTADO=COMPLETO` en **14 min 13 s**. **Lo que NO se midió:** que se lea el
-      `autoinstall.yaml` de dentro de la ISO —lo ganó el `CIDATA`, a propósito— y
-      las cinco pantallas, que no se pudieron pilotar sin ojos (§4.31m).
+      `ESTADO=COMPLETO` en **14 min 13 s**. *Lo que faltaba y hoy está*, sobre
+      `encina-E4-cinco`, creada desde cero y **sin ningún `CIDATA`** —control de
+      la trampa 16 recogido antes de arrancar: **0** `-append` y **dos** unidades,
+      `media=disk` y `media=cdrom`—: el seed salió del **quinto sitio**
+      (`CIDATA -> <no encontrado>`, `REPO ELEGIDO -> /cdrom/encina-repo`,
+      `ESTADO=COMPLETO`) y **las cinco pantallas las nombra el propio
+      instalador**, no una captura: `telemetry` da `keyboard, network, storage,
+      identity, timezone` + `loading, confirm, install, done`, **sin `locale` ni
+      `source`**. La máquina: **47 correctas y 2 fallos, los dos del verificador
+      y corregidos** (§4.32g).
 
 **Lo que NO es una casilla de E4, y conviene decirlo:** el número de aplicaciones
 visibles. El control es que **el inventario sepa contar** (§4.19c), no que dé el

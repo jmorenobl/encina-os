@@ -119,6 +119,11 @@ fi
 # E3 -- sano: EXACTAMENTE las cinco de interactive-sections mas confirm, install
 # y done, medidas en §4.22f. roto: falta una, sobra una, o aparecen 'locale' o
 # 'source', que serian que el seed dejo de fijarlas y las pregunta.
+# CORREGIDO EL 2026-08-12 (§4.32): a la lista le faltaba 'loading', que TODA
+# instalacion escribe -- la rama E2 de aqui al lado ya la esperaba. Este fallo
+# no se vio antes porque desde que se reescribio el verificador en la vuelta de
+# E4 no se habia medido ninguna maquina de forma E3. No se afloja: la lista
+# sigue siendo exacta, solo gana la etapa que siempre esta.
 T=/var/log/installer/telemetry
 if [ -r "$T" ]; then
     ETAPAS=$(python3 -c 'import json,sys;print(",".join(sorted(json.load(open(sys.argv[1]))["Stages"].values())))' "$T" 2>/dev/null)
@@ -131,7 +136,7 @@ if [ -r "$T" ]; then
         fi
     else
         igual "las etapas por las que paso el instalador" \
-              "confirm,done,identity,install,keyboard,network,storage,timezone" "$ETAPAS"
+              "confirm,done,identity,install,keyboard,loading,network,storage,timezone" "$ETAPAS"
         # LO QUE E2 NO PODIA PREGUNTAR: que las dos que fija el seed NO se hayan
         # preguntado. Si alguna aparece, el producto dejo de ser el mismo en dos
         # maquinas distintas, que es justo lo que 'source' y 'locale' evitan.
@@ -340,16 +345,40 @@ if [ -z "$FALLIDAS" ]; then ok "ninguna unidad fallida"; else fallo "hay unidade
 igual "graphical.target" "active"   "$(systemctl is-active graphical.target 2>/dev/null)"
 # CONTROL: si 'is-active' dijera 'active' a todo, lo de arriba no valdria
 igual "control: rescue.target" "inactive" "$(systemctl is-active rescue.target 2>/dev/null)"
-# el saludador de GDM, demostrado por loginctl y no por una foto
+# el escritorio arranca, demostrado por loginctl y no por una foto.
+# CORREGIDO EL 2026-08-12 (§4.32), y no es aflojarla: tal como estaba escrita
+# NO PODIA dar una de sus dos respuestas en el unico sitio donde hay que usarla.
+# Una maquina de forma E3 no lleva ssh (§6ter.0), asi que se mide DESDE DENTRO
+# de una sesion grafica (§4.25e) -- y mientras hay alguien dentro, GDM no tiene
+# saludador vivo: tiene una sesion de usuario. Preguntaba por el mecanismo
+# ('hay saludador') en vez de por lo que se quiere saber ('el escritorio
+# arranca'), que es la familia de las trampas 5 y 11. Ahora vale cualquiera de
+# los dos y se dice CUAL se vio, que es mas informativo que el si/no de antes.
 SES=$(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}')
 GREETER=no
+SESION_GRAFICA=no
 for s in $SES; do
-    if loginctl show-session "$s" -p Class 2>/dev/null | grep -q '^Class=greeter$'; then
-        GREETER=si
-        echo "           $(loginctl show-session "$s" -p Name -p Type -p Class -p State -p Seat | tr '\n' ' ')"
-    fi
+    INFO=$(loginctl show-session "$s" -p Name -p Type -p Class -p State -p Seat 2>/dev/null | tr '\n' ' ')
+    case "$INFO" in
+        *Class=greeter*)                             GREETER=si;        echo "           $INFO" ;;
+        *Type=wayland*Class=user*|*Type=x11*Class=user*) SESION_GRAFICA=si; echo "           $INFO" ;;
+    esac
 done
-igual "hay un saludador grafico vivo" "si" "$GREETER"
+if [ "$GREETER" = si ]; then
+    ok "el escritorio arranca: hay un saludador grafico vivo (GDM)"
+elif [ "$SESION_GRAFICA" = si ]; then
+    ok "el escritorio arranca: hay una sesion grafica de usuario abierta (por eso GDM no tiene saludador)"
+else
+    fallo "el escritorio arranca" "esperado: un saludador de GDM o una sesion grafica de usuario
+obtenido: ninguno de los dos"
+fi
+# CONTROL, sin el cual un 'no hay ninguno' no significaria nada: que loginctl
+# sepa listar algo. Si esta mudo, su silencio no es una respuesta.
+if [ -n "$SES" ]; then
+    ok "control: loginctl lista $(echo $SES | wc -w) sesion(es), o sea que no esta mudo"
+else
+    fallo "control: loginctl no lista ninguna sesion" "el instrumento esta mudo: lo de arriba no vale"
+fi
 
 titulo "6. El veredicto que dejo el seed (§4.27)"
 # POR QUE ESTA CASILLA EXISTE, y es la que faltaba desde el primer dia: hasta el
