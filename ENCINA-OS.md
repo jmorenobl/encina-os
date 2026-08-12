@@ -93,6 +93,8 @@ redacción y la cuarta se enmienda.
 
 | D17 | **Encina OS no trae suite ofimática ni cliente de correo: trae la base para ver, firmar y enviar un PDF, y un escáner. Decisión de Jorge, 2026-08-12.** Entran de serie **el visor de PDF con el manejador por defecto ATADO** y **`simple-scan`** (1 paquete, §4.26d). **No** entran LibreOffice, Thunderbird ni Okular | **Es D2 llevado a su conclusión:** sumar lo que el producto necesita y dejar que el usuario elija el resto. **El visor no es un paquete nuevo, es un defecto:** hoy `application/pdf` resuelve a `firefox.desktop` y **Evince está instalado sin abrirse nunca** (§4.26c), así que lo que cierra ese eslabón es `xdg-mime`, no instalar otro visor. **Okular se descartó con motivo, no por gusto:** su firma de PDF sería **un segundo consumidor del almacén NSS del usuario**, con su propia regla para elegirlo —la familia de B2, B4 y M6, que ha costado tres sesiones—, y **no añade capacidad**, porque AutoFirma ya firma un PDF suelto. **Y el precio, sin maquillar: cada «que lo instale el usuario» es un cheque contra la tienda.** Con esta decisión la tienda deja de ser un elemento más de la lista de E4 y pasa a ser **la premisa de la que cuelgan las tres**: sin ella la entrega no es «un escritorio que crece», es Ubuntu sin ofimática y sin correo (§4.26c: *el hueco grande no es qué aplicaciones, es que la máquina no puede crecer*) |
 
+| D18 | **La tienda es `gnome-software` con `gnome-software-plugin-snap`. Decisión de Jorge, 2026-08-12.** Con ella el catálogo del usuario es de *snaps*, que es de donde saldrán la ofimática y el correo que D17 no trae | **Completa a D16 y no la contradice: es la vía por la que el Snap vuelve, y ahora está declarada en vez de entrar por la puerta de atrás.** Cuesta 4 paquetes y **devuelve `snapd`**, medido en §4.26d — y no hay alternativa por esa vía: **`gnome-software-plugin-deb` no existe** en los índices de 24.04. Las dos que no devuelven `snapd` —`gnome-packagekit` y `synaptic`— son **gestores de paquetes, no una tienda**, y dejarían a D17 sin sustento. **El riesgo está medido y se acepta con los ojos abiertos:** en esa tienda aparece también el Firefox del Snap, y quien lo abra y firme **falla en silencio por B3** (§4.28, sin arreglo posible por nuestra parte) **y se lleva B4 de vuelta** hasta que el nativo vuelva a ser el último abierto (§4.29). **La defensa entera es la condición de D16** —un solo icono, y abre el nativo—, que está medida en los dos mundos (§4.19). **Lo que NO se hace, y es deliberado:** no se añaden Flathub ni el plugin de flatpak, porque tener la misma aplicación dos veces con dos orígenes es la enfermedad que este proyecto lleva tres sesiones curando con los iconos de Firefox |
+
 ---
 
 ## 3. Qué existe ya
@@ -344,14 +346,15 @@ Cae con ello la obligación de §4.11 de meter `libreoffice-l10n-es` y
 `libreoffice-help-es`, que era consecuencia de traer LibreOffice de serie; el
 residuo de D12 se queda en `hunspell-es` y los `language-pack`, que ya están.
 
-**Lo único que queda por decidir es LA TIENDA, y ahora sostiene a las otras tres**
+**LA TIENDA YA ESTÁ DECIDIDA (D18, 2026-08-12): `gnome-software` + `gnome-software-plugin-snap`.** Sostenía a las otras tres
 (D17): sin ella, «que lo instale el usuario» no se puede cumplir. Lo medido para
 decidirla está en §4.26d: `gnome-software` son 4 paquetes **y devuelve `snapd`**
 —que D16 ya aceptó—, y **no existe `gnome-software-plugin-deb`**, así que por esa
-vía el catálogo del usuario es de *snaps* (y de *flatpaks* si se añade su plugin);
-las dos vías que **no** devuelven `snapd` son `gnome-packagekit` y `synaptic`, tres
-paquetes cada una, **pero son gestores de paquetes, no una tienda para un
-ciudadano**.
+vía el catálogo del usuario es de *snaps*; las dos vías que **no** devuelven
+`snapd` son `gnome-packagekit` y `synaptic`, tres paquetes cada una, **pero son
+gestores de paquetes, no una tienda para un ciudadano**, y descartarlas es lo que
+deja a D17 en pie. **Flathub y el plugin de flatpak quedan fuera a propósito**
+(D18). **Con esto, E4 no tiene ninguna decisión de producto pendiente.**
 
 **Tres cosas de E4 que ya tienen su forma escrita, para no rediscutirlas en la
 vuelta:**
