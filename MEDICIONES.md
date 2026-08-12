@@ -6619,6 +6619,17 @@ escribir antes de que la instalación fallara—. El registro de UTM quedó
 consistente por las dos mitades (trampa 18): **10 en `utmctl list` y 10 bundles
 en disco**, sin entrada fantasma.
 
+**Y dónde vive el repositorio offline, para que nadie lo tenga que volver a
+cosechar:** **dentro de la ISO**. Los 28 `.deb` y su `Packages` se sacan con
+
+```
+xorriso -osirrox on -indev encina-os-E4-es.iso -extract /encina-repo <destino>
+```
+
+Los volúmenes `CIDATA` de esta vuelta **no** se conservan: se rehacen con
+`fabricar-seed.sh` a partir de ese directorio, y las huellas de los cuatro `.deb`
+de Encina están escritas en `imagen/encina-seed.sh`, que es la autoridad.
+
 **Y queda dicho para la próxima:** con 6,7 GiB no cabe otra vuelta. La primera
 candidata a borrar es `encina-E4-iso` —nacida de la ISO, o sea **caché
 reproducible** por §9.a, y su papel lo repite `encina-E4-meta` salvo en la línea

@@ -727,6 +727,17 @@ Vale para cualquier cambio de paquete, y son cuatro cosas, no una
    cuatro ficheros: las dos herramientas comprueban ahora **el índice entero**
    contra los bytes que viajan, en las dos direcciones.
 
+**DÓNDE VIVE EL REPOSITORIO OFFLINE, y no hay que cosecharlo otra vez: dentro de
+la ISO.** Los 28 `.deb` y su `Packages` se extraen con
+
+```
+xorriso -osirrox on -indev encina-os-E4-es.iso -extract /encina-repo <destino>
+```
+
+y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
+volúmenes de la vuelta de E4 **no se conservaron a propósito**: son
+reproducibles, y el disco del banco no daba para todo.
+
 **Las huellas vigentes desde el 2026-08-12** (§4.31f), que son las que hay que
 ver salir de `fabricar-seed.sh`:
 
