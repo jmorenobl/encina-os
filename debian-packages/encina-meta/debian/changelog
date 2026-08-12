@@ -1,3 +1,45 @@
+encina-meta (0.2.1) noble; urgency=medium
+
+  * LA TIENDA CAMBIA: sale gnome-software, se queda el Centro de
+    aplicaciones (snap-store). Decision de Jorge, 2026-08-12, y D18 de
+    ENCINA-OS.md se reescribe entera en vez de parchearse.
+  * El motivo NUEVO que la reabre: D18 eligio gnome-software SIN HABER
+    CONSIDERADO snap-store, porque el dia que se decidio el seed
+    todavia purgaba snapd y esa tienda no existia en la maquina.
+    Aparecio horas despues como efecto imprevisto de 4.31h, y con ella
+    el usuario veia DOS tiendas.
+  * Lo medido antes de tocar nada (MEDICIONES.md 4.34), sobre un clon
+    efimero de encina-E4-meta que se destruyo al terminar:
+    - El Centro de aplicaciones ABRE y SIRVE en arm64, mirado en
+      pantalla: encuentra libreoffice y thunderbird, los dos de
+      Canonical y con boton de instalar. Es la premisa entera de D17.
+    - NO es solo de snaps: su filtro ofrece «Paquetes snap» y
+      «Paquetes de Debian», y con el segundo encuentra file-roller,
+      que no existe como snap. La misma busqueda da cero con un filtro
+      y uno con el otro.
+    - El purgado NO se lleva por delante snapd, simple-scan,
+      sane-airscan ni evince, ni los tres paquetes de Encina. La resta
+      del inventario es exacta: 1502 -> 1499 paquetes, y los tres son
+      encina-meta, gnome-software y gnome-software-plugin-snap.
+    - Las aplicaciones visibles pasan de 28 a 27, y la que se fue esta
+      NOMBRADA: org.gnome.Software.desktop, «Software». Las tiendas
+      pasan de 2 a 1, con el control de que el contador sabe decir 2,
+      1 y 0.
+  * Y LO QUE ESTA MEDICION ENCONTRO Y OBLIGA A ESTA VERSION: purgar
+    gnome-software SE LLEVA encina-meta, porque lo declaraba en
+    Depends. Por eso quitar la linea no es un extra: es la unica via
+    limpia.
+  * snapd entra en Depends, y es el mismo patron que sane-airscan:
+    cuesta 0 paquetes -ya esta instalado desde D16- y va declarado
+    para que un cambio de la base no se lo lleve en silencio. Un .deb
+    no puede declarar un snap, asi que lo que se declara es el motor
+    sin el cual no hay tienda ninguna.
+  * Se van 4 paquetes del conjunto: gnome-software,
+    gnome-software-plugin-snap y sus dos huerfanos
+    gnome-software-common y libfwupd2.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Wed, 12 Aug 2026 22:03:55 +0200
+
 encina-meta (0.2.0) noble; urgency=medium
 
   * E4: las aplicaciones que Encina OS trae puestas, decididas por

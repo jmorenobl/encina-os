@@ -17,8 +17,7 @@ Depends: ${misc:Depends},
          language-pack-gnome-es,
          simple-scan,
          sane-airscan,
-         gnome-software,
-         gnome-software-plugin-snap
+         snapd
 Recommends: hyphen-es,
             mythes-es
 Description: Encina OS: instala el conjunto con un solo nombre
@@ -29,8 +28,8 @@ Description: Encina OS: instala el conjunto con un solo nombre
  Declara la identidad visual y los valores por defecto del escritorio
  (encina-branding), el repositorio de Firefox nativo (encina-firefox-native),
  el cliente de firma corregido (autofirma), la localizacion espanola que
- Ubuntu no cubre por si sola, el escaner (simple-scan) y la tienda
- (gnome-software con el plugin de snap).
+ Ubuntu no cubre por si sola, el escaner (simple-scan) y el motor de la tienda
+ (snapd).
  .
  QUE TRAE Y QUE NO, decidido el 2026-08-12 (D17 y D18 de ENCINA-OS.md):
  Encina OS NO trae suite ofimatica ni cliente de correo, y no es un olvido:
@@ -51,18 +50,40 @@ Description: Encina OS: instala el conjunto con un solo nombre
  el producto necesita es lo que impide que un cambio de la base se lo lleve en
  silencio.
  .
- LA TIENDA DEVUELVE snapd, Y ESTA DECLARADO A PROPOSITO (D16 y D18). En los
- indices de 24.04 no existe gnome-software-plugin-deb: por esa via el catalogo
- del usuario es de snaps. Las dos alternativas que no devuelven snapd
- -gnome-packagekit y synaptic- son gestores de paquetes, no una tienda para un
- ciudadano. La eleccion real no era tener snapd o no, sino tenerlo declarado o
- tenerlo por la puerta de atras.
+ LA TIENDA ES EL CENTRO DE APLICACIONES, Y NO ES UNA LINEA DE ESTA LISTA
+ PORQUE NO ES UN .deb (D18, reescrita el 2026-08-12). Es el snap snap-store,
+ que viaja PRE-SEMBRADO dentro del medio -medido en MEDICIONES.md 4.16d, en la
+ lista de ocho snaps de minimal.squashfs- y que llega al sistema instalado sin
+ que nadie lo pida, porque desde D16 el seed ya no purga snapd. O sea que
+ cuesta CERO paquetes.
  .
- Y EL PRECIO DE ESA DECISION, sin maquillar: en esa tienda aparece tambien el
- Firefox del Snap, y quien lo abra y firme falla EN SILENCIO por B3, sin
- arreglo posible por nuestra parte (MEDICIONES.md 4.28). La defensa entera es
- que el unico icono de Firefox que el usuario ve abre el nativo, de lo que se
- ocupa encina-firefox-native. No es cosmetica.
+ gnome-software estuvo aqui y SE HA QUITADO, con su motivo medido: costaba 4
+ paquetes, DEVOLVIA snapd (4.26d) y era una SEGUNDA tienda, con lo que el
+ usuario veia DOS -Software y Centro de aplicaciones-, que es la misma
+ enfermedad que este proyecto lleva cuatro sesiones curando con los iconos de
+ Firefox. Se eligio en su dia sin haber considerado snap-store, porque el dia
+ de esa decision el seed todavia purgaba snapd y esa tienda no existia en la
+ maquina.
+ .
+ Y LA MEDICION DIO MAS DE LO QUE SE ESPERABA (4.34): el Centro de aplicaciones
+ no es solo de snaps. Su filtro «Filtrar por» ofrece «Paquetes snap» Y
+ «Paquetes de Debian», y con el segundo encuentra file-roller, que no existe
+ como snap. La misma busqueda da cero con un filtro y uno con el otro, asi que
+ la prueba sabe dar sus dos respuestas.
+ .
+ POR QUE SE DECLARA snapd Y NO LA TIENDA: un .deb no puede declarar un snap.
+ Lo que si se puede declarar es el motor sin el cual no hay tienda ninguna, y
+ es el mismo patron que sane-airscan: cuesta 0 paquetes -ya esta instalado en
+ toda maquina desde D16- y va escrito para que un cambio de la base no se lo
+ lleve en silencio. Sin esta linea, la premisa de D17 -que lo instale el
+ usuario- colgaria de que nadie ejecute apt autoremove.
+ .
+ Y EL PRECIO DE LA TIENDA, sin maquillar: en ella aparece tambien el Firefox
+ del Snap, y quien lo abra y firme falla EN SILENCIO por B3, sin arreglo
+ posible por nuestra parte (MEDICIONES.md 4.28). Eso no cambia al cambiar de
+ tienda: la defensa entera sigue siendo que el unico icono de Firefox que el
+ usuario ve abre el nativo, de lo que se ocupa encina-firefox-native. No es
+ cosmetica.
  .
  UN NOMBRE NO ES UNA SOLA ORDEN, y conviene saberlo antes de instalarlo. La
  instalacion completa son tres ordenes, y el motivo esta medido:

@@ -83,7 +83,7 @@ declare -a FICHEROS HUELLAS
 FICHEROS=(autofirma_1.9.1+encina4_all.deb
           encina-branding_0.1.8_all.deb
           encina-firefox-native_0.2.1_all.deb
-          encina-meta_0.2.0_all.deb)
+          encina-meta_0.2.1_all.deb)
 HUELLAS=("$(huella_de H_AUTOFIRMA)"
          "$(huella_de H_BRANDING)"
          "$(huella_de H_FFNATIVE)"
