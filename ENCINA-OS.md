@@ -91,6 +91,8 @@ redacción y la cuarta se enmienda.
 | D15 | **Se crece por incrementos, y cada incremento deja un sistema usable** | Es un proyecto de una sola persona, y §4 documenta que así es como mueren estos proyectos. Un incremento que no se puede usar no se puede validar, y lo que no se valida se acumula |
 | D16 | **Encina OS es un escritorio que crece, y por eso el Snap vuelve a convivir. Decisión de Jorge, 2026-08-11.** La primera ISO con aplicaciones de serie va en la forma **(c)**: `snapd` presente, el Snap de Firefox instalado y **nunca abierto**, y el Firefox que se puede abrir es **el nativo**. La forma **(b)** —`snapd` sí, Snap de Firefox no— queda como mejora posterior | **La convivencia no es una hipótesis: es el estado en el que se demostró E1.** La huella de virginidad de `MEDICIONES.md` §4.13 —la máquina donde salió la firma en `valide.redsara.es`— dice `snap firefox: firefox 147.0.3-1 7764`. **Quitar el Snap nunca fue condición de que la firma funcione**; la condición es que el Firefox que se abre sea el nativo, y de eso se ocupa `encina-firefox-native`, cuya sombra `NoDisplay=true` está medida **en los dos mundos** (§4.19). **Lo que rompe no es `snapd`: es un Firefox de Snap que alguien abre** —B3 y B4—, y eso es el estado (d), no el (c). **El motivo de producto:** «un escritorio que crece» exige una tienda, y la tienda de Ubuntu arrastra `snapd` de todas formas (§4.26d), así que la elección real no era tenerlo o no, sino tenerlo declarado o tenerlo por la puerta de atrás. **El precio, sin maquillar:** matiza D11 por tercera vez, y **obliga a sustituir la casilla «Sin Snap» de `AGENTS.md` §6bis.3** por una más exigente —*el Firefox que el usuario puede abrir es el nativo: un solo icono, resuelve fuera de `/snap/`, y no existe ningún perfil de Mozilla bajo `~/snap/`*—, que la cumplen **las máquinas con Snap y sin él**. **Esto NO se aplica todavía:** E2 sigue 6 de 6 tal como se midió, y la sustitución se paga el día de la vuelta de E4. ~~**Y tiene una puerta sin contestar:** con un perfil de Snap presente, ¿el vigilante de `+encina2` acierta el nativo?~~ **LA PUERTA ESTÁ CONTESTADA, 2026-08-11** (`MEDICIONES.md` §4.29), y **D16 sale reforzada con un motivo medido que no tenía**: el vigilante acierta el nativo *y* mete la CA también en el del Snap, así que por ese lado la convivencia (c) aguanta; **pero el certificado de la persona lo busca AutoFirma en el perfil que se usó el último** (M6, regla simétrica a propósito), o sea que **quien abra el Snap una vez se lleva B4 de vuelta además de B3**, y lo recupera solo cuando el nativo vuelve a ser el último abierto. La condición de D16 —*un solo icono, y abre el nativo*— **no es cosmética por partida doble**. **Se midió sobre un duplicado, no sobre `encina-E1-meta`**, que sigue intacta — y que, medido el mismo día, **lleva `+encina1` y no `+encina2`** |
 
+| D17 | **Encina OS no trae suite ofimática ni cliente de correo: trae la base para ver, firmar y enviar un PDF, y un escáner. Decisión de Jorge, 2026-08-12.** Entran de serie **el visor de PDF con el manejador por defecto ATADO** y **`simple-scan`** (1 paquete, §4.26d). **No** entran LibreOffice, Thunderbird ni Okular | **Es D2 llevado a su conclusión:** sumar lo que el producto necesita y dejar que el usuario elija el resto. **El visor no es un paquete nuevo, es un defecto:** hoy `application/pdf` resuelve a `firefox.desktop` y **Evince está instalado sin abrirse nunca** (§4.26c), así que lo que cierra ese eslabón es `xdg-mime`, no instalar otro visor. **Okular se descartó con motivo, no por gusto:** su firma de PDF sería **un segundo consumidor del almacén NSS del usuario**, con su propia regla para elegirlo —la familia de B2, B4 y M6, que ha costado tres sesiones—, y **no añade capacidad**, porque AutoFirma ya firma un PDF suelto. **Y el precio, sin maquillar: cada «que lo instale el usuario» es un cheque contra la tienda.** Con esta decisión la tienda deja de ser un elemento más de la lista de E4 y pasa a ser **la premisa de la que cuelgan las tres**: sin ella la entrega no es «un escritorio que crece», es Ubuntu sin ofimática y sin correo (§4.26c: *el hueco grande no es qué aplicaciones, es que la máquina no puede crecer*) |
+
 ---
 
 ## 3. Qué existe ya
@@ -334,11 +336,44 @@ tres cosas, en este orden, y las dos primeras cuestan mucho menos que la tercera
    §4.13 es peor que nunca: **se elige por ruta entera y se comprueba la huella,
    nunca con `ls -t | head -1`**.
 
-**Lo que sigue pendiente de decidir, y es producto:** qué ofimática exactamente
-—`writer + calc` o la suite, y **obligatoriamente con `libreoffice-l10n-es` y
-`libreoffice-help-es` al lado**, por §4.11—, y qué tienda. **Y una casilla
-`[OJOS]` que cuesta una captura:** si el usuario ve los nombres de las
-aplicaciones en español (§4.26f).
+~~**Lo que sigue pendiente de decidir, y es producto:** qué ofimática exactamente,
+y qué tienda.~~ **DECIDIDO EL 2026-08-12 por Jorge, y queda UNA sola cosa: D17.**
+**No hay suite ofimática ni cliente de correo** —los elige el usuario—, **no entra
+Okular**, y **de serie van el visor de PDF con el manejador atado y `simple-scan`**.
+Cae con ello la obligación de §4.11 de meter `libreoffice-l10n-es` y
+`libreoffice-help-es`, que era consecuencia de traer LibreOffice de serie; el
+residuo de D12 se queda en `hunspell-es` y los `language-pack`, que ya están.
+
+**Lo único que queda por decidir es LA TIENDA, y ahora sostiene a las otras tres**
+(D17): sin ella, «que lo instale el usuario» no se puede cumplir. Lo medido para
+decidirla está en §4.26d: `gnome-software` son 4 paquetes **y devuelve `snapd`**
+—que D16 ya aceptó—, y **no existe `gnome-software-plugin-deb`**, así que por esa
+vía el catálogo del usuario es de *snaps* (y de *flatpaks* si se añade su plugin);
+las dos vías que **no** devuelven `snapd` son `gnome-packagekit` y `synaptic`, tres
+paquetes cada una, **pero son gestores de paquetes, no una tienda para un
+ciudadano**.
+
+**Tres cosas de E4 que ya tienen su forma escrita, para no rediscutirlas en la
+vuelta:**
+
+1. **El manejador del PDF es una medición con dos mitades**, no un fichero suelto:
+   `xdg-mime query default application/pdf` **antes y después**. Y tiene trampa
+   conocida: **varios ficheros compiten y el `gnome-mimeapps.list` del escritorio
+   gana al `mimeapps.list` genérico**, así que hay que comprobar quién gana, no
+   suponerlo — y R5 prohíbe sobrescribir el conffile de otro paquete: el fichero
+   que se ponga tiene que ser **nuestro**.
+2. **`simple-scan` cierra el eslabón «escanear» solo hasta donde se puede medir sin
+   hardware.** La casilla honrada es *«está instalado y el backend de SANE
+   responde»*; *«escanea de verdad»* necesita un escáner y unos ojos. **Y hay una
+   pregunta que contestar antes de darlo por cerrado:** los escáneres de red
+   modernos son *driverless* (eSCL/WSD) y eso lo da `sane-airscan`, no
+   `simple-scan` — hay que mirar si viaja con él o si es otra línea del
+   `Depends:`.
+3. **El `.deb` de AutoFirma que viaja es `faeca3a9…` (`+encina4`)**, elegido por
+   **ruta entera y huella**: hay tres candidatos en `salida/`.
+
+**Y una casilla `[OJOS]` que cuesta una captura:** si el usuario ve los nombres de
+las aplicaciones en español (§4.26f).
 
 **Lo que queda escrito abajo es cómo se llegó hasta aquí**, y se conserva porque
 explica **por qué** la receta es la que es.
