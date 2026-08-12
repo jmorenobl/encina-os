@@ -634,7 +634,12 @@ Con el veredicto de §4.27 dentro, al menos saldría `INCOMPLETO` con
 - **`gnome-software` también arrastra `snapd`**, y **no existe
   `gnome-software-plugin-deb`** en los índices de 24.04: solo `-plugin-snap` y
   `-plugin-flatpak`. Las alternativas sin Snap son `gnome-packagekit` y
-  `synaptic`, tres paquetes cada una.
+  `synaptic`, tres paquetes cada una. **DESDE EL 2026-08-13 ESTE AVISO ES
+  HISTÓRICO: `gnome-software` YA NO SE DECLARA** (D18 reescrita, §4.34). La tienda
+  es el `snap-store` pre-sembrado del medio, que **cuesta 0 paquetes** y **no se
+  puede declarar en un `Depends:` porque no es un `.deb`**; lo que se declara es
+  `snapd`. El aviso se conserva porque **la medición sigue siendo cierta** y
+  volvería a decidir si alguna vez se replantea la tienda.
 - **`simple-scan` es un solo paquete** y `sane-utils` ya está instalado sin que
   nada lo use. **Y `sane-airscan` NO viaja con él** —leído el 2026-08-12: sus
   `Depends` piden `libsane1` y no tiene `Recommends`— **pero ya está en
@@ -1564,6 +1569,38 @@ puede demostrar (§6ter.2), y es un **límite declarado**, como D9 con amd64. La
 regla de no tocar los binarios firmados existe para que ese límite siga siendo
 solo un límite y no se convierta en un fallo.
 
+**LÍMITE DECLARADO DE E3, con la forma de D9 — el medio no lleva el núcleo
+(2026-08-13).** Llega aquí desde `§6quater.1`, donde estaba mal puesto: aquella
+casilla mezclaba dos incrementos, y **el núcleo no es una aplicación de serie, es
+qué lleva el medio**, o sea E3. **No es un pendiente ni una casilla floja: es un
+límite de alcance declarado**, y se declara porque **está leído hasta el final**
+(`MEDICIONES.md` §4.32) y no porque se ignore.
+
+- **Qué pasa:** una instalación **sin red** no llega al seed. El disco se para en
+  **4 461 MB** y la pantalla dice *«Se produjo un problema»* (§4.31l). El motivo
+  es que **`curtin` instala el núcleo antes de que exista nuestro repositorio**, y
+  lo baja de internet.
+- **Qué NO lo arregla, medido y no supuesto:** una sección `apt:` en el seed. En
+  el camino sin red `subiquity` **borra a propósito** las partes de
+  `sources.list.d` que hereda el objetivo (`apt.py`), así que esa fuente existiría
+  **con** red —donde no hace falta— y no **sin** ella.
+- **Qué falta exactamente:** no una fuente nueva. El objetivo **ya lee el medio**
+  por `file:/cdrom` cuando `curtin` instala el núcleo, y el registro lo enseña
+  sirviéndole **GRUB entero**. Lo que falta es el núcleo **dentro del archivo
+  indexado** (`/dists` + `/pool`), y eso lo cierra **la firma de Canonical**:
+  tocar `Packages` rompe `Release`, y la línea que escribe `subiquity` no lleva
+  `[trusted=yes]`.
+- **Cuánto cuesta:** **1 089 MB medidos**, no ~700, con `linux-firmware` (655 MB)
+  como `Depends:`. El medio pasaría de 3,7 a ~4,7 GB, o sea **fuera del DVD de una
+  capa y fuera del límite de 4 GiB de FAT32**. Esa consecuencia se declara aquí
+  para que no la descubra nadie al grabar.
+- **La salida, nombrada y NO medida:** re-firmar el `dists/` del medio con clave
+  propia y hacerla viajar en `apt: sources: {key:}`, que **sí** sobrevive al
+  borrado porque va a `trusted.gpg.d`.
+- **Es de Jorge decidir si se compra**, igual que amd64 en D9. Mientras no se
+  compre, **Encina OS requiere red durante la instalación**, y eso es una
+  propiedad declarada del producto, no un defecto sin encontrar.
+
 ### 6ter.4 Dónde vivirá lo nuevo
 
 Nada de esto existe todavía; se escribe según se mida.
@@ -1631,15 +1668,25 @@ documento en mitad de la vuelta:
 - **D17 — ni suite ofimática ni cliente de correo.** Entran el visor de PDF **con
   el manejador atado** y `simple-scan`. No entran LibreOffice, Thunderbird ni
   Okular.
-- **D18 — la tienda es `gnome-software` + `gnome-software-plugin-snap`**, y con
-  ella el catálogo del usuario es de *snaps*. Flathub y el plugin de flatpak
-  quedan fuera a propósito.
+- **D18 (REESCRITA el 2026-08-12) — la tienda es el «Centro de aplicaciones»
+  (`snap-store`), y `gnome-software` SALE.** La tienda **no es una línea de
+  `encina-meta`**: es un snap pre-sembrado en el medio, así que cuesta **0
+  paquetes** y llega solo porque desde D16 el seed ya no purga `snapd`. Lo que
+  `encina-meta` 0.2.1 declara es **`snapd`**, el motor. Flathub y el plugin de
+  flatpak siguen fuera a propósito.
+  **El motivo por el que D18 se reabrió, para no rediscutirlo:** la versión
+  anterior eligió `gnome-software` **sin haber considerado `snap-store`**, porque
+  aquel día el seed aún purgaba `snapd` y esa tienda no existía en la máquina;
+  apareció después (§4.31h) y el usuario pasó a ver **dos**.
 
-**El precio de D18, escrito para que nadie lo descubra por su cuenta:** en esa
-tienda aparece también el Firefox del Snap, y quien lo abra y firme **falla en
-silencio por B3, sin arreglo posible por nuestra parte** (`MEDICIONES.md` §4.28),
-y se lleva **B4** de vuelta hasta que el nativo sea otra vez el último abierto
-(§4.29f). **La defensa entera es la condición de D16.**
+**El precio de la tienda, escrito para que nadie lo descubra por su cuenta, y NO
+cambia al cambiar de tienda:** en ella aparece también el Firefox del Snap, y
+quien lo abra y firme **falla en silencio por B3, sin arreglo posible por nuestra
+parte** (`MEDICIONES.md` §4.28), y se lleva **B4** de vuelta hasta que el nativo
+sea otra vez el último abierto (§4.29f). **La defensa entera es la condición de
+D16.** **Lo que sí cambia, y a mejor:** con `gnome-software` fuera, su catálogo
+deja de meterse en el buscador de la rejilla —el bloque «Software, 15 más» que
+§4.33c vio al firmar—, y el usuario ve **una** tienda en vez de dos (§4.34).
 
 ### 6quater.1 Definición de terminado de E4
 
@@ -1665,13 +1712,43 @@ ninguna sin la salida literal.**
       D16. **MARCADA:** `diff` sin diferencias entre los bloques 4 y 6, los nueve
       `[PRESENTE]`, y **sustituir el `.deb` de transición por el de Mozilla no se
       lleva el Snap por delante** — que era lo que había que medir y no suponer
-- [x] **Las aplicaciones de D17 y D18 están, y como `Depends:` de
-      `encina-meta`.** *Sano:* `simple-scan`, `sane-airscan`, `gnome-software` y
-      `gnome-software-plugin-snap` en `install ok installed`, y los tres
-      dependientes de siempre en `apt-mark showauto`. *Roto:* cualquiera
-      ausente, o alguno en `showmanual`. **MARCADA:** los cuatro instalados, 3 en
-      `showauto`, `encina-meta` en `showmanual`, con el control de que el mismo
-      comando sabe decir que no de un paquete inventado
+- [x] **Las aplicaciones de D17 y D18 están, y LA TIENDA DONDE DE VERDAD ESTÁ.**
+      **REESCRITA el 2026-08-12 con D18** (§4.34): `gnome-software` sale, y la
+      tienda pasa a ser un **snap**, así que **`dpkg-query` no la vería nunca** y
+      preguntar por ella ahí sería una comprobación que solo sabe decir «no».
+      *Sano:* `simple-scan`, `sane-airscan` y `evince` en `install ok installed`;
+      `snap list snap-store` **la encuentra**; `gnome-software` **NO** está; y los
+      tres dependientes de siempre en `apt-mark showauto`. *Roto:* cualquiera
+      ausente, o `gnome-software` presente —eso son **dos** tiendas—, o alguno en
+      `showmanual`. **Los dos controles que la hacen valer:** un `.deb` inventado
+      tiene que salir «no encontrado» **y** un **snap** inventado también.
+      **MARCADA sobre `encina-E4-tienda`:** los tres `.deb`, `snap-store rev
+      1271`, `gnome-software` en `unknown ok not-installed`, 3 en `showauto` y
+      `encina-meta` en `showmanual`
+- [x] **EL USUARIO VE UNA SOLA TIENDA.** Casilla nueva del 2026-08-12, y es la
+      que cierra D18. *Sano:* **1** tienda visible, y es «Centro de aplicaciones»;
+      las aplicaciones visibles bajan de 28 a **27** y **se nombra cuál se fue**.
+      *Roto:* 2 —la enfermedad que D18 nombra— o **0**, que sería haberse llevado
+      las dos por delante. **El control que la convierte en casilla:** el contador
+      tiene que saber decir **2, 1 y 0**, probado el día que se escribe.
+      **MARCADA (§4.34f):** contada y **mirada** en la rejilla sobre el clon del
+      nivel 1 —antes «Software» y «Centro de aplicaciones», después solo el
+      segundo, y el bloque de catálogo de `gnome-software` desaparecido—, y
+      contada por inventario en la instalación limpia: **27 visibles**, que
+      **coinciden con las declaradas por adelantado**, y la que se fue nombrada:
+      `org.gnome.Software.desktop`. **Lo que esta casilla NO dice:** el `[OJOS]`
+      está tomado sobre el **clon**, no sobre la instalación limpia
+- [x] **LA TIENDA ABRE Y SIRVE, que es la premisa de D17** `[OJOS]`. Casilla
+      nueva del 2026-08-12, y se dice por qué no estaba antes: hasta ese día la
+      tienda estaba instalada y **nadie la había abierto** (§4.33j), así que D17
+      se apoyaba en un cheque sin cobrar. *Sano:* la ventana abre en arm64, carga
+      catálogo, y **encuentra LibreOffice y Thunderbird**. *Roto:* no abre, o sale
+      vacía → **D17 se queda sin sustento**. **MARCADA (§4.34c):** «Centro de
+      aplicaciones», menú en español, catálogo con editores verificados, y los dos
+      encontrados. **De propina y no era una casilla:** la tienda **no es solo de
+      snaps** —ofrece «Paquetes de Debian» y con ese filtro encuentra
+      `file-roller`, que no existe como snap—. **Lo que NO se midió:** que
+      **instale**; nadie pulsó «Instalar»
 - [x] **El manejador del PDF, atado, y medido en LAS DOS COLUMNAS.** *Sano:*
       `xdg-mime query default application/pdf` da el visor **con
       `XDG_CURRENT_DESKTOP=ubuntu:GNOME` y sin él**, y el fichero que manda es
@@ -1707,35 +1784,31 @@ ninguna sin la salida literal.**
       máquina queda instalada y arrancable, y el registro se queda dentro.
       **PUESTO Y MARCADO**, y con un regalo: en la forma E2, *«la VM se apagó
       sola»* pasa a significar `ESTADO=COMPLETO`, sin abrir nada
-- [ ] **El medio lleva lo que hoy baja de internet** (nivel 3 de §4.27).
-      **LA CASILLA ESTABA MAL ESCRITA Y SE PARTE EN DOS, con su motivo (§4.31k):**
-      se redactó creyendo que lo que baja de internet es lo que pide el seed, y
-      **lo primero que baja es el núcleo**, que no viaja en el medio y que
-      `curtin` instala **antes** de que exista nuestro repositorio.
-      - [x] *Mitad que se cierra:* el medio lleva **todo lo que necesita el
-        seed** — los 24 paquetes de §4.31k, `hunspell-es` incluido, que **solo
-        apareció porque el control preguntó** por qué no estaba en la cosecha.
-      - [ ] *Mitad que no se cierra por aquí, y es de E3:* una instalación sin
-        red **no llega al seed**. Medido (§4.31l): el disco se para en 4 461 MB y
-        la pantalla dice *«Se produjo un problema»*. ~~Cerrarlo pide una sección
-        `apt:` en el seed y ~700 MB de núcleo en el medio.~~
-        **LEÍDA HASTA EL FINAL EL 2026-08-12 (§4.32), y las dos mitades de esa
-        frase eran falsas.** *(1)* **La sección `apt:` NO sirve:** en el camino
-        sin red `subiquity` **borra a propósito** todas las partes de
-        `sources.list.d` que hereda el objetivo (`apt.py`), así que la fuente
-        existiría con red —donde no hace falta— y no sin ella. *(2)* **No hacía
-        falta ninguna fuente nueva:** el objetivo **ya lee el medio** por
-        `file:/cdrom` cuando `curtin` instala el núcleo, y el registro lo enseña
-        sirviéndole **GRUB entero**. Lo que falta es el núcleo **dentro del
-        archivo indexado** (`/dists` + `/pool`), y eso lo cierra la **firma de
-        Canonical**: tocar `Packages` rompe `Release`, y la línea que escribe
-        `subiquity` no lleva `[trusted=yes]`. *(3)* **No son ~700 MB: son
-        1 089 MB medidos**, y `linux-firmware` (655 MB) es `Depends:`.
-        **Queda declarado como límite, igual que D9 con amd64**, con una salida
-        nombrada y **no medida**: re-firmar el `dists/` del medio con clave
-        propia y hacerla viajar en `apt: sources: {key:}`, que sobrevive al
-        borrado porque va a `trusted.gpg.d`. **Es de E3 y es de Jorge decidir si
-        se compra.**
+- [x] **El medio lleva lo que hoy baja de internet** (nivel 3 de §4.27).
+      **LA CASILLA ESTABA MAL ESCRITA, MEZCLABA DOS INCREMENTOS, Y EL 2026-08-13
+      SE PARTE DE VERDAD: su mitad de E4 se cierra aquí y la otra SE VA A E3**
+      (§6ter.3), que es donde le toca. *Por qué no es aflojarla:* E4 es «las
+      aplicaciones de serie, como `Depends:` de `encina-meta`», y **el núcleo no
+      es una aplicación de serie: es qué lleva el medio, que es E3**. Dejarla
+      abierta aquí condenaba a E4 a no cerrarse nunca por algo que no decide.
+      - [x] *La mitad que ES de E4, y se cierra:* el medio lleva **todo lo que
+        necesita el seed** — los 24 paquetes de §4.31k, `hunspell-es` incluido,
+        que **solo apareció porque el control preguntó** por qué no estaba en la
+        cosecha. **Y sigue cerrada tras el cambio de tienda** (§4.34i): la
+        instalación de `encina-meta` 0.2.1 salió del repositorio del medio y
+        terminó con `ESTADO=COMPLETO`.
+      - [→] *La mitad que NO es de E4:* **una instalación sin red no llega al
+        seed**, porque el núcleo lo baja `curtin` de internet. **Movida a E3 el
+        2026-08-13 como LÍMITE DECLARADO, con la forma de D9**, y no como
+        pendiente: está **leída hasta el final** (§4.32), se sabe **qué** falta
+        (el núcleo dentro del archivo indexado), **por qué** la vía obvia no vale
+        (sin red `subiquity` borra las fuentes heredadas, así que la sección
+        `apt:` existiría donde no hace falta), **cuánto** cuesta (**1 089 MB**
+        medidos, con `linux-firmware` de 655 MB como `Depends:`) y **cuál es la
+        salida**, nombrada y **no medida** (re-firmar el `dists/` del medio con
+        clave propia, que viaja en `apt: sources: {key:}` y sobrevive al borrado
+        porque va a `trusted.gpg.d`). **Es de Jorge decidir si se compra.**
+        Ver `AGENTS.md` §6ter.3.
 - [x] **[OJOS] Los nombres de las aplicaciones en español** (§4.26f). *Sano:*
       «Archivos», «Terminal», «Visor de documentos». *Roto:* en inglés, y
       entonces es un defecto de la familia de la novena casilla de E3. **Cuesta

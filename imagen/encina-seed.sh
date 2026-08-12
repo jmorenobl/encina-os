@@ -121,6 +121,20 @@ inventario_snap() {
     # y tiene que saber decir PRESENTE, si no, no vale nada
     f=/target/usr/bin/gnome-shell
     if existe "$f"; then say "[PRESENTE] $f  <- control"; else say "[AUSENTE ] $f  <- CONTROL ROTO"; fi
+    # LA TIENDA, desde el 2026-08-12 (D18 reescrita): es el snap snap-store, que
+    # viaja PRE-SEMBRADO en el medio (MEDICIONES.md 4.16d) y NO es un .deb, asi
+    # que no puede ir en un Depends ni comprobarse con dpkg-query. Se mira donde
+    # de verdad esta: el .snap sembrado y su lanzador.
+    for f in /target/var/lib/snapd/seed/snaps/snap-store_1271.snap \
+             /target/var/lib/snapd/desktop/applications/snap-store_snap-store.desktop
+    do
+        mirar "$f"
+    done
+    n=$(ls /target/var/lib/snapd/seed/snaps/snap-store_*.snap 2>/dev/null | wc -l)
+    say "  snaps de snap-store en el objetivo (por comodin): $n"
+    # y la que YA NO tiene que estar, que es la otra mitad de la decision
+    n=$(ls /target/usr/share/applications/org.gnome.Software.desktop 2>/dev/null | wc -l)
+    say "  lanzadores de gnome-software (tiene que ser 0): $n"
 }
 
 # EL MANEJADOR DEL PDF, que es una medicion de DOS MITADES y no un fichero
@@ -292,7 +306,7 @@ say "-- control: un paquete que no existe tiene que salir vacio"
 run curtin in-target -- env LC_ALL=C apt-cache policy encina-paquete-que-no-existe
 say "-- y lo que el nivel 3 tiene que haber puesto al alcance de apt:"
 for p in openjdk-17-jre-headless libnss3-tools hunspell-es firefox firefox-l10n-es-es \
-         simple-scan gnome-software gnome-software-plugin-snap
+         simple-scan
 do
     run curtin in-target -- env LC_ALL=C apt-cache policy "$p"
 done
@@ -305,9 +319,11 @@ run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y i
 say "-- los cuatro de Encina, por estado dpkg:"
 run curtin in-target -- dpkg-query -W -f='${Package} ${Version} ${Status}\n' \
     encina-meta encina-branding encina-firefox-native autofirma
-say "-- y las tres aplicaciones de D17/D18:"
+say "-- y las aplicaciones de D17/D18. La tienda NO esta en esta lista y no es
+-- un olvido: desde el 2026-08-12 es el snap snap-store, que viaja pre-sembrado
+-- en el medio y no es un .deb. Se comprueba en el bloque 12, con snap list."
 run curtin in-target -- dpkg-query -W -f='${Package} ${Version} ${Status}\n' \
-    simple-scan gnome-software gnome-software-plugin-snap
+    simple-scan sane-airscan
 say "-- las marcas, que son lo que decide la casilla del autoremove:"
 run curtin in-target -- sh -c "apt-mark showauto   | grep -E '^(encina-|autofirma)'"
 run curtin in-target -- sh -c "apt-mark showmanual | grep -E '^(encina-|autofirma)'"
@@ -420,7 +436,7 @@ tiene() {  # $1 = paquete. Anota en FALTA lo que no este instalado.
 }
 for p in encina-meta encina-branding encina-firefox-native autofirma \
          firefox firefox-l10n-es-es \
-         simple-scan gnome-software gnome-software-plugin-snap \
+         simple-scan sane-airscan \
          snapd
 do
     tiene "$p"

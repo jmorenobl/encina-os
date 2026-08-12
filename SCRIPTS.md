@@ -738,15 +738,36 @@ y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
 volúmenes de la vuelta de E4 **no se conservaron a propósito**: son
 reproducibles, y el disco del banco no daba para todo.
 
-**Las huellas vigentes desde el 2026-08-12** (§4.31f), que son las que hay que
+**Las huellas vigentes desde el 2026-08-13** (§4.34), que son las que hay que
 ver salir de `fabricar-seed.sh`:
 
 ```
 faeca3a9…  autofirma_1.9.1+encina4_all.deb
 51b6603c…  encina-branding_0.1.8_all.deb
 972ec932…  encina-firefox-native_0.2.1_all.deb
-85c8cc56…  encina-meta_0.2.0_all.deb
+86da3cc9…  encina-meta_0.2.1_all.deb          <- 0.2.1 desde el 2026-08-13 (D18 reescrita)
 ```
+
+**Y DESDE EL 2026-08-13 NO SON CUATRO COSAS: SON SEIS, y las dos nuevas no se
+dedujeron, se cazaron gastando una instalación cada una** (§4.34h). Las cuatro de
+arriba bastan cuando cambia la **versión** de un `.deb`; **cuando cambia lo que el
+producto LLEVA, hay dos sitios más que guardan la lista por su cuenta**:
+
+```
+5. imagen/encina-seed.sh      la LISTA DE LO QUE TIENE QUE ESTAR en el objetivo
+6. imagen/verificar-e2.sh     la MISMA LISTA, otra vez, y por su cuenta
+```
+
+- La **quinta** se delató sola: la instalación salió con `ESTADO=INCOMPLETO` y
+  `ENCINA_FALTA=gnome-software gnome-software-plugin-snap`, porque el seed seguía
+  exigiendo la tienda vieja. **Y eso es una buena noticia disfrazada de fallo: el
+  nivel 2 de §4.27 se disparó SOLO, en un caso real que nadie provocó.**
+- La **sexta** no se delata sola hasta que verificas: **47 correctas y 2 fallos, y
+  los dos del verificador**. Es la trampa 27 otra vez.
+
+**Regla: cuando cambie lo que el producto lleva, `grep` del nombre viejo por
+`imagen/` ENTERO antes de fabricar nada** — y con su control, o sea comprobando
+que el mismo `grep` encuentra el nombre nuevo donde debe.
 4. **Los otros tres `.deb` se sacan del volumen del seed anterior**, no de
    `debian-packages/` de este repositorio: es la trampa de §4.13, y allí hay
    ficheros con la misma versión y **otros bytes**.
@@ -1398,3 +1419,104 @@ los dos en la misma huella.** La familia de la 5 y de la 11, quinta aparición.
 de una huella de virginidad que se toma justo antes de gastar una VM con un
 certificado personal dentro. **Un umbral se prueba contra sus dos respuestas el
 día que se escribe, no el día que estorba.**
+
+---
+
+## Y tres más, cambiando la tienda (2026-08-13)
+
+Las tres son de `MEDICIONES.md` §4.34, y **ninguna es del producto: las tres son
+del banco**. Van juntas porque las tres se llevaron una instalación por delante.
+
+**31. `QEMU error … Invalid argument`: llevaba sesiones saliendo, se daba por
+inocuo sin saber por qué, y la causa es de APFS.** §4.24 lo despachaba con
+`errors_count 0`, que es un acto de fe. La unidad del error es **el disco de
+destino**, y UTM lo declara —leído en la línea de órdenes real de QEMU, no
+supuesto— con `discard=unmap,detect-zeroes=unmap`. Eso hace que QEMU **anuncie
+TRIM al invitado** y traduzca cada descarte a `fcntl(F_PUNCHHOLE)` sobre el
+fichero. Medido en C, con sus dos respuestas:
+
+```
+alineado a 4096   -> OK          offset no alineado (512)   -> Invalid argument
+zona ya dispersa  -> OK          longitud no multiplo de 4K -> Invalid argument
+pasa del final    -> OK
+```
+
+**APFS exige alineación a 4096 y devuelve `EINVAL` si no la hay**; el instalador
+descarta alineado a **512**, que es el sector que anuncia virtio-blk. Reproducible
+a voluntad desde dentro, y el control es que **la única diferencia son 512 bytes**:
+
+```
+blkdiscard -o 4096 -l 8192 /dev/vdb  -> rc=0                    dialogos: 0
+blkdiscard -o 4608 -l 8192 /dev/vdb  -> BLKDISCARD ioctl: E/S   dialogos: 1
+```
+
+**Es inocuo, y ahora no por fe:** un descarte es una optimización de espacio, no un
+dato; si falla, el sistema de ficheros se crea igual. **Y UTM no lo escribe en
+`debug.log`**, así que la única forma de saber si salió es mirar la pantalla.
+
+**32. El arreglo evidente de la 31 ROMPE LA INSTALACIÓN, y hay que decirlo con la
+misma fuerza con la que casi se escribe como solución.** `-set
+drive.<id>.discard=off` apaga el diálogo **en caliente** —el mismo `blkdiscard`
+desalineado pasa a `rc=0`, y `fstrim` tampoco lo dispara—, así que parece cerrado.
+No lo está: **con ese argumento la instalación se atasca y el seed no llega a
+correr**. Aislado cambiando **una sola variable**, que es como debí hacerlo:
+
+```
+inst. 1  seed viejo, SIN -set  -> llego al seed
+inst. 2  seed nuevo, CON -set  -> atascada en 9502 MB, sin testigo ni encina-seed.log
+inst. 3  seed nuevo, CON -set  -> atascada en 9502 MB, igual
+inst. 4  seed nuevo, SIN -set  -> 11002 MB, se apaga sola, ESTADO=COMPLETO
+```
+
+**La regla, que es de método y no de QEMU: no cambies dos variables a la vez.** Yo
+metí el seed nuevo y el `-set` en la misma instalación y perdí dos vueltas
+averiguando cuál de los dos era.
+
+**33. El Mac se duerme a mitad de instalación y se lleva la VM por delante.** La
+instalación 2 se paró y el instalador cascó (`apport`:
+*«System program problem detected … ubuntu-desktop-bootstrap»*). **La causa no está
+en ninguna VM: está en el anfitrión**, y la enseña `pmset`:
+
+```
+23:02:12  Entering Sleep state due to 'Maintenance Sleep' … Using Batt (86%)
+   … ciclos de sueno …
+00:09:05  Wake … due to MTP.DOCK…/HID Activity     <- alguien toca el trackpad
+pmset: sleep 1   (a bateria)
+```
+
+La señal que lo delata desde dentro de la propia medición: **un bucle de vigilancia
+que no imprime NI UNA LÍNEA en diez minutos** — `delay` tampoco avanza con el Mac
+dormido. **Regla: toda instalación va envuelta en `caffeinate -dimsu`**, y si una
+vigilancia se queda muda, lo primero que se mira es `pmset -g log`, no la VM.
+
+**Y una corrección de método que va escrita porque casi la doy por prueba:** dije
+que el reloj del invitado parado demostraba la suspensión. **No demostraba nada**:
+el invitado iba en **UTC** y el anfitrión en CEST, así que la hora «parada» era la
+hora real. La prueba buena vino de **otro sitio** —el registro del anfitrión—, que
+es justamente lo que la hace prueba.
+
+## Cómo leer la pantalla de una VM cuando no puedes mirarla (2026-08-13)
+
+Salió de §4.34l, cuando en mitad del diagnóstico dejaron de poder cargarse
+capturas. **Es un instrumento nuevo del banco y vale para cualquier medición
+futura sin ojos**, incluidas las máquinas de forma E3 que no llevan `ssh`.
+
+**1. OCR nativo, sin dependencias.** 25 líneas de Objective-C contra el framework
+Vision, compiladas con `clang -framework Vision`. Reconoce español e inglés y
+devuelve el texto de la pantalla por líneas.
+
+**2. Y va con su control, que es lo que lo hace utilizable:** antes de usarlo para
+nada, se dispara **contra una captura que ya se ha mirado con los ojos** y se
+comprueba que devuelve lo que allí ponía. Sin ese par, un OCR que devuelve poco no
+se distingue de una pantalla vacía.
+
+**3. Capturar la ventana de la VM, y no la del editor.** `screencapture` a pantalla
+completa coge lo que esté delante, y **el propio proceso que lanza la orden roba el
+foco**. Lo que funciona es hacerlo **todo dentro del mismo AppleScript**: activar
+UTM, `AXRaise` de la ventana de la VM, leer su posición y tamaño, y llamar a
+`screencapture -R` con `do shell script` **sin salir del script**. (`Quartz` no
+está en el Python del sistema, así que la vía del `windowid` no sirve aquí.)
+
+Con esto se leyó la pantalla que estaba bloqueando la medición —*«Se produjo un
+problema · System program problem detected · sudo ubuntu-bug
+ubuntu-desktop-bootstrap»*— sin gastar una sola captura de las que se miran.

@@ -318,13 +318,34 @@ La espera del vigilante por raiz (M20) es lo que cierra §4.29e. Con +encina2 o
 esac
 # LAS APLICACIONES QUE E4 ANADE (D17 y D18), y evince, que es a quien apunta el
 # manejador del PDF: si faltara, el defecto del bloque 6bis apuntaria a nada
-for p in simple-scan gnome-software gnome-software-plugin-snap evince; do
+for p in simple-scan sane-airscan evince; do
     E=$(dpkg-query -W -f='${Version} ${Status}' "$p" 2>/dev/null)
     case "$E" in
         *"install ok installed") ok "$p $E" ;;
         *)                       fallo "$p no esta instalado" "${E:-<no se ha encontrado el paquete>}" ;;
     esac
 done
+# LA TIENDA, desde el 2026-08-12 (D18 reescrita): NO es un .deb y por eso no
+# esta en el bucle de arriba. Es el snap snap-store, pre-sembrado en el medio
+# (§4.16d), asi que se pregunta a snap y no a dpkg.
+if snap list snap-store >/dev/null 2>&1; then
+    ok "la tienda: snap-store $(snap list snap-store 2>/dev/null | awk 'NR==2{print $2" rev "$3}')"
+else
+    fallo "la tienda no esta" "snap list snap-store no la encuentra, y sin tienda D17 se queda sin sustento"
+fi
+# control: el mismo comando tiene que saber decir que NO de un snap inventado
+if snap list encina-snap-que-no-existe-jamas >/dev/null 2>&1; then
+    fallo "CONTROL ROTO: snap list dice tener un snap inventado" ""
+else
+    ok "control: un snap inventado -> snap list dice que no"
+fi
+# Y LA OTRA MITAD DE LA DECISION: gnome-software NO tiene que estar. Sin esto,
+# la casilla no sabria distinguir «una tienda» de «dos».
+E=$(dpkg-query -W -f='${Status}' gnome-software 2>/dev/null)
+case "$E" in
+    *"install ok installed") fallo "gnome-software SIGUE instalado" "D18 (reescrita) dice que sale: el usuario veria DOS tiendas" ;;
+    *)                       ok "gnome-software fuera (${E:-<no se ha encontrado el paquete>})" ;;
+esac
 # CONTROL de todo el bloque: el mismo comando tiene que saber decir que no
 E=$(dpkg-query -W -f='${Status}' encina-paquete-que-no-existe-jamas 2>/dev/null)
 if [ -z "$E" ]; then ok "control: un paquete inventado -> no se ha encontrado"
