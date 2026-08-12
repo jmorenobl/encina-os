@@ -11,13 +11,21 @@ Architecture: all
 Depends: ${misc:Depends},
          dconf-cli,
          plymouth,
-         plymouth-themes
-Description: Identidad visual de Encina OS
+         plymouth-themes,
+         evince
+Description: Identidad visual y valores por defecto de Encina OS
  Aplica la identidad visual de Encina OS al sistema: fondos de escritorio
  claro y oscuro, logotipo, tema de arranque de Plymouth y personalizacion
  de la pantalla de inicio de sesion de GDM.
  .
+ Y desde la version 0.1.8 tambien EL MANEJADOR POR DEFECTO DEL PDF, que no
+ es identidad visual pero si es la misma clase de cosa: un valor por defecto
+ del escritorio, declarado por el sistema y que el usuario puede cambiar. La
+ maquina de la entrega traia Evince instalado y no se abria nunca, porque
+ application/pdf resolvia al navegador.
+ .
  Todos los valores se instalan como predeterminados del sistema mediante
- gschema.override y perfiles de dconf, de modo que los usuarios creados
- despues de la instalacion tambien los heredan y cualquier usuario puede
+ gschema.override, perfiles de dconf y un mimeapps.list PROPIO en
+ /etc/xdg. Ninguno sobrescribe el conffile de otro paquete (R5), y los
+ usuarios creados despues de la instalacion los heredan igual y pueden
  sobrescribirlos.

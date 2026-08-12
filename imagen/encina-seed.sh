@@ -1,20 +1,43 @@
 #!/bin/sh
-# Encina OS - E2. Todo el trabajo del seed, en UNA SOLA late-command.
+# Encina OS - E4. Todo el trabajo del seed, en UNA SOLA late-command.
 #
 # COMO CORRE ESTO, que condiciona cada linea:
 #
 #   - Corre en el ENTORNO DEL INSTALADOR (fuera del chroot), con el sistema
 #     instalado montado en /target. Lo que toque el objetivo va por
 #     'curtin in-target', y lo que mire el objetivo mira /target DESDE FUERA.
-#   - NUNCA sale distinto de 0. Una late-command que aborta se lleva la
-#     instalacion por delante y deja la medicion sin datos (§4.16). OJO: eso es
-#     una regla del INSTRUMENTO, no del producto, y tiene precio -- ver el
-#     bloque 14 y la decision pendiente del final.
 #   - Deja su propio registro dentro de /target, porque cada intento cuesta una
 #     instalacion entera y no se puede depurar a medias.
-#   - Y DESDE EL 2026-08-11 (§4.27) COMPRUEBA LO QUE HA DEJADO Y LO DICE, en
-#     /etc/encina-estado: sin red no entra ni uno de los cuatro .deb y hasta hoy
-#     la instalacion terminaba diciendo que fue bien.
+#   - COMPRUEBA LO QUE HA DEJADO Y LO DICE, en /etc/encina-estado (§4.27): sin
+#     red no entraba ni uno de los cuatro .deb y hasta el 2026-08-11 la
+#     instalacion terminaba diciendo que fue bien.
+#   - Y DESDE EL 2026-08-12 (§4.31) FALLA A LA VISTA si la maquina no ha
+#     quedado entera. Ver el bloque 15: la regla "nunca sale distinto de 0" era
+#     una regla del INSTRUMENTO -se escribio para no quedarse sin datos
+#     midiendo- que se habia colado dentro de la ISO que se entrega.
+#
+# LO QUE CAMBIA EN E4, Y ES LO QUE MAS FACIL SALE MAL (D16, la convivencia (c)):
+#
+#   ESTE GUION YA NO PURGA snapd. Encina OS es un escritorio que crece, la
+#   tienda que lo permite arrastra snapd de todas formas (§4.26d), y quitar el
+#   Snap NUNCA fue condicion de que la firma funcione: la condicion es que el
+#   Firefox que el usuario puede abrir sea el nativo (§4.26h, §4.13). Lo que
+#   rompe es un Firefox de Snap que alguien ABRE -B3 y B4-, y eso es el estado
+#   (d), no el (c).
+#
+#   Y DE AHI SALE LA MINA, que cuesta la vuelta entera si se pisa (AGENTS.md
+#   §6.2): al no purgar, el .deb de transicion 'firefox 1:1snap1-...' SIGUE
+#   INSTALADO, asi que el reparto de §4.17 se invierte otra vez ->
+#
+#     paso 11 (full-upgrade)  SUSTITUYE el deb de transicion por el de Mozilla
+#     paso 12 (l10n-es-es)    vuelve a ser SOLO el idioma
+#
+#   Ese cambio es un *downgrade* FORMAL, porque el deb de transicion lleva el
+#   epoch '1:' (§4.10c, medido). Con -y y sin --allow-downgrades, apt se niega.
+#   Y si alguien quitara el argumento, el paso NO falla ruidosamente: deja la
+#   maquina con el deb de transicion, o sea abriendo el Snap, o sea el estado
+#   (d), el que no firma. Por eso el bloque 11bis existe y por eso el veredicto
+#   del bloque 14 mira la version instalada y no el rc.
 #
 # TRAMPAS QUE ESTAN APLICADAS AQUI, y no son decorativas:
 #
@@ -27,16 +50,18 @@
 #               de que llego a ejecutarse.
 #   trampa  2 - Todo lo que consulte a apt va con LC_ALL=C.
 #   trampa  8 - No se filtra a nadie por numero de UID.
+#   §4.16e    - NADA de 'snap' desde aqui: curtin bind-monta /run, asi que el
+#               cliente del chroot le habla al demonio del entorno VIVO y le
+#               contesta por otra maquina. El Snap del objetivo se mira POR
+#               FICHEROS bajo /target, nunca preguntandole a snapd.
 #   §4.13     - Los .deb se comparan POR HUELLA, nunca por nombre: hay .deb con
-#               la misma version y bytes distintos.
+#               la misma version y bytes distintos, y en salida/ de
+#               encina-autofirma hay TRES candidatos.
 #
-# EL ORDEN NO ES ARBITRARIO. Es el de MEDICIONES.md §4.16g y §4.17c-f, que se
-# midio a mano en ese orden sobre una maquina sin Snap:
-#   1) purgar snapd     2) apt update      3) apt install encina-meta
+# EL ORDEN, que es el de §4.17c-f y §4.31 con el paso 5 cambiado de signo:
+#   1) el Snap se QUEDA   2) apt update      3) apt install encina-meta
 #   4) apt update (ya con el repo de Mozilla que pone encina-firefox-native)
-#   5) apt full-upgrade 6) apt install firefox-l10n-es-es
-# El paso 6 NO es "el idioma": en una maquina sin Snap es el navegador entero
-# (§4.17f). Quitarlo deja la maquina sin ningun Firefox.
+#   5) full-upgrade --allow-downgrades       6) apt install firefox-l10n-es-es
 
 L=/target/var/log/encina-seed.log
 RC=0
@@ -44,13 +69,14 @@ RC=0
 say() { echo "$*" >>"$L"; }
 run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 
-# --- las huellas de §4.15, que son la autoridad -----------------------------
+# --- las huellas, que son la autoridad ---------------------------------------
 # Si un .deb no coincide, se dice y se sigue: el registro tiene que contarlo,
-# no taparlo.
-H_AUTOFIRMA=d5a0ebe11a45a738f5d406e60ba2226d6e7c8d03df2eebb07b50843e92c79d03
-H_BRANDING=d4205134392abd5c345b13d9977f27034fbcd9f083e941a1795fa2dd1ab21a10
+# no taparlo. fabricar-seed.sh y fabricar-iso.sh las leen DE AQUI, para que el
+# guion que las comprueba dentro y el que fabrica el medio no puedan separarse.
+H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
+H_BRANDING=51b6603ca1cfd431d459865f21df095a628200681b6deed1bca0c3c2ccebfdb3
 H_FFNATIVE=972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2
-H_META=e15ce56f1e7a43f1eb37daa1a6454e837ca2d54e7423cd1adfaaa4a065b13327
+H_META=85c8cc56d586a40d2b6736688591d493bf988b234bff3e331e7c1c642239b596
 
 # existe(): -e para lo normal, -L para el enlace roto o absoluto (trampa 10)
 existe() { [ -e "$1" ] || [ -L "$1" ]; }
@@ -65,6 +91,12 @@ huella() {  # $1 fichero  $2 huella esperada
     fi
 }
 
+# EL INVENTARIO DEL SNAP, que en E4 cambia de signo: hasta E3 servia para
+# ensenar que el purgado se lo habia llevado todo; ahora sirve para ensenar que
+# NADIE lo ha tocado, que es la mitad de la convivencia (c) que se puede medir
+# desde aqui. La otra mitad -que no exista ningun perfil de Mozilla bajo
+# ~/snap/- no se puede mirar aqui, porque nadie ha abierto sesion todavia: es
+# del verificador.
 inventario_snap() {
     for f in /target/var/lib/snapd/snaps/firefox_7764.snap \
              /target/var/lib/snapd/seed/snaps/firefox_7764.snap \
@@ -78,6 +110,11 @@ inventario_snap() {
     do
         mirar "$f"
     done
+    # la revision 7764 esta escrita arriba porque es la que trae ESTA ISO, pero
+    # una revision distinta no puede hacer que el inventario mienta: se cuenta
+    # tambien por comodin
+    n=$(ls /target/var/lib/snapd/snaps/firefox_*.snap 2>/dev/null | wc -l)
+    say "  snaps de firefox en el objetivo (por comodin): $n"
     # control del inventario: tiene que saber decir AUSENTE
     f=/target/var/lib/snapd/snaps/fichero-que-no-existe-jamas
     if existe "$f"; then say "[PRESENTE] $f  <- CONTROL ROTO"; else say "[AUSENTE ] $f  <- control"; fi
@@ -86,10 +123,48 @@ inventario_snap() {
     if existe "$f"; then say "[PRESENTE] $f  <- control"; else say "[AUSENTE ] $f  <- CONTROL ROTO"; fi
 }
 
+# EL MANEJADOR DEL PDF, que es una medicion de DOS MITADES y no un fichero
+# suelto (D17): se pregunta lo mismo antes y despues de instalar.
+#
+# Y SE PREGUNTA EN LAS DOS COLUMNAS, con y sin XDG_CURRENT_DESKTOP, porque la
+# medicion de apertura (§4.26c) se hizo por ssh -- sin escritorio -- y eso
+# CAMBIA la respuesta: los ficheros con nombre de escritorio delante
+# (gnome-mimeapps.list) solo se leen si el escritorio se llama asi. Sin las dos
+# columnas, este bloque diria "arreglado" o "no hacia falta" segun como se
+# preguntara, que es la trampa 5 dentro del instrumento.
+pdf_por_defecto() {  # $1 = etiqueta
+    con=$(curtin in-target -- env LC_ALL=C XDG_CURRENT_DESKTOP=ubuntu:GNOME \
+            xdg-mime query default application/pdf 2>/dev/null)
+    sin=$(curtin in-target -- env -u XDG_CURRENT_DESKTOP LC_ALL=C \
+            xdg-mime query default application/pdf 2>/dev/null)
+    c=$(curtin in-target -- env LC_ALL=C XDG_CURRENT_DESKTOP=ubuntu:GNOME \
+            xdg-mime query default application/x-tipo-que-no-existe-jamas 2>/dev/null)
+    z=$(curtin in-target -- env LC_ALL=C XDG_CURRENT_DESKTOP=ubuntu:GNOME \
+            xdg-mime query default application/zip 2>/dev/null)
+    say "  [$1] application/pdf  con ubuntu:GNOME -> ${con:-<NINGUNO>}"
+    say "  [$1] application/pdf  SIN escritorio   -> ${sin:-<NINGUNO>}"
+    if [ -z "$c" ]; then
+        say "  [$1] control: un tipo inventado -> <NINGUNO>  (sabe decir que no)"
+    else
+        say "  [$1] CONTROL ROTO: un tipo inventado contesta '$c'"
+    fi
+    if [ -n "$z" ]; then
+        say "  [$1] control: application/zip -> $z  (sabe decir que si)"
+    else
+        say "  [$1] CONTROL ROTO: xdg-mime no contesta ni de application/zip"
+    fi
+    # el veredicto se queda con la peor de las dos columnas: si alguna de las
+    # dos formas de preguntar da el navegador, el defecto no esta atado
+    case "$con:$sin" in
+        *firefox*) PDF_DEFECTO="$con|$sin|HAY-FIREFOX" ;;
+        *)         PDF_DEFECTO="$con|$sin" ;;
+    esac
+}
+
 mkdir -p /target/var/log
 : >"$L"
 
-say "=== Encina OS - E2 - seed completo ==="
+say "=== Encina OS - E4 - seed completo (la convivencia (c) de D16) ==="
 say ""
 say "=== 0. ENTORNO DEL INSTALADOR (fuera del chroot) ==="
 run date -u +%Y-%m-%dT%H:%M:%SZ
@@ -129,6 +204,11 @@ run ls -la "$REPO/"
 
 say ""
 say "=== 2. EL REPO LOCAL SIN FIRMAR, del volumen al objetivo ==="
+# DESDE E4 ESTE REPO NO SON CUATRO .deb: lleva ademas todo lo que hasta hoy
+# bajaba de internet -el JRE de autofirma, libnss3-tools, hunspell-es, el
+# navegador y su idioma, la tienda y el escaner-, que es el nivel 3 de §4.27.
+# Los cuatro de Encina se comprueban por huella uno a uno; de los demas
+# responde el indice Packages, que apt verifica por SHA256 al instalarlos.
 mkdir -p /target/srv/encina-repo
 # OJO: el glob '*' es del interprete y NO casa con los ficheros que empiezan
 # por punto, que es lo que deja fuera los AppleDouble '._x' que escribe macOS
@@ -136,14 +216,15 @@ mkdir -p /target/srv/encina-repo
 run sh -c "cp $REPO/* /target/srv/encina-repo/"
 run chmod 0755 /target/srv/encina-repo
 run sh -c 'chmod 0644 /target/srv/encina-repo/*'
-run ls -la /target/srv/encina-repo/
-say "-- huellas de §4.15, comparadas una a una:"
-huella /target/srv/encina-repo/autofirma_1.9.1+encina2_all.deb      "$H_AUTOFIRMA"
-huella /target/srv/encina-repo/encina-branding_0.1.7_all.deb        "$H_BRANDING"
+run sh -c "ls /target/srv/encina-repo/ | wc -l"
+run sh -c "du -sh /target/srv/encina-repo"
+say "-- las cuatro huellas de Encina, comparadas una a una:"
+huella /target/srv/encina-repo/autofirma_1.9.1+encina4_all.deb      "$H_AUTOFIRMA"
+huella /target/srv/encina-repo/encina-branding_0.1.8_all.deb        "$H_BRANDING"
 huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
-huella /target/srv/encina-repo/encina-meta_0.1.1_all.deb            "$H_META"
+huella /target/srv/encina-repo/encina-meta_0.2.0_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"
-huella /target/srv/encina-repo/encina-meta_0.1.1_all.deb \
+huella /target/srv/encina-repo/encina-meta_0.2.0_all.deb \
        0000000000000000000000000000000000000000000000000000000000000000
 huella /target/srv/encina-repo/fichero-que-no-existe-jamas "$H_META"
 
@@ -158,23 +239,44 @@ say "=== 4. INVENTARIO DEL SNAP EN EL OBJETIVO, ANTES DE TOCAR NADA ==="
 inventario_snap
 
 say ""
-say "=== 5. QUITAR EL SNAP (la orden medida en §4.16g, literal) ==="
-run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y purge snapd
+say "=== 4bis. EL MANEJADOR DEL PDF, PRIMERA MITAD (antes de instalar nada) ==="
+pdf_por_defecto ANTES
+PDF_ANTES="$PDF_DEFECTO"
+run curtin in-target -- sh -c "ls -la /etc/xdg/*mimeapps.list /etc/xdg/xdg-ubuntu/*mimeapps.list /usr/share/applications/*mimeapps.list 2>&1"
 
 say ""
-say "=== 6. INVENTARIO DEL SNAP, DESPUES DEL PURGADO ==="
-inventario_snap
-say "-- que queda de snapd en el objetivo:"
-run ls -la /target/var/lib/snapd
-run ls -la /target/snap
-run sh -c "ls /target/etc/systemd/system/ | grep -i snap"
-say "-- estado dpkg (lo que decide, no el grep de §4.16h):"
+say "=== 5. EL SNAP SE QUEDA (D16, la convivencia (c)) ==="
+# AQUI HABIA UN 'apt-get -y purge snapd' HASTA EL 2026-08-12, y no se ha
+# aflojado: se ha cambiado de signo con su motivo (D16 de ENCINA-OS.md).
+#   - Quitar el Snap nunca fue condicion de que la firma funcione: la maquina
+#     donde salio la firma de §4.13 tenia el Snap dentro.
+#   - La tienda que exige "un escritorio que crece" arrastra snapd de todas
+#     formas (§4.26d), asi que la eleccion real no era tenerlo o no, sino
+#     tenerlo DECLARADO o tenerlo por la puerta de atras.
+#   - Lo que rompe es un Firefox de Snap que alguien ABRE: eso es el estado (d).
+#     La defensa entera es que el unico icono que el usuario ve abre el nativo,
+#     y de eso se ocupa encina-firefox-native con su sombra NoDisplay=true,
+#     medida en los dos mundos (§4.19).
+# NO se ejecuta ninguna orden 'snap' desde aqui, y no es prudencia: curtin
+# bind-monta /run, asi que le hablaria al snapd del entorno VIVO (§4.16e).
+say "  no se purga snapd: es la forma (c) de D16, decidida el 2026-08-11"
+say "-- estado dpkg de lo que ANTES se purgaba, para que quede escrito:"
 run curtin in-target -- dpkg -l snapd firefox
-say "-- y el escritorio sigue declarado?"
+say "-- y el escritorio, que es lo que aquel purgado podia haberse llevado:"
 run curtin in-target -- dpkg -l ubuntu-desktop-minimal gnome-shell
 
 say ""
-say "=== 7. HAY RED DESDE EL CHROOT? (esto NO estaba medido) ==="
+say "=== 6. INVENTARIO DEL SNAP, DESPUES DEL PASO 5 (tiene que ser IGUAL) ==="
+inventario_snap
+say "-- que hay de snapd en el objetivo:"
+run ls -la /target/var/lib/snapd
+run ls -la /target/snap
+run sh -c "ls /target/etc/systemd/system/ | grep -i snap"
+
+say ""
+say "=== 7. HAY RED DESDE EL CHROOT? ==="
+# Esto decide como se lee todo lo de abajo. Sin red, el nivel 3 de §4.27 es lo
+# unico que sostiene la instalacion: los .deb tienen que salir del medio.
 run curtin in-target -- getent hosts ports.ubuntu.com
 run curtin in-target -- getent hosts packages.mozilla.org
 say "-- control: un nombre que no existe tiene que fallar"
@@ -182,25 +284,36 @@ run curtin in-target -- getent hosts nombre-que-no-existe.encina.invalid
 run curtin in-target -- cat /etc/resolv.conf
 
 say ""
-say "=== 8. PASO 1 EN LA FORMA DE E2: apt update con el repo local ==="
+say "=== 8. PASO 1: apt update con el repo local ==="
 run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get update
 say "-- el candidato sale del repo local:"
 run curtin in-target -- env LC_ALL=C apt-cache policy encina-meta
 say "-- control: un paquete que no existe tiene que salir vacio"
 run curtin in-target -- env LC_ALL=C apt-cache policy encina-paquete-que-no-existe
+say "-- y lo que el nivel 3 tiene que haber puesto al alcance de apt:"
+for p in openjdk-17-jre-headless libnss3-tools hunspell-es firefox firefox-l10n-es-es \
+         simple-scan gnome-software gnome-software-plugin-snap
+do
+    run curtin in-target -- env LC_ALL=C apt-cache policy "$p"
+done
 
 say ""
 say "=== 9. UN SOLO NOMBRE: apt install encina-meta ==="
+say "-- primero la simulacion, que es lo que ensena de donde sale cada cosa:"
+run curtin in-target -- env LC_ALL=C apt-get -s install encina-meta
 run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y install encina-meta
-say "-- los cuatro, por estado dpkg:"
+say "-- los cuatro de Encina, por estado dpkg:"
 run curtin in-target -- dpkg-query -W -f='${Package} ${Version} ${Status}\n' \
     encina-meta encina-branding encina-firefox-native autofirma
-say "-- las marcas, que son lo que decide la casilla:"
+say "-- y las tres aplicaciones de D17/D18:"
+run curtin in-target -- dpkg-query -W -f='${Package} ${Version} ${Status}\n' \
+    simple-scan gnome-software gnome-software-plugin-snap
+say "-- las marcas, que son lo que decide la casilla del autoremove:"
 run curtin in-target -- sh -c "apt-mark showauto   | grep -E '^(encina-|autofirma)'"
 run curtin in-target -- sh -c "apt-mark showmanual | grep -E '^(encina-|autofirma)'"
 
 say ""
-say "=== 10. PASO 2 DE §6.4: apt update, ya con el repo de Mozilla ==="
+say "=== 10. PASO 2: apt update, ya con el repo de Mozilla ==="
 run curtin in-target -- ls -la /etc/apt/sources.list.d/
 run curtin in-target -- sh -c "cat /etc/apt/preferences.d/*"
 run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get update
@@ -208,15 +321,53 @@ say "-- el anclaje manda? candidato 153.0.3~build1 a 1000, no el 1:1snap1 a 500:
 run curtin in-target -- env LC_ALL=C apt-cache policy firefox
 
 say ""
-say "=== 11. PASO 3 DE §6.4: full-upgrade (sin Snap NO trae Firefox, §4.17e) ==="
+say "=== 11. PASO 3: full-upgrade, Y AQUI ESTA LA MINA (--allow-downgrades) ==="
+# CON SNAP (que desde D16 son todas) este paso es EL paso: sustituye el .deb de
+# transicion 'firefox 1:1snap1-...' por el de Mozilla, y eso es un downgrade
+# FORMAL por el epoch '1:' (§4.10c). Sin --allow-downgrades, apt -y se niega.
+# Sin Snap el argumento sobra y no estorba: no hay nada que degradar.
 say "-- primero la simulacion, para que quede escrito lo que propone:"
-run curtin in-target -- env LC_ALL=C apt-get -s full-upgrade
+run curtin in-target -- env LC_ALL=C apt-get -s full-upgrade --allow-downgrades
 run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y \
+    --allow-downgrades \
     -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef full-upgrade
 run curtin in-target -- env LC_ALL=C apt-cache policy firefox
 
 say ""
-say "=== 12. PASO 4 DE §6.4: firefox-l10n-es-es, QUE AQUI ES EL NAVEGADOR ==="
+say "=== 11bis. RED DE SEGURIDAD: si el navegador sigue siendo el del Snap ==="
+# POR QUE EXISTE ESTE BLOQUE, y no es cinturon y tirantes: SIN RED el repo de
+# Mozilla no se puede leer, asi que su anclaje de prioridad 1000 no aplica a
+# nada, y entre el 1:1snap1 de los indices viejos de ports (500) y el
+# 153.0.3~build1 de nuestro repo local (500) gana el epoch, o sea el del Snap.
+# Con red este bloque no hace nada y lo dice. Sin el, una instalacion sin red
+# acabaria en el estado (d) -el que no firma- por una razon de prioridades que
+# no se ve en ningun rc.
+V=$(curtin in-target -- dpkg-query -W -f='${Version}' firefox 2>/dev/null)
+say "  firefox instalado tras el full-upgrade: ${V:-<ninguno>}"
+case "$V" in
+    1:*|"")
+        say "  !! sigue siendo el deb de transicion (o no hay ninguno): se coge del repo local"
+        VL=$(sed -n '/^Package: firefox$/,/^$/p' /target/srv/encina-repo/Packages 2>/dev/null \
+             | sed -n 's/^Version: //p' | head -1)
+        say "  version que ofrece el repo local: ${VL:-<no esta en el indice>}"
+        if [ -n "$VL" ]; then
+            run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y \
+                --allow-downgrades \
+                -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef \
+                install "firefox=$VL"
+        else
+            say "  !! el repo local no trae firefox: el nivel 3 de §4.27 esta incompleto"
+        fi
+        ;;
+    *)  say "  el navegador ya es el de Mozilla (sin epoch): este bloque no hace nada" ;;
+esac
+
+say ""
+say "=== 12. PASO 4: firefox-l10n-es-es (CON Snap esto SI es solo el idioma) ==="
+# OJO AL LEER ESTO DENTRO DE SEIS MESES: en E2/E3, SIN Snap, este paso era el
+# NAVEGADOR ENTERO (§4.17f). Con la convivencia (c) vuelve a ser solo el
+# idioma, porque el navegador lo trae el paso 11. Quitarlo sigue sin ser
+# gratis: deja el navegador en ingles.
 run curtin in-target -- env LC_ALL=C apt-cache show firefox-l10n-es-es
 run curtin in-target -- env DEBIAN_FRONTEND=noninteractive LC_ALL=C apt-get -y \
     -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef \
@@ -231,7 +382,20 @@ run curtin in-target -- dpkg -S /usr/bin/firefox
 say "-- control de dpkg -S, que tiene que saber contestar de otro fichero:"
 run curtin in-target -- dpkg -S /usr/bin/gnome-shell
 run curtin in-target -- sh -c "dpkg -L firefox-l10n-es-es | grep xpi"
+say "-- los dos lanzadores de Firefox que van a competir en la rejilla:"
+run curtin in-target -- sh -c "ls -la /usr/share/applications/firefox*.desktop /var/lib/snapd/desktop/applications/firefox*.desktop 2>&1"
+run curtin in-target -- sh -c "grep -H '^NoDisplay' /usr/share/applications/firefox_firefox.desktop 2>&1"
 inventario_snap
+
+say ""
+say "=== 13bis. EL MANEJADOR DEL PDF, SEGUNDA MITAD ==="
+run curtin in-target -- sh -c "ls -la /etc/xdg/*mimeapps.list /etc/xdg/xdg-ubuntu/*mimeapps.list /usr/share/applications/*mimeapps.list 2>&1"
+run curtin in-target -- sh -c "dpkg -S /etc/xdg/mimeapps.list 2>&1"
+say "-- control de dpkg -S: tiene que saber decir de quien es otro fichero"
+run curtin in-target -- sh -c "dpkg -S /usr/share/applications/gnome-mimeapps.list 2>&1"
+pdf_por_defecto DESPUES
+PDF_DESPUES="$PDF_DEFECTO"
+say "  ANTES='${PDF_ANTES:-<NINGUNO>}'   DESPUES='${PDF_DESPUES:-<NINGUNO>}'"
 
 say ""
 say "=== 14. EL VEREDICTO: el seed comprueba lo que ha dejado, y lo dice ==="
@@ -239,10 +403,9 @@ say "=== 14. EL VEREDICTO: el seed comprueba lo que ha dejado, y lo dice ==="
 #
 # Hasta el 2026-08-11 este guion hacia seis pasos, apuntaba seis 'rc' en un
 # fichero que nadie lee, y escribia el testigo de "llegue al final" aunque no
-# hubiera llegado nada mas. SIN RED no entra NI UNO de los cuatro .deb -- apt es
-# todo o nada, y ni el JRE que pide autofirma, ni libnss3-tools, ni hunspell-es
-# viajan en el medio (§4.27c) -- y la instalacion terminaba diciendo que fue
-# bien. Es la trampa 5: la misma respuesta en un sistema sano y en uno roto.
+# hubiera llegado nada mas. SIN RED no entraba NI UNO de los cuatro .deb -- apt
+# es todo o nada -- y la instalacion terminaba diciendo que fue bien. Es la
+# trampa 5: la misma respuesta en un sistema sano y en uno roto.
 #
 # UN rc=0 NO DICE NADA DEL OBJETIVO (trampa 10). Lo que lo dice es el objetivo,
 # preguntado por dpkg, que es exactamente lo que hace esto. Y lleva su control,
@@ -256,7 +419,9 @@ tiene() {  # $1 = paquete. Anota en FALTA lo que no este instalado.
     esac
 }
 for p in encina-meta encina-branding encina-firefox-native autofirma \
-         firefox firefox-l10n-es-es
+         firefox firefox-l10n-es-es \
+         simple-scan gnome-software gnome-software-plugin-snap \
+         snapd
 do
     tiene "$p"
 done
@@ -286,21 +451,41 @@ case "$D" in
              FALTA="$FALTA firefox-dentro-de-snap" ;;
 esac
 
+say "-- la forma (c) de D16: el Snap de Firefox tiene que SEGUIR ahi"
+NSNAP=$(ls /target/var/lib/snapd/snaps/firefox_*.snap 2>/dev/null | wc -l)
+say "  snaps de firefox en el objetivo: $NSNAP"
+if [ "$NSNAP" -lt 1 ]; then
+    say "  !! no queda ningun Snap de Firefox: esto NO es la forma (c) de D16"
+    FALTA="$FALTA snap-de-firefox-ausente"
+fi
+
+say "-- el manejador del PDF, que es lo que D17 ata (las DOS columnas)"
+case "$PDF_DESPUES" in
+    ""|"|")      say "  !! application/pdf no resuelve a nada"
+                 FALTA="$FALTA pdf-sin-manejador" ;;
+    *HAY-FIREFOX*) say "  !! application/pdf resuelve al navegador por alguna de las dos vias"
+                 FALTA="$FALTA pdf-a-firefox" ;;
+    *)           say "  application/pdf -> $PDF_DESPUES" ;;
+esac
+
 if [ -z "$FALTA" ]; then ESTADO=COMPLETO; else ESTADO=INCOMPLETO; fi
 say "  ESTADO -> $ESTADO   FALTA ->${FALTA:- nada}"
 
 {
     echo "# Encina OS. Lo escribe imagen/encina-seed.sh al terminar la instalacion."
     echo "#"
-    echo "# COMPLETO   = estan los cuatro paquetes de Encina y un Firefox nativo."
-    echo "# INCOMPLETO = LA INSTALACION TERMINO IGUAL, y a esta maquina le falta algo."
-    echo "#              El motivo mas probable es que no hubiera red: el navegador"
-    echo "#              y las dependencias de autofirma bajan de internet, y no"
-    echo "#              viajan en el medio (MEDICIONES.md §4.27)."
+    echo "# COMPLETO   = esta el conjunto entero: los cuatro paquetes de Encina, un"
+    echo "#              Firefox NATIVO, el Snap de Firefox instalado y sin abrir"
+    echo "#              (la forma (c) de D16), la tienda, el escaner y el PDF atado."
+    echo "# INCOMPLETO = a esta maquina le falta algo, y esta escrito cual."
+    echo "#              Desde el 2026-08-12 esto ademas HACE FALLAR la instalacion:"
+    echo "#              ver /etc/encina-seed.log y MEDICIONES.md §4.31."
     echo "#"
     echo "# El detalle, paso a paso, esta en /etc/encina-seed.log."
     echo "ENCINA_ESTADO=$ESTADO"
     echo "ENCINA_FALTA=${FALTA# }"
+    echo "ENCINA_PDF_ANTES=${PDF_ANTES:-<NINGUNO>}"
+    echo "ENCINA_PDF_DESPUES=${PDF_DESPUES:-<NINGUNO>}"
     echo "ENCINA_FECHA=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } >/target/etc/encina-estado
 run cat /target/etc/encina-estado
@@ -311,24 +496,47 @@ run date -u +%Y-%m-%dT%H:%M:%SZ
 
 umount /mnt/encina-seed 2>/dev/null
 
-# copia a un sitio obvio, y testigo de que este guion llego al final. Desde
-# §4.27 el testigo dice ADEMAS con que estado llego: "llegue al final" era
-# verdad y aun asi no significaba que la maquina estuviera entera.
+# copia a un sitio obvio, y testigo de que este guion llego al final. El testigo
+# dice ADEMAS con que estado llego: "llegue al final" era verdad y aun asi no
+# significaba que la maquina estuviera entera.
 cp "$L" /target/etc/encina-seed.log 2>/dev/null
 echo "encina-seed llego al final $(date -u +%Y-%m-%dT%H:%M:%SZ) estado=$ESTADO" \
     >/target/etc/encina-e2-testigo-seed
 
-# LO QUE ESTE GUION SIGUE SIN HACER, Y ES DECISION DE PRODUCTO PENDIENTE
-# (§4.27, nivel 2): con ESTADO=INCOMPLETO la instalacion termina bien igual, y
-# quien instala no se entera hasta que abre la maquina. Que falle A LA VISTA es
-# UNA LINEA -- poner aqui debajo
+# EL NIVEL 2 DE §4.27, PUESTO EL 2026-08-12 Y NO ANTES.
 #
-#     [ "$ESTADO" = COMPLETO ] || exit 1
+# Este guion llevaba escrito en su cabecera "NUNCA sale distinto de 0" desde
+# §4.16, y esa era una regla DEL INSTRUMENTO: se escribio para no quedarse sin
+# datos midiendo -una late-command que aborta se lleva la instalacion por
+# delante- y acabo dentro de la ISO que se entrega. Tercera vez que este
+# proyecto encuentra un criterio de validacion disfrazado de producto.
 #
-# -- y NO se ha puesto por dos motivos, ninguno de ellos pereza: cambia la regla
-# escrita en la cabecera de este guion ("NUNCA sale distinto de 0", §4.16), que
-# se escribio para no quedarse sin datos midiendo; y esta sin medir que hace
-# subiquity con una late-command que falla al final -- si deja la maquina, si
-# deja este registro dentro, y que ve la persona que instala. Se decide y se
-# mide en la vuelta de E4.
+# LO QUE FALTABA PARA PONERLO ERA SABER QUE HACE SUBIQUITY, Y AHORA ESTA LEIDO
+# -- en el codigo que viaja dentro de esta misma ISO, como se leyo lo del clic
+# en §4.16a, y no supuesto:
+#
+#   cmdlist.py:50-61   CmdListController.cmd_check = True, y LateController NO
+#                      lo cambia (ErrorController si: cmd_check = False). Asi
+#                      que arun_command(..., check=True) LANZA si salimos != 0.
+#   install.py:628-639 el Late.run() va DESPUES de curtin_install() y de
+#                      postinstall(); la excepcion se recoge, se escribe un
+#                      apport de tipo INSTALL_FAIL con el texto "install
+#                      failed", y se relanza.
+#   server.py:487,513  el manejador de ultimo nivel pone
+#                      ApplicationState.ERROR, en las dos formas: interactiva
+#                      (E3, que lleva interactive-sections) y no interactiva.
+#   installprogress.py:189  el estado ERROR se ve como "An error occurred
+#                      during installation", con "Reboot Now" habilitado.
+#
+# Las tres consecuencias, y son las que hacen que esto se pueda poner:
+#   1. SE VE. Es exactamente lo que pedia el nivel 2.
+#   2. LA MAQUINA SIGUE AHI Y ARRANCA: el fallo ocurre despues de instalar y de
+#      postinstall, o sea que el disco esta hecho y el GRUB puesto.
+#   3. ESTE REGISTRO SOBREVIVE DENTRO. Por eso el orden de arriba no es
+#      casual: el log, /etc/encina-estado y el testigo se escriben ANTES de
+#      esta linea, para que quien arranque la maquina pueda leer QUE falta.
+#
+# Lo que sigue sin estar medido, y se dice: no se ha visto esta pantalla con
+# los ojos. Lo leido es el codigo de ESTA ISO, no una captura.
+[ "$ESTADO" = COMPLETO ] || exit 1
 exit 0

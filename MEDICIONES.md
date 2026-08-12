@@ -6067,6 +6067,584 @@ paquete de Encina dentro.
 
 ---
 
+### 4.31 E4 — LA VUELTA ENTERA: el Snap vuelve declarado, y tres «arreglos» resultan ser otra cosa (2026-08-12)
+
+**Es el paso 3 de los tres de `ENCINA-OS.md` §7, y el precio es por vuelta**, así
+que en la misma van la convivencia (c) de D16, las aplicaciones de D17 y D18, el
+manejador del PDF, el `.deb` `+encina4`, el verificador reescrito, el `--yaml` y
+los niveles 2 y 3 de §4.27.
+
+**Lo que hay que llevarse, en cuatro líneas y antes del detalle:**
+
+1. **La casilla «Sin Snap» se sustituye y sale más exigente**, no más floja.
+2. **Tres cosas que parecían arreglos eran otra cosa.** El manejador del PDF
+   estaba *medido* mal, no roto (el instrumento era una sesión `ssh`); el
+   `--yaml` ya estaba hecho y el documento no se había enterado; y `sane-airscan`
+   no lo arrastra `simple-scan` **pero ya viajaba en el medio**.
+3. **La mina de `AGENTS.md` §6.2 era real y estaba donde decía.**
+4. **El nivel 2 se pudo poner porque se leyó qué hace `subiquity`**, no porque se
+   supusiera.
+
+#### (a) El precio, dicho ANTES de arrancar nada
+
+```
+df -k /       37 512 372 KiB libres = 35,775 GiB     utmctl list -> 8 VMs, las 8 paradas
+```
+
+| Concepto | Precio declarado |
+|---|---|
+| ISO nueva en `e2-medios` (3,4 GB + los `.deb` del nivel 3) | ~3,7–3,9 GB |
+| Volumen `CIDATA` nuevo | hasta 0,75 GiB (con el nivel 3 no cabe en los 128 MiB de siempre) |
+| `encina-dev` encendida para construir | ~0,5 GiB |
+| **Instalación 1** — forma E2, con red, desatendida: el banco de E4 | ~10–11 GiB |
+| **Instalación 2** — forma E3, **sin red**, desde la ISO nueva: el nivel 3 | ~10–11 GiB |
+| **Total declarado** | **~26–27 GiB** |
+
+El retorno se mide con `df` al terminar, no se predice (§9.a).
+
+#### (b) El orden, que es lo que abarata esto, y no es opcional
+
+**Primero se escribe todo —seed, verificador, `encina-meta`, `encina-branding`,
+el manejador— sin arrancar nada; solo entonces se instala.** Una instalación
+medida entera vale por diez comprobaciones a mano, y dos vueltas cuestan el doble
+que una. La única máquina que se enciende antes de instalar es `encina-dev`,
+**porque es la de construir**: `dpkg-scanpackages` no existe en macOS.
+
+**Y su huella de identidad, tomada antes de tocar nada** (trampa 14: ocho
+máquinas contestan en `192.168.64.3` llamándose `encina-dev`):
+
+```
+hostname encina-dev · usuario jorge · ningun paquete de Encina salvo encina-branding
+snap firefox 153.0.3-1 rev 8735       <- la revision que la separa de encina-E1-meta (7764)
+sin ~/.mozilla ni ~/.config/mozilla
+```
+
+#### (c) LA LECTURA QUE DECIDE EL NIVEL 2: qué hace `subiquity` con una `late-command` que falla
+
+§4.27 dejó el nivel 2 sin decidir con dos motivos, y uno era *«está sin medir qué
+hace subiquity con una late-command que falla al final»*. **Se contesta leyendo el
+código que viaja dentro de la propia ISO**, como se contestó lo del clic en §4.16a
+—`unsquashfs` de `casper/minimal.standard.live.squashfs`, de ahí el snap
+`ubuntu-desktop-bootstrap_495.snap`, y de ahí `bin/subiquity/`—:
+
+```
+cmdlist.py:50-61        CmdListController.cmd_check = True
+                        LateController NO lo cambia; ErrorController SI (cmd_check = False)
+                        -> arun_command(..., check=True) LANZA si la orden sale != 0
+install.py:628-639      Late.run() va DESPUES de curtin_install() y de postinstall();
+                        la excepcion se recoge, se escribe un apport INSTALL_FAIL
+                        con el texto "install failed", y se relanza
+server.py:487 y 513     el manejador de ultimo nivel pone ApplicationState.ERROR
+                        en las DOS formas: interactiva (E3) y no interactiva (E2)
+installprogress.py:189  ERROR -> "An error occurred during installation", con
+                        "Reboot Now" habilitado
+```
+
+**Las tres consecuencias, y son las que permiten poner la línea:**
+
+1. **Se ve**, que es exactamente lo que pedía el nivel 2.
+2. **La máquina sigue ahí y arranca**: el fallo ocurre *después* de instalar y de
+   `postinstall`, o sea con el disco hecho y el GRUB puesto.
+3. **El registro sobrevive dentro.** Por eso el orden del guion no es casual: el
+   log, `/etc/encina-estado` y el testigo se escriben **antes** de la línea, para
+   que quien arranque la máquina pueda leer *qué* falta.
+
+Así que `imagen/encina-seed.sh` termina desde hoy en
+`[ "$ESTADO" = COMPLETO ] || exit 1`, y la regla *«nunca sale distinto de 0»*
+—que era del instrumento y se había colado en el producto— queda retirada con su
+motivo. **Lo que sigue sin medirse, y se dice: no se ha visto esa pantalla con los
+ojos.** Lo leído es el código de esta ISO, no una captura.
+
+**Y de propina, un discriminador gratis para la forma E2:** una instalación
+desatendida con `-no-reboot` **se apaga sola** cuando termina bien. Si el seed
+sale 1, `subiquity` va a ERROR y **no apaga**. O sea que *«la VM se apagó sola»*
+pasa a significar `ESTADO=COMPLETO`, sin abrir nada.
+
+#### (d) EL MANEJADOR DEL PDF: la mitad «antes» de §4.26c era del INSTRUMENTO, no del producto
+
+D17 daba por hecho que `application/pdf` resolvía a `firefox.desktop` con Evince
+instalado. **Es verdad, y solo por `ssh`.** Reproducido en un árbol sintético en
+`/tmp` de `encina-dev` —sin mutar nada— con el `firefox.desktop` de Mozilla
+delante en las cuatro pasadas:
+
+```
+                                        sin XDG_CURRENT_DESKTOP    con ubuntu:GNOME
+sin ningun fichero nuestro (el ANTES)   firefox.desktop            org.gnome.Evince.desktop
+con /etc/xdg/ubuntu-mimeapps.list       firefox.desktop            org.gnome.Evince.desktop
+con /etc/xdg/mimeapps.list (GENERICO)   org.gnome.Evince.desktop   org.gnome.Evince.desktop
+```
+
+**El control que lo convierte en medición y no en anécdota:** con el mismo
+fichero genérico diciendo `application/pdf=firefox.desktop`, las dos columnas
+pasan a `firefox.desktop`. La prueba **sabe dar las dos respuestas**, así que lo
+que manda es el fichero y no otra cosa.
+
+Tres cosas se leen ahí:
+
+1. **En una sesión de escritorio de verdad ya ganaba Evince**, porque
+   `/usr/share/applications/gnome-mimeapps.list` —de `gnome-session-common`, leído
+   con `dpkg -S`— trae `application/pdf=org.gnome.Evince.desktop` en `[Default
+   Applications]`, y está en el conjunto del medio. **El defecto era más pequeño
+   de lo que parecía**, y es la familia de §4.26f: *una sesión `ssh` no es una
+   sesión de escritorio*.
+2. **Pero los ficheros con nombre de escritorio delante solo se leen si el
+   escritorio se llama así.** Sin `XDG_CURRENT_DESKTOP` no se mira
+   `gnome-mimeapps.list` y manda la asociación declarada en los `.desktop` — y el
+   de Mozilla declara `MimeType=…;application/pdf;…` (leído del `.deb`
+   `411b2a57…`, cuyos scripts de mantenedor **no tocan ninguna asociación**: solo
+   `update-alternatives` de `x-www-browser`).
+3. **Por eso el fichero que se pone es el genérico `/etc/xdg/mimeapps.list`** y no
+   un `ubuntu-mimeapps.list`, que tendría exactamente el mismo agujero. Vive en
+   `$XDG_CONFIG_DIRS`, que la especificación mira antes que todo
+   `$XDG_DATA_DIRS`, así que **la respuesta es la misma se pregunte como se
+   pregunte** — y sigue perdiendo contra `$XDG_CONFIG_HOME`, o sea contra la
+   persona. R5 se cumple: `/etc/xdg/mimeapps.list` no lo declara ningún paquete
+   de la base, comprobado con `dpkg -S` sobre un escritorio **completo**, que es
+   un superconjunto de `ubuntu-desktop-minimal`.
+
+**Consecuencia de método, y es la tercera vez en dos sesiones:** una medición
+hecha por `ssh` sobre algo que vive en una sesión de escritorio hay que marcarla
+como tal **en el momento de hacerla**, no cuando se va a arreglar.
+
+#### (e) Las otras dos preguntas de producto, contestadas leyendo
+
+**`sane-airscan`: `simple-scan` NO lo arrastra, y aun así ya viaja.** Sus
+`Depends` piden `libsane1` y no tiene `Recommends`. Pero el conjunto derivado de
+los manifiestos del medio —con el control de §4.27a repetido hoy: **doce nombres,
+doce aciertos**— dice que `sane-airscan` **y** `ipp-usb` están en
+`ubuntu-desktop-minimal`. Se declara igualmente en `encina-meta`: cuesta **0
+paquetes** y es lo que impide que un cambio de la base se lo lleve en silencio.
+
+```
+conjunto del objetivo: 1435 nombres (1484 de minimal.manifest menos 42 de la capa es)
+control: evince gvfs gvfs-backends xdg-desktop-portal-gnome cups unattended-upgrades
+         update-notifier sane-utils  -> PRESENTES
+         file-roller libreoffice-core gnome-software simple-scan  -> AUSENTES
+         paquete-inventado-jamas                                  -> AUSENTE
+lo que E4 pregunta: sane-airscan PRESENTE · ipp-usb PRESENTE · gnome-session-common PRESENTE
+                    snapd 2.73+ubuntu24.04 PRESENTE · firefox 1:1snap1-0ubuntu5 PRESENTE
+                    openjdk-17-jre AUSENTE · libnss3-tools AUSENTE · hunspell-es AUSENTE
+                    gnome-software-plugin-snap AUSENTE
+```
+
+*(Ojo con el instrumento: los manifiestos son **diffs**, con `+` y `-` delante de
+cada nombre y dos líneas de cabecera. Sin quitarlos, el conjunto sale vacío y los
+doce controles fallan a la vez — que es justo para lo que están.)*
+
+**Y `gnome-software-plugin-deb` sigue sin existir**, remedido hoy contra los
+índices: sostiene D18 y no es una cita de ayer.
+
+#### (f) La construcción: los dos `.deb`, y el ritual de las cuatro cosas
+
+`encina-branding` **0.1.8** (el manejador del PDF y `Depends: evince`) y
+`encina-meta` **0.2.0** (las aplicaciones de D17/D18 y `sane-airscan`),
+construidos en `encina-dev` con `dpkg-buildpackage -us -uc -b`, **`lintian` mudo
+en los dos**:
+
+```
+faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d  autofirma_1.9.1+encina4_all.deb
+51b6603ca1cfd431d459865f21df095a628200681b6deed1bca0c3c2ccebfdb3  encina-branding_0.1.8_all.deb
+972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2  encina-firefox-native_0.2.1_all.deb
+85c8cc56d586a40d2b6736688591d493bf988b234bff3e331e7c1c642239b596  encina-meta_0.2.0_all.deb
+```
+
+Las cuatro cosas de `SCRIPTS.md`, cumplidas: el `.deb` de AutoFirma se eligió
+**por ruta entera** entre los **tres** candidatos de `encina-autofirma/salida/` y
+se comprobó por huella; `encina-firefox-native` se sacó **del volumen del seed
+anterior** (`13aa8f59…`) y no de `debian-packages/`; el índice `Packages` se
+regeneró con `dpkg-scanpackages` **en la VM**; y los nombres con versión dentro se
+cambiaron en `encina-seed.sh`, `fabricar-seed.sh` y `fabricar-iso.sh`.
+
+**Y el control del ritual, hecho antes de fabricar el bueno:** un repo con el
+`+encina2` renombrado a `+encina4`, y la herramienta se niega **antes de escribir
+nada**.
+
+```
+[FALLO] huella distinta en autofirma_1.9.1+encina4_all.deb
+        esperada faeca3a9…   real d5a0ebe1…
+  -> existe la salida? no
+```
+
+**Una trampa nueva del propio taller, y se dice porque coló un paquete entero:**
+el `tar` de macOS mete **AppleDouble `._x`** dentro del tarball si el fichero
+tiene atributos extendidos, y de ahí pasaron a `./etc/xdg/._mimeapps.list`
+**dentro del `.deb`**. Es §4.18m por una vía nueva —allí eran los `._` del volumen
+FAT, aquí los del tarball de fuentes— y se evita con `COPYFILE_DISABLE=1`. Se vio
+mirando `dpkg-deb -c`, no por ningún error.
+
+**Y otra del mismo rato, que además apareció dos veces:** `tar xzf … | head -2`
+**mata el `tar` a mitad por SIGPIPE**, y deja el árbol de fuentes incompleto sin
+decir nada; el `set -e` de después falla en un sitio que no tiene nada que ver.
+Es la familia de la trampa 22: el instrumento se equivoca y no da un número raro,
+da un resultado plausible.
+
+**El seed y los dos YAML, rehechos desde el mismo guion**, con el camino de vuelta
+—sacar el base64 del YAML, decodificarlo y compararlo con `encina-seed.sh`— y su
+control de que un byte de más rompe la comparación. La `late-command` es **la
+misma en los dos ficheros, byte a byte**: 37 291 caracteres.
+
+#### (g) INSTALACIÓN 1 — la máquina de E4, y la mina donde decía que estaba
+
+`encina-E4-meta`, forma E2 (volumen `CIDATA` `360bb894…`, ISO oficial
+`c2610520…`, `-append autoinstall` suelto y `-no-reboot`), **desatendida**:
+arrancó a las `00:45:47Z` y **se apagó sola** a las `00:55:39Z` — **9 min 52 s**,
+sin que nadie abriera su ventana.
+
+**Y apagarse sola ya significa algo más que antes**, por la lectura de (c): con
+el `exit 1` puesto, un seed que saliera distinto de 0 dejaría a `subiquity` en
+`ERROR` y **no apagaría**. O sea que *«se apagó sola»* = `ESTADO=COMPLETO`, y se
+sabe **sin abrir nada**. Lo confirma el testigo:
+
+```
+encina-seed llego al final 2026-08-12T00:55:08Z estado=COMPLETO
+ENCINA_ESTADO=COMPLETO      ENCINA_FALTA=
+```
+
+**El paso 5, que es el que cambia de signo:** el inventario del Snap sale
+**idéntico** antes (bloque 4) y después (bloque 6) — `diff` sin diferencias, los
+nueve `[PRESENTE]`, un `firefox_*.snap`, y sus dos controles. **Nadie ha tocado
+el Snap.**
+
+**LA MINA DE `AGENTS.md` §6.2 ERA REAL Y ESTABA DONDE DECÍA**, y esta vez se ve
+la palabra:
+
+```
+The following packages will be DOWNGRADED:  firefox
+83 upgraded, 1 newly installed, 1 downgraded, 0 to remove
+Inst firefox [1:1snap1-0ubuntu5] (153.0.4~build1 …/repositories/mozilla:mozilla)
+dpkg: warning: downgrading firefox from 1:1snap1-0ubuntu5 to 153.0.4~build1
+Unpacking firefox (153.0.4~build1) over (1:1snap1-0ubuntu5) ...
+  rc=0
+```
+
+**Y el reparto de §4.17 se invierte, exactamente como estaba previsto:** el paso
+11 (`full-upgrade`) vuelve a ser **el** paso, y el 12 vuelve a ser **solo el
+idioma** —`1 newly installed`, `Setting up firefox-l10n-es-es`—. El bloque
+11bis, la red de seguridad, **no hizo nada y lo dijo**: *«el navegador ya es el
+de Mozilla (sin epoch): este bloque no hace nada»*.
+
+**Y una cosa que había que medir y no suponer:** sustituir el `.deb` de
+transición por el de Mozilla **NO se lleva el Snap por delante**. El inventario
+del bloque 13 sigue con `firefox_7764.snap` dentro. Es lo que hace que la forma
+(c) sea alcanzable **por seed** y no solo a mano, como en E1.
+
+**La máquina, con `imagen/verificar-e2.sh --visibles 28` como root:**
+**48 correctas, 0 fallos, 0 avisos, 0 omitidas.**
+
+#### (h) LA CASILLA DE D16, y el control que la hace significar algo
+
+```
+iconos de Firefox que ve el usuario ......... 1
+firefox 153.0.4~build1 (sin epoch)          /usr/bin/firefox -> /usr/lib/firefox/firefox
+firefox_firefox.desktop -> /usr/bin/firefox %u      (fuera de /snap/)
+perfiles de Mozilla bajo ~/snap/ ............ 0
+  control: el buscador encuentra .bashrc -> 2, y sabe decir cero -> 0
+forma (c): snapd 'ii' + 1 revision de Snap de Firefox + 0 perfiles   <- la de D16
+```
+
+**Y la casilla sabe decir las dos cosas, que es lo que la convierte en casilla.**
+Durante la medición de (i) se creó un perfil de Snap en un usuario desechable, y
+mientras existió el buscador contestó **1**; al borrarlo volvió a **0**. Sin ese
+par, un cero no significaría nada.
+
+**Las 28 aplicaciones, declaradas antes de instalar y acertadas:** las 25 de
+§4.26b **+ Centro de aplicaciones** (`snap-store`, que vuelve con `snapd`)
+**+ Software** (`gnome-software`) **+ Escáner de documentos** (`simple-scan`).
+**Y de ahí sale un dato de producto que no es una casilla y va sin adornos: el
+usuario ve DOS tiendas.** D18 eligió `gnome-software`, y el `snap-store`
+pre-sembrado del medio sigue ahí porque ya no se purga `snapd`. No lo decido yo:
+se dice, y es exactamente la enfermedad que D18 nombra —la misma cosa dos veces
+con dos orígenes—, aunque aquí sean dos tiendas y no dos Firefox.
+
+#### (i) `+encina4` EN UNA MÁQUINA CON SNAP DE VERDAD — la casilla que §4.29 dejó sin medir
+
+Sobre un usuario **virgen y desechable** (`convivd`), como el `convivb` de
+§4.29e, y en la versión **difícil**: perfil del Snap **primero**, nativo
+**después**.
+
+```
+CA de esta maquina (la genera el configurador, NO viaja en el .deb):
+   /usr/share/autofirma/Autofirma_ROOT.cer   sha256 73:F7:52:A4:00:71:2F:92:…
+el guion instalado ES el de M20 (tiene AUTOFIRMA_VENTANA_RAIZ)
+vigilante en la sesion nueva: active     control: unidad inexistente -> inactive rc=4
+cert9.db en el HOME antes de nada: 0
+
+01:04:0x  el Snap crea su perfil   i0kdyj44.default   (-rw------- convivd convivd)
+01:04:06  Starting autofirma-ca-mozilla.service
+01:04:08  autofirma: CA del socket instalada en …/.config/mozilla/firefox/9hikzpoq.default-release
+01:04:08  Finished.        Result=success   ExecMainStatus=0
+
+[SNAP]   …/snap/…/i0kdyj44.default          -> CA CORRECTA (huella identica)
+[NATIVO] …/.config/…/9hikzpoq.default-release -> CA CORRECTA (huella identica)
+  control: certutil: Could not find cert: APODO-QUE-NO-EXISTE
+```
+
+**La casilla queda marcada: con un perfil de Snap delante, la CA llega sola al
+perfil nativo, en 2 segundos, comparada por huella sha256.** Y el servicio
+**termina bien** —`Result=success`—, o sea que el defecto de §4.29c, el almacén
+de root, **no ha vuelto**: es `+encina3` sosteniéndose en una instalación limpia.
+
+**Lo que esta medición NO añade, y decirlo importa:** no discrimina `+encina3` de
+`+encina4`. El almacén nativo apareció **en 1 segundo**, y con un segundo ganan
+los dos —en §4.29e ganó `+encina2` por carambola—. Lo que discrimina son los
+**8044 ms contra 21 ms** de M20, y eso está en contenedor. Lo que esta sección
+añade es que **el mecanismo bueno se comporta bien fuera del contenedor, con un
+Snap real delante**, que es justo lo que §4.29e dejó abierto.
+
+#### (j) EL `[OJOS]` DE §4.26f, CONTESTADO — y §4.26f corregida: era el instrumento
+
+§4.26f decía *«los nombres de las aplicaciones salieron en inglés en las tres
+combinaciones de locale probadas»*. **Es falso, y la causa no son las variables
+de entorno: es `setlocale()`.**
+
+```
+LANG=es_ES.UTF-8, con locale.setlocale(LC_ALL,"")   -> Archivos / Escáner de documentos
+LANG=es_ES.UTF-8, SIN setlocale                     -> Files
+   (y en los dos casos GLib.get_language_names() ya dice ['es_ES.UTF-8','es_ES','es'])
+```
+
+Un proceso que no llama a `setlocale` recibe el `msgid` en inglés aunque GLib ya
+sepa que el idioma es español. GNOME Shell —que es quien dibuja la rejilla— lo
+llama al arrancar. **Era el instrumento, como el PDF de (d) y como los
+manifiestos de (e): tres en la misma vuelta.**
+
+Con el entorno **real** de `gnome-shell` de esta máquina —leído de
+`/proc/<pid>/environ`: `LANG=es_ES.UTF-8`, `XDG_CURRENT_DESKTOP=ubuntu:GNOME`,
+`XDG_DATA_DIRS` con el directorio del Snap dentro— las 28 salen en español:
+
+```
+ 1 Actualización de software      11 Configuración de red avanzada  21 Registros
+ 2 Analizador de uso de disco     12 Contraseñas y claves           22 Relojes
+ 3 Aplicaciones al inicio         13 Discos                         23 Software
+ 4 Archivos                       14 Editor de texto                24 Soporte de idiomas
+ 5 AutoFirma                      15 Escáner de documentos          25 Terminal
+ 6 Ayuda                          16 Estadísticas de energía        26 Tipografías
+ 7 Calculadora                    17 Firefox                        27 Visor de documentos
+ 8 Caracteres                     18 Monitor del sistema            28 Visor de imágenes
+ 9 Centro de aplicaciones         19 Más controladores
+10 Configuración                  20 Programas y actualizaciones
+```
+
+**Y con los ojos, que es lo que pedía la casilla.** Con autologin puesto a
+propósito y revertido después —huella `ceee968c…` antes y después—, en la sesión
+gráfica de verdad: el asistente de primer arranque dice *«Le damos la bienvenida
+a Ubuntu 24.04.4 LTS»*, el reloj *«12 de ago»*, y al lanzar `simple-scan` dentro
+de la sesión la ventana dice **«Escáner de documentos»**, el botón **«Escanear»**
+y el cuerpo **«No se detectó ningún escáner»**.
+
+**Esa última frase cierra de paso la mitad medible del escáner** (D17): la
+aplicación arranca, habla con SANE y contesta que no hay hardware, que es la
+respuesta correcta en una VM. *«Escanea de verdad»* sigue necesitando un escáner.
+
+#### (k) EL NIVEL 3, y el agujero que solo esta medición podía encontrar
+
+**El conjunto que le falta al medio no se dedujo: lo dejó escrito la máquina que
+acababa de bajarlo.** Se cruzan **dos fuentes independientes** —las líneas `Get:`
+del bloque 9 de `/etc/encina-seed.log` y los `.deb` de
+`/var/cache/apt/archives`— y se ve dónde no cuadran.
+
+**Los 24 que pasan a viajar en el medio**, 125 MB:
+
+```
+ca-certificates-java  fonts-dejavu-extra  gnome-software  gnome-software-common
+gnome-software-plugin-snap  hunspell-es  hyphen-es  java-common  libatk-wrapper-java
+libatk-wrapper-java-jni  libnss3-tools  mythes-es  openjdk-17-jre  openjdk-17-jre-headless
+simple-scan  wspanish  firefox  firefox-l10n-es-es
++ libplymouth5 plymouth plymouth-label plymouth-theme-spinner plymouth-theme-ubuntu-text plymouth-themes
+```
+
+**El control —ninguno puede estar ya en el medio— cazó dos cosas, y las dos
+importan:**
+
+1. **Los seis `plymouth*` SÍ están en el medio**, pero en versión anterior: son
+   **actualizaciones** que apt hace de paso, no requisitos. Viajan igual porque
+   cuestan 1 MB y hacen que la máquina de sin red sea la misma que la de con red.
+2. **`hunspell-es` NO aparecía en la cosecha, y `encina-meta` lo declara.** El
+   `dpkg.log` de la máquina dice por qué: lo instaló **el instalador**, a las
+   `00:49:37`, junto con `wspanish` —el paso de soporte de idioma—, o sea **de la
+   red y antes del seed**. Sin red no estarían, y entonces `apt install
+   encina-meta` no entraría. **Se descargaron aparte y viajan.** *Sin ese control,
+   el medio habría salido con un agujero que solo se habría visto instalando.*
+
+**Y AHÍ APARECIÓ ALGO MÁS GRANDE, que no es de E4 sino de una capa por debajo.**
+Buscando qué más entra por esa vía, el registro de la propia máquina dice esto:
+
+```
+/var/log/installer/curtin-install.log
+  apt-get --quiet --assume-yes … install --download-only linux-generic-hwe-24.04
+  Get:26 http://ports.ubuntu.com/… linux-image-7.0.0-28-generic arm64 … [17.5 MB]
+```
+
+**EL NÚCLEO NO VIAJA EN EL MEDIO: LO BAJA `curtin` DE LA RED.** Leído en los
+manifiestos de la propia ISO, con su control:
+
+```
+casper/minimal.manifest             (lo que se instala)    linux-image: 0
+casper/minimal.standard.manifest    (el escritorio entero) linux-image: 0
+casper/minimal.standard.live.manifest (la capa VIVA)       linux-generic-hwe-24.04 6.17.0-14
+pool/ del medio: 185 .deb, y los 4 'linux*' son headers y libc-dev, NINGUNA imagen
+```
+
+O sea: **el núcleo solo existe en la capa viva, que no es la que se copia al
+disco.** La deducción de §4.27 —*«sin red la entrega es Ubuntu sin navegador»*—
+**se queda corta por debajo**: sin red no hay ni Ubuntu, porque `curtin` pide el
+núcleo con códigos de retorno permitidos `[0]` y no lo va a encontrar.
+
+**Consecuencia para la casilla del nivel 3, y no se afloja: se PARTE, porque
+estaba escrita sobre una lectura incompleta.**
+
+- **La mitad que sí se cierra:** el medio lleva **todo lo que necesita el seed**,
+  o sea lo que §4.27c enumeró (`hunspell-es`, el JRE, `libnss3-tools`, el
+  navegador y su idioma) más lo de D17/D18. Eso se mide.
+- **La mitad que NO se cierra con este mecanismo, y se dice con su motivo:**
+  meter el núcleo en `/cdrom/encina-repo` **no serviría**, porque cuando `curtin`
+  lo instala **nuestro repositorio todavía no existe** —lo añade el seed en una
+  `late-command`, que corre después—. Cerrarlo pide otra cosa: una sección `apt:`
+  en el seed que le dé al objetivo una fuente que el instalador pueda leer
+  **antes**, y el cierre de los ~700 MB del cierre del núcleo. **Es de E3, no de
+  E4**, y va nombrado, no aflojado.
+
+#### (l) LA INSTALACIÓN SIN RED, MEDIDA — y §4.27 se queda corta por debajo
+
+**La red se quitó por hardware, no contestando «no» en una pantalla** (§4.27e), y
+el control está en la orden real de QEMU, recogido antes de arrancar:
+
+```
+grep -c "netdev\|virtio-net" debug.log   ->  0        <- no hay tarjeta, no hay preferencia
+grep -o "-append [^ ]*"      debug.log   ->  -append autoinstall   (suelto)
+```
+
+**Y lo que pasa es esto:**
+
+```
+01:15:35Z  arranca
+01:18      el disco deja de crecer en 4 461 MB   (la completa llego a 10 786 MB)
+01:20      la pantalla dice, EN ESPANOL:  «Se produjo un problema»
+           con «Report problem…», «Cancel» y  sudo ubuntu-bug ubuntu-desktop-bootstrap
+```
+
+**La instalación sin red FALLA A LA VISTA, y falla ANTES de llegar al seed.** No
+hay `/etc/encina-estado` que leer porque las `late-commands` no llegan a correr:
+lo que se rompe es el paso de `curtin` que instala el núcleo. **Eso convierte la
+deducción de §4.26e —*«el instalador le diría que ha ido bien»*— en falsa por un
+motivo mejor que el previsto:** no es que avise, es que **no termina**.
+
+**Y reordena los tres niveles de §4.27:**
+
+- **El nivel 2 se queda igual de bien puesto**, pero deja de ser el que salva
+  este caso: cuando falta la red, el que grita es `curtin`, no nuestro `exit 1`.
+  El `exit 1` sigue siendo la red de seguridad de los casos en que el seed **sí**
+  corre y deja la máquina a medias.
+- **El nivel 3 no se puede cerrar por el medio**, por lo dicho en (k).
+
+*Lo que esta medición no da:* el mensaje exacto de `curtin` desde dentro. La
+máquina no tiene red —esa es la premisa— y abrir un canal habría exigido teclear
+en una sesión en estado de error. Lo que se afirma se apoya en tres cosas
+medidas: el tamaño del disco, el reloj, y que el núcleo no está en el medio.
+
+#### (m) LA ISO DE E4
+
+```
+aa1ac76a31afd75506b862eb6da9599bd53638dcdaa8aa0fbb07e625716c08cb  encina-os-E4-es.iso
+3 715 366 912 bytes   (la de E3 eran 3 540 299 776)
+```
+
+`imagen/fabricar-iso.sh`, con todos sus controles en verde:
+
+```
+los tres binarios firmados     intactos por huella, antes y despues
+la ESP                         byte a byte la oficial en sus 13 504 sectores
+                               y los 640 de mas son relleno: 0 bytes distintos de cero
+la FORMA de arranque           MBR hibrido, El Torito y plataforma UEFI, iguales
+el medio entero                501 entradas la oficial, 531 la nuestra
+                               30 anadidos (el seed + 28 .deb + Packages), ni uno mas
+                               2 modificados y nombrados: grub.cfg y md5sum.txt
+                               ninguno perdido
+control                        con una huella saboteada, la comparacion la senala
+integridad                     las 266 lineas de md5sum.txt cuadran
+control                        con el md5sum.txt OFICIAL falla exactamente UNA, la del grub.cfg
+```
+
+**Y arranca, y el instalador se ve en español**, con el control de la trampa 16
+recogido **antes** de que arrancara nada: **0** argumentos `-append` y
+**exactamente dos** unidades. La primera pantalla es *«Disposición del teclado /
+Elija la disposición del teclado»* con **Español** ya marcado.
+
+**Y aquí me aparté del plan, y digo por qué.** El plan decía pilotar las cinco
+pantallas sin ojos, como en §4.23 y §4.25. **No lo conseguí:** ni las teclas ni
+los clics llegaban al invitado —la ventana de UTM no tomaba el foco desde
+AppleScript, y las coordenadas del ratón no acertaban el botón—, y tras varios
+intentos el precio dejó de compensar. **Lo que hice en su lugar mide lo que de
+verdad estaba en duda del medio y no necesita manos:** un volumen `CIDATA` con
+**el YAML de E2 y NINGÚN `encina-repo` dentro**. Así el seed lo gana el `CIDATA`
+—la trampa 16, usada a favor— pero el bloque 1 no encuentra repositorio en él y
+**tiene que caer a `/cdrom/encina-repo`**, que es exactamente lo que había que
+demostrar de la ISO nueva. Lo que esta sustitución **no** mide, y queda dicho:
+que el `autoinstall.yaml` que viaja **dentro** de la ISO se lea desde `/cdrom`
+—eso lo midió §4.23 y §4.25 con la ISO anterior— y las cinco pantallas.
+
+#### (n) INSTALACIÓN 2 — la ISO nueva instala, y el repositorio sale de `/cdrom`
+
+`encina-E4-iso`, con el `CIDATA` sin repo dentro. Arrancó a las `01:28:06Z` y
+**se apagó sola** a las `01:42:19Z` — **14 min 13 s** —, que con el `exit 1`
+puesto ya significa `ESTADO=COMPLETO`.
+
+**Y la línea que decide, del registro que dejó la máquina sola:**
+
+```
+  CIDATA -> /dev/vdb                     <- el seed lo dio el volumen
+  REPO ELEGIDO -> /cdrom/encina-repo     <- el REPOSITORIO salio de la ISO
+  29 ficheros copiados a /target/srv/encina-repo   (28 .deb + Packages)
+ENCINA_ESTADO=COMPLETO   ENCINA_FALTA=
+```
+
+**La máquina, con `verificar-e2.sh --visibles 28` como root: 48 correctas, 0
+fallos, 0 avisos, 0 omitidas** — el mismo resultado que `encina-E4-meta`, por dos
+caminos distintos y con el repositorio saliendo de sitios distintos.
+
+#### (ñ) El coste, medido y no predicho
+
+```
+libres al empezar        35,775 GiB     (8 VMs, todas paradas)
+libres al terminar        6,725 GiB
+GASTADO                  29,050 GiB     (se habian declarado ~26-27)
+```
+
+**Dónde se fue, y por qué se pasó de lo declarado:** dos máquinas de ~10 GiB
+—`encina-E4-meta` y `encina-E4-iso`—, la ISO nueva de 3,7 GB en `e2-medios`, el
+volumen `CIDATA` del nivel 3 (0,75 GiB), el de E2 (128 MiB), y **una tercera
+máquina que no estaba en el presupuesto**, `encina-E4-sinred`, que se creó y se
+destruyó en la misma sesión y **devolvió 4,4 GiB** —lo que había llegado a
+escribir antes de que la instalación fallara—. El registro de UTM quedó
+consistente por las dos mitades (trampa 18): **10 en `utmctl list` y 10 bundles
+en disco**, sin entrada fantasma.
+
+**Y queda dicho para la próxima:** con 6,7 GiB no cabe otra vuelta. La primera
+candidata a borrar es `encina-E4-iso` —nacida de la ISO, o sea **caché
+reproducible** por §9.a, y su papel lo repite `encina-E4-meta` salvo en la línea
+`REPO ELEGIDO`—, y devolvería ~10 GiB reales.
+
+#### (o) Lo que esta vuelta NO contesta, y hay que decirlo entero
+
+- **Que la ISO instale contestando las cinco pantallas.** Arranca y se ve en
+  español; el resto se sustituyó por lo de (m) porque el piloto sin ojos no
+  llegaba.
+- **Una firma real sobre la máquina de E4.** Sigue siendo `[OJOS]`, certificado
+  personal y clon efímero (§9.1). Lo que sí está aquí es que el vigilante mete la
+  CA correcta en el perfil nativo con un Snap delante.
+- **Que `+encina4` sea NECESARIO en una máquina de verdad.** Aquí gana, pero
+  también habría ganado `+encina3`: el almacén nativo nació en 1 s. Lo que
+  discrimina está en M20 y es contenedor.
+- **Qué mensaje exacto da `curtin` sin red.** Se sabe dónde para y qué ve la
+  persona, no la línea del log: la máquina no tiene red, que es la premisa.
+- **El estado (b)** —`snapd` sí, Snap de Firefox no— sigue sin medir, como en
+  §4.29j.
+- **Si el usuario prefiere una tienda u otra**, ni si `snap-store` debe irse. Es
+  producto y lo decide Jorge.
+- **amd64, nada.** D9 sigue igual.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

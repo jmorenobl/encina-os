@@ -1,0 +1,54 @@
+# Encina OS - el manejador por defecto del PDF (D17, ENCINA-OS.md §2).
+#
+# POR QUE EXISTE ESTE FICHERO. El eslabon "abrir un PDF" de la cadena
+# recibir -> abrir -> firmar -> guardar cerraba MAL ATADO: la maquina de la
+# entrega trae Evince instalado y 'xdg-mime query default application/pdf'
+# contestaba 'firefox.desktop' (MEDICIONES.md §4.26c), o sea que el producto
+# traia un visor que el usuario no veia nunca. D17 lo cierra atando el defecto,
+# no instalando otro visor.
+#
+# Y LA MEDICION DE APERTURA SE QUEDABA CORTA POR UN SITIO QUE NO ES MENOR
+# (§4.31): aquel 'firefox.desktop' se midio POR SSH, y una sesion ssh no lleva
+# XDG_CURRENT_DESKTOP. Reproducido en un arbol sintetico, con el firefox.desktop
+# de Mozilla delante en las cuatro pasadas:
+#
+#                                        sin escritorio        con ubuntu:GNOME
+#   sin ningun fichero nuestro           firefox.desktop       Evince
+#   con /etc/xdg/ubuntu-mimeapps.list    firefox.desktop       Evince
+#   con ESTE fichero (generico)          Evince                Evince
+#
+# Tres cosas se leen ahi, y las tres importan:
+#
+#   1. EN UNA SESION DE ESCRITORIO DE VERDAD YA GANABA EVINCE, porque
+#      /usr/share/applications/gnome-mimeapps.list (de gnome-session-common)
+#      trae 'application/pdf=org.gnome.Evince.desktop' en [Default
+#      Applications]. O sea que el defecto medido era mas pequeno de lo que
+#      parecia: es de la misma familia que los nombres en ingles de §4.26f,
+#      una sesion ssh no es una sesion de escritorio.
+#   2. PERO LOS FICHEROS CON NOMBRE DE ESCRITORIO DELANTE SOLO SE LEEN SI EL
+#      ESCRITORIO SE LLAMA ASI. Sin XDG_CURRENT_DESKTOP, 'gnome-mimeapps.list'
+#      no se mira, y entonces manda la asociacion declarada en los .desktop --
+#      y el firefox.desktop de Mozilla declara 'MimeType=...;application/pdf;...'
+#      y gana. Por eso un fichero nuestro llamado 'ubuntu-mimeapps.list' NO
+#      habria servido: tiene exactamente el mismo problema.
+#   3. ESTE FICHERO ES GENERICO Y VIVE EN $XDG_CONFIG_DIRS, que la
+#      especificacion mira ANTES que todo el nivel de $XDG_DATA_DIRS (donde
+#      viven gnome-mimeapps.list y los .desktop). Asi la respuesta es LA MISMA
+#      se pregunte como se pregunte, que es lo que hace que la casilla se pueda
+#      medir sin depender del instrumento.
+#
+# Y SIGUE PERDIENDO CONTRA $XDG_CONFIG_HOME, o sea contra la eleccion de la
+# persona. Eso es lo correcto: esto es un DEFECTO del sistema, no una
+# imposicion. Si el usuario elige otro visor, gana el usuario.
+#
+# R5: este fichero es NUESTRO. /etc/xdg/mimeapps.list no lo declara ningun
+# paquete de la base -- comprobado con 'dpkg -S' sobre un escritorio completo,
+# que es un superconjunto de ubuntu-desktop-minimal -- asi que no se sobrescribe
+# el conffile de nadie.
+#
+# LO QUE ESTE FICHERO NO HACE: no toca ninguna otra asociacion. Un mimeapps.list
+# solo manda sobre los tipos que nombra, y esta comprobado: con este fichero
+# puesto, application/zip sigue resolviendo a Nautilus.
+
+[Default Applications]
+application/pdf=org.gnome.Evince.desktop

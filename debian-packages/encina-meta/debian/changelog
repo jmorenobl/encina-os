@@ -1,3 +1,37 @@
+encina-meta (0.2.0) noble; urgency=medium
+
+  * E4: las aplicaciones que Encina OS trae puestas, decididas por
+    Jorge el 2026-08-12
+    (D17 y D18 de ENCINA-OS.md). Entran simple-scan, gnome-software y
+    gnome-software-plugin-snap. NO entran LibreOffice, Thunderbird ni
+    Okular: los elige el usuario, y para eso esta la tienda.
+  * sane-airscan declarado, y contesta la pregunta que 7 de
+    ENCINA-OS.md dejaba abierta: simple-scan NO viaja con el -sus
+    Depends solo piden libsane1, y no tiene Recommends- pero ya esta
+    en ubuntu-desktop-minimal, asi que cuesta 0 paquetes. Sin el no se
+    ve ningun escaner de red moderno, que son driverless (eSCL/WSD).
+  * El visor de PDF no es una linea de aqui porque ya estaba
+    instalado. Lo que faltaba era el defecto -application/pdf resolvia
+    a firefox.desktop con Evince puesto, MEDICIONES.md 4.26c- y lo ata
+    encina-branding 0.1.8 con un mimeapps.list propio.
+  * gnome-software DEVUELVE snapd, medido en 4.26d, y se acepta con los
+    ojos abiertos: no existe gnome-software-plugin-deb en los indices
+    de 24.04, y las dos vias que no lo devuelven -gnome-packagekit y
+    synaptic- son gestores de paquetes, no una tienda. Es la via por la
+    que el Snap vuelve, y ahora esta declarada en vez de entrar por la
+    puerta de atras.
+  * Cae la obligacion de 4.11 de traer libreoffice-l10n-es y
+    libreoffice-help-es, que era consecuencia de traer LibreOffice
+    puesto. El residuo de D12 se queda en hunspell-es y los
+    language-pack, que ya estaban.
+  * La secuencia de tres ordenes de la descripcion gana
+    --allow-downgrades en el full-upgrade. Con D16 el sistema ya no
+    purga snapd, asi que el deb de transicion sigue instalado y
+    cambiarlo por el de Mozilla es una desactualizacion formal por el
+    epoch '1:' (4.10c). Sin el, apt -y se niega.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Wed, 12 Aug 2026 10:05:00 +0200
+
 encina-meta (0.1.1) noble; urgency=medium
 
   * Fuera libreoffice-l10n-es del Recommends. Medido en VM: recomienda

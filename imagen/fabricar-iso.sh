@@ -12,7 +12,11 @@
 #                            instalador lo busca: /cdrom/autoinstall.yaml, el
 #                            QUINTO sitio de select_autoinstall (MEDICIONES.md
 #                            §4.21c), leido en el codigo que viaja en la ISO
-#     /encina-repo/       <- los cuatro .deb y su indice Packages
+#     /encina-repo/       <- los cuatro .deb de Encina, TODO lo que hasta E3
+#                            bajaba de internet (el nivel 3 de MEDICIONES.md
+#                            §4.27: el JRE de autofirma, libnss3-tools,
+#                            hunspell-es, el navegador de Mozilla y su idioma,
+#                            la tienda y el escaner) y su indice Packages
 #
 # MODIFICA, y hasta el 2026-08-10 no modificaba nada:
 #     /boot/grub/grub.cfg <- 'locale=es_ES.UTF-8' en la linea del nucleo, que es
@@ -38,7 +42,9 @@
 # vez del oficial. Por eso este guion no se cree a si mismo: al final compara la
 # ISO nueva contra la oficial FICHERO A FICHERO -- las 300 y pico entradas del
 # medio, no solo las 266 de md5sum.txt -- y se niega si cambio algo que no sean
-# esos dos, o si aparecio algo que no sean los seis que se anaden.
+# esos dos, o si aparecio algo que no sea el seed y el contenido de --repo. La
+# lista de anadidos se DERIVA del directorio de origen, porque desde E4 ya no
+# son seis ficheros: son el seed, el indice y todos los .deb del repo offline.
 #
 # LO QUE NO TOCA NUNCA, Y NO ES PRUDENCIA SINO UNA MEDICION: los tres binarios
 # firmados de la cadena de arranque -- bootaa64.efi (shim), grubaa64.efi y
@@ -98,10 +104,10 @@ ok "ubuntu-24.04.4-desktop-arm64.iso  ${real:0:16}…"
 echo "== 2. los cuatro .deb, por huella (§4.13: misma version != mismos bytes)"
 huella_de() { grep -E "^$1=" "$GUION" | head -1 | cut -d= -f2; }
 declare -a FICHEROS HUELLAS
-FICHEROS=(autofirma_1.9.1+encina2_all.deb
-          encina-branding_0.1.7_all.deb
+FICHEROS=(autofirma_1.9.1+encina4_all.deb
+          encina-branding_0.1.8_all.deb
           encina-firefox-native_0.2.1_all.deb
-          encina-meta_0.1.1_all.deb)
+          encina-meta_0.2.0_all.deb)
 HUELLAS=("$(huella_de H_AUTOFIRMA)" "$(huella_de H_BRANDING)"
          "$(huella_de H_FFNATIVE)"  "$(huella_de H_META)")
 for i in 0 1 2 3; do
@@ -116,9 +122,22 @@ for i in 0 1 2 3; do
     grep -q "^SHA256: ${HUELLAS[$i]}$" "$REPO/Packages" \
         || fallo "Packages no describe ${FICHEROS[$i]}"
 done
-n=$(grep -cE '^Filename: \./' "$REPO/Packages")
-[ "$n" -eq 4 ] || fallo "Packages describe $n ficheros y viajan 4"
-ok "Packages describe los cuatro y ni uno mas (el control)"
+# EL RESTO DEL MEDIO ES NUEVO EN E4: el nivel 3 de §4.27 mete en /encina-repo
+# todo lo que hasta hoy bajaba de internet. No tiene huellas escritas a mano en
+# ningun sitio -- de el responde Packages, que es lo que apt verifica -- asi que
+# aqui se comprueba el indice ENTERO contra los bytes, en las dos direcciones.
+NIDX=$(grep -cE '^Filename: \./' "$REPO/Packages")
+NDEB=$(ls -1 "$REPO"/*.deb 2>/dev/null | wc -l | tr -d ' ')
+[ "$NIDX" -eq "$NDEB" ] || fallo "Packages describe $NIDX ficheros y en el repo hay $NDEB .deb"
+MALAS=0
+while read -r f h; do
+    [ -f "$REPO/$f" ] || { echo "        no viaja: $f"; MALAS=$((MALAS+1)); continue; }
+    r=$(shasum -a 256 "$REPO/$f" | cut -d' ' -f1)
+    [ "$r" = "$h" ] || { echo "        huella mala: $f"; MALAS=$((MALAS+1)); }
+done < <(paste -d' ' <(sed -n 's|^Filename: \./||p' "$REPO/Packages") \
+                    <(sed -n 's|^SHA256: ||p'      "$REPO/Packages"))
+[ "$MALAS" -eq 0 ] || fallo "$MALAS entradas de Packages no cuadran con los bytes del repo"
+ok "Packages describe $NIDX ficheros, viajan $NDEB, y las $NIDX huellas cuadran"
 
 # --- 3. el seed y el guion no se han separado -------------------------------
 echo "== 3. la late-command del seed == encina-seed.sh"
@@ -341,9 +360,14 @@ ok "leidas $(wc -l < "$TMP/mapa.oficial" | tr -d ' ') entradas de la oficial y $
 
 awk '{print $2}' "$TMP/mapa.oficial" | LC_ALL=C sort > "$TMP/rutas.oficial"
 awk '{print $2}' "$TMP/mapa.nuestra" | LC_ALL=C sort > "$TMP/rutas.nuestra"
-{ echo /autoinstall.yaml; echo /encina-repo/Packages
-  for i in 0 1 2 3; do echo "/encina-repo/${FICHEROS[$i]}"; done
+# LOS ANADIDOS YA NO SON SEIS: con el nivel 3 de §4.27 el repo lleva dentro
+# todo lo que bajaba de internet, asi que la lista esperada se DERIVA del
+# directorio de origen. Lo que no cambia es la exigencia: ni uno mas, ni uno
+# menos, y ninguno perdido.
+{ echo /autoinstall.yaml
+  for f in "$REPO"/*; do echo "/encina-repo/$(basename "$f")"; done
 } | LC_ALL=C sort > "$TMP/anadidos.esperados"
+N_ESPERADOS=$(wc -l < "$TMP/anadidos.esperados" | tr -d ' ')
 LC_ALL=C comm -13 "$TMP/rutas.oficial" "$TMP/rutas.nuestra" > "$TMP/anadidos"
 LC_ALL=C comm -23 "$TMP/rutas.oficial" "$TMP/rutas.nuestra" > "$TMP/quitados"
 [ ! -s "$TMP/quitados" ] || fallo "la ISO nuestra ha PERDIDO ficheros:
@@ -351,7 +375,7 @@ $(cat "$TMP/quitados")"
 diff -q "$TMP/anadidos.esperados" "$TMP/anadidos" >/dev/null \
     || fallo "los ficheros anadidos no son los seis esperados:
 $(diff "$TMP/anadidos.esperados" "$TMP/anadidos")"
-ok "seis ficheros anadidos, ni uno mas, y ninguno perdido"
+ok "$N_ESPERADOS ficheros anadidos, ni uno mas, y ninguno perdido"
 
 LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
     | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"

@@ -720,6 +720,22 @@ Vale para cualquier cambio de paquete, y son cuatro cosas, no una
    (`+encina4`)—. **Se elige por ruta entera y se comprueba la huella**; con
    `ls -t | head -1` construirías una cosa distinta de la que crees, y es la
    trampa de §4.13 con tres candidatos en vez de dos.
+5. **Y desde E4 hay una quinta, que es de tamaño:** el repo deja de ser cuatro
+   `.deb` y 44 MB. Con el nivel 3 de `MEDICIONES.md` §4.27 lleva dentro todo lo
+   que bajaba de internet, así que **no cabe en los 128 MiB de siempre** y
+   `fabricar-seed.sh` gana `--tam-mb`. El índice `Packages` deja de describir
+   cuatro ficheros: las dos herramientas comprueban ahora **el índice entero**
+   contra los bytes que viajan, en las dos direcciones.
+
+**Las huellas vigentes desde el 2026-08-12** (§4.31f), que son las que hay que
+ver salir de `fabricar-seed.sh`:
+
+```
+faeca3a9…  autofirma_1.9.1+encina4_all.deb
+51b6603c…  encina-branding_0.1.8_all.deb
+972ec932…  encina-firefox-native_0.2.1_all.deb
+85c8cc56…  encina-meta_0.2.0_all.deb
+```
 4. **Los otros tres `.deb` se sacan del volumen del seed anterior**, no de
    `debian-packages/` de este repositorio: es la trampa de §4.13, y allí hay
    ficheros con la misma versión y **otros bytes**.
@@ -1054,6 +1070,23 @@ traer algo:
 python3 -c "import urllib.request as u; u.urlretrieve('http://host:puerto/x','/tmp/x')"
 ```
 
+**Y una quinta, del 2026-08-12, que costó abandonar una medición:** `input scan
+code` e `input mouse click` **pueden no llegar al invitado**, y no dan ningún
+error. Con la ventana de UTM detrás de otra aplicación, ni las teclas ni los
+clics tuvieron efecto; `set frontmost` y `AXRaise` de System Events **contestan
+que sí** y la ventana sigue detrás. **La señal que lo delata** es comparar dos
+capturas: si el **reloj del invitado avanza** pero la pantalla no cambia, el
+invitado está vivo y **lo que no llega son tus pulsaciones** — no lo contrario.
+Y las coordenadas del ratón son **del invitado**, así que hay que deducir la
+escala mirando dónde se quedó el cursor, no suponerla.
+
+**LA SALIDA BARATA, cuando lo que hace falta es medir el MEDIO y no las
+pantallas:** un volumen `CIDATA` con **el YAML y ningún `encina-repo` dentro`**.
+El `CIDATA` gana el seed (trampa 16, usada a favor) y la instalación va
+desatendida, pero el bloque 1 de `encina-seed.sh` no encuentra repositorio en él
+y **cae a `/cdrom/encina-repo`**, que es justo lo que se quería demostrar de la
+ISO. Se paga con lo que deja de medirse, y eso se escribe.
+
 **Y la conclusión de método, que vale más que las cuatro:** cuando medir cuesta
 tanto como esto, **el dato bueno es el que la máquina deja escrito solo**
 —`/var/log/installer/telemetry`, los testigos, `/etc/encina-seed.log`—, no el que
@@ -1163,3 +1196,62 @@ entonces sí contesta: **once flancos dan un arranque, la unidad sigue `active` 
 **La regla que sale de las dos, y vale para cualquier medición futura:** antes de
 creerte un número, oblígale a dar el otro. Si tu control no sabe fallar, no es un
 control; y si tu fuente no sabe decir «algo», su «nada» no significa nada.
+
+---
+
+## Y tres más, de la vuelta de E4 (2026-08-12)
+
+Las tres son **del taller del Mac**, no de las VMs, y las tres dejan un
+resultado plausible en vez de un error.
+
+**24. El `tar` de macOS mete AppleDouble DENTRO del `.deb`.** Empaquetando
+`debian-packages/` para construir en `encina-dev`, el `.deb` de
+`encina-branding` salió con esto dentro:
+
+```
+-rw-r--r-- root/root  163  ./etc/xdg/._mimeapps.list
+-rw-r--r-- root/root 3077  ./etc/xdg/mimeapps.list
+```
+
+`tar` escribe una entrada `._x` por cada fichero con atributos extendidos, y
+`--exclude='._*'` **no sirve**, porque esas entradas no existen en el disco: las
+inventa `tar` al empaquetar. Lo que sí sirve es `COPYFILE_DISABLE=1`. Es
+`MEDICIONES.md` §4.18m por una vía nueva —allí eran los `._` que macOS deja en un
+volumen FAT, aquí los que `tar` inventa— y **no da ningún error**: el paquete se
+construye, `lintian` calla y los ficheros de más viajan a la máquina. Se ve
+mirando `dpkg-deb -c`, y solo si se mira.
+
+**25. `tar xzf … | head -2` mata el `tar` a mitad por SIGPIPE.** Se extrajo medio
+árbol de fuentes, el `set -e` de la línea siguiente falló en un `cd` que no tenía
+nada que ver, y el mensaje apuntaba al sitio equivocado. Lo mismo hizo saltar un
+`panic` de Rust en un `cat … | head` de otra orden. **Cualquier tubería a `head`
+mata a quien escribe**, y en una extracción eso no se nota: nadie cuenta los
+ficheros que salieron. Es de la familia de la 22 —el instrumento se equivoca y da
+un resultado plausible— y se evita no filtrando la salida de `tar`.
+
+**26bis. Y dentro de esa misma trampa hay otra más fina: no son las variables de
+entorno, es `setlocale()`.** §4.26f midió los nombres de las aplicaciones «en
+las tres combinaciones de locale probadas» y salieron en inglés. La causa no era
+el sistema:
+
+```
+LANG=es_ES.UTF-8  +  locale.setlocale(LC_ALL,"")   ->  Archivos
+LANG=es_ES.UTF-8  SIN setlocale                    ->  Files
+   y en los DOS casos GLib.get_language_names() ya dice ['es_ES.UTF-8','es_ES','es']
+```
+
+Un proceso que no llama a `setlocale` recibe el `msgid` en inglés **aunque la
+biblioteca ya sepa el idioma**. GNOME Shell lo llama al arrancar; un `python3 -c`
+no. **Regla: si vas a preguntar por una cadena traducida, llama a `setlocale`
+primero, y enseña `get_language_names()` al lado de la respuesta** — es el
+control que separa «el sistema está en inglés» de «tu proceso lo está».
+
+**26. Una medición hecha por `ssh` sobre algo que vive en el escritorio miente, y
+hay que marcarlo EN EL MOMENTO.** §4.26c dio `application/pdf -> firefox.desktop`
+y de ahí salió media decisión de producto. Medido con `XDG_CURRENT_DESKTOP`
+puesto, la respuesta es **Evince**: los ficheros `<escritorio>-mimeapps.list`
+**solo se leen si el escritorio se llama así**, y una sesión `ssh` no lleva esa
+variable. §4.26f ya lo avisaba para los nombres de las aplicaciones y nadie lo
+llevó a la fila de al lado de la misma tabla. **La regla:** cuando el instrumento
+sea `ssh` y la pregunta sea del escritorio, se mide **en las dos columnas** —con
+la variable y sin ella— o se marca `[OJOS]` desde el primer día.

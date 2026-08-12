@@ -27,18 +27,25 @@ METADATA="$AQUI/meta-data"
 REPO=""
 SALIDA=""
 ACTUALIZAR=0
-TAM_MB=128
+# 128 MiB bastaban mientras el repo eran cuatro .deb y 44 MB. Desde el nivel 3
+# de §4.27 el medio lleva ademas todo lo que bajaba de internet -el JRE, el
+# navegador, la tienda, el escaner- y no cabe. El tamano se declara y se
+# comprueba: si el repo no cupiera, el 'cp' fallaria a mitad y el volumen
+# saldria a medias sin que nada lo dijera.
+TAM_MB=768
 
 uso() {
     cat <<'FIN'
-uso: fabricar-seed.sh --repo DIR --salida IMG [--yaml RUTA] [--actualizar-yaml]
+uso: fabricar-seed.sh --repo DIR --salida IMG [--yaml RUTA] [--tam-mb N] [--actualizar-yaml]
 
-  --repo DIR          directorio con los cuatro .deb y el fichero Packages
+  --repo DIR          directorio con los .deb de Encina, el resto del repo
+                      offline (nivel 3 de §4.27) y el fichero Packages
   --salida IMG        imagen CIDATA a escribir (se sobrescribe)
   --yaml RUTA         seed a meter como user-data. Por defecto autoinstall.yaml,
                       que es el de E2 (desatendido, con contrasena de
                       laboratorio). Para medir la forma de E3 se le pasa
                       autoinstall-e3.yaml, que pregunta y no lleva credenciales
+  --tam-mb N          tamano del volumen en MiB (por defecto 768)
   --actualizar-yaml   reescribe la late-command del YAML elegido a partir de
                       encina-seed.sh, en vez de solo comprobar que coinciden
 FIN
@@ -49,6 +56,7 @@ while [ $# -gt 0 ]; do
         --repo)             REPO="$2"; shift 2 ;;
         --salida)           SALIDA="$2"; shift 2 ;;
         --yaml)             YAML="$2"; shift 2 ;;
+        --tam-mb)           TAM_MB="$2"; shift 2 ;;
         --actualizar-yaml)  ACTUALIZAR=1; shift ;;
         -h|--help)          uso; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso; exit 2 ;;
@@ -67,16 +75,21 @@ huella_de() {  # $1 = nombre de la variable en encina-seed.sh
     grep -E "^$1=" "$GUION" | head -1 | cut -d= -f2
 }
 declare -a FICHEROS HUELLAS
-FICHEROS=(autofirma_1.9.1+encina2_all.deb
-          encina-branding_0.1.7_all.deb
+# LOS NOMBRES LLEVAN LA VERSION DENTRO, asi que cambiar un .deb son las CUATRO
+# cosas de SCRIPTS.md y no una. Y el de autofirma se elige POR RUTA ENTERA:
+# encina-autofirma/salida/ tiene TRES candidatos con la misma pinta
+# -d5a0ebe1... (+encina2), 2d985724... (+encina3) y faeca3a9... (+encina4)- y
+# un 'ls -t | head -1' construye una cosa distinta de la que crees (§4.13).
+FICHEROS=(autofirma_1.9.1+encina4_all.deb
+          encina-branding_0.1.8_all.deb
           encina-firefox-native_0.2.1_all.deb
-          encina-meta_0.1.1_all.deb)
+          encina-meta_0.2.0_all.deb)
 HUELLAS=("$(huella_de H_AUTOFIRMA)"
          "$(huella_de H_BRANDING)"
          "$(huella_de H_FFNATIVE)"
          "$(huella_de H_META)")
 
-echo "== 1. los cuatro .deb, comparados POR HUELLA (§4.13: misma version != mismos bytes)"
+echo "== 1. los cuatro .deb de Encina, POR HUELLA (§4.13: misma version != mismos bytes)"
 for i in 0 1 2 3; do
     f="$REPO/${FICHEROS[$i]}"
     [ -f "$f" ] || fallo "no esta: $f"
@@ -87,20 +100,53 @@ for i in 0 1 2 3; do
     ok "${FICHEROS[$i]}  ${real:0:8}…"
 done
 
-echo "== 2. el indice Packages describe esos mismos bytes"
+echo "== 2. el indice Packages describe esos mismos bytes, y TODO lo que viaja"
 [ -f "$REPO/Packages" ] || fallo "no esta: $REPO/Packages"
 for i in 0 1 2 3; do
     grep -q "^SHA256: ${HUELLAS[$i]}$" "$REPO/Packages" \
         || fallo "Packages no contiene la huella de ${FICHEROS[$i]}"
 done
-ok "las cuatro huellas de §4.15 estan en Packages"
-# control: el indice no puede describir algo que no viaja
-if grep -qE '^Filename: \./(autofirma|encina-)' "$REPO/Packages"; then
-    n=$(grep -cE '^Filename: \./' "$REPO/Packages")
-    [ "$n" -eq 4 ] || fallo "Packages describe $n ficheros y viajan 4"
-    ok "Packages describe 4 ficheros, ni uno mas (el control)"
+ok "las cuatro huellas de Encina estan en Packages"
+# EL RESTO DEL REPO -- el nivel 3 de §4.27 -- no tiene huellas escritas a mano en
+# ningun sitio: de el responde este indice, porque es lo que apt verifica al
+# instalar. Asi que aqui se comprueba EL INDICE ENTERO contra los bytes que
+# viajan, en las dos direcciones: ni sobra un Filename ni falta un .deb.
+grep -qE '^Filename: \./' "$REPO/Packages" \
+    || fallo "Packages no tiene rutas relativas ./ — el repo no se leeria"
+NIDX=$(grep -cE '^Filename: \./' "$REPO/Packages")
+NDEB=$(ls -1 "$REPO"/*.deb 2>/dev/null | wc -l | tr -d ' ')
+[ "$NIDX" -eq "$NDEB" ] || fallo "Packages describe $NIDX ficheros y en el repo hay $NDEB .deb"
+ok "Packages describe $NIDX ficheros y viajan $NDEB, ni uno mas ni uno menos"
+MALAS=0
+while read -r f; do
+    [ -f "$REPO/$f" ] || { echo "        no viaja: $f"; MALAS=$((MALAS+1)); }
+done < <(sed -n 's|^Filename: \./||p' "$REPO/Packages")
+[ "$MALAS" -eq 0 ] || fallo "$MALAS ficheros descritos en Packages no estan en el repo"
+# y las huellas del indice contra los bytes, una a una
+paste -d' ' <(sed -n 's|^Filename: \./||p' "$REPO/Packages") \
+            <(sed -n 's|^SHA256: ||p'      "$REPO/Packages") \
+  | while read -r f h; do
+        r=$(shasum -a 256 "$REPO/$f" | cut -d' ' -f1)
+        [ "$r" = "$h" ] || echo "HUELLA-MALA $f"
+    done > "$REPO/.huellas-malas.tmp"
+if [ -s "$REPO/.huellas-malas.tmp" ]; then
+    cat "$REPO/.huellas-malas.tmp"; rm -f "$REPO/.huellas-malas.tmp"
+    fallo "el indice Packages no describe los bytes que viajan"
+fi
+rm -f "$REPO/.huellas-malas.tmp"
+ok "las $NIDX huellas de Packages coinciden con los bytes del repo"
+# CONTROL de ese comparador, que tiene que saber decir MALA. Si no supiera, el
+# [OK] de arriba lo daria igual con un repo corrupto: se le enfrenta el primer
+# fichero con la huella del SEGUNDO, y tiene que verlo.
+PRIMERO=$(sed -n 's|^Filename: \./||p' "$REPO/Packages" | sed -n 1p)
+H_OTRA=$(sed -n 's|^SHA256: ||p' "$REPO/Packages" | sed -n 2p)
+r=$(shasum -a 256 "$REPO/$PRIMERO" | cut -d' ' -f1)
+if [ -n "$H_OTRA" ] && [ "$r" = "$H_OTRA" ]; then
+    fallo "CONTROL ROTO: dos ficheros distintos con la misma huella"
+elif [ -z "$H_OTRA" ]; then
+    fallo "CONTROL ROTO: el indice no tiene una segunda huella con la que comparar"
 else
-    fallo "Packages no tiene rutas relativas ./ — el repo no se leeria"
+    ok "control: enfrentado a la huella de otro fichero, el comparador lo ve"
 fi
 
 echo "== 3. la late-command de autoinstall.yaml == encina-seed.sh"

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Encina OS - E2. Verifica la maquina que produce imagen/autoinstall.yaml.
+# Encina OS. Verifica la maquina que produce imagen/autoinstall.yaml.
 #
 # Se ejecuta EN LA MAQUINA INSTALADA, arrancada de su disco, y COMO ROOT:
 #
 #     sudo ./verificar-e2.sh                # forma E2: desatendida, nadie la toca
-#     sudo ./verificar-e2.sh --forma e3     # forma E3: la ISO pregunta cinco cosas
+#     sudo ./verificar-e2.sh --forma e3     # forma E3: la ISO pregunta cinco pantallas
+#     sudo ./verificar-e2.sh --visibles 28  # cuantas aplicaciones se ESPERAN (ver abajo)
 #
 # EL NOMBRE ES HISTORICO y se conserva a proposito: este guion verifica LA
 # MAQUINA, y las dos formas producen la misma maquina. Lo unico que cambia entre
@@ -15,6 +16,27 @@
 # nadie toco nada"- y en E3 eso TIENE que fallar, porque el producto pregunta.
 # La de E3 es de hecho MAS exigente: E2 solo podia pedir que no hubiera
 # pantallas; E3 pide EXACTAMENTE cuales y falla si sobra una.
+#
+# LO QUE CAMBIA EN E4, y son dos cosas (§4.31):
+#
+#   1. LA CASILLA "SIN SNAP" SE SUSTITUYE, NO SE AFLOJA. D16 devuelve el Snap a
+#      la maquina -la tienda lo arrastra de todas formas, §4.26d- y lo que
+#      importa nunca fue snapd: es que el Firefox que el usuario PUEDE ABRIR sea
+#      el nativo. La casilla nueva es MAS exigente que la vieja y la cumplen las
+#      maquinas con Snap y sin el:
+#         a) UN SOLO icono de Firefox visible
+#         b) ese icono resuelve FUERA de /snap/, y el paquete no es el de
+#            transicion (sin epoch '1:')
+#         c) NO EXISTE ningun perfil de Mozilla bajo ~/snap/
+#      La (c) es la que separa el estado (c) -Snap instalado y NUNCA abierto- del
+#      (d) -alguien lo abrio-, que es el unico que rompe: B3 sin arreglo posible
+#      (§4.28) y B4 de vuelta (§4.29f).
+#
+#   2. EL CONTROL DE LAS APLICACIONES VISIBLES DEJA DE VALER 25. El numero
+#      cambia porque cambia el producto, asi que el numero se DECLARA por
+#      adelantado con --visibles y se contrasta; lo que decide la casilla NO es
+#      acertarlo, es que el inventario SEPA CONTAR (§4.19c): si el total fuera 0,
+#      un 1 de Firefox no significaria nada.
 #
 # Root no es capricho: /var/log/installer/telemetry es 0600 de root, y es la
 # comprobacion que distingue una instalacion gobernada por un seed de una
@@ -32,10 +54,12 @@
 set -uo pipefail
 
 FORMA=e2
+VISIBLES_ESPERADAS=28
 while [ $# -gt 0 ]; do
     case "$1" in
         --forma) FORMA="${2:-}"; shift 2 ;;
-        -h|--help) sed -n '1,30p' "$0"; exit 0 ;;
+        --visibles) VISIBLES_ESPERADAS="${2:-}"; shift 2 ;;
+        -h|--help) sed -n '1,45p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; exit 2 ;;
     esac
 done
@@ -49,6 +73,7 @@ titulo()  { echo; echo "=== $* ==="; }
 ok()      { N_OK=$((N_OK+1));   echo "  [OK]     $*"; }
 aviso()   { N_AVI=$((N_AVI+1)); echo "  [AVISO]  $*"; }
 omitido() { N_OMI=$((N_OMI+1)); echo "  [OMIT]   $*"; }
+dato()    { echo "  [DATO]   $*"; }
 fallo()   { N_MAL=$((N_MAL+1)); echo "  [FALLO]  $1"; [ -n "${2:-}" ] && echo "$2" | sed 's/^/           | /'; }
 
 # igual "que se comprueba" "esperado" "obtenido"
@@ -135,32 +160,58 @@ else
     ok "control: un testigo que no se escribio nunca sale ausente"
 fi
 
-titulo "2. Sin Snap (tres cosas, no dos; §6bis.3)"
-# sano: no hay orden snap, no hay lanzador, y el identificador del Snap no
-# resuelve a nada. roto: cualquiera de las tres presente.
-if command -v snap >/dev/null 2>&1; then
-    fallo "existe la orden snap" "$(command -v snap)"
-else
-    ok "no existe la orden snap"
-fi
-# CONTROL del command -v, que si no responde 'ausente' a todo
-if command -v bash >/dev/null 2>&1; then ok "control: command -v bash -> $(command -v bash)"
-else fallo "CONTROL ROTO: no encuentra ni bash"; fi
-for d in /var/lib/snapd/desktop/applications/firefox_firefox.desktop /var/lib/snapd /snap; do
-    if esta "$d"; then fallo "sigue estando $d"; else ok "no existe $d"; fi
-done
-# LA TERCERA COSA. Esta comprobacion pedia NINGUNA hasta el 2026-08-10 y ESTABA
-# MAL ESCRITA, no aflojada: se redacto con §4.16i, medido sobre una maquina SIN
-# NINGUN PAQUETE DE ENCINA, donde NINGUNA era correcto porque no habia ni Snap
-# ni sombra. En una maquina de Encina OS el identificador lo resuelve la sombra
-# de encina-firefox-native, asi que responde /usr/bin/firefox %u.
+titulo "2. EL FIREFOX QUE EL USUARIO PUEDE ABRIR ES EL NATIVO (D16, sustituye a «Sin Snap»)"
+# ESTA CASILLA SUSTITUYE A LA DE «Sin Snap» DE AGENTS.md §6bis.3, y es MAS
+# exigente que ella: la vieja se cumplia quitando snapd, y quitar snapd nunca
+# fue lo que hacia que la firma funcionara (§4.26h). Son TRES condiciones y las
+# cumplen las maquinas con Snap y sin el.
 #
-# Y lo que decidio corregirla en vez de bajar el liston: NINGUNA solo se alcanza
-# quitando la sombra, y quitarla, medido en encina-E1-meta el 2026-08-10 (§4.19),
-# hace que en una maquina CON Snap el mismo identificador vuelva a resolver a
-# /snap/bin/firefox %u. O sea que la casilla, tal como estaba, exigia un estado
-# que solo se consigue REABRIENDO A2. Lo que queria preguntar de verdad es que
-# no resuelva a nada bajo /snap/, y eso es lo que pregunta ahora.
+# Lo que hay debajo, medido: dentro del Snap, Firefox no ve afirma.desktop ni
+# /usr/bin/autofirma, y NO FALLA -- no hace nada (B3), y no tiene arreglo
+# posible por nuestra parte (§4.28). Y quien abra ese Firefox una vez se lleva
+# ademas B4 de vuelta, porque AutoFirma busca el certificado en el perfil que se
+# uso el ultimo (§4.29f). Por eso «un solo icono, y abre el nativo» no es
+# cosmetica: es la defensa entera.
+
+# (a) UN SOLO ICONO, y de paso el inventario entero, que es el control
+LEIDO=$(XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop \
+       XDG_CURRENT_DESKTOP=ubuntu:GNOME python3 - <<'PY' 2>/dev/null
+import gi
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio
+todas = Gio.AppInfo.get_all()
+vis = [a for a in todas if a.should_show()]
+ff  = [a for a in vis if "firefox" in a.get_id().lower()]
+print(f"{len(ff)} {len(vis)} {len(todas)}")
+for a in sorted(vis, key=lambda x: x.get_name().lower()):
+    print("APP\t%s\t%s" % (a.get_id(), a.get_name()))
+PY
+)
+read -r N_FF N_VIS N_TOT <<<"$(echo "$LEIDO" | head -1)"
+igual "iconos de Firefox que ve el usuario" "1" "${N_FF:-?}"
+# EL CONTROL, que es lo que decide y no el numero: si el inventario saliera en 0
+# el "1 de Firefox" no significaria nada (§4.19c)
+if [ "${N_VIS:-0}" -gt 5 ] 2>/dev/null; then
+    ok "control: ${N_VIS} aplicaciones visibles de ${N_TOT} totales (el inventario no esta mudo)"
+else
+    fallo "CONTROL ROTO: el inventario de aplicaciones visibles sale en ${N_VIS:-?}"
+fi
+# EL NUMERO DECLARADO POR ADELANTADO, que se CONTRASTA y no decide. Un numero
+# distinto no es un fallo automatico: es algo que hay que saber nombrar.
+if [ "${N_VIS:-0}" = "$VISIBLES_ESPERADAS" ]; then
+    ok "coincide con las $VISIBLES_ESPERADAS declaradas antes de instalar"
+else
+    aviso "se declararon $VISIBLES_ESPERADAS visibles y hay ${N_VIS:-?}: nombra cual sobra o cual falta"
+fi
+echo "  --- las aplicaciones que ve el usuario, por nombre ---"
+echo "$LEIDO" | sed -n 's/^APP\t/  /p' | sed 's/\t/  |  /'
+
+# (b) EL ICONO ABRE EL NATIVO: tres formas de preguntar lo mismo
+# ESTA COMPROBACION PEDIA «NINGUNA» HASTA EL 2026-08-10 Y ESTABA MAL ESCRITA, no
+# aflojada (§4.19d): NINGUNA solo se alcanza quitando la sombra, y quitarla hace
+# que en una maquina CON Snap el identificador vuelva a resolver a
+# /snap/bin/firefox %u. La casilla exigia un estado que solo se consigue
+# REABRIENDO A2. Lo que quiere preguntar es que no resuelva a nada bajo /snap/.
 R=$(resolver_desktop firefox_firefox.desktop)
 case "$R" in
     \?)       fallo "no se ha podido resolver firefox_firefox.desktop" "$R" ;;
@@ -183,40 +234,7 @@ esac
 RC_NIN=$(resolver_desktop encina-lanzador-que-no-existe.desktop)
 igual "control: un identificador que no existe" "NINGUNA" "$RC_NIN"
 
-# LA CUARTA COSA, y es nueva: CUANTOS ICONOS DE FIREFOX VE EL USUARIO.
-# Ninguna casilla lo preguntaba —todas preguntaban a que resuelve el
-# identificador—, y por eso el duplicado de §4.17h paso desapercibido hasta que
-# se miro por casualidad. sano: 1. roto: 2, que es lo que se veia hasta la
-# 0.2.1 de encina-firefox-native.
-N_FF=$(XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop \
-       XDG_CURRENT_DESKTOP=ubuntu:GNOME python3 - <<'PY' 2>/dev/null || echo "?"
-import gi
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio
-todas = Gio.AppInfo.get_all()
-ff  = [a for a in todas if "firefox" in a.get_id().lower() and a.should_show()]
-vis = [a for a in todas if a.should_show()]
-# el control va en la misma linea: si el total de visibles fuera 0, un 0 de
-# Firefox no significaria nada
-print(f"{len(ff)} {len(vis)}")
-PY
-)
-set -- $N_FF
-igual "iconos de Firefox que ve el usuario" "1" "${1:-?}"
-if [ "${2:-0}" -gt 5 ] 2>/dev/null; then
-    ok "control: ${2} aplicaciones visibles en total (el inventario no esta mudo)"
-else
-    fallo "CONTROL ROTO: el inventario de aplicaciones visibles sale en ${2:-?}"
-fi
-# y el estado dpkg, que es lo que decide: 'dpkg -l | grep -i snap' da falsa
-# alarma con libsnapd-glib, gir1.2-snapd-2, xdg-desktop-portal y una extension
-# de GNOME que ordena ventanas (§4.16h)
-igual "estado dpkg de snapd" "un" "$(dpkg-query -W -f='${db:Status-Abbrev}' snapd 2>/dev/null | tr -d ' ')"
-
-titulo "3. Firefox es el nativo y esta en espanol"
-# sano: version SIN epoch y /usr/bin/firefox fuera de /snap/.
-# roto: version 1:... = sigue siendo el deb de transicion, y entonces todo lo
-# demas de esta lista puede estar verde igualmente.
+# y el paquete: version SIN epoch y destino fuera de /snap/
 V=$(dpkg-query -W -f='${Version}' firefox 2>/dev/null)
 case "$V" in
     "")  fallo "no hay ningun paquete firefox instalado" ;;
@@ -229,6 +247,41 @@ case "$DESTINO" in
     "")      fallo "no existe /usr/bin/firefox" ;;
     *)       ok "/usr/bin/firefox -> $DESTINO" ;;
 esac
+
+# (c) NINGUN PERFIL DE MOZILLA BAJO ~/snap/ -- la que dice si el Snap se abrio
+# Es la que separa el estado (c) del (d). Se busca en TODOS los homes, no en uno
+# (trampa 8: no se filtra a nadie por UID), y con los dos controles de §4.26i:
+# el buscador tiene que saber encontrar algo y saber decir cero.
+PERFILES_SNAP=$(find /home /root -maxdepth 8 \
+    \( -path '*/snap/firefox/*/.mozilla/firefox/profiles.ini' \
+    -o -path '*/snap/firefox/*/.mozilla/firefox/*/cert9.db' \
+    -o -path '*/snap/*/.mozilla/firefox/profiles.ini' \) 2>/dev/null | wc -l)
+igual "perfiles de Mozilla bajo ~/snap/ (0 = el Snap nunca se abrio)" "0" "$PERFILES_SNAP"
+CTL_SI=$(find /home /root -maxdepth 3 -name '.bashrc' 2>/dev/null | wc -l)
+if [ "$CTL_SI" -ge 1 ]; then
+    ok "control: el buscador sabe encontrar algo (.bashrc -> $CTL_SI)"
+else
+    fallo "CONTROL ROTO: el buscador no encuentra ni un .bashrc"
+fi
+CTL_NO=$(find /home /root -maxdepth 3 -name 'fichero-que-no-existe-jamas' 2>/dev/null | wc -l)
+igual "control: el buscador sabe decir cero" "0" "$CTL_NO"
+
+# Y LA FOTO DEL SNAP, que es DATO y no casilla: la casilla de arriba la cumplen
+# las maquinas con Snap y sin el, a proposito. Esto solo dice en cual estamos.
+EST_SNAPD=$(dpkg-query -W -f='${db:Status-Abbrev}' snapd 2>/dev/null | tr -d ' ')
+NSNAP=$(ls -d /snap/firefox/* 2>/dev/null | grep -cv current)
+case "$EST_SNAPD:$NSNAP:$PERFILES_SNAP" in
+    ii:0*:*)  dato "forma (b): snapd instalado y SIN Snap de Firefox" ;;
+    ii:*:0)   dato "forma (c): snapd + Snap de Firefox instalado y NUNCA abierto  <- la de D16" ;;
+    ii:*:*)   dato "forma (d): el Snap de Firefox TIENE perfil -- es la que rompe" ;;
+    *)        dato "forma (a): sin snapd (estado snapd='$EST_SNAPD')" ;;
+esac
+dato "snapd='$EST_SNAPD'  revisiones de firefox en /snap: $NSNAP  perfiles bajo ~/snap: $PERFILES_SNAP"
+# y no vale 'dpkg -l | grep -i snap': da falsa alarma con libsnapd-glib,
+# gir1.2-snapd-2, xdg-desktop-portal y una extension de GNOME que ordena
+# ventanas (§4.16h). Por eso se pregunta por el estado dpkg exacto.
+
+titulo "3. Firefox esta en espanol, y el anclaje sigue mandando"
 XPI=/usr/lib/firefox/distribution/extensions/langpack-es-ES@firefox.mozilla.org.xpi
 if esta "$XPI"; then ok "el idioma esta puesto: $(basename "$XPI")"; else fallo "falta el paquete de idioma" "$XPI"; fi
 # el anclaje, que es lo que impide que un apt upgrade futuro devuelva el Snap
@@ -239,7 +292,7 @@ else
     fallo "el anclaje de Mozilla no manda" "$POL"
 fi
 
-titulo "4. El repo local sin firmar y los cuatro paquetes"
+titulo "4. El repo local sin firmar, los cuatro paquetes y las tres aplicaciones de D17/D18"
 LISTA=/etc/apt/sources.list.d/encina-local.list
 if esta "$LISTA"; then ok "$LISTA: $(cat "$LISTA")"; else fallo "no esta $LISTA"; fi
 for p in encina-meta encina-branding encina-firefox-native autofirma; do
@@ -249,6 +302,28 @@ for p in encina-meta encina-branding encina-firefox-native autofirma; do
         *)                       fallo "$p no esta instalado" "${E:-<no se ha encontrado el paquete>}" ;;
     esac
 done
+# LA VERSION DE autofirma NO ES UN DETALLE: §4.29b encontro una maquina que el
+# banco declaraba capaz de contestar una pregunta sobre un paquete que no tenia.
+VA=$(dpkg-query -W -f='${Version}' autofirma 2>/dev/null)
+case "$VA" in
+    *+encina4) ok "autofirma es la +encina4, que es la que espera por raiz (M20)" ;;
+    *)         fallo "autofirma no es la +encina4" "obtenido: ${VA:-<ninguna>}
+La espera del vigilante por raiz (M20) es lo que cierra §4.29e. Con +encina2 o
++encina3, un perfil de Snap delante desactiva la espera de 90 s." ;;
+esac
+# LAS APLICACIONES QUE E4 ANADE (D17 y D18), y evince, que es a quien apunta el
+# manejador del PDF: si faltara, el defecto del bloque 6bis apuntaria a nada
+for p in simple-scan gnome-software gnome-software-plugin-snap evince; do
+    E=$(dpkg-query -W -f='${Version} ${Status}' "$p" 2>/dev/null)
+    case "$E" in
+        *"install ok installed") ok "$p $E" ;;
+        *)                       fallo "$p no esta instalado" "${E:-<no se ha encontrado el paquete>}" ;;
+    esac
+done
+# CONTROL de todo el bloque: el mismo comando tiene que saber decir que no
+E=$(dpkg-query -W -f='${Status}' encina-paquete-que-no-existe-jamas 2>/dev/null)
+if [ -z "$E" ]; then ok "control: un paquete inventado -> no se ha encontrado"
+else fallo "CONTROL ROTO: dice tener un paquete inventado" "$E"; fi
 # las marcas: solo encina-meta manual, los otros tres automaticos. Es lo que
 # hace que 'apt purge encina-meta' + 'autoremove' se lleve a los tres (§4.15).
 AUTO=$(apt-mark showauto   | grep -cE '^(autofirma|encina-branding|encina-firefox-native)$')
@@ -279,9 +354,8 @@ igual "hay un saludador grafico vivo" "si" "$GREETER"
 titulo "6. El veredicto que dejo el seed (§4.27)"
 # POR QUE ESTA CASILLA EXISTE, y es la que faltaba desde el primer dia: hasta el
 # 2026-08-11 nadie preguntaba AL FINAL si la maquina habia quedado entera. Sin
-# red no entra ni uno de los cuatro .deb -apt es todo o nada, y el JRE de
-# autofirma, libnss3-tools y hunspell-es no viajan en el medio (§4.27c)- y la
-# instalacion terminaba diciendo que fue bien. Trampa 5.
+# red no entraba ni uno de los cuatro .deb -apt es todo o nada- y la instalacion
+# terminaba diciendo que fue bien. Trampa 5.
 #
 # sano: ENCINA_ESTADO=COMPLETO y ENCINA_FALTA vacio.
 # roto: INCOMPLETO, y entonces ENCINA_FALTA nombra lo que falta.
@@ -308,6 +382,8 @@ if esta "$E"; then
     else
         fallo "CONTROL ROTO: no se lee ninguna clave de $E"
     fi
+    # las dos mitades del manejador del PDF, tal como las vio el seed
+    dato "el seed vio  application/pdf: ANTES=$(sed -n 's/^ENCINA_PDF_ANTES=//p' "$E")  DESPUES=$(sed -n 's/^ENCINA_PDF_DESPUES=//p' "$E")"
 elif grep -q 'estado=' "$T_SEED" 2>/dev/null; then
     fallo "no existe $E y esta maquina la instalo un seed que lo escribe" \
 "El testigo dice: $(cat "$T_SEED")"
@@ -315,12 +391,69 @@ else
     omitido "esta maquina la instalo un seed anterior a §4.27: no sabe contestar"
 fi
 
+titulo "6bis. EL MANEJADOR DEL PDF, ATADO (D17)"
+# LA MEDICION TIENE DOS MITADES y la primera esta en §4.26c: sobre la maquina de
+# la entrega, 'application/pdf' resolvia a firefox.desktop CON Evince instalado.
+# O sea que el producto traia un visor que nunca se abria. Esta es la segunda.
+#
+# Y TIENE TRAMPA CONOCIDA: compiten varios ficheros y no gana el que uno cree.
+# Por eso se ENSENAN todos los que existen y quien los puso, en vez de suponer.
+# Y SE PREGUNTA EN LAS DOS COLUMNAS, con y sin XDG_CURRENT_DESKTOP. §4.26c se
+# midio por ssh, o sea SIN escritorio, y eso cambia la respuesta: los ficheros
+# con nombre de escritorio delante (gnome-mimeapps.list) solo se leen si el
+# escritorio se llama asi. Con una sola columna, esta casilla diria "arreglado"
+# o "no hacia falta" segun como se preguntara.
+PDF_CON=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME xdg-mime query default application/pdf 2>/dev/null)
+PDF_SIN=$(env -u XDG_CURRENT_DESKTOP xdg-mime query default application/pdf 2>/dev/null)
+for par in "con ubuntu:GNOME|$PDF_CON" "SIN escritorio|$PDF_SIN"; do
+    COMO="${par%%|*}"; QUE="${par#*|}"
+    case "$QUE" in
+        "")        fallo "application/pdf ($COMO) no resuelve a nada" ;;
+        *firefox*) fallo "application/pdf ($COMO) resuelve al navegador" "obtenido: $QUE
+Es §4.26c sin atar: el producto trae un visor que no se abre nunca." ;;
+        *)         ok "application/pdf ($COMO) -> $QUE" ;;
+    esac
+done
+# CONTROL: si xdg-mime contestara vacio a todo, los [OK] de arriba no valdrian
+PDF_CTL=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME xdg-mime query default application/x-tipo-que-no-existe-jamas 2>/dev/null)
+igual "control: un tipo inventado no resuelve a nada" "" "$PDF_CTL"
+# CONTROL 2: y tiene que saber contestar de otro tipo, que ademas este fichero
+# NO toca -- un mimeapps.list solo manda sobre los tipos que nombra
+PDF_ZIP=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME xdg-mime query default application/zip 2>/dev/null)
+if [ -n "$PDF_ZIP" ]; then ok "control: application/zip -> $PDF_ZIP (xdg-mime no esta mudo, y el zip no se ha tocado)"
+else fallo "CONTROL ROTO: xdg-mime no sabe contestar de application/zip"; fi
+# QUIEN GANA, ensenado y no supuesto: todos los ficheros que compiten, con su dueno
+echo "  --- los ficheros que compiten, de mas fuerte a mas debil ---"
+for f in "$HOME/.config/ubuntu-mimeapps.list" "$HOME/.config/mimeapps.list" \
+         /etc/xdg/xdg-ubuntu/ubuntu-mimeapps.list /etc/xdg/xdg-ubuntu/mimeapps.list \
+         /etc/xdg/ubuntu-mimeapps.list /etc/xdg/gnome-mimeapps.list /etc/xdg/mimeapps.list \
+         /usr/share/applications/ubuntu-mimeapps.list \
+         /usr/share/applications/gnome-mimeapps.list /usr/share/applications/mimeapps.list; do
+    if esta "$f"; then
+        D=$(dpkg -S "$f" 2>/dev/null | cut -d: -f1); [ -n "$D" ] || D="sin dueno"
+        echo "    $f  [$D]  pdf=$(sed -n 's/^application\/pdf=//p' "$f" | head -1)"
+    fi
+done
+# Y QUE EL QUE MANDA SEA NUESTRO: R5 prohibe sobrescribir el conffile de otro
+MIO=/etc/xdg/mimeapps.list
+if esta "$MIO"; then
+    DUENO=$(dpkg -S "$MIO" 2>/dev/null | cut -d: -f1)
+    igual "el fichero que ata el PDF es NUESTRO (R5)" "encina-branding" "${DUENO:-<sin dueno>}"
+else
+    fallo "no esta $MIO: el manejador del PDF no lo pone ningun paquete de Encina"
+fi
+# CONTROL de ese dpkg -S: tiene que saber decir de quien es un fichero ajeno
+DA=$(dpkg -S /usr/share/applications/gnome-mimeapps.list 2>/dev/null | cut -d: -f1)
+if [ -n "$DA" ]; then ok "control: gnome-mimeapps.list es de '$DA' (dpkg -S no esta mudo)"
+else fallo "CONTROL ROTO: dpkg -S no sabe de quien es gnome-mimeapps.list"; fi
+
 titulo "Resumen"
 echo "  [OK] $N_OK   [FALLO] $N_MAL   [AVISO] $N_AVI   [OMIT] $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then
     echo "  NO marques ninguna casilla de la definicion de terminado."
     exit 1
 fi
-echo "  Falta la casilla [OJOS]: la firma en valide.redsara.es, que va en un"
-echo "  clon efimero que se destruye (ENCINA-OS.md §9.1)."
+echo "  Faltan las casillas [OJOS]: la firma en valide.redsara.es -que va en un"
+echo "  clon efimero que se destruye (ENCINA-OS.md §9.1)- y si los nombres de las"
+echo "  aplicaciones de arriba se ven en espanol en una sesion de escritorio."
 exit 0

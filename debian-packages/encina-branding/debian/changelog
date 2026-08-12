@@ -1,3 +1,31 @@
+encina-branding (0.1.8) noble; urgency=medium
+
+  * El manejador por defecto del PDF, atado (D17). Se anade
+    /etc/xdg/mimeapps.list, que es NUESTRO fichero y no el conffile de
+    nadie (R5, comprobado con dpkg -S sobre un escritorio completo).
+  * LA RUTA NO ES COSMETICA Y NO ES LA QUE PARECIA. La medicion de
+    apertura decia que application/pdf resolvia a firefox.desktop
+    (MEDICIONES.md 4.26c), y aquello se midio POR SSH. Reproducido en
+    un arbol sintetico, con el firefox.desktop de Mozilla delante:
+    sin XDG_CURRENT_DESKTOP sale firefox.desktop; con ubuntu:GNOME
+    sale Evince, porque gnome-mimeapps.list -de gnome-session-common-
+    ya lo ata. O sea que en una sesion de escritorio de verdad NO
+    estaba roto: es la familia de 4.26f, una sesion ssh no es una
+    sesion de escritorio.
+  * Por eso el fichero es el GENERICO y no 'ubuntu-mimeapps.list':
+    los ficheros con nombre de escritorio delante solo se leen si el
+    escritorio se llama asi, o sea que un ubuntu-mimeapps.list tendria
+    exactamente el mismo agujero. El generico vive en $XDG_CONFIG_DIRS,
+    que la especificacion mira antes que todo $XDG_DATA_DIRS, y hace
+    que la respuesta sea la misma se pregunte como se pregunte. Y sigue
+    perdiendo contra $XDG_CONFIG_HOME, o sea contra la persona.
+  * Depends: evince. El fichero de arriba es una promesa sobre un
+    lanzador concreto; si el lanzador no estuviera, el defecto
+    apuntaria a nada y el sintoma seria el de siempre: no falla, no
+    hace nada.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Wed, 12 Aug 2026 10:00:00 +0200
+
 encina-branding (0.1.7) noble; urgency=medium
 
   * Fondos de pantalla propios en lugar de los degradados generados.

@@ -14,7 +14,11 @@ Depends: ${misc:Depends},
          autofirma,
          hunspell-es,
          language-pack-es,
-         language-pack-gnome-es
+         language-pack-gnome-es,
+         simple-scan,
+         sane-airscan,
+         gnome-software,
+         gnome-software-plugin-snap
 Recommends: hyphen-es,
             mythes-es
 Description: Encina OS: instala el conjunto con un solo nombre
@@ -22,9 +26,43 @@ Description: Encina OS: instala el conjunto con un solo nombre
  declarar de que se compone el producto, para que un instalador desatendido
  instale UN NOMBRE y no una lista.
  .
- Declara la identidad visual (encina-branding), el repositorio de Firefox
- nativo (encina-firefox-native), el cliente de firma corregido (autofirma) y
- la localizacion espanola que Ubuntu no cubre por si sola.
+ Declara la identidad visual y los valores por defecto del escritorio
+ (encina-branding), el repositorio de Firefox nativo (encina-firefox-native),
+ el cliente de firma corregido (autofirma), la localizacion espanola que
+ Ubuntu no cubre por si sola, el escaner (simple-scan) y la tienda
+ (gnome-software con el plugin de snap).
+ .
+ QUE TRAE Y QUE NO, decidido el 2026-08-12 (D17 y D18 de ENCINA-OS.md):
+ Encina OS NO trae suite ofimatica ni cliente de correo, y no es un olvido:
+ los elige el usuario, y para que pueda elegirlos hace falta una tienda. Trae
+ la base para ver, firmar y enviar un PDF, y un escaner. Okular se descarto
+ con motivo: su firma de PDF seria un SEGUNDO consumidor del almacen NSS del
+ usuario, con su propia regla para elegir perfil, y no anade capacidad porque
+ AutoFirma ya firma un PDF suelto.
+ .
+ El visor de PDF NO es una linea de esta lista, y conviene saber por que: ya
+ estaba instalado. Lo que faltaba era el DEFECTO, application/pdf, que
+ resolvia al navegador; lo ata encina-branding con un mimeapps.list propio.
+ .
+ sane-airscan SI es una linea, y tampoco anade ningun paquete: ya viaja en
+ ubuntu-desktop-minimal. Va declarado porque simple-scan NO lo arrastra -leido
+ en sus Depends y Recommends: solo pide libsane1- y porque sin el no se ve
+ ningun escaner de red moderno, que son driverless (eSCL/WSD). Declarar lo que
+ el producto necesita es lo que impide que un cambio de la base se lo lleve en
+ silencio.
+ .
+ LA TIENDA DEVUELVE snapd, Y ESTA DECLARADO A PROPOSITO (D16 y D18). En los
+ indices de 24.04 no existe gnome-software-plugin-deb: por esa via el catalogo
+ del usuario es de snaps. Las dos alternativas que no devuelven snapd
+ -gnome-packagekit y synaptic- son gestores de paquetes, no una tienda para un
+ ciudadano. La eleccion real no era tener snapd o no, sino tenerlo declarado o
+ tenerlo por la puerta de atras.
+ .
+ Y EL PRECIO DE ESA DECISION, sin maquillar: en esa tienda aparece tambien el
+ Firefox del Snap, y quien lo abra y firme falla EN SILENCIO por B3, sin
+ arreglo posible por nuestra parte (MEDICIONES.md 4.28). La defensa entera es
+ que el unico icono de Firefox que el usuario ve abre el nativo, de lo que se
+ ocupa encina-firefox-native. No es cosmetica.
  .
  UN NOMBRE NO ES UNA SOLA ORDEN, y conviene saberlo antes de instalarlo. La
  instalacion completa son tres ordenes, y el motivo esta medido:
@@ -32,7 +70,14 @@ Description: Encina OS: instala el conjunto con un solo nombre
    sudo apt install ./encina-meta_*.deb ./encina-branding_*.deb \
                     ./encina-firefox-native_*.deb ./autofirma_*.deb
    sudo apt update
-   sudo apt full-upgrade && sudo apt install firefox-l10n-es-es
+   sudo apt full-upgrade --allow-downgrades
+   sudo apt install firefox-l10n-es-es
+ .
+ EL --allow-downgrades DE LA TERCERA ORDEN NO ES ADORNO: en una maquina con
+ Snap -que desde D16 son todas- el cambio del deb de transicion al de Mozilla
+ es formalmente una DESACTUALIZACION, porque el de transicion lleva el epoch
+ '1:'. Sin ese argumento, apt -y se niega. En una maquina sin Snap sobra y no
+ estorba.
  .
  Este paquete NO declara firefox ni firefox-l10n-es-es, y no es un descuido:
  los dos viven en el repositorio que configura encina-firefox-native, que no
@@ -47,7 +92,8 @@ Description: Encina OS: instala el conjunto con un solo nombre
  pero no la l10n de las aplicaciones que se instalan DESPUES: no hay hook de
  apt ni disparador de dpkg que la reejecute.
  .
- Ese bloque NO incluye la localizacion de LibreOffice, y tampoco es un descuido.
+ Ese bloque NO incluye la localizacion de LibreOffice, y tampoco es un descuido:
+ desde D17 Encina OS no trae LibreOffice, asi que no hay nada que localizar.
  libreoffice-l10n-es recomienda libreoffice-core, y un Recommends se instala por
  defecto, asi que en una maquina sin LibreOffice metia 33 paquetes y 244 MB de
  motor de LibreOffice sin LibreOffice; y con ellos abria un hueco de l10n nuevo,
