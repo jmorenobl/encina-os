@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Encina OS — Ubuntu con las gestiones electrónicas de la administración española listas de fábrica" width="100%">
+  <img src="assets/banner.png" alt="Encina OS — distribución derivada de Ubuntu con la firma digital española funcionando de fábrica" width="100%">
+</p>
+
+<p align="center">
+  <b>Una distribución derivada de Ubuntu con la firma digital española funcionando de fábrica.</b>
 </p>
 
 <p align="center">
