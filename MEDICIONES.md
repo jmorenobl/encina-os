@@ -7619,6 +7619,435 @@ que la vía del `windowid` no sirve aquí.
 
 ---
 
+### 4.35 LA ISO QUE SE ENTREGA LLEVABA LA TIENDA VIEJA — refabricada, arrancada y probada (2026-08-13)
+
+**E4 estaba terminado 13 de 13 y el entregable no lo reflejaba.** La ISO vigente
+`aa1ac76a…` llevaba dentro `encina-meta` **0.2.0**, o sea que quien la instalara
+**hoy** se encontraba las DOS tiendas que D18 reescrita quitó ayer. No había
+ninguna decisión de producto que tomar: había que refabricarla y demostrarla
+arrancándola.
+
+**Y el defecto era MÁS GRANDE de lo que decía el encargo**, que es lo primero que
+hay que llevarse: no bastaba con cambiar el `.deb` del repositorio.
+
+#### (a) Qué se daría por sano y qué por roto, escrito ANTES de tocar nada
+
+| Comprobación | Sano | Roto |
+|---|---|---|
+| El defecto, reproducido | La ISO vigente lleva `encina-meta_0.2.0_all.deb` y su `Packages` dice `Version: 0.2.0` | No lo lleva → el encargo parte de una premisa falsa, parar |
+| El repositorio nuevo | **28** `.deb`, el índice los describe **en las dos direcciones**, y la huella vieja `85c8cc56…` **ausente** | Cualquier descuadre, o que quede rastro del 0.2.0 |
+| El control negativo | Con el `.deb` viejo bajo el nombre nuevo, `fabricar-iso.sh` **se niega** y no escribe ISO | La fabrica igual → la herramienta no protege nada |
+| La ISO nueva | Huella **distinta** de `aa1ac76a…`, y con el 0.2.1 dentro leído **de la ISO** | Misma huella, o el 0.2.0 dentro |
+| Trampa 16, antes de arrancar | `-append` con `autoinstall` **suelto** y **cinco** unidades, leídas en la línea de órdenes real de QEMU | Otra cosa → no sé qué seed va a ganar |
+| La instalación | **Se apaga sola** = `ESTADO=COMPLETO`, y el registro dice `REPO ELEGIDO -> /cdrom/encina-repo` | No se apaga, o el repo sale del `CIDATA` → no he probado la ISO |
+| La máquina | `verificar-e2.sh --visibles 27` como root: **0 fallos** | Cualquier fallo |
+| (d1) **[OJOS]** Una sola tienda **en la instalación limpia** | **1**, «Centro de aplicaciones», y en la rejilla no aparece «Software» ni su bloque de catálogo. *Control:* el contador sabe decir **2** y **0** | 2, o 0, o un contador que da el mismo número siempre |
+| (d2) **[OJOS]** La tienda **instala** | Pulsar «Instalar», la aplicación aparece en la rejilla y **abre**. *Control:* `~/snap/` gana `<app>` y sigue con **0** perfiles de Mozilla | No instala → la premisa de D17 se queda a medias |
+
+#### (b) EL DEFECTO, reproducido y no supuesto
+
+Sacado de la ISO vigente con `xorriso -osirrox on -indev … -extract /encina-repo`:
+
+```
+29 ficheros restaurados (168,2 MB) = 28 .deb + Packages
+encina-meta_0.2.0_all.deb   85c8cc56d586a40d2b6736688591d493bf988b234bff3e331e7c1c642239b596
+
+y lo que ese indice le declaraba a apt, que es lo que decide:
+  Version: 0.2.0
+  Depends: … simple-scan, sane-airscan, gnome-software, gnome-software-plugin-snap
+```
+
+**Las dos tiendas no estaban insinuadas: estaban escritas en el medio.**
+
+#### (c) EL DEFECTO SEGUNDO, que el encargo no contemplaba y cazó el guardián
+
+Con el repositorio ya arreglado, `fabricar-iso.sh` se negó en el paso 3:
+
+```
+[FALLO] autoinstall-e3.yaml y encina-seed.sh se han separado.
+```
+
+**Ayer se rehizo el seed en UNO de los dos YAML, no en los dos.** `autoinstall.yaml`
+—el de E2, el del `CIDATA`— se regeneró en `98f0fb9`; `autoinstall-e3.yaml` —**el que
+viaja DENTRO de la ISO**— seguía en `a8fcc89`, del 2026-08-12. Nadie lo notó porque
+**ayer no se fabricó ninguna ISO**.
+
+Y lo que llevaba empotrado en base64 no era un detalle:
+
+```
+guion empotrado HOY en autoinstall-e3.yaml   27 906 bytes
+imagen/encina-seed.sh (el bueno)             28 860 bytes
+
+lo que EXIGIA el que viajaba:   H_META=85c8cc56…   <- la huella del 0.2.0
+                                simple-scan gnome-software gnome-software-plugin-snap
+lo que exige el bueno:          H_META=86da3cc9…   snap-store por `snap list`
+                                gnome-software comprobado AUSENTE
+```
+
+O sea que una ISO con el repositorio corregido y el seed viejo **habría rechazado su
+propio `.deb`** por huella. Puesto al día con la herramienta versionada
+(`--actualizar-yaml`), y **cambió UNA sola línea**, la 83, con el control de que el
+fichero contra sí mismo da 0.
+
+**La regla de `SCRIPTS.md` era buena y estaba incompleta: cuando cambia lo que el
+producto lleva no son seis cosas, son SIETE — y la séptima es que la quinta hay que
+hacerla DOS VECES, una por cada YAML.**
+
+#### (d) EL REPOSITORIO, con las dos direcciones y sus controles
+
+`dpkg-scanpackages` se corrió en `encina-dev`, identificada **por huella** y no por
+nombre (snap `firefox 153.0.3-1` rev 8735, `/home/prueba`, `encina-branding 0.1.7`).
+Los 28 `.deb` viajaron con `COPYFILE_DISABLE=1` —la trampa 24, que aquí muerde más
+fuerte porque las entradas que inventa `tar` **terminan en `.deb`** y `dpkg-scanpackages`
+las indexaría—:
+
+```
+entradas AppleDouble que llegaron: 0          .deb que llegaron: 28
+CONTROL: las 28 huellas del Mac y de la VM, iguales
+CONTROL del comparador: consigo mismo 0 diferencias; saboteado, las senala
+```
+
+El índice nuevo, y **el diff contra el viejo, que es lo que convierte «lo he
+regenerado» en una medición**:
+
+```
+Version: 0.2.1        Filename: ./encina-meta_0.2.1_all.deb    Size: 6912
+Depends: … simple-scan, sane-airscan, snapd
+SHA256: 86da3cc9ec071bcb597871b1337824fba0f5e7b8c4491b2f6c51f910a631ed2c
+
+la huella vieja 85c8cc56… en el indice nuevo:  0   (control: la nueva sale 1)
+«0.2.0» en el indice nuevo:                    0
+el diff viejo/nuevo cae ENTERO dentro de la estrofa de encina-meta:
+  las otras 27 estrofas, byte a byte iguales   (control: el viejo contra si mismo, 0 lineas)
+
+direccion 1: 28 entradas de Packages, 28 ficheros, 0 malas
+direccion 2: 28 .deb, 0 huerfanos
+CONTROL: con un .deb de mas, la direccion 2 lo ve; con un Filename inventado, la 1 lo ve
+```
+
+#### (e) EL CONTROL NEGATIVO: cuesta diez segundos y hay que hacerlo
+
+Con el `.deb` **viejo** bajo el nombre **nuevo**:
+
+```
+[OK]    encina-firefox-native_0.2.1_all.deb  972ec932…
+[FALLO] huella distinta en encina-meta_0.2.1_all.deb
+y NO escribio ninguna ISO: No such file or directory
+```
+
+Se niega **en el paso 2**, antes de tocar un byte del medio. Por eso el control
+negativo es gratis: no cuesta 3,5 GB, cuesta cero.
+
+#### (f) LA ISO NUEVA, y una cosa que conviene saber: PESA LO MISMO QUE LA VIEJA
+
+```
+ac0a5721b9ff5b2b762d3467bbc20d8e62374df22a5d18e3c483f8c25b1fa443  encina-os-E4-es-0.2.1.iso
+3 715 366 912 bytes
+
+aa1ac76a31afd75506b862eb6da9599bd53638dcdaa8aa0fbb07e625716c08cb  (la vieja)
+3 715 366 912 bytes    <- EXACTAMENTE LOS MISMOS
+```
+
+**El tamaño no discrimina: la huella sí.** Los dos `.deb` se diferencian en 1 516
+bytes y el medio los alinea al mismo número de bloques.
+
+Todos los controles del guion, en verde y sin aflojar ninguno:
+
+```
+los tres binarios firmados     intactos por huella, antes y despues
+la ESP                         byte a byte la oficial en sus 13 504 sectores
+                               y los 640 de mas son relleno: 0 bytes distintos de cero
+la FORMA de arranque           MBR hibrido, El Torito y plataforma UEFI, iguales
+el medio entero                501 entradas la oficial, 531 la nuestra
+                               30 anadidos, ni uno mas, ninguno perdido
+                               2 modificados y nombrados: grub.cfg y md5sum.txt
+control                        con una huella saboteada, la comparacion la senala
+integridad                     las 266 lineas de md5sum.txt cuadran
+control                        con el md5sum.txt OFICIAL falla exactamente UNA, la del grub.cfg
+```
+
+Y lo que lleva dentro, **leído de la ISO y no del directorio de donde salió**:
+
+```
+28 .deb    encina-meta_0.2.1_all.deb   86da3cc9…   Version: 0.2.1
+           Depends: … simple-scan, sane-airscan, snapd
+el 0.2.0 y su huella: 0 y 0        CONTROL: la misma busqueda sobre la ISO VIEJA da 1
+```
+
+#### (g) LA INSTALACIÓN: `encina-E4-entrega`, y el repositorio sale de `/cdrom`
+
+VM nueva desde cero, con la ISO **enlazada en duro** (`2 enlaces`, que es lo que un
+clon de APFS nunca dice) y un `CIDATA` de 128 MiB con el YAML de E2 y **ningún
+`encina-repo` dentro** —la salida barata de `SCRIPTS.md`, que fuerza a que el
+repositorio salga del medio—:
+
+```
+seed 53479f61…    dentro: user-data, meta-data
+/Volumes/CIDATA/encina-repo -> No such file or directory
+CONTROL: el mismo ls SI encuentra user-data, o sea que no esta mudo
+CONTROL: user-data y meta-data sobreviven byte a byte
+```
+
+Y el `Image` y el `initrd` de `e2-medios` se comprobaron **contra esta ISO** en vez de
+darlos por buenos, que es donde casi me equivoco: `initrd` coincide byte a byte, y
+`Image` **no** coincide con `/casper/vmlinuz`… porque es su **descompresión**:
+
+```
+gunzip -c /casper/vmlinuz de la ISO nueva -> a1586ff3cb7ced7c40dcb0aba5bf320ebb94a46d1a6505eb03157a8f9525632d
+e2-medios/Image                          -> a1586ff3cb7ced7c40dcb0aba5bf320ebb94a46d1a6505eb03157a8f9525632d
+```
+
+**El control de la trampa 16, recogido en la línea de órdenes real de QEMU:**
+
+```
+-append autoinstall        <- 1, y la palabra SUELTA
+unidades con media=        <- 5:  2 media=disk (disco.img, seed.img)
+                                  3 media=cdrom (la ISO NUEVA, Image, initrd)
+-kernel Image  -initrd initrd  -no-reboot
+```
+
+**Y lo que dejó escrito la máquina sola, que es lo que decide:**
+
+```
+se apago sola en 9 min           = ESTADO=COMPLETO
+testigo: encina-seed llego al final 2026-08-13T00:06:03Z estado=COMPLETO
+
+  CIDATA -> /dev/vdb                     <- el seed lo dio el volumen
+  REPO ELEGIDO -> /cdrom/encina-repo     <- EL REPOSITORIO SALIO DE LA ISO NUEVA
+  ls /target/srv/encina-repo | wc -l  -> 29     (28 .deb + Packages)
+ENCINA_ESTADO=COMPLETO   ENCINA_FALTA=
+
+y en la maquina instalada:
+  /srv/encina-repo/encina-meta_0.2.1_all.deb   86da3cc9…
+  encina-meta 0.2.1 · encina-branding 0.1.8 · encina-firefox-native 0.2.1
+  autofirma 1.9.1+encina4 · firefox 153.0.4~build1 · snapd 2.76+ubuntu24.04.1
+  gnome-software -> unknown ok not-installed
+  snap list -> snap-store rev 1271 · firefox rev 7764 (presente y sin abrir)
+  CONTROL: un snap inventado -> «no hay snaps instalados que coincidan»
+  CONTROL: un .deb inventado -> «no se ha encontrado ningun paquete»
+
+verificar-e2.sh --visibles 27, como root:
+  51 correctas · 0 fallos · 0 avisos · 0 omitidas
+  1 icono de Firefox · 27 aplicaciones visibles de 95, y COINCIDEN con las declaradas
+```
+
+**El mismo resultado que `encina-E4-tienda`, por un camino distinto: aquélla nació de
+la ISO vieja con un `CIDATA` que llevaba el repositorio dentro; ésta nace de la ISO
+nueva y el repositorio le sale del medio.**
+
+#### (h) (d1) [OJOS] UNA SOLA TIENDA, sobre la INSTALACIÓN LIMPIA — la casilla que §4.34 dejó sobre el clon
+
+Sesión gráfica de verdad, con autologin de GDM activado por `ssh` y **revertido por
+huella** al terminar —la misma vía de §4.34c, y la huella de virginidad salió
+`ceee968ce0212138…`, que es **exactamente la que documenta §9**, o sea el fichero de
+fábrica intacto—.
+
+La misma búsqueda «softw» de §4.34f, ahora sobre la instalación limpia:
+
+```
+Actualizacion de software · Programas y actualizaciones · Mas controladores ·
+Centro de aplicaciones
+y NADA MAS: ni «Software», ni el bloque de catalogo «Software, 15 mas»
+```
+
+**Mirado con los ojos en la captura**, y el contador al lado, con su control:
+
+```
+aplicaciones visibles: 27 de 95
+TIENDAS VISIBLES: 1     snap-store_snap-store.desktop | Centro de aplicaciones
+control: con org.gnome.Software.desktop anadido, el contador dice 2
+control: quitando las dos, el contador dice 0
+idioma que ve el proceso: ['es_ES.UTF-8','es_ES','es.UTF-8']   (setlocale, trampa 26bis)
+```
+
+**Y de propina, en la rejilla los nombres salen en español** —«Actualización de
+software», «Visor de documentos», «Escáner de documentos», «Editor de textos»—, que
+es §4.31j confirmado sobre una máquina distinta.
+
+#### (i) (d2) LA TIENDA INSTALA — **NO CONSEGUIDO, y no se disfraza**
+
+**La tienda abre, carga catálogo y encuentra LibreOffice en la instalación limpia**, y
+eso sí está medido:
+
+```
+abierta DESDE LA REJILLA (buscar «Centro de apl» -> un solo resultado -> Return)
+proceso: /snap/snap-store/1271/bin/snap-store
+ventana «Centro de aplicaciones», menu Explorar · Destacado · Productividad ·
+        Desarrollo · Juegos, catalogo cargado
+
+buscar «libreoffice»:
+  Paquetes snap      -> libreoffice, Cantara
+  Paquetes de Debian -> LibreOffice Writer, LibreOffice Impress, LibreOffice Calc
+
+la ficha del snap, y EL COSTE DICHO ANTES DE PULSAR:
+  libreoffice · Canonical (verificado) · Productividad
+  Canal latest/stable 26.2.5.2 · Confinamiento Estricto · Licencia MPL-2.0
+  Tamano de la descarga: 1.17 GB
+```
+
+**Lo que NO conseguí es pulsar «Instalar»**, y las cuatro vías se dicen porque cada
+una es un dato del banco:
+
+```
+1. clic del anfitrion (System Events) sobre el boton   -> 0 pixeles cambian
+   y sobre «Juegos» de la barra lateral, blanco inequivoco -> 0 pixeles cambian
+2. UTM «input scan code» / «input mouse click»          -> nada
+3. teclado: Tab SI llega (mueve el anillo fuera de la busqueda, medido),
+   pero el foco no aterriza NUNCA en el boton; Return y Espacio no lo activan
+4. accesibilidad (at-spi): la tienda SI aparece en el escritorio de a11y,
+   pero su arbol sale truncado -29 nodos, 2 botones SIN NOMBRE- y
+   queryAction/getExtents dan «timeout from dbind»
+5. teclas del raton de GNOME: el teclado numerico DESPLAZA LA PAGINA
+   en vez de mover el puntero
+```
+
+**Y no lo he sustituido por un `snap install` desde un terminal**, que era la salida
+fácil: eso mide que *snapd* instala, no que *la tienda* instala, y sería otra
+medición con el nombre de ésta. **La casilla se queda abierta.**
+
+Lo que sí quedó medido de esa mitad, y no es poco:
+
+```
+abrir la tienda CREA ~/snap/snap-store          <- «instalar/abrir un snap crea ~/snap/<app>»
+perfiles de Mozilla bajo ~/snap/: 0
+  control: el buscador encuentra .bashrc -> 1
+  control: el buscador sabe decir cero -> 0
+~/snap/ contiene: snapd-desktop-integration, snap-store
+```
+
+#### (j) UN REGALO, como el de §4.34h: D16 demostrada por un acto de usuario real
+
+Una tecla que se me escapó en el asistente de bienvenida abrió el enlace «Ver
+novedades de la versión». **El navegador que salió, en la instalación limpia y sin que
+nadie lo provocara:**
+
+```
+2276 /usr/bin/firefox http://www.ubuntu.com/getubuntu/releasenotes?os=ubuntu&ver=24.04
+2281 /usr/lib/firefox/crashhelper …
+2367 /usr/lib/firefox/firefox-bin -contentproc …
+```
+
+**El nativo, no el del Snap.** La condición de D16 —*el Firefox que el usuario puede
+abrir es el nativo*— estaba medida por inventario; aquí está medida **por lo que pasó
+cuando alguien pulsó**. Y `~/snap/` siguió con 0 perfiles de Mozilla.
+
+#### (k) EL INSTRUMENTO, y los TRES sitios donde §4.32h se queda corto
+
+El lector de pantalla sin ojos se rehízo y **esta vez vive en `scripts/`**
+(`leer-pantalla.m`, 25 líneas de Objective-C contra Vision, más `capturar-vm.sh` y
+`teclear-vm.sh`). Validado **contra una captura ya mirada con los ojos**, y con su
+control:
+
+```
+captura ya mirada -> «Display output is / not active.»   (lo que yo habia visto)
+negro puro        -> 0 lineas                            (sabe decir NADA)
+```
+
+**1. No basta con `AXRaise`: la ventana tiene que quedar `AXMain`.** Con `AXRaise`
+sola la ventana se ve delante, **la captura sale bien y las teclas no llegan**, sin
+ningún error. Media hora de teclas al vacío. La señal que lo delata es la de la
+trampa: el reloj del invitado avanza y la pantalla no cambia.
+
+**2. El ratón NO llega, y ahora está medido con un control que no admite lectura
+subjetiva.** §4.32h lo decía; aquí se comprueba comparando **píxel a píxel** dos
+capturas alrededor de un clic sobre un blanco inequívoco: **0 píxeles distintos**. El
+comparador es un decodificador de PNG propio (`diferencia.py`), con su control: contra
+sí mismo dice 0 y contra otra imagen da la caja de las diferencias.
+
+**3. El atajo de la rejilla no es `Alt+F1` desde un Mac: es `Super+A`, o sea `Cmd+A`.**
+GNOME tiene `panel-main-menu` en `<Alt>F1`, pero **en un Mac `F1` es tecla de brillo y
+no llega a la aplicación**. `show-applications` está en `Super+A` y `Cmd` sí se traduce
+a `Super`.
+
+#### (l) EL COSTE, medido y no predicho — y un borrado que devolvió CERO
+
+```
+libres al empezar    58 839 700 KiB = 56,109 GiB     10 VMs, las 10 paradas
+libres al terminar   43 156 232 KiB = 41,157 GiB     11 VMs, las 11 paradas
+                     -----------------------------
+GASTADO                              14,952 GiB      (se declararon ~14)
+```
+
+Dónde se fue: la ISO nueva (3,46 GiB), `encina-E4-entrega` (11 GiB según `du`, y aquí
+`du` acierta porque nace del medio, §9.a), el `CIDATA` (0,125 GiB).
+
+**Y AQUÍ HAY UNA FILA NUEVA PARA §9.a, Y ES LA MÁS EXTREMA: borrar la ISO vieja de
+3,46 GB devolvió CERO.**
+
+```
+df ANTES de borrar   43 157 080 KiB
+rm de encina-os-E4-es.iso (3 715 366 912 bytes)
+df DESPUES           43 157 052 KiB      <- devolvio 0 (bajo 28 KiB, que es el .deb que guarde)
+```
+
+Y **antes** de borrar se había descartado la trampa 21 midiendo, no suponiendo:
+`1 enlace`, y **ningún bundle vivo llevaba la ISO dentro** —`encina-E4-cinco` y
+`encina-E4-tienda` ya no la tenían—. O sea que **predije 3,46 GiB y me equivoqué**.
+
+**El control que convierte esto en un hallazgo en vez de en un misterio:**
+
+```
+dd de 3 GiB en el MISMO directorio  -> df baja 3 154 840 KiB
+rm de esos 3 GiB                    -> df los devuelve enteros
+```
+
+**El disco SÍ libera; esos 3,46 GB no estaban donde yo creía.** Y las dos
+explicaciones fáciles quedan descartadas: `tmutil listlocalsnapshots /` está **vacío**,
+no hay ningún otro fichero de 3 715 366 912 bytes en el contenedor ni en el home
+—`encina-os-E4-es-0.2.1.iso` tiene **otro inodo**—, y ningún proceso retiene el fichero
+borrado *(la línea `deleted` que salió en `lsof` es un proceso de macOS que se llama
+así, no un fichero retenido: lo digo porque llegué a leerlo mal)*.
+
+**Queda medido y SIN EXPLICAR, que es mejor que inventarle una causa** (§9.a, tercera
+regla). Lo que la fila añade a la tabla: la mentira de `du` tenía su simétrica sin
+escribir —**un fichero que `du` cuenta y cuyo borrado no devuelve nada, sin ser clon
+de nada que se pueda encontrar**—.
+
+Y antes de borrarla se guardó lo único que no se puede rehacer de la ISO vieja:
+`e2-medios/encina-meta_0.2.0_all.deb` (`85c8cc56…`, 5 396 bytes). Con él, el
+`fabricar-iso.sh` versionado y el `autoinstall-e3.yaml` de `a8fcc89`, la ISO vieja es
+reproducible; sin él, no.
+
+#### (m) El estado del banco al terminar
+
+```
+11 en utmctl list y 11 bundles en disco: consistente por las dos mitades (trampa 18)
+las 11 paradas
+e2-medios: encina-os-E4-es-0.2.1.iso (ac0a5721…) · encina-os-E3-es.iso (02ab929d…)
+           ubuntu-24.04.4-desktop-arm64.iso (c2610520…) · encina-meta_0.2.0_all.deb
+```
+
+**La ISO nueva conserva la versión en el nombre a propósito**: `encina-os-E4-es.iso` a
+secas ya significó dos artefactos distintos con el mismo nombre, y (f) enseña que el
+tamaño no los separa.
+
+**`encina-E4-entrega` se queda como la máquina del entregable**, y con ella
+**`encina-E4-tienda` pasa a ser candidata a borrar**: hace lo mismo por un camino peor
+—nació de la ISO defectuosa— y su ISO **ya no vive en `e2-medios`, así que §9.a no
+dejaría borrarla sin decirlo**. Es de Jorge decidirlo; yo no borro VMs que no he
+creado.
+
+#### (n) Lo que esta vuelta NO contesta
+
+- **Que la tienda INSTALE.** Es lo de (i), y es la mitad que le sigue faltando a la
+  premisa de D17. Sigue sin pulsarse «Instalar», ahora con cinco vías descartadas y
+  medidas en vez de una abandonada.
+- **Que la aplicación instalada aparezca en la rejilla y ABRA**, ni los MB reales que
+  ocupa después. Cuelgan de lo anterior.
+- **Que `~/snap/<app>` no traiga un perfil de Mozilla tras instalar desde la tienda.**
+  Lo que sí está medido es que **abrir** la tienda crea `~/snap/snap-store` y que
+  `~/snap/` sigue con 0 perfiles, con el control de los dos sentidos.
+- **Las cinco pantallas de esta ISO.** No se repiten a propósito: la forma no ha
+  cambiado y las cerró `encina-E4-cinco` (§4.32f). Lo que aquí no se mide es que el
+  `autoinstall.yaml` de **dentro** de la ISO se lea desde `/cdrom` — lo gana el
+  `CIDATA` (trampa 16, usada a favor).
+- **No se ha vuelto a firmar.** Quitar una tienda no toca ninguna de las seis
+  barreras, y nada de lo medido hoy lo reabre.
+- **Por qué borrar 3,46 GB devolvió cero.** Está en (l), con su control, y sin causa.
+- **amd64, nada.** D9 sigue igual.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

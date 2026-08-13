@@ -731,10 +731,15 @@ Vale para cualquier cambio de paquete, y son cuatro cosas, no una
 la ISO.** Los 28 `.deb` y su `Packages` se extraen con
 
 ```
-xorriso -osirrox on -indev encina-os-E4-es.iso -extract /encina-repo <destino>
+xorriso -osirrox on -indev encina-os-E4-es-0.2.1.iso -extract /encina-repo <destino>
 ```
 
-y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
+**El nombre lleva la versión desde el 2026-08-13** (`MEDICIONES.md` §4.35): la ISO
+vigente es `encina-os-E4-es-0.2.1.iso` (`ac0a5721…`) y la anterior, `aa1ac76a…`,
+**está borrada** porque llevaba dentro `encina-meta` 0.2.0. Las dos pesaban
+**exactamente lo mismo**, así que se comprueba **por huella y nunca por tamaño**.
+
+Y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
 volúmenes de la vuelta de E4 **no se conservaron a propósito**: son
 reproducibles, y el disco del banco no daba para todo.
 
@@ -768,6 +773,36 @@ producto LLEVA, hay dos sitios más que guardan la lista por su cuenta**:
 **Regla: cuando cambie lo que el producto lleva, `grep` del nombre viejo por
 `imagen/` ENTERO antes de fabricar nada** — y con su control, o sea comprobando
 que el mismo `grep` encuentra el nombre nuevo donde debe.
+
+**Y DESDE EL 2026-08-13 NO SON SEIS: SON SIETE, y la séptima es que la QUINTA HAY
+QUE HACERLA DOS VECES** (`MEDICIONES.md` §4.35c). `encina-seed.sh` no viaja suelto:
+viaja **empotrado en base64 dentro de un YAML**, y hay **dos** YAML que lo llevan:
+
+```
+7. imagen/autoinstall.yaml      <- el de E2, el que va en el volumen CIDATA
+   imagen/autoinstall-e3.yaml   <- EL QUE VIAJA DENTRO DE LA ISO
+```
+
+El 2026-08-12 se rehízo el seed y **se regeneró solo el primero**. Nadie lo notó
+porque **aquel día no se fabricó ninguna ISO**. Al fabricarla al día siguiente, el
+guardián del paso 3 de `fabricar-iso.sh` lo cazó:
+
+```
+[FALLO] autoinstall-e3.yaml y encina-seed.sh se han separado.
+```
+
+Y no era cosmético: el guion empotrado en la ISO exigía `H_META=85c8cc56…` —la
+huella de la versión **vieja**— y los dos `gnome-software`, así que **una ISO con el
+repositorio corregido y ese seed habría rechazado su propio `.deb`**. Se pone al día
+con la herramienta versionada, no a mano:
+
+```
+./fabricar-seed.sh --yaml imagen/autoinstall-e3.yaml --actualizar-yaml \
+                   --repo <dir> --salida <img de usar y tirar>
+```
+
+**Y se comprueba que cambió UNA sola línea**, con el control de que el fichero
+comparado consigo mismo da 0.
 4. **Los otros tres `.deb` se sacan del volumen del seed anterior**, no de
    `debian-packages/` de este repositorio: es la trampa de §4.13, y allí hay
    ficheros con la misma versión y **otros bytes**.
@@ -1153,6 +1188,52 @@ El `CIDATA` gana el seed (trampa 16, usada a favor) y la instalación va
 desatendida, pero el bloque 1 de `encina-seed.sh` no encuentra repositorio en él
 y **cae a `/cdrom/encina-repo`**, que es justo lo que se quería demostrar de la
 ISO. Se paga con lo que deja de medirse, y eso se escribe.
+
+**Y TRES COSAS MÁS DEL 2026-08-13, que son donde lo de arriba se queda corto**
+(`MEDICIONES.md` §4.35k). Van con los tres guiones que ahora viven en `scripts/`:
+`capturar-vm.sh`, `teclear-vm.sh` y `leer-pantalla.m`.
+
+**1. NO BASTA CON `AXRaise`: la ventana tiene que quedar `AXMain`.** Es la cuarta
+cosa, y cuesta media hora de teclas al vacío:
+
+```
+osascript -e '… perform action "AXRaise" of w'                      -> se ve delante,
+                                                                       la captura sale bien,
+                                                                       LAS TECLAS NO LLEGAN
+osascript -e '… set value of attribute "AXMain" of w to true'       -> ahora si
+```
+
+**Y no da ningún error.** La señal que lo delata es la de siempre: el reloj del
+invitado avanza y la pantalla no cambia. `teclear-vm.sh` lo pone y **se niega** si la
+ventana no queda `AXMain`.
+
+**2. EL RATÓN NO LLEGA, y ahora con un control que no admite lectura subjetiva.**
+Antes era «no parece que llegue». Ahora se compara **píxel a píxel** el antes y el
+después de un clic sobre un blanco inequívoco —un elemento de la barra lateral—:
+
+```
+clic del anfitrion sobre «Juegos»   -> 0 pixeles distintos
+control del comparador              -> contra si misma 0; contra otra, la caja de las diferencias
+```
+
+El comparador es `diferencia.py`: decodifica el PNG a mano (zlib + los cinco
+filtros) porque **no hay PIL en el Python del sistema**, y devuelve la caja que
+encierra los cambios. Sirve además para **seguir el anillo de foco de GTK**, que es
+invisible para el OCR.
+
+**3. La rejilla NO se abre con `Alt+F1` desde un Mac: se abre con `Cmd+A`.** GNOME
+tiene `panel-main-menu` en `<Alt>F1`, pero **en un Mac `F1` es tecla de brillo y no
+llega a la aplicación**. Lo que sí funciona es `show-applications`, que está en
+`Super+A`, y `Cmd` se traduce a `Super`.
+
+**Y LO QUE SIGUE SIN PODERSE HACER, dicho para que nadie lo vuelva a intentar a
+ciegas: pulsar un botón concreto dentro de una aplicación del invitado.** El 2026-08-13
+se descartaron **cinco** vías midiendo cada una (§4.35i): clic del anfitrión, `input
+scan code`/`input mouse click` de UTM, tabular hasta el botón —`Tab` **sí** llega y
+mueve el foco, pero no aterriza en él y `Return`/`Espacio` no lo activan—, la
+interfaz de accesibilidad —la aplicación aparece, pero el árbol de un snap confinado
+sale truncado y `queryAction` da `timeout from dbind`— y las teclas del ratón de
+GNOME, que **desplazan la página** en vez de mover el puntero.
 
 **Y la conclusión de método, que vale más que las cuatro:** cuando medir cuesta
 tanto como esto, **el dato bueno es el que la máquina deja escrito solo**

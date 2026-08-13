@@ -1736,8 +1736,15 @@ ninguna sin la salida literal.**
       segundo, y el bloque de catálogo de `gnome-software` desaparecido—, y
       contada por inventario en la instalación limpia: **27 visibles**, que
       **coinciden con las declaradas por adelantado**, y la que se fue nombrada:
-      `org.gnome.Software.desktop`. **Lo que esta casilla NO dice:** el `[OJOS]`
-      está tomado sobre el **clon**, no sobre la instalación limpia
+      `org.gnome.Software.desktop`. ~~**Lo que esta casilla NO dice:** el `[OJOS]`
+      está tomado sobre el **clon**, no sobre la instalación limpia~~
+      **CERRADA DEL TODO EL 2026-08-13 (§4.35h): el `[OJOS]` ya está sobre la
+      INSTALACIÓN LIMPIA**, `encina-E4-entrega`, y además nacida de la ISO
+      corregida. La misma búsqueda «softw» en la rejilla da **Actualización de
+      software · Programas y actualizaciones · Más controladores · Centro de
+      aplicaciones** y **nada más** — ni «Software» ni su bloque de catálogo—,
+      mirado en pantalla; y el contador dice **1**, con el control de que sabe
+      decir **2** y **0**
 - [x] **LA TIENDA ABRE Y SIRVE, que es la premisa de D17** `[OJOS]`. Casilla
       nueva del 2026-08-12, y se dice por qué no estaba antes: hasta ese día la
       tienda estaba instalada y **nadie la había abierto** (§4.33j), así que D17
@@ -1748,7 +1755,21 @@ ninguna sin la salida literal.**
       encontrados. **De propina y no era una casilla:** la tienda **no es solo de
       snaps** —ofrece «Paquetes de Debian» y con ese filtro encuentra
       `file-roller`, que no existe como snap—. **Lo que NO se midió:** que
-      **instale**; nadie pulsó «Instalar»
+      **instale**; nadie pulsó «Instalar».
+      **REMEDIDA SOBRE LA INSTALACIÓN LIMPIA EL 2026-08-13 (§4.35i)**, que es
+      donde antes solo estaba el clon: abierta **desde la rejilla**, ventana
+      «Centro de aplicaciones», catálogo cargado, y encuentra `libreoffice`
+      **por las dos vías** —«Paquetes snap» y «Paquetes de Debian»—, con su ficha
+      diciendo `latest/stable 26.2.5.2`, confinamiento estricto y **1,17 GB** de
+      descarga. **Y LA MITAD QUE SIGUE ABIERTA, ahora con motivo medido y no
+      abandonada:** no se ha conseguido **pulsar** «Instalar». Cinco vías
+      descartadas una a una —clic del anfitrión (**0 píxeles** cambian, comparado
+      a nivel de píxel), `input scan code`/`input mouse click` de UTM, tabular
+      hasta el botón (`Tab` **sí** llega y mueve el foco, pero no aterriza en él),
+      la accesibilidad (árbol truncado del snap confinado, `timeout from dbind`)
+      y las teclas del ratón de GNOME (desplazan la página)—. **Y NO se sustituyó
+      por un `snap install` desde un terminal:** eso mide que `snapd` instala, no
+      que la tienda instala, y sería otra medición con el nombre de ésta
 - [x] **El manejador del PDF, atado, y medido en LAS DOS COLUMNAS.** *Sano:*
       `xdg-mime query default application/pdf` da el visor **con
       `XDG_CURRENT_DESKTOP=ubuntu:GNOME` y sin él**, y el fichero que manda es
@@ -1825,6 +1846,15 @@ ninguna sin la salida literal.**
       verde entero, el instalador **en español**, y la máquina que sale da
       **48 correctas, 0 fallos**. *Roto:* cualquier control de `fabricar-iso.sh`
       en rojo, o una máquina distinta de la de `encina-E4-meta`.
+      **Y LA ISO A LA QUE SE REFIERE CAMBIÓ EL 2026-08-13 (§4.35):** es
+      `encina-os-E4-es-0.2.1.iso` (`ac0a5721…`), porque `aa1ac76a…` llevaba dentro
+      `encina-meta` **0.2.0**, o sea las dos tiendas. **Una ISO distinta es otro
+      artefacto** —lo dice §6ter.3—, así que la casilla **se remarcó entera con la
+      nueva**: `fabricar-iso.sh` en verde entero, y `encina-E4-entrega` instalada
+      sola en 9 min con `REPO ELEGIDO -> /cdrom/encina-repo` y **51 correctas, 0
+      fallos**. *Lo que la nueva NO rehace, y se dice:* el instalador en español y
+      las cinco pantallas, que van en el `grub.cfg` y en el seed de dentro —ni uno
+      ni otro han cambiado— y los cerró `encina-E4-cinco` con `aa1ac76a…`.
       ~~**MARCADA a medias, y se dice cuál mitad:**~~ **MARCADA ENTERA EL
       2026-08-12 (§4.32).** *Lo que ya estaba:* `encina-os-E4-es.iso`
       (`aa1ac76a…`) arranca, su instalador se ve en español, y una instalación
