@@ -146,8 +146,17 @@ A partir de `01-repo.sh` los scripts viven dentro del repositorio, en
 
 Esto no es un script del repositorio, es el procedimiento que hay detrás de
 `MEDICIONES.md` §4.14 y §4.16, y se escribe aquí porque **derivarlo otra vez
-cuesta una tarde**. Los medios viven en
+cuesta una tarde**. Los medios auxiliares —`Image`, `initrd`, los `user-data` y
+los volúmenes de laboratorio— viven en
 `~/Library/Containers/com.utmapp.UTM/Data/Documents/e2-medios/`.
+
+**Y las ISOs YA NO VIVEN AHÍ, desde el 2026-08-13** (`MEDICIONES.md` §4.39m).
+Están en **`medios/`, dentro del repositorio y en `.gitignore`**, que es donde
+las busca `fabricar-iso.sh` por defecto y donde las deja
+`imagen/traer-iso-oficial.sh`. El motivo no es de orden sino de método: dentro
+del contenedor de UTM estaban **a nueve componentes de profundidad**, y por eso
+un `find -maxdepth 6` concluyó que no había ninguna y se aplazó una casilla
+entera sobre esa conclusión.
 
 **1. El volumen del seed.** Un `CIDATA` es un sistema de ficheros FAT etiquetado
 así con `user-data` y `meta-data` dentro. En macOS se fabrica **crudo**, que es
@@ -795,8 +804,14 @@ construyen desde el clon** con `03-construir.sh`, `07-firefox-construir.sh` y
 
 **El nombre lleva la versión desde el 2026-08-13** (`MEDICIONES.md` §4.35): la ISO
 vigente es `encina-os-E4-es-0.2.1.iso` (`ac0a5721…`) y la anterior, `aa1ac76a…`,
-**está borrada** porque llevaba dentro `encina-meta` 0.2.0. Las dos pesaban
-**exactamente lo mismo**, así que se comprueba **por huella y nunca por tamaño**.
+llevaba dentro `encina-meta` 0.2.0. Las dos pesaban **exactamente lo mismo**, así
+que se comprueba **por huella y nunca por tamaño**.
+
+*Y una corrección medida el 2026-08-13 (§4.39m):* este párrafo decía que
+`aa1ac76a…` **estaba borrada**, y no lo estaba — seguía viva en el `scratchpad`
+de una sesión muerta, encontrada **por huella** al barrer el disco sin límite de
+profundidad. Se borró entonces. Es la misma familia que (a): «lo borré» y «no lo
+encuentro donde miré» no son lo mismo, y sólo el segundo se había medido.
 
 Y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
 volúmenes de la vuelta de E4 **no se conservaron a propósito**: son

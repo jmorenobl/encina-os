@@ -9326,6 +9326,40 @@ sin comillas, `ls | grep`, `rm -rf $X/*`— dio tres avisos y rc=1.
 - **En `encina-dev` quedan los árboles de esta vuelta** (`~/encina-construir-*`,
   `~/repo-b0`, `~/firma-b0`) más los de §4.37k. No es un clon limpio.
 
+#### (m) LA LIMPIEZA, decidida por Jorge — y «dos copias» resultó no costar dos
+
+Decisión de Jorge al leer (a): **la ISO no puede vivir perdida dentro del
+contenedor de UTM**, que es lo que la escondió del `find`. Pasa a `medios/`,
+dentro del repositorio y en `.gitignore`, con `imagen/traer-iso-oficial.sh` para
+traerla. El `mv` es en el mismo volumen, así que **costó 0 bytes** y las huellas
+salieron intactas después.
+
+Y la segunda parte —quitar duplicados— dio un resultado que hay que escribir
+porque contradice la pregunta:
+
+```
+libre al empezar la limpieza          47,08 GiB
+cinco ISOs de E3 de un scratchpad muerto      +16,72
+el scratchpad de E2 (oficial + seed)           +3,29
+la E4 de otro scratchpad                       +3,46
+mis cosechas y directorios de prueba           +0,91
+e2-medios/encina-os-E3-es.iso (3,34 GiB)       +0,00   <- CERO
+libre al terminar                     68,01 GiB        total +23,5 GiB (dos veces mi retorno previsto)
+```
+
+**Borrar la ISO de E3 de `e2-medios` devolvió 0,00 GiB**, con la copia del
+bundle byte a byte idéntica (`02ab929d…` las dos). Es §4.26i medido otra vez y
+por tercera vía: el `Data/` de cada bundle de UTM lleva **un clon de APFS**, así
+que las dos «copias» son **un solo juego de bloques con dos nombres**. La
+consecuencia práctica, y va contra la intuición: **las dos copias de la ISO
+oficial no cuestan dos ISOs, cuestan una**, y borrar la del bundle rompería
+`encina-E2-2vias` sin devolver nada.
+
+**Lo que de verdad ocupaba eran los `scratchpad` de sesiones muertas: 23,5 de
+los 23,5 GiB.** Y dentro había un hallazgo: `aa1ac76a…`, la ISO anterior a la
+vigente, que `SCRIPTS.md` daba por **borrada** desde el 2026-08-13. No lo
+estaba. Ahora sí.
+
 ---
 
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
