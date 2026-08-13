@@ -9362,6 +9362,323 @@ estaba. Ahora sí.
 
 ---
 
+### 4.40 LA ISO DE ESTE REPOSITORIO SE ARRANCA Y SE INSTALA — y la lista de etapas del verificador daba por segura una que no lo es (2026-08-13/14)
+
+**El agujero que esta vuelta ataca, dicho sin maquillar:** §4.39 midió que el
+medio se **fabrica** igual seis veces, y dejó escrito que **nadie había arrancado
+ninguna de las cinco ISOs**. Los tres `.deb` reconstruidos desde el clon **no se
+habían instalado nunca** (§4.37k, §4.38g), y el argumento de que su contenido es
+idéntico huella a huella al de los vigentes **es un argumento, no una medición**.
+
+**Lo que se lleva esta vuelta, en cuatro líneas:**
+
+1. **`95758c9e…` arranca, instala y produce la máquina del producto.** Las cinco
+   pantallas las contestó Jorge; el seed salió de `/cdrom` y el repositorio del
+   medio, con `CIDATA -> <no encontrado>` escrito por la máquina.
+2. **Los tres `.deb` nuevos están instalados y atados por huella**, y con eso se
+   cierra lo que §4.37k y §4.38g dejaron abierto.
+3. **UN `[FALLO]`, y no es del producto: falta la etapa `loading` en el
+   `telemetry`.** El verificador la exige desde §4.32g porque allí se escribió
+   que *«toda instalación la escribe»*. **Esta no la escribió.**
+4. **Y un defecto de mi propio guion de medida**, cazado por su salida: comparar
+   un `.deb` contra los `.md5sums` de dpkg **no puede cuadrar**, porque dpkg no
+   mete ahí los conffiles.
+
+#### (a) LA VM, y la prueba es lo que NO estaba conectado
+
+`encina-95758c9e` —el nombre lleva la huella de la ISO a propósito, que el nombre
+no distingue nada (trampa 14)—, creada desde cero escribiendo el `config.plist`
+con `plistlib`, sin clonar nada. **La ISO va por ENLACE DURO desde `medios/`**,
+que es el mismo volumen: costó **0 bytes** y `stat` dice **2 enlaces**, que es lo
+que un clon de APFS nunca dice (trampa 21).
+
+Lo que se puede enseñar **antes** de arrancar, que es donde vive esta prueba:
+
+```
+todo lo que hay en el bundle:  config.plist, Data/disco.img, Data/encina-os-nueva.iso
+                               y NADA MAS
+la ISO y la de medios/:        inodo 89645149, 2 enlaces, 3 715 366 912 bytes  <- el MISMO fichero
+Drive declarados:              disco.img (Disk)  ·  encina-os-nueva.iso (CD, ReadOnly)
+QEMU.AdditionalArguments:      []
+disco.img:                     40 GiB declarados, 0 bloques de 512 ocupados
+bytes distintos de cero en sus primeros 100 MiB:   0
+CONTROL, los mismos 100 MiB de la ISO:            101 265 107
+```
+
+**Y el control de la trampa 16, LEÍDO Y TRANSCRITO en el momento**, porque
+`debug.log` es un volátil y no hay copia de seguridad detrás (§4.35o):
+
+```
+-append        0
+media=disk     1   .../encina-95758c9e.utm/Data/disco.img
+media=cdrom    1   .../encina-95758c9e.utm/Data/encina-os-nueva.iso
+CIDATA         0        -kernel  0        -initrd  0
+CONTROL: 'edk2' en el mismo fichero -> 1   (el grep no esta mudo)
+```
+
+**Y la trampa se demostró sola una hora después**, que es mejor que citarla:
+quitada la ISO y puesto el canal, el **mismo** `debug.log` pasó a decir **dos**
+`media=disk` y **cero** `media=cdrom`. Quien lo leyera ahora mediría lo
+contrario de lo que pasó.
+
+#### (b) LAS CINCO PANTALLAS, y el instalador se ve en español
+
+Se escribieron **antes de arrancar** con lo que había que teclear y lo que se
+esperaba ver en cada una. Las contestó Jorge; yo no toqué el ratón.
+
+**La novena casilla de §6ter.3, sobre esta ISO:** la primera pantalla salió en
+español —«Elija la disposición del teclado», «Seleccione la variante del
+teclado»— y **no hubo pantalla de idioma ni de bienvenida**: entró directa a
+`keyboard`.
+
+Y el hueco de `source` visto por el otro lado, en «Revise sus elecciones»:
+
+```
+Configuracion del disco   Borrar disco e instalar Ubuntu
+Disco de instalacion      vda
+Aplicaciones              <VACIO>     <- 'source' no se pregunto: es el producto
+Cifrado del disco         Ninguna
+Software propietario      None        <- codecs: false, drivers: false
+vda1 fat32 /boot/efi   ·   vda2 ext4 /
+```
+
+**LA CASILLA 1 DE §6ter.3, MEDIDA POR PRIMERA VEZ EN EL PROPIO INSTALADOR Y NO
+POR SUS CONSECUENCIAS.** Hasta hoy se marcaba mirando qué pantallas salían;
+`ubuntu_bootstrap.log` lo dice con todas las letras:
+
+```
+21:11:57.132552  ==> getInteractiveSections() ["keyboard","network","storage","identity","timezone"]
+21:11:57.132611  installer_service: Showing only pages requested by subiquity:
+                 {keyboard, network, storage, identity, timezone}
+```
+
+**El instalador de escritorio pide la lista, la recibe entera y dice que sólo
+enseña esas.** Es §6ter.0 leído en la máquina que lo ejecuta.
+
+**Y el error de QEMU salió, como estaba previsto** (§4.34j). Se dejó estar, y
+esta vez su inocuidad se midió **en vivo** en lugar de citarse: el diálogo
+apareció con el disco en 3 110 MiB y el disco siguió creciendo hasta **11 065
+MiB**, que es donde llegó la instalación buena de §4.34j (11 002 MB) y no donde
+se atascaban las dos que llevaban `-set` (9 502 MB).
+
+#### (c) EL VERIFICADOR: 51 correctas y UN fallo
+
+`imagen/verificar-instalacion.sh --forma e3 --visibles 27`, como root, dentro de
+la máquina, por un canal FAT conectado **después** de instalar (trampa 20):
+
+```
+[OK] 51   [FALLO] 1   [AVISO] 0   [OMIT] 0
+```
+
+Lo que contestó del producto, y es lo que había que saber:
+
+```
+iconos de Firefox que ve el usuario: 1
+27 aplicaciones visibles de 95, y COINCIDEN con las 27 declaradas antes de instalar
+forma (c): snapd + Snap de Firefox instalado y NUNCA abierto      <- la de D16
+encina-meta 0.2.1 · encina-branding 0.1.8 · encina-firefox-native 0.2.1
+autofirma 1.9.1+encina4  (la que espera por raiz, M20)
+la tienda: snap-store 0+git.90575829 rev 1271
+gnome-software fuera (unknown ok not-installed)
+el fichero que ata el PDF es NUESTRO (R5): encina-branding
+CONTROL: gnome-mimeapps.list es de 'gnome-session-common' (dpkg -S no esta mudo)
+```
+
+Y lo que la máquina dejó escrito sola, que es lo que decide:
+
+```
+CIDATA -> <no encontrado>            <- el seed salio del QUINTO sitio, /cdrom/autoinstall.yaml
+REPO ELEGIDO -> /cdrom/encina-repo   <- el repositorio salio DEL MEDIO
+ENCINA_ESTADO=COMPLETO   ENCINA_FALTA=   ENCINA_FECHA=2026-08-13T21:26:17Z
+```
+
+**EL FALLO, literal y hasta la etapa:**
+
+```
+[FALLO]  las etapas por las que paso el instalador
+         | esperado: confirm,done,identity,install,keyboard,loading,network,storage,timezone
+         | obtenido: confirm,done,identity,install,keyboard,        network,storage,timezone
+```
+
+El `telemetry` entero, al lado del de la instalación **de la misma forma** con la
+ISO anterior (§4.32f, `encina-E4-cinco`), que es la comparación que toca —§4.35g
+no vale aquí: aquélla corrió con `--forma e2`, y esa rama espera otra lista—:
+
+```
+ESTA (95758c9e)              §4.32f (aa1ac76a)
+  "0":   keyboard              "0":    loading
+  "200": network               "1":    keyboard
+  "202": storage               "314":  network
+  "204": identity              "398":  storage
+  "274": timezone              "439":  identity
+  "286": confirm               "867":  timezone
+  "377": install               "955":  confirm
+  "774": done                  "957":  install
+                               "1418": done
+```
+
+**Ninguna etapa sobra, ninguna se preguntó de más:** `locale` y `source` no
+aparecen, y el control de que ese `grep` sabe encontrar algo —`keyboard`— salió
+en verde. **Lo único que falta es `loading`**, y allí ocupaba el tick `0` con
+`keyboard` en el `1`; aquí `keyboard` ocupa el `0`.
+
+**Lo que esto dice del verificador, y es el hallazgo:** la lista se hizo exacta en
+§4.32g **añadiendo `loading` porque se escribió que «toda instalación la
+escribe»**. Era una generalización sobre **una** medición. Esta instalación no la
+escribió, así que la premisa era falsa o incompleta. **Lo que no se sabe todavía
+es por qué**, y no se arregla en esta vuelta: aflojar la lista sin causa sería
+convertir una casilla exacta en una que no distingue.
+
+**Lo que sí se puede acotar, con el registro delante:** el instalador esperó
+**ocho segundos** a `cloud-init` antes de la primera pantalla, y las claves de
+`Stages` son un contador, no una hora de reloj.
+
+```
+21:11:48.321775  Waiting server up to 90 seconds
+21:11:48.427915  ApplicationState.CLOUD_INIT_WAIT     (x8, un segundo cada uno)
+21:11:56.442546  ApplicationState.WAITING
+21:11:56.444819  telemetry: Writing report to /var/log/installer/telemetry
+```
+
+**La hipótesis —que `loading` y `keyboard` cayeran en el mismo tick y la segunda
+machacara a la primera— encaja con los dos ficheros y NO ESTÁ DEMOSTRADA.** Va
+escrita como hipótesis. Lo que la refutaría: una instalación de esta misma ISO
+con `loading` presente, o el código del cliente diciendo otra cosa.
+
+#### (d) LOS TRES `.deb`, DENTRO DE LA MÁQUINA — la casilla que §4.37k dejó abierta
+
+La cadena son tres eslabones, y comprobar sólo el primero mediría **el medio**
+otra vez, no la instalación.
+
+**1. Los bytes que viajaron en la ISO**, leídos de `/srv/encina-repo` de la
+máquina instalada (29 ficheros = 28 `.deb` + `Packages`):
+
+```
+[OK] encina-branding_0.1.8_all.deb        9ec0a49db9983e6b98956152094aa78b544d1da6c8ed5482e9930414b6a5ea78
+[OK] encina-firefox-native_0.2.1_all.deb  640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
+[OK] encina-meta_0.2.1_all.deb            204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
+CONTROL: contra una huella de ceros dice MALA
+```
+
+**Y el seed las comparó él solo durante la instalación**, con sus dos controles
+negativos, que es un dato que no depende de mi guion:
+
+```
+[HUELLA  OK ] autofirma · encina-branding · encina-firefox-native · encina-meta
+[HUELLA MALA] encina-meta_0.2.1_all.deb   esperada=000…000  real=204081f0…
+[HUELLA MALA] fichero-que-no-existe-jamas real=<no se pudo leer>
+```
+
+**3. Lo registrado contra los ficheros que hay en el disco ahora**, que es el
+eslabón que separa «el `.deb` está en `/srv`» de «el `.deb` está instalado»:
+
+```
+[OK] encina-branding:        dpkg -V no senala ni un fichero cambiado
+[OK] encina-firefox-native:  dpkg -V no senala ni un fichero cambiado
+[OK] encina-meta:            dpkg -V no senala ni un fichero cambiado
+CONTROL: dpkg -V sobre el sistema entero senala 1 -> missing c /etc/apparmor.d/nautilus
+         o sea que NO esta mudo, y los tres ceros de arriba significan algo
+```
+
+**2. Y el eslabón de en medio salió en rojo por un defecto MÍO**, no del
+producto. Comparé los ficheros de dentro del `.deb` contra
+`/var/lib/dpkg/info/<pkg>.md5sums`:
+
+```
+encina-branding        20 en el .deb   17 registrados   3 lineas distintas   [FALLO]
+    < etc/dconf/db/gdm.d/99-encina  ·  etc/dconf/profile/gdm  ·  etc/xdg/mimeapps.list
+encina-firefox-native   8 en el .deb    6 registrados   2 lineas distintas   [FALLO]
+    < etc/apt/preferences.d/encina-mozilla  ·  etc/apt/sources.list.d/mozilla.sources
+encina-meta             2 en el .deb    2 registrados   0                    [OK]
+CONTROL: con una linea saboteada la comparacion la senala (2 diferencias)
+```
+
+**Los cinco que «faltan» son conffiles, y dpkg no los mete en `.md5sums`.** No es
+una interpretación: la correspondencia se comprobó **en el clon**, y es uno a
+uno con los ficheros que cada paquete instala bajo `/etc/`:
+
+```
+encina-branding        3 ficheros bajo etc/   ->  3 diferencias
+encina-firefox-native  2 ficheros bajo etc/   ->  2 diferencias
+encina-meta            0 ficheros bajo etc/   ->  0 diferencias   <- el control natural
+```
+
+**`encina-meta` es el que lo cierra**, porque es el único de los tres que no
+instala nada en `/etc/` y es el único que cuadró. Un guion que compara contra un
+fichero donde el dato **no puede estar** no es una comprobación; es la familia de
+la trampa 5, y esta vez la escribí yo.
+
+#### (e) LA FIRMA: no se intentó, y con motivo
+
+Con un `[FALLO]` abierto no se sigue. Y aunque no lo hubiera: la firma real es
+`[OJOS]`, pide certificado personal y clon efímero (§9.1), y **el que puede
+pulsar es Jorge**, que ya había gastado dos horas en las cinco pantallas. Queda
+donde estaba.
+
+#### (f) EL INSTRUMENTO: `teclear-vm.sh` pierde caracteres, y dos de tres formas son mudas
+
+Tres modos de fallo distintos, los tres **sin ningún error**, y los tres cazados
+mirando la pantalla antes de pulsar `Return`:
+
+```
+1. Las COMILLAS DOBLES no llegan, y la orden entera desaparece
+   'script -q -c "bash /mnt/v.sh …" /mnt/salida.txt'  ->  el prompt se queda VACIO
+   Causa: el guion interpola $TEXTO dentro de comillas dobles de AppleScript.
+2. El '>' NO llega
+   'echo hola > /mnt/prueba.txt'  ->  llego  'echo hola  /mnt/prueba.txt'
+3. Los DIGITOS se pierden
+   '--forma e3 --visibles 27'  ->  llego  '--forma e --visibles'
+   'grep -n -A3 FALLO'         ->  llego  'grep -n -A FALLO'
+```
+
+**El 3 es el peligroso, y por poco:** `--forma e` habría hecho que el verificador
+se negara con código 2, que se ve. Pero un dígito comido en `--visibles` habría
+pasado por un `[AVISO]` y nadie lo mira.
+
+Las tres defensas, y las tres son baratas: **los dígitos van por `key code`** (`3`
+es 20, `2` es 19, `7` es 26), **`script <fichero>` sin `-c`** graba la sesión
+entera sin necesitar ni comillas ni `>`, y **se mira la orden en la pantalla
+antes de ejecutarla**, que es la regla de siempre y hoy ha valido tres veces.
+(`Ctrl+U` para borrar la línea tampoco llegó limpio; lo que sí funciona es
+`Ctrl+C`.)
+
+#### (g) EL COSTE, medido y no predicho
+
+```
+libre al empezar    72 957 616 KiB = 69,58 GiB     10 VMs, las 10 paradas
+libre al terminar   61 265 000 KiB = 58,43 GiB     11 VMs, las 11 paradas
+                    ------------------------------
+GASTADO                              11,15 GiB     (se declararon ~11)
+```
+
+Dónde se fue, y **`du` vuelve a mentir en la dirección de §9.a**: dice `14G`
+sobre el bundle, y de esos **3,46 GiB son la ISO, que no cuesta nada** porque es
+un enlace duro a `medios/`. Lo real es `disco.img` con 22 695 264 bloques de 512
+= **10,82 GiB**, más el canal de 16 MiB.
+
+**Y la ISO salió intacta de servir de medio**, comprobado por huella después:
+`95758c9e…`, la misma.
+
+#### (h) Lo que esta medición NO contesta
+
+- **POR QUÉ FALTA `loading`.** Hay una hipótesis (c) y no está demostrada. **La
+  casilla de §6ter.3 que depende del verificador NO se marca**, y el asterisco
+  del bloque 0 se queda donde está.
+- **La firma real sobre esta máquina.** No se intentó (e). Sigue siendo la
+  casilla más cara que queda.
+- **Que la tienda instale en ESTA máquina.** Se midió que está y que
+  `gnome-software` no; nadie la abrió. §4.35i lo cerró sobre otra máquina.
+- **Una sola instalación.** `95758c9e…` se ha arrancado **una vez**. Que dos
+  instalaciones de la misma ISO den lo mismo no está medido, y es justo la
+  pregunta que el `loading` deja abierta.
+- **El eslabón 2 de (d) sigue sin cerrarse por su lado bueno.** Los conffiles se
+  registran en `/var/lib/dpkg/status`, no en `.md5sums`, y no se han comparado
+  contra los bytes del `.deb`. Lo que sí está atado son los eslabones 1 y 3.
+- **Secure Boot, amd64 y el núcleo en el medio.** Igual que ayer: límites
+  declarados, no deudas.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,
@@ -9469,6 +9786,8 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un `find` acotado contesta «no hay» cuando quería decir «no he mirado»** | `find / -maxdepth 6 -name '*.iso'` no encuentra ninguna, y de ahí sale «en este Mac no hay ninguna ISO»: se aplaza una casilla, se presupuestan 3,5 GB de red y se declara imposible una comparación que sí se podía hacer | El `-maxdepth` estaba por debajo de la profundidad real. Las ISOs vivían a **nueve** componentes (`~/Library/Containers/com.utmapp.UTM/Data/Documents/e2-medios/`) y había **trece**. Es la familia de la 5: **una comprobación que no puede dar una de sus dos respuestas no es una comprobación**, y una búsqueda vacía sólo significa «no hay» si el instrumento podía encontrarlo. Se dice el ámbito al lado del resultado, o se busca sin acotar (§4.39a) |
 | **Un `[OK]` que sigue saliendo con la comprobación desactivada** | El guion imprime `[OK] modo fijado: 32 ficheros en 644` y produce una ISO con cuatro ficheros que **no** están en 644 | La línea de `[OK]` describe lo que el guion *pidió*, no lo que *pasó*. Lo único que separaba las dos cosas era el guardián de la trampa 13 — verificar la mutación **antes** de leer su resultado. Neutralizado el guardián, el `[OK]` se imprime igual y la ISO sale rota (§4.39g) |
 | **Un `[FALLO]` esperado en medio de una pasada buena** | Una vuelta que termina en verde lleva un `[FALLO] el repositorio NO esta completo` a la mitad, y nadie se para | Era el control —la cosecha se pide en dos órdenes y la primera sale incompleta a propósito— pero no iba anunciado. Un `[FALLO]` sin explicar dentro de una salida buena **enseña a saltarse los `[FALLO]`**, que es justo lo contrario de para lo que están. Se anuncia antes y se comprueba que dé exactamente el número esperado (§4.39j) |
+| **Una lista exacta que da por segura una etapa que no siempre está** | El verificador exige nueve etapas en `telemetry` y una instalación buena escribe **ocho**: falta `loading`. La máquina está entera —51 comprobaciones en verde, `ESTADO=COMPLETO`— y la casilla no se puede marcar | La lista se hizo exacta **añadiendo `loading` porque se escribió que “toda instalación la escribe”**, y eso era una generalización sobre **una** medición (§4.32g). Las claves de `Stages` son un contador, no una hora: en la instalación que lo escribió, `loading` ocupaba el tick `0` y `keyboard` el `1`; en ésta `keyboard` ocupa el `0`. **Una lista exacta es más fuerte que una laxa sólo si cada elemento está medido, no supuesto** — y aflojarla sin causa la convierte en una que ya no distingue (§4.40c) |
+| **Comparar un `.deb` contra los `.md5sums` de dpkg no puede cuadrar** | Dos paquetes «no cuadran» por 3 y 2 ficheros, el tercero cuadra, y los cinco que faltan existen y están bien | **dpkg no mete los conffiles en `.md5sums`**: los registra aparte, en `/var/lib/dpkg/status`. Los cinco eran exactamente los ficheros bajo `/etc/`, uno a uno, y el paquete que cuadró es el único que no instala nada ahí. Es la familia de la 5 escrita por uno mismo: **una comprobación que busca el dato donde el dato no puede estar**. Para atar un `.deb` instalado sirve `dpkg -V` —con el control de que sepa señalar algo en el sistema— y los conffiles hay que ir a buscarlos a `status` (§4.40d) |
 | **Un sabotaje que sí cambia el fichero y aun así no es un control** | `cmp` confirma que el fichero cambió, y la herramienta sigue dando verde | Cambiar el fichero no basta: hay que cambiarlo **por donde la herramienta mira**. Meter `$SINCOMILLAS` en un guion cambia dos líneas y `shellcheck -S warning` lo ignora, porque no es un defecto de ese nivel. Es la 24 de `SCRIPTS.md` un paso más allá: el sabotaje tiene que sabotear **la comprobación**, no sólo los bytes (§4.39k) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |

@@ -48,6 +48,24 @@ no se hereda: se fabrica.
 **fabrica** de forma reproducible, no que funcione — eso es el bloque 4, y hasta
 entonces `ac0a5721…` sigue siendo el único medio que se probó de verdad.
 
+**CORREGIDO EL 2026-08-13/14 (`MEDICIONES.md` §4.40): `95758c9e…` YA SE HA
+ARRANCADO E INSTALADO.** VM creada desde cero, sin ningún `CIDATA` —`0`
+`-append`, **una** unidad de disco y **una** de CD, transcrito antes de que
+arrancara nada—, las cinco pantallas contestadas por Jorge, el seed salido de
+`/cdrom/autoinstall.yaml` (`CIDATA -> <no encontrado>`) y el repositorio del
+medio (`REPO ELEGIDO -> /cdrom/encina-repo`). **Y con ella se cierra lo que
+§4.37k y §4.38g dejaron abierto: los tres `.deb` reconstruidos desde el clon
+están instalados**, atados por sus tres huellas —`9ec0a49d…`, `640f508e…`,
+`204081f0…`— y por un `dpkg -V` sin una sola diferencia, con el control de que
+`dpkg -V` sí señala algo en esa máquina.
+
+***PERO EL ASTERISCO SE QUEDA, y por un `[FALLO]` que no es del producto:***
+`verificar-instalacion.sh --forma e3` da **51 correctas y 1 fallo**, y el fallo
+es que **falta la etapa `loading`** en `/var/log/installer/telemetry`. El
+verificador la exige desde §4.32g porque allí se escribió que «toda instalación
+la escribe», y **esta no la escribió**. Hasta saber por qué, no se marca ninguna
+casilla que dependa del verificador — está de tarea suelta abajo.
+
 *Y una premisa de este mismo documento que resultó falsa:* decía que en este Mac
 no había ninguna ISO. Había trece, la oficial entre ellas y en dos copias. El
 `find` que lo midió llevaba `-maxdepth 6` y la ruta tiene nueve componentes: no
@@ -134,9 +152,13 @@ dijo «no hay», dijo «no he mirado».
       dentro los tres `.deb` del runner **amd64** de la CI y las otras los
       construidos en `encina-dev`, **arm64**. §4.38b comprobado hasta el bit del
       medio.
-      *Lo que NO cierra:* **ninguna de las cinco ISOs se ha arrancado**. Lo medido
-      es que el medio se **fabrica** igual, no que funcione, así que `95758c9e…`
-      todavía no es «la ISO vigente»: es la que produce este repositorio hoy.
+      *Lo que NO cerraba:* ~~**ninguna de las cinco ISOs se ha arrancado**~~
+      **CONTESTADO el 2026-08-13/14 (§4.40): `95758c9e…` arranca, instala y
+      produce la máquina del producto**, con los tres `.deb` nuevos instalados y
+      atados por huella. Queda **un** `[FALLO]` del verificador —la etapa
+      `loading`, ver arriba—, así que `95758c9e…` todavía no se declara «la ISO
+      vigente»: es la que produce este repositorio hoy **y que ya se ha
+      arrancado una vez**.
 
 ---
 
@@ -268,6 +290,25 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
 
 ## Sueltas, de un rato cada una
 
+- [ ] **POR QUÉ FALTA `loading` EN EL `telemetry`, y qué hacer con la lista.** Es
+      el único `[FALLO]` de §4.40 y bloquea el asterisco del bloque 0 y las
+      casillas de §6ter.3 que dependen del verificador. **La lista no se afloja
+      sin causa:** su valor es que es exacta y falla si sobra o falta una
+      pantalla. Lo que hay medido: las claves de `Stages` son un contador, no una
+      hora; en §4.32f `loading` ocupaba el tick `0` y `keyboard` el `1`, y aquí
+      `keyboard` ocupa el `0`; el instalador esperó **ocho segundos** a
+      `cloud-init` antes de la primera pantalla. La hipótesis —colisión de tick—
+      **no está demostrada**.
+      *Hecha cuando:* o se lee en el código del cliente cuándo se registra cada
+      etapa, o una segunda instalación de esta misma ISO enseña si `loading`
+      aparece o no; y con eso se decide si el fallo es del verificador o del
+      medio. **Las dos vías dan las dos respuestas**, que es lo que hace falta.
+- [ ] **Cerrar el eslabón que quedó a medias de §4.40d.** Los conffiles no van en
+      `.md5sums` sino en `/var/lib/dpkg/status`, así que los cinco ficheros bajo
+      `/etc/` de `encina-branding` y `encina-firefox-native` **no se compararon**
+      contra los bytes del `.deb`. Los eslabones 1 y 3 sí están atados.
+      *Hecha cuando:* la comparación incluye los conffiles leídos de `status`, y
+      lleva su control de que sabe señalar uno cambiado.
 - [ ] **Medir qué puede romper un autorrefresco de `snapd`.** El 2026-08-13 se
       autorrefrescó solo y llevó el Snap de Firefox de rev 7764 a 8753 sin que nadie
       lo pidiera. No rompió nada y está medido, **pero nadie lo controla**: la

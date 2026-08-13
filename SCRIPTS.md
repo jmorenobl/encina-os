@@ -1398,6 +1398,41 @@ interfaz de accesibilidad —la aplicación aparece, pero el árbol de un snap c
 sale truncado y `queryAction` da `timeout from dbind`— y las teclas del ratón de
 GNOME, que **desplazan la página** en vez de mover el puntero.
 
+**Y TRES FORMAS DE PERDER LO QUE TECLEAS, del 2026-08-13** (`MEDICIONES.md`
+§4.40f). Las tres son de `teclear-vm.sh texto`, **las tres son mudas** —ni un
+error, ni un aviso— y las tres se cazaron mirando la pantalla antes de pulsar
+`Return`:
+
+```
+1. Las COMILLAS DOBLES no llegan, y se pierde la ORDEN ENTERA
+   'script -q -c "bash /mnt/v.sh …" /mnt/salida.txt'   ->  el prompt se queda VACIO
+   Causa: el guion interpola $TEXTO dentro de comillas dobles de AppleScript,
+   asi que una " de dentro rompe el script y no se envia nada.
+2. El '>' NO llega
+   'echo hola > /mnt/prueba.txt'   ->  llego  'echo hola  /mnt/prueba.txt'
+3. Los DIGITOS se pierden
+   '--forma e3 --visibles 27'      ->  llego  '--forma e --visibles'
+   'grep -n -A3 FALLO'             ->  llego  'grep -n -A FALLO'
+```
+
+**El 3 es el peligroso, y por poco:** `--forma e` hace que el verificador se
+niegue con código 2, que se ve. Pero un dígito comido en `--visibles` sale por un
+`[AVISO]`, y los avisos no los mira nadie. **Un número mal tecleado en una
+comprobación cuyo resultado es un número es la peor combinación posible.**
+
+**Las tres defensas, y las tres son baratas:**
+
+- **Los dígitos van por `key code`**, que no pasan por ninguna traducción:
+  `1`=18, `2`=19, `3`=20, `4`=21, `5`=23, `6`=22, `7`=26, `8`=28, `9`=25, `0`=29.
+- **`script <fichero>` SIN `-c`** para grabar la salida: abre una shell que graba
+  la sesión entera, y así no hace falta ni una comilla ni un `>`. Se cierra con
+  `exit`.
+- **Mirar la orden en la pantalla ANTES de pulsar `Return`.** Es la regla de
+  siempre y el 2026-08-13 valió tres veces en una sola sesión.
+
+Y `Ctrl+U` para borrar la línea **tampoco llegó limpio** —dejó pegado el resto de
+la orden anterior—; lo que sí funciona es `Ctrl+C`.
+
 **Y la conclusión de método, que vale más que las cuatro:** cuando medir cuesta
 tanto como esto, **el dato bueno es el que la máquina deja escrito solo**
 —`/var/log/installer/telemetry`, los testigos, `/etc/encina-seed.log`—, no el que
