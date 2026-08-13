@@ -295,14 +295,18 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
       casillas de §6ter.3 que dependen del verificador. **La lista no se afloja
       sin causa:** su valor es que es exacta y falla si sobra o falta una
       pantalla. Lo que hay medido: las claves de `Stages` son un contador, no una
-      hora; en §4.32f `loading` ocupaba el tick `0` y `keyboard` el `1`, y aquí
-      `keyboard` ocupa el `0`; el instalador esperó **ocho segundos** a
-      `cloud-init` antes de la primera pantalla. La hipótesis —colisión de tick—
-      **no está demostrada**.
-      *Hecha cuando:* o se lee en el código del cliente cuándo se registra cada
-      etapa, o una segunda instalación de esta misma ISO enseña si `loading`
-      aparece o no; y con eso se decide si el fallo es del verificador o del
-      medio. **Las dos vías dan las dos respuestas**, que es lo que hace falta.
+      hora, y **el tick 0 está anclado**: `network` está en el 200 y el registro
+      dice que Jorge acabó el teclado a las `21:15:16.728`, o sea tick 0 =
+      `21:11:56.728`, que es cuando se dibujó `keyboard`. **Entre el primer
+      `telemetry` y esa pantalla pasaron 0,688 s**, menos de un tick; en §4.32f
+      salieron en `0` y `1`, o sea más de uno. La hipótesis —colisión de tick—
+      encaja con un número y **no está demostrada**.
+      *Hecha cuando:* **se arranca la ISO y se lee `/var/log/installer/telemetry`
+      en la sesión viva, sin instalar nada.** Si `loading` está, se registra y se
+      pierde después; si no está, no se registra nunca. Cuesta una VM **sin disco
+      de destino** —así que ~0 GiB— y ninguna pantalla que contestar: en la
+      sesión viva se entra con `ubuntu` y contraseña vacía. **La prueba sabe dar
+      sus dos respuestas.**
 - [ ] **Cerrar el eslabón que quedó a medias de §4.40d.** Los conffiles no van en
       `.md5sums` sino en `/var/lib/dpkg/status`, así que los cinco ficheros bajo
       `/etc/` de `encina-branding` y `encina-firefox-native` **no se compararon**

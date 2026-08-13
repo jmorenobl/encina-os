@@ -9529,21 +9529,43 @@ escribió, así que la premisa era falsa o incompleta. **Lo que no se sabe todav
 es por qué**, y no se arregla en esta vuelta: aflojar la lista sin causa sería
 convertir una casilla exacta en una que no distingue.
 
-**Lo que sí se puede acotar, con el registro delante:** el instalador esperó
-**ocho segundos** a `cloud-init` antes de la primera pantalla, y las claves de
-`Stages` son un contador, no una hora de reloj.
+**Y AQUÍ EL REGISTRO DA UN ANCLAJE QUE CONVIERTE LA CORAZONADA EN UN NÚMERO.**
+Las claves de `Stages` son un contador, no una hora, y **se puede fijar dónde cae
+el tick 0** usando un suceso que sí tiene hora: `network` está en el tick **200**,
+y el registro dice cuándo terminó Jorge la pantalla del teclado.
 
 ```
 21:11:48.321775  Waiting server up to 90 seconds
-21:11:48.427915  ApplicationState.CLOUD_INIT_WAIT     (x8, un segundo cada uno)
+21:11:48.427915  ApplicationState.CLOUD_INIT_WAIT      (x8, uno por segundo)
 21:11:56.442546  ApplicationState.WAITING
 21:11:56.444819  telemetry: Writing report to /var/log/installer/telemetry
+21:11:57.132611  Showing only pages requested by subiquity: {keyboard,…}
+21:15:16.728835  keyboard: Saved es () keyboard layout      <- Jorge pasa a 'network'
+
+tick 0 deducido de 21:15:16.728 - 200 s  ->  21:11:56.728
+'keyboard' se dibujo a las               ->  21:11:57.132
+CUADRA dentro de medio segundo: el tick 0 ES esa pantalla
 ```
 
-**La hipótesis —que `loading` y `keyboard` cayeran en el mismo tick y la segunda
-machacara a la primera— encaja con los dos ficheros y NO ESTÁ DEMOSTRADA.** Va
-escrita como hipótesis. Lo que la refutaría: una instalación de esta misma ISO
-con `loading` presente, o el código del cliente diciendo otra cosa.
+**Y la separación entre las dos etapas en disputa, medida:**
+
+```
+primer telemetry / WAITING   21:11:56.444
+'keyboard' dibujado          21:11:57.132
+                             ------------
+                             0,688 s      <- MENOS DE UN SEGUNDO
+```
+
+**La hipótesis pasa de «encaja» a «encaja con un número»:** si el tick es la
+diferencia en segundos truncada, `loading` y `keyboard` **caen los dos en el tick
+0** y el segundo machaca al primero, porque `Stages` es un diccionario indexado
+por ese tick. En §4.32f salieron en `0` y `1`, o sea que allí pasó **más** de un
+segundo entre las dos. **Sigue SIN ESTAR DEMOSTRADA**, y lo que la separa de una
+medición es una sola comprobación barata: **arrancar la ISO y leer el `telemetry`
+de la sesión viva sin instalar nada.** Si ahí aparece `loading`, la etapa se
+registra y se pierde después; si no aparece, no se registra nunca. **La prueba
+sabe dar sus dos respuestas y no cuesta ni un disco de destino ni una pantalla
+que contestar.**
 
 #### (d) LOS TRES `.deb`, DENTRO DE LA MÁQUINA — la casilla que §4.37k dejó abierta
 
