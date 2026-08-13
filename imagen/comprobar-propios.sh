@@ -69,6 +69,25 @@ tam() { wc -c <"$1" | tr -d ' '; }
 
 TAB=$(printf '\t')
 
+# --- 0. la maquina y las herramientas que deciden los bytes -----------------
+# 'ubuntu-latest' es una FOTO, no una propiedad: hoy es noble y manana puede ser
+# otra sin que nadie toque este repositorio. Y quien decide los bytes de un .deb
+# es dpkg-deb y su compresor, no el guion de construccion. Sin esto escrito, el
+# dia que una huella no cuadre no hay contra que comparar -- que es justo lo que
+# hizo interpretable el hallazgo de §4.37c.
+echo "== 0. donde se ha construido"
+if [ -r /etc/os-release ]; then
+    . /etc/os-release 2>/dev/null
+    echo "        sistema  ${PRETTY_NAME:-?}   arquitectura $(uname -m)"
+else
+    echo "        sistema  $(uname -srm)"
+fi
+if command -v dpkg-query >/dev/null; then
+    dpkg-query -W -f'        ${Package} ${Version}\n' dpkg dpkg-dev libzstd1 tar 2>/dev/null
+else
+    echo "        (no es una maquina Debian: sin versiones de dpkg)"
+fi
+
 # --- 1. la linea del manifiesto ---------------------------------------------
 # Exactamente una. Ni cero (el paquete no viaja en el medio) ni dos (el
 # manifiesto tiene un duplicado y cualquier respuesta seria por casualidad).
