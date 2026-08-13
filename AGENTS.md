@@ -1704,7 +1704,19 @@ ninguna sin la salida literal.**
       `firefox_firefox.desktop -> /usr/bin/firefox %u`, `firefox 153.0.4~build1`
       sin epoch, `/usr/bin/firefox -> /usr/lib/firefox/firefox`, **0** perfiles
       bajo `~/snap/` —y el buscador dijo **1** mientras existió el usuario
-      desechable de la casilla de `+encina4`, así que ese cero significa algo—
+      desechable de la casilla de `+encina4`, así que ese cero significa algo—.
+      **REFORZADA EL 2026-08-13 (§4.35ñ) con el caso que faltaba: la forma (c)
+      SOBREVIVE a instalar y abrir un snap de terceros.** Con LibreOffice dentro y
+      `~/snap/libreoffice` creado, siguen **0** perfiles de Mozilla bajo `~/snap/`
+      y **1** icono de Firefox. **Y el control es más fuerte que antes:** no basta
+      con que el buscador encuentre *algo*, tiene que encontrar **lo que busca** —se
+      fabricó un `.mozilla/firefox/profiles.ini` a propósito en `/tmp`, el mismo
+      patrón lo vio (**1**) y se borró—. **Dos correcciones que van escritas:**
+      instalar un snap **no** crea `~/snap/<app>`, lo crea la **primera ejecución**;
+      y `snapd` **se autorrefrescó solo**, llevando el Snap de Firefox de rev 7764 a
+      **8753** sin que nadie lo tocara — refrescar no es abrir, así que la casilla
+      aguanta, pero la huella escrita de la máquina cambia y el dato «revisiones de
+      firefox en `/snap`» pasa de 1 a 2
 - [x] **El Snap de Firefox SIGUE instalado y nadie lo ha tocado.** *Sano:* el
       inventario de `/target` **idéntico** antes y después del paso que antes
       purgaba, y `firefox_*.snap` presente. *Roto:* desaparece algo → alguien
@@ -1769,7 +1781,18 @@ ninguna sin la salida literal.**
       la accesibilidad (árbol truncado del snap confinado, `timeout from dbind`)
       y las teclas del ratón de GNOME (desplazan la página)—. **Y NO se sustituyó
       por un `snap install` desde un terminal:** eso mide que `snapd` instala, no
-      que la tienda instala, y sería otra medición con el nombre de ésta
+      que la tienda instala, y sería otra medición con el nombre de ésta.
+      **CERRADA EL MISMO DÍA, Y LA PULSÓ JORGE (§4.35i)** — igual que las dos
+      últimas pantallas de E3 en §4.32h, y **no afloja la casilla**: lo que un
+      `[OJOS]` prohíbe es una orden, un fichero o una edición, y no hubo ninguno.
+      `snap changes` lo registra: **`Instalar snap "libreoffice"`, 08:12 → 08:22**.
+      Las aplicaciones visibles pasan de **27 a 34** y **las siete que entraron van
+      nombradas una a una**; la tienda **sigue siendo una**; el coste real, medido y
+      no estimado: 1,17 GB declarados, `.snap` de 1,1 GB, **2 GiB** en el disco del
+      invitado. **Y ABRE, desde la rejilla y en español:**
+      `soffice.bin --writer`, ventana «Sin título 1 — LibreOffice Writer», barra de
+      estado «Español (España)». La máquina entera: `verificar-e2.sh --visibles 34`
+      como root, **51 correctas, 0 fallos**
 - [x] **El manejador del PDF, atado, y medido en LAS DOS COLUMNAS.** *Sano:*
       `xdg-mime query default application/pdf` da el visor **con
       `XDG_CURRENT_DESKTOP=ubuntu:GNOME` y sin él**, y el fichero que manda es

@@ -7864,7 +7864,7 @@ idioma que ve el proceso: ['es_ES.UTF-8','es_ES','es.UTF-8']   (setlocale, tramp
 software», «Visor de documentos», «Escáner de documentos», «Editor de textos»—, que
 es §4.31j confirmado sobre una máquina distinta.
 
-#### (i) (d2) LA TIENDA INSTALA — **NO CONSEGUIDO, y no se disfraza**
+#### (i) (d2) LA TIENDA INSTALA — **CERRADA, y la pulsó Jorge**
 
 **La tienda abre, carga catálogo y encuentra LibreOffice en la instalación limpia**, y
 eso sí está medido:
@@ -7905,15 +7905,114 @@ una es un dato del banco:
 fácil: eso mide que *snapd* instala, no que *la tienda* instala, y sería otra
 medición con el nombre de ésta. **La casilla se queda abierta.**
 
-Lo que sí quedó medido de esa mitad, y no es poco:
+**Y LA PULSÓ JORGE, la misma tarde**, que es exactamente lo que §4.32h hizo con las
+dos últimas pantallas de E3 y **no afloja la casilla**: lo que un `[OJOS]` prohíbe es
+una orden, un fichero o una edición, y de eso no hubo ninguno. Yo no toqué el ratón.
 
 ```
-abrir la tienda CREA ~/snap/snap-store          <- «instalar/abrir un snap crea ~/snap/<app>»
-perfiles de Mozilla bajo ~/snap/: 0
-  control: el buscador encuentra .bashrc -> 1
-  control: el buscador sabe decir cero -> 0
-~/snap/ contiene: snapd-desktop-integration, snap-store
+snap changes
+  3  Done  08:12 UTC -> 08:22 UTC   Instalar snap "libreoffice" desde el canal "latest/stable"
 ```
+
+**Diez minutos, y la instalación la registra la máquina sola.** El después, contra el
+antes que se tomó antes de encender:
+
+```
+snaps        ANTES  8   DESPUES 12
+  +libreoffice 376   +core24 1644   +gnome-46-2404 154   +mesa-2404 1836
+  (los tres ultimos son dependencias que la tienda trajo sin preguntar)
+
+aplicaciones visibles  ANTES 27   DESPUES 34
+LO QUE ENTRO, NOMBRADO UNO A UNO:
+  libreoffice_libreoffice.desktop | LibreOffice 26.2
+  libreoffice_base.desktop        | LibreOffice 26.2 Base
+  libreoffice_calc.desktop        | LibreOffice 26.2 Calc
+  libreoffice_draw.desktop        | LibreOffice 26.2 Draw
+  libreoffice_impress.desktop     | LibreOffice 26.2 Impress
+  libreoffice_math.desktop        | LibreOffice 26.2 Math
+  libreoffice_writer.desktop      | LibreOffice 26.2 Writer
+TIENDAS VISIBLES: sigue 1     control: el contador sigue sabiendo decir 2 y 0
+
+lo que ocupa, MEDIDO y no estimado:
+  se declararon 1,17 GB de descarga
+  el .snap en disco            1,1 GB
+  el disco del invitado        11G -> 13G usados   = 2 GiB reales
+  el disco del anfitrion       -1,60 GiB           <- menos, porque el disco es disperso
+```
+
+**Y ABRE**, lanzada **desde la rejilla** —buscar «writer» → `Return`—, no desde un
+terminal:
+
+```
+proceso: 7492 /snap/libreoffice/376/lib/libreoffice/program/soffice.bin --writer
+ventana: «Sin titulo 1 - LibreOffice Writer»
+menus:   Archivo · Editar · Ver · Insertar · Formato · Estilos · Tabla ·
+         Formulario · Herramientas · Ventana · Ayuda
+barra de estado: «Espanol (Espana)»
+```
+
+**El cheque de D17 está cobrado entero:** «que lo instale el usuario» tiene detrás una
+tienda que abre, que encuentra, **que instala** y una aplicación que **arranca en
+español**.
+
+#### (ñ) Y LA FORMA (c) SIGUE EN PIE DESPUÉS, con el control que la hace valer
+
+Primero una corrección de lo que yo había escrito: **instalar un snap NO crea
+`~/snap/<app>`; lo crea la PRIMERA EJECUCIÓN.** Medido en los dos momentos:
+
+```
+tras INSTALAR   ~/snap: snapd-desktop-integration, snap-store        (no esta libreoffice)
+tras ABRIRLO    ~/snap: libreoffice, snapd-desktop-integration, snap-store
+                ~/snap/libreoffice: 376, common, current
+```
+
+Y con ese directorio ya existiendo:
+
+```
+perfiles de Mozilla bajo ~/snap/: 0
+  control A: el buscador encuentra .bashrc                        -> 1
+  control B: el buscador sabe decir cero                          -> 0
+  control C: el MISMO buscador sobre ~/snap encuentra algo        -> 3
+  control D: el MISMO patron sobre un perfil FABRICADO a proposito -> 1
+```
+
+**El control D es el que lo cierra**, y es el que faltaba en las veces anteriores: no
+basta con que el buscador sepa encontrar *algo*, tiene que saber encontrar **lo que
+busca** — un `.mozilla/firefox/profiles.ini` — el día que exista. Se fabricó uno falso
+en `/tmp`, se comprobó que lo ve, y se borró. **La comprobación sabe dar sus dos
+respuestas.**
+
+Y la máquina entera, con LibreOffice dentro y abierto:
+
+```
+verificar-e2.sh --visibles 34, como root:
+  51 correctas · 0 fallos · 0 avisos · 0 omitidas
+  iconos de Firefox que ve el usuario: 1
+  34 aplicaciones visibles de 102, y COINCIDEN con las declaradas
+  forma (c): snapd + Snap de Firefox instalado y NUNCA abierto   <- la de D16
+  la tienda: snap-store rev 1271        gnome-software fuera
+```
+
+**UN EFECTO QUE NADIE PIDIÓ Y HAY QUE DECIR: `snapd` se autorrefrescó solo.** Al
+empezar la instalación disparó `Autorefrescar los snaps "core22", "firefox"`, y el
+Snap de Firefox pasó de **rev 7764 a rev 8753** sin que nadie lo tocara:
+
+```
+/snap/firefox/7764   /snap/firefox/8753   /snap/firefox/current
+```
+
+**No rompe nada, y se dice por qué en vez de darlo por bueno:** refrescar no es abrir,
+así que siguen los **0** perfiles bajo `~/snap/`, y el lanzador que ve el usuario sigue
+siendo la sombra de `encina-firefox-native` en `/usr/share/applications` —que gana a
+`/var/lib/snapd/desktop/applications` por orden de `XDG_DATA_DIRS` y lleva
+`NoDisplay=true`—. El verificador sigue clasificando la máquina como **forma (c)**,
+y su dato «revisiones de firefox en `/snap`» pasa de **1 a 2**, que es dato y no
+casilla. **Lo que sí cambia es la huella escrita de esta máquina**, y por eso va aquí.
+
+**Y lo que NO se hizo, con su motivo:** la tienda ofrecía «Actualizar todo» con cinco
+snaps. No se pulsó. Habría metido cuatro variables más —`snapd`, `core22`,
+`gnome-42-2204`, `snapd-desktop-integration`— en mitad de una medición y sobre la
+máquina que **es el entregable**, y hoy no compraba nada. Es la regla de la trampa 32.
 
 #### (j) UN REGALO, como el de §4.34h: D16 demostrada por un acto de usuario real
 
@@ -8029,14 +8128,19 @@ creado.
 
 #### (n) Lo que esta vuelta NO contesta
 
-- **Que la tienda INSTALE.** Es lo de (i), y es la mitad que le sigue faltando a la
-  premisa de D17. Sigue sin pulsarse «Instalar», ahora con cinco vías descartadas y
-  medidas en vez de una abandonada.
-- **Que la aplicación instalada aparezca en la rejilla y ABRA**, ni los MB reales que
-  ocupa después. Cuelgan de lo anterior.
-- **Que `~/snap/<app>` no traiga un perfil de Mozilla tras instalar desde la tienda.**
-  Lo que sí está medido es que **abrir** la tienda crea `~/snap/snap-store` y que
-  `~/snap/` sigue con 0 perfiles, con el control de los dos sentidos.
+- ~~**Que la tienda INSTALE.**~~ **CONTESTADO el mismo día, y lo pulsó Jorge** (i):
+  10 min, `snap changes` lo registra, 27 → 34 aplicaciones visibles con las siete
+  nombradas, y **abre desde la rejilla en español**. La forma (c) sigue en pie con el
+  control D, que es nuevo (ñ).
+- **QUE UN AGENTE PUEDA PULSAR UN BOTÓN DEL INVITADO. Sigue sin poderse**, con cinco
+  vías descartadas y medidas (i). Lo que cerró la casilla fue una mano, no un
+  instrumento — y eso hay que tenerlo escrito antes de escribir la siguiente casilla
+  `[OJOS]`, no después.
+- **Si el autorrefresco de `snapd` puede romper algo alguna vez.** Hoy no rompió nada
+  y se midió (ñ), pero **nadie lo pidió y nadie lo controla**: la máquina del producto
+  se refresca sola cuando le parece. No se ha medido qué pasa si un refresco cambia el
+  lanzador del Snap de Firefox.
+- **Qué hace «Actualizar todo».** No se pulsó, con motivo (ñ).
 - **Las cinco pantallas de esta ISO.** No se repiten a propósito: la forma no ha
   cambiado y las cerró `encina-E4-cinco` (§4.32f). Lo que aquí no se mide es que el
   `autoinstall.yaml` de **dentro** de la ISO se lea desde `/cdrom` — lo gana el
