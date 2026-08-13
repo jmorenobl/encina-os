@@ -759,12 +759,31 @@ Vale para cualquier cambio de paquete, y son cuatro cosas, no una
    cuatro ficheros: las dos herramientas comprueban ahora **el índice entero**
    contra los bytes que viajan, en las dos direcciones.
 
-**DÓNDE VIVE EL REPOSITORIO OFFLINE, y no hay que cosecharlo otra vez: dentro de
-la ISO.** Los 28 `.deb` y su `Packages` se extraen con
+**DÓNDE VIVE EL REPOSITORIO OFFLINE — y desde el 2026-08-13 la respuesta ya no es
+«dentro de la ISO».** Se **fabrica**, con `imagen/cosechar-repo.sh`
+(`MEDICIONES.md` §4.36), que lee `imagen/repo-manifiesto.tsv` y baja los 24 de
+fuera comprobando cada uno **por huella al llegar**:
+
+```
+./imagen/cosechar-repo.sh --salida <dir> --propios ~/Projects/encina-autofirma/salida
+./imagen/cosechar-repo.sh --salida <dir> --propios ./debian-packages
+```
+
+`--propios` busca **por huella en todo el árbol**, nunca por nombre ni por fecha:
+en `encina-autofirma/salida/` conviven los tres `+encina2`/`+encina3`/`+encina4`,
+y el `+encina2` renombrado como `+encina4` —y encima el más nuevo— **se rechaza**.
+Después falta el `Packages`, que **no** se puede hacer en macOS (más abajo).
+
+**Extraerlo de la ISO sigue siendo posible y ya no es la vía normal**, sino la
+salida de emergencia y la forma de cotejar un medio contra el manifiesto:
 
 ```
 xorriso -osirrox on -indev encina-os-E4-es-0.2.1.iso -extract /encina-repo <destino>
 ```
+
+**Lo único que a día de hoy sólo sale de ahí es `encina-branding_0.1.8_all.deb`**
+(`51b6603c…`): en `debian-packages/` únicamente está el `0.1.7` (`0e870833…`). Es
+el último hilo de la circularidad y tiene su casilla en `TAREAS.md`.
 
 **El nombre lleva la versión desde el 2026-08-13** (`MEDICIONES.md` §4.35): la ISO
 vigente es `encina-os-E4-es-0.2.1.iso` (`ac0a5721…`) y la anterior, `aa1ac76a…`,
@@ -1418,6 +1437,26 @@ inventa `tar` al empaquetar. Lo que sí sirve es `COPYFILE_DISABLE=1`. Es
 volumen FAT, aquí los que `tar` inventa— y **no da ningún error**: el paquete se
 construye, `lintian` calla y los ficheros de más viajan a la máquina. Se ve
 mirando `dpkg-deb -c`, y solo si se mira.
+
+**Y el 2026-08-13 esta trampa CAMBIÓ DE FORMA, medido al intentar que su control
+se disparara y no conseguirlo** (§4.36i). Con `bsdtar 3.5.3 / libarchive 3.7.4`,
+este Mac **no** produce entradas `._` — ni con un xattr de usuario, ni con un
+fork de recursos, ni pidiéndole `--mac-metadata` a la cara. Lo que hace ahora es
+escribir **cabeceras pax**, y se ven en el lado de Linux al desempaquetar:
+
+```
+tar: Se desestima la palabra clave de la cabecera extendida desconocida
+     'LIBARCHIVE.xattr.com.apple.provenance'
+```
+
+O sea que hoy el `tar` de GNU las **descarta avisando** en vez de dejar ficheros
+que `dpkg-scanpackages` indexaría. Consecuencias, y las dos importan:
+
+1. **`COPYFILE_DISABLE=1` se sigue poniendo**: cuesta cero y el comportamiento
+   depende de la versión de `libarchive`, que no se controla.
+2. **Pero contar entradas `._` ya no demuestra nada**, porque hoy da `0` en los
+   dos casos. La comprobación que **sí puede fallar** es cotejar las huellas de
+   lo que salió y de lo que llegó, a los dos lados.
 
 **25. `tar xzf … | head -2` mata el `tar` a mitad por SIGPIPE.** Se extrajo medio
 árbol de fuentes, el `set -e` de la línea siguiente falló en un `cd` que no tenía

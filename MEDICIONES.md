@@ -8208,6 +8208,313 @@ Se conservó igualmente `e2-medios/rastro-encina-E4-tienda/` (119 KB: `debug.log
 
 ---
 
+### 4.36 EL MEDIO YA SE FABRICA DESDE CERO: `cosechar-repo.sh`, y la ISO sale a DOS BYTES (2026-08-13)
+
+**El agujero que cierra esta vuelta, con la forma que tenía escrita:** para
+fabricar la ISO hacía falta la ISO anterior, porque los 28 `.deb` de
+`/encina-repo` **solo vivían dentro del medio**. §4.35d cortó la mitad de la
+circularidad —la **lista**, con `imagen/repo-manifiesto.tsv`—; faltaba quien
+fabricara el directorio. Eso es `imagen/cosechar-repo.sh`, y es toda esta
+medición.
+
+#### (a) El coste, dicho ANTES de arrancar nada — y en qué me quedé corto
+
+Se predijo: 124,5 MB de red por los 24 `.deb`, ~3,5 GB por la ISO, pico ~4,0 GB
+contra 53,9 GiB libres (`df` medido al empezar: **53 GiB**; y `xorriso`, que lee
+el volumen de verdad, dejó escrito `53.9g free`).
+
+**Lo que faltaba en esa cuenta, dicho al descubrirlo y no al final:** los
+**índices del archivo**, 33,4 MB comprimidos que en disco son **135 MB**. Total
+de red 158 MB. Ocupación real en el pico: **4,5 GB**, no 4,0. Y al terminar,
+`df` vuelve a **53 GiB**, o sea que la vuelta salió a cero.
+
+#### (b) Qué se daría por sano y qué por roto, escrito ANTES de tocar nada
+
+| Comprobación | Sano | Roto |
+|---|---|---|
+| La ISO vigente | `ac0a5721…` | Otra huella → el manifiesto y el medio se han separado, PARAR |
+| Las 28 del manifiesto contra los bytes de la ISO | 28 de 28, huella **y** tamaño | Cualquier descuadre → PARAR |
+| Control del comparador | Una huella, un tamaño o un nombre saboteados los señala | 28/28 igualmente → no comprueba nada |
+| Las 4 `PROPIO` contra `encina-seed.sh` | 0 diferencias | Cualquiera → el seed rechazaría su propio `.deb` |
+| La cosecha de los 24 | 24 bajados, 24 huellas cuadran **al llegar** | Cualquier fallo → el guion se niega |
+| Disponibilidad en el archivo | Los 24, en la versión exacta | Alguno retirado → **HALLAZGO**, decirlo, y **NO** coger la versión nueva |
+| El paso 2 de `fabricar-iso.sh` | Los cuatro por huella y «28 ficheros, viajan 28, y las 28 huellas cuadran» | Cualquier `[FALLO]` |
+| La ISO desde el repo cosechado | `ac0a5721…` | Distinta → decir **qué** cambia, no darlo por malo |
+
+#### (c) EL MANIFIESTO SIGUE CUADRANDO, comprobado antes de fiarse de él
+
+Los 28 `.deb` salieron de la ISO vigente con `xorriso -osirrox` (29 ficheros,
+168,2 MB = 28 `.deb` + `Packages`) y se cotejaron contra el manifiesto por
+**huella y tamaño**:
+
+```
+lineas del manifiesto: 28   faltan: 0   descuadres: 0
+```
+
+**Y las tres respuestas malas, porque una comprobación que no sabe dar la suya
+no es una comprobación:**
+
+```
+huella saboteada  -> HUELLA MAL firefox_153.0.4~build1_arm64.deb  manif=000000000000 real=411b2a5790a6
+tamano saboteado  -> TAMANO MAL encina-meta_0.2.1_all.deb  manif=6913 real=6912
+nombre inventado  -> FALTA      wspanish_9.9.9_all.deb
+```
+
+Y las cuatro `PROPIO` contra lo que **exige** `encina-seed.sh`: **0 diferencias**,
+con el control de que el mismo `diff` señala una huella cambiada en un carácter.
+
+#### (d) EL GUION, y por qué NO construye la ruta del `pool` a mano
+
+`imagen/cosechar-repo.sh` no deduce la dirección de descarga, la **busca en los
+índices del archivo**. No es rodeo: los nombres del `pool` no son deducibles del
+nombre del paquete. Medido en Mozilla, que es donde más se ve:
+
+```
+manifiesto:  firefox_153.0.4~build1_arm64.deb
+pool real:   pool/mozilla/firefox_153.0.4~build1_arm64_af3daf3686cdd1b56adedee5b1733689.deb
+```
+
+Y en Ubuntu el directorio depende del paquete **fuente**, que no es el binario
+(`libnss3-tools` sale de `nss`, los seis `plymouth*` de `plymouth`, los tres
+diccionarios de `libreoffice-dictionaries`). Ocho índices, **106 100 entradas**.
+
+Eso además es lo que le permite dar **tres respuestas distintas** en vez de una,
+que es lo que separa un hallazgo de un contratiempo:
+
+```
+[OK]           esta, y sus bytes cuadran
+[RETIRADO]     el archivo ya no ofrece ESA version   <- decision de producto, no del guion
+[OTROS BYTES]  esa version esta, con otra huella     <- el manifiesto se quedo atras
+```
+
+#### (e) LOS 24, BAJADOS — y la respuesta a la pregunta que abría el encargo
+
+**Ninguno ha sido retirado. Los 24 se bajaron hoy en la versión exacta del
+manifiesto y las 24 huellas cuadraron al llegar.**
+
+```
+bajados: 24   ya estaban: 0   fallos de descarga: 0
+cuadran 24 de 24   no cuadran 0   ausentes 0
+```
+
+**Y esto es una foto de hoy, no una propiedad del proyecto.** `noble` es LTS y
+las versiones vigentes de `-updates`/`-security` siguen publicadas; el día que
+salga un `openjdk-17-jre` nuevo, el de hoy desaparece del índice y el guion dirá
+`[RETIRADO]`. Está previsto y **no se tapa cogiendo la versión nueva**: eso
+cambiaría lo que el producto lleva.
+
+#### (f) LOS CINCO CONTROLES DEL GUION, y uno de ellos destapó un defecto MÍO
+
+Todos sobre `ca-certificates-java`, que son 11 KB, así que costaron segundos:
+
+```
+A. version que no existe (99.99.99)     -> [RETIRADO] ... lo que hay hoy: 20240118
+                                           y NO baja la que hay
+B. misma version, huella saboteada      -> [OTROS BYTES] con las dos huellas ENTERAS
+C. huella buena, tamano falso (11625)   -> [FALLO] los bytes que llegaron no son
+                                           los del manifiesto, y NO deja el .deb en disco
+D. el fichero ya esta con otros bytes   -> "se rehace", lo baja, y acaba en [OK]  <- control POSITIVO
+E. el +encina2 con el NOMBRE del +encina4,
+   y ademas el mas nuevo por fecha      -> [FALTA] autofirma_1.9.1+encina4  (no se lo traga)
+```
+
+**El control B encontró un defecto del propio guion, y se arregla en vez de
+rodearlo:** recortaba las huellas a 12 caracteres para el mensaje, así que un
+sabotaje en el **último** carácter imprimía dos huellas que se leen **iguales**.
+Un mensaje que no distingue no informa. Ahora las imprime enteras.
+
+**El control E es la trampa de §4.13 con tres candidatos**, y es la razón de que
+`--propios` busque **por huella en todo el árbol** y nunca por nombre ni por
+fecha.
+
+#### (g) LOS CUATRO `PROPIO`, en tres pasadas a propósito — y el que NO sale del clon
+
+Se trajeron en tres órdenes separadas para que **cada procedencia quede escrita**:
+
+```
+1. --propios debian-packages/          -> encina-firefox-native 972ec932…, encina-meta 86da3cc9…
+2. --propios encina-autofirma/salida/  -> autofirma faeca3a9…  (habiendo TRES casi homonimos ahi)
+3. --propios <extraccion de la ISO>    -> encina-branding 51b6603c…
+```
+
+**Y la tercera es el punto flojo de esta vuelta, dicho antes de usarla y no
+después: `encina-branding_0.1.8_all.deb` NO existe en este Mac.** En
+`debian-packages/` solo está el `0.1.7` (`0e870833…`). O sea que hoy, en una
+máquina que solo ha clonado `encina-os` y `encina-autofirma`, salen **tres de los
+cuatro** `PROPIO`, y el cuarto sigue saliendo del medio. **La circularidad está
+cortada para los 24 y para tres de los cuatro; queda un hilo, y es exactamente la
+casilla siguiente del bloque 0** («los tres `.deb` de Encina, construibles desde
+este repositorio»). No se cierra aquí porque no es esta tarea.
+
+Con los cuatro dentro:
+
+```
+cuadran 28 de 28   no cuadran 0   ausentes 0
+[OK]    los 28 .deb estan y sus huellas cuadran con el manifiesto
+```
+
+#### (h) EL ÍNDICE, en `encina-dev` — y sale BYTE A BYTE el de la ISO
+
+VM identificada **por huella y no por nombre**, y coincide con la de §4.35d:
+
+```
+hostname encina-dev   /home/prueba   encina-branding 0.1.7
+snap firefox 153.0.3-1 rev 8735      machine-id 1ee16aeb6e284f668fde407cfa31a3ac
+```
+
+Transferencia con `COPYFILE_DISABLE=1`, y **el cotejo que sí puede fallar**:
+
+```
+28 ficheros llegaron   entradas que no son .deb: 0
+las 28 huellas del Mac y de la VM, iguales   (control: con una cambiada, el diff la senala)
+```
+
+Y el índice:
+
+```
+dpkg-scanpackages . /dev/null > Packages   ->  28 entradas, 41 154 bytes
+11171cc460f23d5876bc8c1cfdaa8284c42cd28318152b88cf89d4ee0ed5b59c   el generado hoy
+11171cc460f23d5876bc8c1cfdaa8284c42cd28318152b88cf89d4ee0ed5b59c   el de la ISO vigente
+diff: BYTE A BYTE IGUAL
+```
+
+`encina-dev` se apagó antes de tocar nada más, y `utmctl list` da **0** encendidas.
+
+#### (i) LA TRAMPA 24 NO SE REPRODUCE EN ESTE MAC, y hoy tiene OTRA cara
+
+Se midió que `tar` no metía entradas AppleDouble: **0**. Y ese `0` no valía nada
+hasta intentar que el control se disparara — que es la regla de siempre. **No se
+pudo:**
+
+```
+.deb con un xattr de usuario  + tar SIN COPYFILE_DISABLE   -> 0 entradas ._
+.deb con FORK DE RECURSOS     + tar SIN COPYFILE_DISABLE   -> 0 entradas ._
+                              + tar --mac-metadata         -> 0 entradas ._
+bsdtar 3.5.3 - libarchive 3.7.4
+```
+
+**La trampa 24 sigue siendo verdad y ha cambiado de forma.** Este `libarchive`
+ya no escribe ficheros `._x.deb`: escribe **cabeceras pax**, y se vieron en el
+lado de Linux al desempaquetar:
+
+```
+tar: Se desestima la palabra clave de la cabecera extendida desconocida
+     'LIBARCHIVE.xattr.com.apple.provenance'          (x28)
+     'LIBARCHIVE.xattr.com.docker.grpcfuse.ownership'
+```
+
+O sea que hoy el `tar` de GNU las **descarta avisando** en vez de dejar ficheros
+que `dpkg-scanpackages` indexaría. `COPYFILE_DISABLE=1` se puso igual —cuesta
+cero y el comportamiento depende de la versión de `libarchive`—, pero **la
+protección que de verdad se midió es el cotejo de las 28 huellas a los dos
+lados**, que es el que puede fallar.
+
+#### (j) LA CASILLA QUE LO CIERRA: el paso 2, con los dos controles negativos primero
+
+Los controles cuestan cero porque el guion se niega **antes** de escribir un byte
+de medio, y el primero **reproduce literalmente el defecto del encargo**:
+
+```
+falta un .deb            -> [FALLO] no esta: …/autofirma_1.9.1+encina4_all.deb
+el +encina2 con el nombre
+del +encina4             -> [FALLO] huella distinta en autofirma_1.9.1+encina4_all.deb
+y en los dos casos NO escribio ninguna ISO: No such file or directory
+```
+
+Y con el directorio cosechado:
+
+```
+== 2. los cuatro .deb, por huella (§4.13: misma version != mismos bytes)
+[OK]    autofirma_1.9.1+encina4_all.deb  faeca3a9…
+[OK]    encina-branding_0.1.8_all.deb  51b6603c…
+[OK]    encina-firefox-native_0.2.1_all.deb  972ec932…
+[OK]    encina-meta_0.2.1_all.deb  86da3cc9…
+[OK]    Packages describe 28 ficheros, viajan 28, y las 28 huellas cuadran
+```
+
+Los once pasos del guion, en verde y sin aflojar ninguno: la cadena firmada
+intacta, la ESP byte a byte la oficial en sus 13 504 sectores, 30 añadidos y
+2 modificados nombrados (`grub.cfg` y `md5sum.txt`), y las 266 líneas de
+`md5sum.txt` cuadrando con el control de que con el `md5sum.txt` **oficial**
+falla exactamente una.
+
+#### (k) LA COMPROBACIÓN FUERTE: la ISO sale a DOS SECTORES — y la causa es un PERMISO
+
+```
+ac0a5721b9ff5b2b762d3467bbc20d8e62374df22a5d18e3c483f8c25b1fa443   la vigente
+1ef3a6689037b0688293c864ff8d5a5cb17fc913069b5d8b58db33fe88d436f9   desde la cosecha
+3 715 366 912 bytes las dos                     <- otra vez, el tamano no discrimina
+```
+
+**No se da por malo: se dice qué cambia.** Comparadas sector a sector:
+
+```
+sectores totales:   1 814 144
+sectores distintos:         2      (el 118 y el 334)
+bytes distintos dentro de cada uno: 2
+```
+
+Y esos cuatro bytes son **un solo campo**, el `PX` de Rock Ridge, o sea el modo
+del fichero, en sus dos copias (little-endian y big-endian) y en los dos árboles
+de directorio:
+
+```
+vieja:  81c0  ->  0100700      ENCINA_FIREFOX_NATIVE_0_2_1.DEB
+nueva:  81a4  ->  0100644      el mismo fichero
+```
+
+Leído también por el otro lado, que es el control:
+
+```
+dentro de la ISO vigente:  28 ficheros -rw-r--r--  y UNO -rwx------
+dentro de la ISO nueva:    29 ficheros -rw-r--r--
+```
+
+**La causa, medida:** `fabricar-iso.sh` copia lo que le dan a un temporal con
+`cp` y hereda el modo que el fichero tuviera en el disco del Mac. El día de §4.35
+`encina-firefox-native_0.2.1_all.deb` estaba en `0700`; **hoy ese mismo fichero
+en `debian-packages/` ya es `644`**, así que **la ISO vigente no la reproduce ni
+su propio directorio de origen**. No es el orden y no es una fecha: es un permiso,
+y por eso **no se ha arreglado por mi cuenta** — tocar `fabricar-iso.sh` cambia
+cómo se construye el producto, y eso es una decisión de Jorge (§4.36m).
+
+**Y el contenido es el mismo, demostrado y no inferido:** extraídos los 29
+ficheros de las **dos** ISOs y comparadas sus huellas, **0 diferencias**, con el
+control de que el mismo `diff` señala una huella cambiada en un carácter.
+
+#### (l) El coste, medido: la vuelta salió a cero
+
+```
+libre al empezar   53 GiB   (xorriso, que lee el volumen: 53.9g free)
+pico               49 GiB   (4,5 GB: ISO 3,5 + cosecha 311 MB + indices 135 MB + extracciones 336 MB)
+libre al terminar  53 GiB
+red                158 MB   (124,5 de .deb + 33,4 de indices)
+VMs encendidas     1, encina-dev, y apagada antes de nada mas
+```
+
+Se borró lo **reproducible** —la ISO nueva, que ya solo se diferencia de la
+vigente en un bit de permiso— y se conservó la cosecha, que vuelve a fabricarse
+con una sola orden.
+
+#### (m) Lo que esta medición NO contesta, y hay que decirlo entero
+
+- **`encina-branding` 0.1.8 no sale del clon.** Sale de la ISO. Es (g), y es la
+  casilla siguiente del bloque 0, no ésta.
+- **Los dos bytes no se han arreglado.** Están diagnosticados hasta el campo y
+  hasta el fichero, y la decisión de si `fabricar-iso.sh` fija el modo de lo que
+  añade —como ya fija la fecha, y por el mismo motivo— **es de producto**.
+  Mientras no se tome, la ISO vigente `ac0a5721…` **no es reproducible bit a bit**
+  desde ningún directorio, ni siquiera desde el suyo.
+- **Que la ISO nueva arranque.** No se arrancó. No hacía falta para esta casilla
+  y habría costado una instalación; y su contenido es el mismo que el de una que
+  sí se arrancó (§4.35g).
+- **Que los 24 sigan estando mañana.** Es (e): una foto de hoy. El instrumento
+  para enterarse ya existe y dice `[RETIRADO]`.
+- **amd64 y E5.** Nada. `cosechar-repo.sh` pide `binary-arm64` a los índices,
+  que es lo que el manifiesto describe.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

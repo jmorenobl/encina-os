@@ -17,6 +17,12 @@ anterior*. Los 28 `.deb` del repositorio offline **solo viven dentro del medio**
 y se sacan de él con `xorriso`. Si mañana se pierde `ac0a5721…`, no se puede
 rehacer. Nadie de fuera puede construirla, y el autor tampoco desde cero.
 
+**Dónde está el agujero al final del 2026-08-13, medido y no estimado
+(`MEDICIONES.md` §4.36):** de los 28, **27 ya no dependen del medio** — los 24 de
+fuera los baja `imagen/cosechar-repo.sh` y los comprueba por huella al llegar, y
+tres de los cuatro propios salen del clon. **Queda uno**, `encina-branding`
+0.1.8, y con él las dos casillas de abajo que aún no están marcadas.
+
 Este bloque es el que convierte «constrúyela tú» de promesa en instrucción, y sin
 él los bloques 2, 3 y 4 no valen nada: se publicaría algo que nadie puede auditar
 rehaciéndolo.
@@ -37,24 +43,42 @@ rehaciéndolo.
       versión, fichero, tamaño y `sha256` de los 28— está versionada aquí, con sus
       controles: las 28 huellas cuadran con los bytes que viajan, las 4 propias
       cuadran con lo que exige `encina-seed.sh`, y una huella saboteada la señala.
-- [ ] **`imagen/cosechar-repo.sh`, que reconstruye `/encina-repo` desde cero.**
-      Ya no hay que inventar nada: lee `imagen/repo-manifiesto.tsv`, baja los **24
-      de origen `ARCHIVO`** de Ubuntu y de Mozilla, y falla si una huella no cuadra.
-      Después genera el `Packages` con `dpkg-scanpackages` —que no existe en macOS,
-      así que eso se hace en `encina-dev` (`SCRIPTS.md`)—.
-      *Hecha cuando:* partiendo de un directorio vacío produce 28 `.deb` cuyas
-      huellas **coinciden una a una** con el manifiesto, y con el control de que una
-      huella saboteada la hace fallar.
-      *Y la casilla que la cierra de verdad:* `fabricar-iso.sh` pasa el paso 2 en
-      una máquina que **sólo** ha clonado `encina-os` y `encina-autofirma`. Medido
-      el 2026-08-13 que hoy **no** pasa —`[FALLO] no esta:
-      autofirma_1.9.1+encina4_all.deb`— con el control de que **con** el directorio
-      bueno pasa los cuatro y las 28 del índice.
+- [x] ~~**`imagen/cosechar-repo.sh`, que reconstruye `/encina-repo` desde cero.**~~
+      **HECHA el 2026-08-13** (`MEDICIONES.md` §4.36). Partiendo de un directorio
+      vacío baja los **24 de origen `ARCHIVO`** y los deja con las huellas del
+      manifiesto cuadrando una a una, y el paso 2 de `fabricar-iso.sh` pasa: «los
+      cuatro por huella» y «Packages describe 28 ficheros, viajan 28, y las 28
+      huellas cuadran». El roto está reproducido —`[FALLO] no esta:
+      autofirma_1.9.1+encina4_all.deb`— y el guion lleva **cinco** controles, uno
+      de ellos positivo; el de la huella saboteada encontró un defecto del propio
+      guion —recortaba las huellas y dos que solo difieren en el último carácter se
+      leían iguales— y se arregló. *Y algo que no se dedujo:* **ninguno de los 24
+      ha sido retirado hoy**, pero eso es una foto y no una propiedad, así que el
+      guion sabe decir `[RETIRADO]` y **no** coge la versión nueva por su cuenta.
+      *Lo que NO cierra, y por eso la casilla de abajo sigue viva:*
+      `encina-branding` 0.1.8 **no sale del clon**, así que hoy salen **tres de los
+      cuatro** `PROPIO` y el cuarto sigue saliendo del medio.
 - [ ] **Los tres `.deb` de Encina, construibles desde este repositorio.** Están en
       `debian-packages/` como fuente y `.gitignore` excluye los binarios, que es lo
       correcto; falta comprobar que la receta funciona partiendo de cero.
+      **Y desde el 2026-08-13 esta casilla es el ÚLTIMO hilo de la circularidad**,
+      no una comprobación de higiene: `encina-branding_0.1.8_all.deb` (`51b6603c…`)
+      **no existe en el disco del autor** —en `debian-packages/` sólo hay un
+      `0.1.7`, `0e870833…`— y hoy únicamente se obtiene extrayéndolo de la ISO.
       *Hecha cuando:* `03-construir.sh`, `07-firefox-construir.sh` y
       `10-meta-construir.sh` producen los tres con las huellas vigentes.
+- [ ] **Decidir si `fabricar-iso.sh` fija el MODO de lo que añade**, como ya fija
+      la fecha y por el mismo motivo (§4.36k). **Es una decisión de producto, y por
+      eso se dejó sin tocar.** Medido: la ISO fabricada desde el repositorio
+      cosechado se diferencia de la vigente en **2 sectores de 1 814 144**, y esos
+      4 bytes son un solo campo `PX` de Rock Ridge — el modo de
+      `encina-firefox-native_0.2.1_all.deb`, `0700` en el medio vigente y `0644`
+      hoy. El contenido de las dos es idéntico, comprobado huella a huella sobre
+      los 29 ficheros de cada una. **Y la consecuencia hay que mirarla de frente:**
+      `ac0a5721…` no se reproduce bit a bit desde **ningún** directorio, ni
+      siquiera desde el suyo, porque el modo del fichero de origen ya ha cambiado.
+      *Hecha cuando:* está escrito qué modo llevan los ficheros añadidos y por qué,
+      y dos construcciones desde el mismo repositorio dan la misma huella.
 - [ ] **Un `construir-todo.sh` que encadene las cuatro cosas.** Cosecha, construye
       los tres, trae `autofirma`, fabrica la ISO.
       *Hecha cuando:* de `git clone` a ISO en una sola orden, y la ISO resultante
