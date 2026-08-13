@@ -6,6 +6,13 @@
 #
 # Privado a propósito: publicar activa la obligación de mantener parches de
 # seguridad para desconocidos (D5). Ya lo abrirás cuando quieras.
+#
+# OJO: el heredoc de abajo es una SEGUNDA COPIA de .github/workflows/build.yml,
+# y este guion la sobrescribe sin preguntar. Ya mordió: el flujo del repositorio
+# llevaba encina-meta en la matriz y el heredoc no, así que ejecutar esto habría
+# quitado un paquete de la CI en silencio. Se sincronizó el 2026-08-13 copiando
+# el fichero dentro, no transcribiéndolo a mano, y comprobando después que las
+# dos copias no difieren en ningún byte. Si tocas una, toca la otra.
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 requiere_no_root
@@ -46,6 +53,12 @@ jobs:
             script: scripts/03-construir.sh
           - package: encina-firefox-native
             script: scripts/07-firefox-construir.sh
+          # encina-meta entra en la matriz en el MISMO commit que su
+          # debian/changelog, y no antes: 10-meta-construir.sh se detiene sin
+          # construir nada si no lo encuentra, asi que una entrada de matriz sin
+          # changelog pondria la CI roja a sabiendas.
+          - package: encina-meta
+            script: scripts/10-meta-construir.sh
 
     steps:
       - uses: actions/checkout@v4
@@ -68,7 +81,45 @@ jobs:
           chmod +x scripts/*.sh
           ENCINA_REPO="$GITHUB_WORKSPACE" ./${{ matrix.script }}
 
+      # EL CONTROL VA ANTES QUE LA MEDICION, que es el orden que sirve: primero
+      # se calibra el instrumento y despues se mide con el. Si el paso de abajo
+      # dijera [OK] sin comprobar nada, este lo caza aqui y no dentro de tres
+      # meses.
+      - name: CONTROL — con la huella saboteada tiene que ponerse en rojo
+        run: |
+          set -u
+          M=$(mktemp); LOG=$(mktemp)
+          awk -F'\t' -v OFS='\t' -v p='${{ matrix.package }}' \
+              '$1=="PROPIO" && $2==p { c=substr($6,1,1); $6=(c=="0"?"1":"0") substr($6,2) } 1' \
+              imagen/repo-manifiesto.tsv > "$M"
+          # El sabotaje tiene que sabotear. En §4.37c un 'sed 1s/^./f/' no
+          # cambio nada porque la linea ya empezaba por 'f': un sabotaje que no
+          # sabotea deja el control en decoracion.
+          if cmp -s imagen/repo-manifiesto.tsv "$M"; then
+            echo "[FALLO] el manifiesto saboteado es identico al original"; exit 1
+          fi
+          if ./imagen/comprobar-propios.sh '${{ matrix.package }}' --manifiesto "$M" >"$LOG" 2>&1; then
+            echo "[FALLO] dice que cuadra con una huella falsa: no comprueba nada"
+            cat "$LOG"; exit 1
+          fi
+          # Y que falle POR EL MOTIVO CORRECTO, no por un error de sintaxis: es
+          # la trampa del control negativo que no es negativo (§9).
+          grep -q '^\[HALLAZGO\]' "$LOG" \
+            || { echo "[FALLO] fallo, pero no por la huella"; cat "$LOG"; exit 1; }
+          echo "[OK]    sabe decir que no:  $(grep -m1 '^\[HALLAZGO\]' "$LOG")"
+
+      # Y AHORA LA MEDICION DE VERDAD. Las huellas del manifiesto se midieron en
+      # encina-dev, que es arm64; este runner es amd64. Que el paso anterior
+      # subiera el .deb a un artefacto sin mirarlo no comprobaba nada: un
+      # artefacto se sube igual de bien con otros bytes dentro.
+      - name: Comprobar la huella de ${{ matrix.package }} contra el manifiesto
+        run: ./imagen/comprobar-propios.sh '${{ matrix.package }}'
+
+      # always(): si la huella NO cuadra, el .deb del runner es justamente lo
+      # que hay que desglosar contra el de arm64, asi que es cuando mas falta
+      # hace tenerlo.
       - name: Subir el paquete como artefacto
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package }}-deb
