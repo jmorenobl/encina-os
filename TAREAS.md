@@ -97,8 +97,20 @@ Hoy los cuatro son privados. Publicar la ISO sin eso sería incumplir.
       arm64 **declarando** que es solo arm64. La propia D5 lo anticipa: «si se
       decide publicar la imagen desde la primera versión arm64, es esta celda la
       que cambia».
-- [ ] **Hacer públicos `encina-autofirma` y los tres forks**
-      (`clienteafirma`, `jmulticard`, `clienteafirma-external`).
+- [x] ~~**Hacer públicos los tres forks**~~ (`clienteafirma`, `jmulticard`,
+      `clienteafirma-external`). **Ya lo son**, comprobado el 2026-08-13: son forks
+      de `ctt-gob-es`, así que nacieron públicos. Esta tarea no existía.
+- [ ] **Hacer público `encina-autofirma`.** Es el único privado, y es **donde vive
+      el parche**, así que sin él la oferta de fuente está a medias — y, más
+      urgente que eso, **el bloque 0 no se puede cerrar**: mientras sea privado,
+      `fabricar-iso.sh` no pasa el paso 2 en una máquina que solo haya clonado
+      `encina-os`. Revisado el 2026-08-13 y **está limpio para salir**: sin
+      material de clave —los `.p12` viven en `build/`, ignorado, y son las pruebas
+      del propio upstream—, historial sin secretos y sin datos personales.
+      *Antes de darle al botón, una cosa:* que su README diga **por qué existe y
+      cuándo se retira** (D14: se retira cuando `verificar-deb.sh` pase sobre el
+      `.deb` oficial). Sin ese párrafo, un AutoFirma parcheado y público invita a
+      que alguien lo use creyendo que es una versión mejor, y no lo es.
       *Hecha cuando:* el `.deb` que viaja se puede reconstruir desde fuentes
       públicas, y el README de Encina OS enlaza a ellas.
 - [ ] **Escribir la oferta de fuente en el README**, con el enlace, junto a la
