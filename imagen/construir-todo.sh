@@ -218,8 +218,17 @@ ok "los tres .deb propios cuadran con el manifiesto, huella y tamano"
 paso "4. la cosecha -- 24 de fuera + autofirma, POR HUELLA"
 [ -n "$TRABAJO" ] || TRABAJO="$TMP_PROPIO/repo"
 mkdir -p "$TRABAJO" || fallo "no pude crear $TRABAJO"
+# DOS ORDENES, y la PRIMERA TIENE QUE SALIR INCOMPLETA: en ese momento aun no
+# esta autofirma, que se construye en otro repositorio. Su «27 de 28 -> [FALLO]»
+# es EL CONTROL de que cosechar-repo.sh sabe dar la respuesta mala antes de
+# escribir nada, y va anunciado para que nadie aprenda a saltarse los [FALLO].
+echo "        (la 1a orden SALE INCOMPLETA a proposito: falta autofirma. Su [FALLO] es el control)"
 "$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
     | sed 's/^/        /' | tail -6
+N_PARCIAL=$(contar_deb "$TRABAJO")
+[ "$N_PARCIAL" -eq 27 ] || fallo "CONTROL ROTO: sin autofirma esperaba 27 .deb y hay $N_PARCIAL"
+ok "control: sin autofirma la cosecha se queda en 27 y se niega"
+echo "        (la 2a orden la completa con autofirma, POR HUELLA entre tres casi homonimos)"
 "$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
     | sed 's/^/        /' | tail -6
 N=$(contar_deb "$TRABAJO")
