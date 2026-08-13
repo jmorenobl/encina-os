@@ -29,6 +29,6 @@ ARCHIVO	plymouth-themes	24.004.60-1ubuntu7.2	plymouth-themes_24.004.60-1ubuntu7.
 ARCHIVO	simple-scan	46.0-0ubuntu2.1	simple-scan_46.0-0ubuntu2.1_arm64.deb	207338	db3892196ce3dbbb596c83f6ddcb033d135edaf87c1311d52d729fe83731e749
 ARCHIVO	wspanish	1.0.30	wspanish_1.0.30_all.deb	221694	00479a312b1268519b016f6d83ec66334f6231314eb13b67d8ca9b309bda4c39
 PROPIO	autofirma	1.9.1+encina4	autofirma_1.9.1+encina4_all.deb	39570056	faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-PROPIO	encina-branding	0.1.8	encina-branding_0.1.8_all.deb	6159072	51b6603ca1cfd431d459865f21df095a628200681b6deed1bca0c3c2ccebfdb3
-PROPIO	encina-firefox-native	0.2.1	encina-firefox-native_0.2.1_all.deb	10922	972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2
-PROPIO	encina-meta	0.2.1	encina-meta_0.2.1_all.deb	6912	86da3cc9ec071bcb597871b1337824fba0f5e7b8c4491b2f6c51f910a631ed2c
+PROPIO	encina-branding	0.1.8	encina-branding_0.1.8_all.deb	6158932	9ec0a49db9983e6b98956152094aa78b544d1da6c8ed5482e9930414b6a5ea78
+PROPIO	encina-firefox-native	0.2.1	encina-firefox-native_0.2.1_all.deb	10876	640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
+PROPIO	encina-meta	0.2.1	encina-meta_0.2.1_all.deb	6904	204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6

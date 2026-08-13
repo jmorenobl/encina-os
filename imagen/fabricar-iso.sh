@@ -213,6 +213,39 @@ echo "== 6. xorriso: anadir seis ficheros y reemplazar dos"
 mkdir -p "$TMP/encina-repo"
 cp "$YAML" "$TMP/autoinstall.yaml" || fallo "cp seed"
 cp "$REPO"/*.deb "$REPO"/Packages "$TMP/encina-repo/" || fallo "cp repo"
+
+# EL MODO DE LO QUE SE ANADE, FIJADO A PROPOSITO, POR EL MISMO MOTIVO QUE LA
+# FECHA DE ABAJO Y CON LA MISMA FORMA. 'cp' conserva el modo que el fichero
+# tuviera en el disco del Mac, y ese modo VIAJA DENTRO DE LA ISO: es el campo
+# PX de Rock Ridge, en sus dos copias -little-endian y big-endian- y en los dos
+# arboles de directorio. Medido (MEDICIONES.md §4.36k): la ISO vigente
+# ac0a5721… se diferenciaba de la fabricada desde el repositorio cosechado en
+# 2 sectores de 1 814 144, y esos 4 bytes eran un solo campo -- el modo de
+# encina-firefox-native_0.2.1_all.deb, 0700 en el medio vigente porque ese dia
+# el fichero estaba en 0700 en 'debian-packages/', y 0644 al dia siguiente
+# porque ya no lo estaba. O sea que la ISO NO LA REPRODUCIA NI SU PROPIO
+# DIRECTORIO DE ORIGEN. Hoy en 'debian-packages/' siguen conviviendo ficheros
+# en 0600 y en 0644, asi que esto no es hipotetico.
+#
+# 0644 para los ficheros y 0755 para el directorio: es lo que ya llevan los 29
+# ficheros del medio, asi que fijarlo no cambia el producto -- solo deja de
+# depender de un dato que no esta versionado.
+MODO_F=644
+MODO_D=755
+chmod "$MODO_D" "$TMP/encina-repo"                  || fallo "chmod dir repo"
+chmod "$MODO_F" "$TMP/encina-repo"/* "$TMP/autoinstall.yaml" \
+                "$TMP/grub.cfg" "$TMP/md5sum.txt"   || fallo "chmod ficheros"
+# Y SE COMPRUEBA QUE SE APLICO, que es la trampa 13: una mutacion se verifica
+# ANTES de leer su resultado. Sin esto, un chmod que fallara en silencio daria
+# exactamente la ISO que este bloque existe para evitar, y nadie lo notaria.
+n=$(find "$TMP/encina-repo" "$TMP/autoinstall.yaml" "$TMP/grub.cfg" \
+         "$TMP/md5sum.txt" -type f ! -perm "$MODO_F" | wc -l | tr -d ' ')
+[ "$n" -eq 0 ] || fallo "$n ficheros no quedaron en $MODO_F pese al chmod"
+d=$(find "$TMP/encina-repo" -type d ! -perm "$MODO_D" | wc -l | tr -d ' ')
+[ "$d" -eq 0 ] || fallo "el directorio del repo no quedo en $MODO_D"
+t=$(find "$TMP/encina-repo" -type f | wc -l | tr -d ' ')
+ok "modo fijado: $((t+3)) ficheros en $MODO_F y el directorio del repo en $MODO_D"
+
 rm -f "$SALIDA"
 # LA FECHA DE LO QUE SE ANADE, FIJADA A PROPOSITO: sin esto, la misma orden
 # ejecutada dos veces produce dos ISOs distintas -- 192 bytes en 4 sectores, que

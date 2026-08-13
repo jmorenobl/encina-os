@@ -8515,6 +8515,298 @@ con una sola orden.
 
 ---
 
+### 4.37 LOS TRES `.deb` SE CONSTRUYEN DESDE EL CLON — y la huella vigente era de una CONSTRUCCIÓN, no de un paquete (2026-08-13)
+
+**La casilla que cierra esta vuelta:** «los tres `.deb` de Encina, construibles
+desde este repositorio», que era el ÚLTIMO hilo de la circularidad — de los 28
+del medio, 27 ya no dependían de la ISO y el que faltaba era
+`encina-branding_0.1.8_all.deb` (§4.36g). Se cierra, y en el camino contesta una
+pregunta que nadie había medido: **si estas construcciones son reproducibles**.
+Ninguno de los tres guiones fija `SOURCE_DATE_EPOCH` ni `--root-owner-group`.
+
+#### (a) El coste, dicho ANTES de arrancar — y el error de la predicción
+
+Predicho: 158 MB de red y ~450 MB de disco para la cosecha; **~3,5 GB de red más
+y ~11,8 GB de pico si se fabricaba la ISO**.
+
+**Y el hallazgo que cambió esa cuenta, medido antes de encender nada: en este Mac
+NO HAY NINGUNA ISO.** `find /` con `-maxdepth 6` no encuentra ni un `.iso`: ni la
+oficial de Ubuntu `c2610520…`, que es la ENTRADA de `fabricar-iso.sh`, ni la
+vigente `ac0a5721…`. La ISO se aplazó por eso y **la comparación sector a sector
+contra `ac0a5721…` que esta vuelta iba a hacer NO SE PUEDE HACER AQUÍ.**
+
+Coste real, con la ISO fuera:
+
+```
+libre al empezar   53 GiB
+pico               51 GiB   (2 GB: cosecha 311 MB -135 de indices- + 2 volumenes CIDATA de 768 MB)
+libre al terminar  53 GiB
+red                158 MB   (124,5 de .deb + 33,4 de indices)
+VMs encendidas     1, encina-dev, dos veces, y apagada las dos
+```
+
+#### (b) Qué se daría por sano y qué por roto, escrito ANTES de tocar nada
+
+| Comprobación | Sano | Roto |
+|---|---|---|
+| `encina-meta` reconstruido | `86da3cc9…`, 6 912 bytes | Otra huella → **HALLAZGO**, decir en qué difieren y **PARAR** |
+| El entorno contra el `.buildinfo` | Las 150 `Installed-Build-Depends` iguales | Alguna movida → decirlo **antes** de interpretar la huella |
+| `encina-firefox-native` | `972ec932…` | Igual |
+| `encina-branding` 0.1.8 | `51b6603c…` | El único sin red de seguridad *(resultó tenerla, ver (f))* |
+| El modo fijado en `fabricar-iso.sh` | Un `chmod` neutralizado se caza | `[OK]` con el modo sin fijar → no comprueba nada |
+| La cosecha con `--propios` a lo construido | **28 de 28**, sin tocar la ISO | 27 → sigue el hilo |
+
+#### (c) EL ENTORNO NO SE HA MOVIDO, y eso es lo que hace interpretable la huella
+
+`encina-dev` identificada **por huella y no por nombre**, los cinco testigos:
+
+```
+hostname encina-dev   /home/prueba   encina-branding 0.1.7
+snap firefox 153.0.3-1 rev 8735      machine-id 1ee16aeb6e284f668fde407cfa31a3ac
+```
+
+Y las **150** dependencias de construcción que el `.buildinfo` del 2026-08-12
+declara, comparadas una a una con lo que hay hoy:
+
+```
+comprobadas: 150   distintas: 0
+CONTROL: dpkg (= 9.9.9-inventada) -> DISTINTO  dpkg  buildinfo=9.9.9-inventada  hoy=1.22.6ubuntu6.6
+```
+
+**Si la huella sale distinta, la causa no es el entorno.** Eso se sabía antes de
+mirarla, que es cuando sirve.
+
+El árbol viajó con `git archive HEAD`, no con `tar` del disco — así lo que se
+construye es **lo versionado** y la trampa 24 no entra. Cotejo a los dos lados:
+**0 diferencias en 85 ficheros**, con el control de que una huella cambiada en un
+carácter la señala. *Y el primer intento de ese control NO SE DISPARÓ*: el
+sabotaje era `sed '1s/^./f/'` y la primera línea ya empezaba por `f`. Un sabotaje
+que no sabotea no es un control.
+
+#### (d) NO SALE IGUAL — y la diferencia es UN CAMPO de UNA cabecera
+
+```
+86da3cc9ec071bcb597871b1337824fba0f5e7b8c4491b2f6c51f910a631ed2c  6912  la del manifiesto
+204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6  6904  desde el clon
+```
+
+Desglosado miembro a miembro del `ar`:
+
+```
+debian-binary     IGUAL
+control.tar.zst   IGUAL          (y descomprimido, byte a byte identico)
+data.tar.zst      DISTINTO  ->  descomprimido: 7 bytes de 10 240, posiciones 5773-5786
+```
+
+5772 = 11 × 512 + 140, o sea la cabecera del bloque 11 en su offset 136–147, que
+es el campo `mtime` del tar:
+
+```
+bloque 11  ->  ./usr/share/doc/encina-meta/copyright
+vigente:   octal 15235571250  = 1786180264 = 2026-08-08 09:11:04 UTC
+del clon:  octal 15237150653  = 1786565035 = 2026-08-12 20:03:55 UTC  <- SOURCE_DATE_EPOCH EXACTO
+```
+
+**LA CAUSA, y no es un descuido de nadie: `dpkg-deb` hace *clamp*, no *set*.**
+`dpkg-buildpackage` **ya exporta** `SOURCE_DATE_EPOCH` derivado del changelog
+—el `.buildinfo` lo declara en su línea 172— y **recorta los mtimes posteriores,
+dejando pasar los anteriores**. El día de la construcción vigente,
+`debian/copyright` llevaba en el disco un mtime del 8 de agosto, anterior a la
+fecha del changelog, y se coló dentro del `.deb`. **Ese dato no está en git.**
+
+Demostrado con los dos controles, no inferido:
+
+```
+touch -d @1786180264 debian/copyright + reconstruir -> 86da3cc9…  EXACTA, 6912 bytes
+touch -d @1786180000 (264 s antes)    + reconstruir -> dade2ff0…  distinta
+```
+
+#### (e) Y EL CONTROL QUE LE DA LA VUELTA AL SENTIDO DEL HALLAZGO
+
+La pregunta que faltaba: ¿es el paquete irreproducible, o es la huella vigente la
+que no se puede reproducir? Se separa haciendo variar **sólo** los mtimes, todos
+ellos posteriores al epoch:
+
+```
+mismo arbol, mtimes a 2026-08-13 18:41:46.48 (subsegundos incluidos)  ->  204081f0…  LA MISMA
+```
+
+**Los tres `.deb` SON reproducibles desde un clon.** Cualquier clon, cualquier
+día: el checkout siempre pone mtimes posteriores a la fecha del changelog, el
+clamp los absorbe todos y la huella es estable. **Lo que no se reproduce es la
+huella VIGENTE**, porque nació de un árbol de trabajo con fechas viejas.
+
+*Un intento de control que no valió y hay que decirlo:* la segunda construcción se
+hizo re-extrayendo con `git archive`, y salió el **mismo** mtime — `git archive`
+fija las fechas a la del commit (`4de872a`, `2026-08-13T18:22:53+02:00`). Eso no
+varía la entrada, así que no prueba nada; el control bueno es el `touch` de
+arriba, que sí la varía.
+
+#### (f) LOS TRES CONSTRUYEN, y `encina-branding` 0.1.8 SÍ tenía red de seguridad
+
+Los tres guiones pasan en verde desde el árbol versionado —**25, 39 y 14**
+comprobaciones, 0 fallos, `lintian` sin decir nada—, `encina-branding` 0.1.8
+incluido:
+
+```
+9ec0a49db9983e6b98956152094aa78b544d1da6c8ed5482e9930414b6a5ea78  6158932  branding  (era 51b6603c…, 6159072)
+640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925    10876  firefox   (era 972ec932…,   10922)
+204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6     6904  meta      (era 86da3cc9…,    6912)
+```
+
+**Y el contenido es el mismo, medido por los dos lados:**
+
+| | ficheros iguales | listado sin la fecha | fechas distintas |
+|---|---|---|---|
+| branding | 0 dif. en 20 | idéntico (modos, dueños, tamaños, rutas) | 43 de 43 |
+| firefox | 0 dif. en 8 | idéntico | 15 de 23 |
+| meta | 0 dif. en 2 | idéntico | 1 de 7 |
+
+Los tres son **más pequeños**: los mtimes uniformes comprimen mejor. El
+`control.tar` de branding, que salía distinto, es el mismo caso — `02:41`
+conservada frente a `10:00` clampeada, con sus ficheros idénticos huella a
+huella; el changelog de 0.1.8 lleva una fecha escrita a mano, `Wed, 12 Aug 2026
+10:00:00 +0200`, **posterior a la construcción real de las 02:41**.
+
+**Y §4.36g estaba incompleta, dicho aquí porque es lo que se midió:**
+`encina-branding_0.1.8_all.deb` (`51b6603c…`) **sí existía fuera de la ISO** — en
+`encina-dev`, en cuatro sitios (`~/cosecha`, `~/repo-nuevo`, `~/repo-0.2.1`,
+`~/e4build`), encontrado **por huella** entre los 321 `.deb` de esa máquina. Lo
+cierto era «no está en el Mac», no «sólo sale del medio».
+
+#### (g) LA DECISIÓN, que es de producto y la tomó Jorge: EL MANIFIESTO AL DÍA
+
+Las dos salidas eran adoptar las huellas del clon o versionar las 76 fechas
+históricas para conservar las viejas. **Se adoptan las del clon**, y el
+argumento que decidió es que **la ISO cambia de huella igualmente** por el modo
+(§4.36k), así que conservar las de los `.deb` no salvaba `ac0a5721…`; y versionar
+mtimes mete en git un dato que no describe el producto.
+
+Se hizo el `grep` de las huellas viejas por el repositorio **antes de tocar
+nada**, con su control (`faeca3a9…`, que NO cambia, aparece en tres ficheros).
+Sólo **dos** sitios escriben huellas; `fabricar-seed.sh` y `fabricar-iso.sh` las
+leen de `encina-seed.sh` con `huella_de()`, y `verificar-instalacion.sh` no
+guarda ninguna:
+
+```
+imagen/encina-seed.sh        H_BRANDING, H_FFNATIVE, H_META
+imagen/repo-manifiesto.tsv   las tres lineas PROPIO (huella Y tamano)
+```
+
+Y los **dos** YAML, porque el seed viaja empotrado en base64 (la séptima cosa de
+`SCRIPTS.md`). Regenerados con la herramienta, no a mano:
+
+```
+imagen/autoinstall.yaml              cambia 1 linea (la 83)   control consigo mismo: 0
+imagen/autoinstall-unattended.yaml   cambia 1 linea           control consigo mismo: 0
+los dos: el seed empotrado es BYTE A BYTE imagen/encina-seed.sh
+```
+
+**Dos veces el barrido de huellas viejas dio `1` y las dos veces era mi propio
+comentario** — el que explica el cambio nombrando las huellas que sustituye. Es
+la trampa 3 de `SCRIPTS.md` en su forma más literal, y una vez propagada dentro
+del base64. Sobre líneas efectivas: **0**, con el control de que las nuevas dan 3.
+
+#### (h) EL MODO, en `fabricar-iso.sh` — con el control que puede fallar
+
+Decisión de Jorge ya tomada: `fabricar-iso.sh` fija el modo de lo que añade, como
+ya fija la fecha y por el mismo motivo. `0644` para los ficheros y `0755` para el
+directorio del repo, que es lo que los 29 ficheros ya llevan. **Y no es
+hipotético:** en `debian-packages/` conviven hoy `.deb` en `0600` y en `0644`.
+
+Probado **aislado**, porque la ISO se aplazó, con el caso real —un `.deb` en
+`0600` y el directorio en `0700`— y con su control negativo:
+
+```
+chmod real           -> [OK]    modo fijado: 6 ficheros en 644 y el directorio en 755
+chmod NEUTRALIZADO   -> [FALLO] 1 ficheros no quedaron en 644 pese al chmod
+```
+
+El guardián es la trampa 13: **una mutación se verifica antes de leer su
+resultado**. Sin él, un `chmod` que fallara en silencio daría exactamente la ISO
+que este bloque existe para evitar.
+
+**Lo que NO se toca: el propietario.** El uid/gid también viaja en el campo `PX`,
+y cambiarlo movería más sectores. La decisión era el modo.
+
+#### (i) LA VUELTA ENTERA: 28 DE 28 SIN TOCAR LA ISO NI UNA VEZ
+
+Directorio **vacío** (`0 entradas`), y las dos procedencias en órdenes separadas
+para que cada una quede escrita:
+
+```
+--propios <lo construido hoy>      -> 24 bajados, 0 fallos; branding 9ec0a49d…,
+                                      firefox 640f508e…, meta 204081f0…
+                                      cuadran 27 de 28, ausentes 1  -> [FALLO], y se niega
+--propios encina-autofirma/salida  -> autofirma faeca3a9…  (con TRES casi homonimos alli)
+                                      cuadran 28 de 28   no cuadran 0   ausentes 0
+                                      [OK] los 28 .deb estan y sus huellas cuadran
+```
+
+El `27 de 28` de la primera pasada **es el control**: el guion sabe dar la
+respuesta mala, y la da antes de escribir nada.
+
+**Y los 24 volvieron a bajarse hoy: ninguno retirado.** Es otra foto, no una
+propiedad, igual que en §4.36e.
+
+El índice, en `encina-dev`, y aquí hay un dato que engaña:
+
+```
+28 entradas, 41 154 bytes, sha256 ccf5edf4…
+el de la ISO vigente:      41 154 bytes, sha256 11171cc4…
+```
+
+**EXACTAMENTE EL MISMO TAMAÑO Y OTRO CONTENIDO** — los tres tamaños que cambian
+tienen los mismos dígitos (6159072→6158932, 10922→10876, 6912→6904). El tamaño no
+discrimina, otra vez. Y el índice generado contra el manifiesto: **0 diferencias
+en las 28 líneas**, con el control de que un tamaño falseado las señala.
+
+#### (j) LA TRAMPA 24, REPRODUCIDA HOY EN SU FORMA NUEVA — y con `COPYFILE_DISABLE=1` puesto
+
+Al transferir los 28 a la VM, con `COPYFILE_DISABLE=1` delante:
+
+```
+tar: Se desestima la palabra clave de la cabecera extendida desconocida
+     'LIBARCHIVE.xattr.com.apple.provenance'              (x28)
+     'LIBARCHIVE.xattr.com.docker.grpcfuse.ownership'
+28 .deb llegaron   entradas que no son .deb: 0
+```
+
+**`COPYFILE_DISABLE=1` no suprime las cabeceras pax** — sólo los ficheros `._`,
+que este `libarchive` ya no escribe. Lo confirma §4.36i por una vía nueva: lo que
+protege de verdad es el cotejo de las 28 huellas a los dos lados, que dio
+**iguales** con el control de que una cambiada en un carácter la señala.
+
+#### (k) Lo que esta medición NO contesta, y hay que decirlo entero
+
+- **LA ISO NO SE HA FABRICADO.** El modo está escrito y probado aislado, pero
+  **las dos construcciones seguidas con la misma huella —que es la mitad del
+  «hecha cuando» de esa casilla— NO ESTÁN MEDIDAS**, y por eso la casilla del
+  modo sigue **sin marcar**. La predicción falsable, para cuando se haga: con el
+  modo fijado y nada más tocado, la ISO desde la cosecha tenía que dar
+  `1ef3a668…`, que es la de §4.36k. Ahora **ya no**, porque los tres `.deb` de
+  dentro han cambiado; lo que sigue en pie es que los 29 ficheros salgan
+  `-rw-r--r--` y que dos construcciones seguidas coincidan.
+- **`ac0a5721…` SIGUE SIENDO LA ISO QUE EXISTE, Y YA NO SE REPRODUCE DESDE ESTE
+  REPOSITORIO.** Lleva dentro los `.deb` viejos y un seed que exige las huellas
+  viejas, así que es coherente **consigo misma** y **no** con el árbol de hoy. No
+  está en este Mac para comprobarlo: es lo que dice (a).
+- **Ninguno de los tres `.deb` nuevos se ha instalado ni arrancado.** El contenido
+  es idéntico huella a huella al de los vigentes, que sí se instalaron y
+  arrancaron (§4.34, §4.35g), pero eso es un argumento, no una medición.
+- **Los `.buildinfo` y `.changes` de `debian-packages/` NO se han rehecho.**
+  Siguen describiendo la construcción del 12 de agosto — y son la evidencia de
+  donde salió `SOURCE_DATE_EPOCH` en (d). Rehacerlos borraría eso.
+- **Que los 24 sigan estando mañana.** Otra foto. `cosechar-repo.sh` dice
+  `[RETIRADO]` cuando deje de ser verdad.
+- **`shellcheck` no está en este Mac**, así que los guiones tocados sólo pasaron
+  `bash -n`. Lo que `SCRIPTS.md` dice de `shellcheck` se midió en su día, no hoy.
+- **En `encina-dev` quedan los árboles de esta vuelta** (`~/construir-hoy`,
+  `~/clon-2`, `~/repo-2026-08-13`) y en `~/construir-hoy` el `copyright` tiene el
+  mtime tocado a mano. No es un clon limpio: para volver a medir, se rehace.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

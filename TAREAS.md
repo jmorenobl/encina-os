@@ -17,11 +17,21 @@ anterior*. Los 28 `.deb` del repositorio offline **solo viven dentro del medio**
 y se sacan de él con `xorriso`. Si mañana se pierde `ac0a5721…`, no se puede
 rehacer. Nadie de fuera puede construirla, y el autor tampoco desde cero.
 
-**Dónde está el agujero al final del 2026-08-13, medido y no estimado
-(`MEDICIONES.md` §4.36):** de los 28, **27 ya no dependen del medio** — los 24 de
-fuera los baja `imagen/cosechar-repo.sh` y los comprueba por huella al llegar, y
-tres de los cuatro propios salen del clon. **Queda uno**, `encina-branding`
-0.1.8, y con él las dos casillas de abajo que aún no están marcadas.
+**EL AGUJERO ESTÁ CERRADO DESDE EL 2026-08-13, medido y no estimado
+(`MEDICIONES.md` §4.37): los 28 salen del clon, 28 de 28, sin tocar la ISO ni una
+vez.** Los 24 de fuera los baja `imagen/cosechar-repo.sh` y los comprueba por
+huella al llegar; los tres de Encina los construyen `03-construir.sh`,
+`07-firefox-construir.sh` y `10-meta-construir.sh`; y `autofirma` sale de
+`encina-autofirma`, que es público.
+
+**Y la pregunta que nadie había hecho, contestada al cerrarlo: las huellas
+vigentes hasta ese día no eran de un paquete, sino de UNA CONSTRUCCIÓN.**
+`dpkg-deb` recorta los mtimes posteriores a `SOURCE_DATE_EPOCH` y deja pasar los
+anteriores, así que la fecha que un fichero tuviera en el disco viajaba dentro
+del `.deb` — un dato que no está en git. Las tres se pusieron al día; el
+contenido de los paquetes no cambió ni un byte. **Consecuencia que hay que mirar
+de frente: `ac0a5721…` ya no se fabrica desde este repositorio**, y la casilla de
+`construir-todo.sh` de abajo se reescribe por eso.
 
 Este bloque es el que convierte «constrúyela tú» de promesa en instrucción, y sin
 él los bloques 2, 3 y 4 no valen nada: se publicaría algo que nadie puede auditar
@@ -58,32 +68,53 @@ rehaciéndolo.
       *Lo que NO cierra, y por eso la casilla de abajo sigue viva:*
       `encina-branding` 0.1.8 **no sale del clon**, así que hoy salen **tres de los
       cuatro** `PROPIO` y el cuarto sigue saliendo del medio.
-- [ ] **Los tres `.deb` de Encina, construibles desde este repositorio.** Están en
-      `debian-packages/` como fuente y `.gitignore` excluye los binarios, que es lo
-      correcto; falta comprobar que la receta funciona partiendo de cero.
-      **Y desde el 2026-08-13 esta casilla es el ÚLTIMO hilo de la circularidad**,
-      no una comprobación de higiene: `encina-branding_0.1.8_all.deb` (`51b6603c…`)
-      **no existe en el disco del autor** —en `debian-packages/` sólo hay un
-      `0.1.7`, `0e870833…`— y hoy únicamente se obtiene extrayéndolo de la ISO.
-      *Hecha cuando:* `03-construir.sh`, `07-firefox-construir.sh` y
-      `10-meta-construir.sh` producen los tres con las huellas vigentes.
-- [ ] **Decidir si `fabricar-iso.sh` fija el MODO de lo que añade**, como ya fija
-      la fecha y por el mismo motivo (§4.36k). **Es una decisión de producto, y por
-      eso se dejó sin tocar.** Medido: la ISO fabricada desde el repositorio
-      cosechado se diferencia de la vigente en **2 sectores de 1 814 144**, y esos
-      4 bytes son un solo campo `PX` de Rock Ridge — el modo de
-      `encina-firefox-native_0.2.1_all.deb`, `0700` en el medio vigente y `0644`
-      hoy. El contenido de las dos es idéntico, comprobado huella a huella sobre
-      los 29 ficheros de cada una. **Y la consecuencia hay que mirarla de frente:**
-      `ac0a5721…` no se reproduce bit a bit desde **ningún** directorio, ni
-      siquiera desde el suyo, porque el modo del fichero de origen ya ha cambiado.
-      *Hecha cuando:* está escrito qué modo llevan los ficheros añadidos y por qué,
-      y dos construcciones desde el mismo repositorio dan la misma huella.
+- [x] ~~**Los tres `.deb` de Encina, construibles desde este repositorio.**~~
+      **HECHA el 2026-08-13** (`MEDICIONES.md` §4.37). Los tres guiones producen
+      los tres `.deb` desde el árbol versionado, en verde y sin aflojar nada —25,
+      39 y 14 comprobaciones, 0 fallos, `lintian` sin decir una línea— y con ellos
+      la cosecha sobre un directorio **vacío** da **28 de 28 sin tocar la ISO**.
+      *Y el «hecha cuando» de esta casilla hubo que reescribirlo, que es el
+      hallazgo:* decía «con las huellas vigentes», y **eso no era alcanzable**. Las
+      vigentes eran de una construcción hecha en un árbol de trabajo: `dpkg-deb`
+      recorta los mtimes posteriores a `SOURCE_DATE_EPOCH` y **deja pasar los
+      anteriores**, así que la fecha de `debian/copyright` en el disco viajaba
+      dentro del `.deb` —aislado hasta los 7 bytes del campo `mtime` del bloque 11
+      del tar— y ese dato no está en git. Demostrado con control positivo
+      (restaurando el mtime sale `86da3cc9…` **exacta**) y negativo (264 segundos
+      antes, otra huella). **Lo que sí es cierto, y es lo que la casilla dice
+      ahora: los tres son reproducibles DESDE EL CLON** —con mtimes distintos a
+      propósito sale la misma huella— y el manifiesto se puso al día con ellas por
+      decisión de Jorge. El contenido de los tres paquetes **no cambió**: 0
+      diferencias huella a huella, mismos modos, dueños, tamaños y rutas; lo único
+      que cambian son las fechas, y por eso los tres son más pequeños.
+      *Y una corrección:* el `0.1.8` no «sólo salía de la ISO» — no estaba en el
+      Mac, pero en `encina-dev` estaba en cuatro sitios, encontrado por huella.
+- [ ] **El MODO de lo que añade `fabricar-iso.sh`: DECIDIDO Y ESCRITO el
+      2026-08-13, FALTA MEDIRLO.** La decisión la tomó Jorge —se fija, como ya se
+      fija la fecha y por el mismo motivo (§4.36k)— y el guion ya lo hace: `0644`
+      los ficheros, `0755` el directorio del repo, con un guardián que comprueba
+      **que el `chmod` se aplicó** antes de escribir un byte de medio (trampa 13).
+      Probado aislado con el caso real —en `debian-packages/` conviven hoy `.deb`
+      en `0600` y en `0644`— y con su control negativo: un `chmod` neutralizado da
+      `[FALLO] 1 ficheros no quedaron en 644`. **La casilla sigue abierta porque la
+      otra mitad de su «hecha cuando» NO está medida:** no se ha fabricado ninguna
+      ISO. Se aplazó al medir que **en este Mac no hay ninguna ISO** —ni la oficial
+      `c2610520…`, que es la entrada del guion, ni la vigente— así que fabricarla
+      cuesta ~3,5 GB de red que no estaban previstos, y comparar sector a sector
+      contra `ac0a5721…` no se puede hacer aquí.
+      *Hecha cuando:* dos construcciones seguidas desde el mismo repositorio dan la
+      misma huella, y los 29 ficheros de dentro salen `-rw-r--r--`, ninguno `0700`.
 - [ ] **Un `construir-todo.sh` que encadene las cuatro cosas.** Cosecha, construye
-      los tres, trae `autofirma`, fabrica la ISO.
-      *Hecha cuando:* de `git clone` a ISO en una sola orden, y la ISO resultante
-      tiene la **misma huella** que la vigente — o si no la tiene, se dice **qué
-      byte** cambia y por qué.
+      los tres, trae `autofirma`, fabrica la ISO. Las cuatro piezas ya existen y
+      están medidas por separado (§4.36, §4.37); lo que falta es la orden única.
+      **Y su «hecha cuando» se reescribió el 2026-08-13, porque el anterior decía
+      algo que ya no puede ser cierto:** pedía «la misma huella que la vigente», y
+      `ac0a5721…` **no se fabrica desde este repositorio** — lleva dentro los tres
+      `.deb` viejos y un seed que exige sus huellas, así que es coherente consigo
+      misma y no con el árbol de hoy.
+      *Hecha cuando:* de `git clone` a ISO en una sola orden, y **dos pasadas
+      seguidas dan la misma huella** — que es lo que de verdad se quería comprobar,
+      y se puede comprobar sin depender de ningún medio anterior.
 
 ---
 

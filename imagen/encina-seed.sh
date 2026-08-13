@@ -73,10 +73,20 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # Si un .deb no coincide, se dice y se sigue: el registro tiene que contarlo,
 # no taparlo. fabricar-seed.sh y fabricar-iso.sh las leen DE AQUI, para que el
 # guion que las comprueba dentro y el que fabrica el medio no puedan separarse.
+#
+# LAS TRES DE ENCINA CAMBIARON EL 2026-08-13, Y EL CONTENIDO DE LOS PAQUETES NO
+# (MEDICIONES.md §4.37). Son las que salen de construir desde el clon, y las
+# anteriores -51b6603c…, 972ec932… y 86da3cc9…- eran de una construccion hecha
+# en un arbol de trabajo, no de un paquete: 'dpkg-deb' RECORTA los mtimes
+# posteriores a SOURCE_DATE_EPOCH y DEJA PASAR los anteriores, asi que las
+# fechas que los ficheros tuvieran en el disco se colaban dentro del .deb. Ese
+# dato no esta en git y no se puede reproducir desde un clon. Medido: mismo
+# contenido huella a huella, mismos modos, duenos, tamanos y rutas; lo unico
+# que cambia son las fechas, y por eso los tres .deb son ahora MAS PEQUENOS.
 H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-H_BRANDING=51b6603ca1cfd431d459865f21df095a628200681b6deed1bca0c3c2ccebfdb3
-H_FFNATIVE=972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2
-H_META=86da3cc9ec071bcb597871b1337824fba0f5e7b8c4491b2f6c51f910a631ed2c
+H_BRANDING=9ec0a49db9983e6b98956152094aa78b544d1da6c8ed5482e9930414b6a5ea78
+H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
+H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 
 # existe(): -e para lo normal, -L para el enlace roto o absoluto (trampa 10)
 existe() { [ -e "$1" ] || [ -L "$1" ]; }

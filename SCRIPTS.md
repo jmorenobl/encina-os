@@ -781,9 +781,17 @@ salida de emergencia y la forma de cotejar un medio contra el manifiesto:
 xorriso -osirrox on -indev encina-os-E4-es-0.2.1.iso -extract /encina-repo <destino>
 ```
 
-**Lo único que a día de hoy sólo sale de ahí es `encina-branding_0.1.8_all.deb`**
-(`51b6603c…`): en `debian-packages/` únicamente está el `0.1.7` (`0e870833…`). Es
-el último hilo de la circularidad y tiene su casilla en `TAREAS.md`.
+**Y DESDE EL 2026-08-13 NO HAY NADA QUE SÓLO SALGA DE AHÍ** (`MEDICIONES.md`
+§4.37). Este párrafo decía que `encina-branding_0.1.8_all.deb` era el último hilo
+de la circularidad; ya no lo es, porque **los tres `.deb` de Encina se
+construyen desde el clon** con `03-construir.sh`, `07-firefox-construir.sh` y
+`10-meta-construir.sh`, y la vuelta entera —cosecha sobre un directorio vacío,
+`--propios` apuntando sólo a lo construido y a `encina-autofirma/salida`— da
+**28 de 28 sin tocar la ISO ni una vez**.
+
+*Y una corrección a §4.36g, que se midió mal por mirar sólo aquí:* el `0.1.8` no
+«sólo salía de la ISO». **No estaba en el Mac**, que no es lo mismo: en
+`encina-dev` estaba en cuatro sitios, encontrado por huella.
 
 **El nombre lleva la versión desde el 2026-08-13** (`MEDICIONES.md` §4.35): la ISO
 vigente es `encina-os-E4-es-0.2.1.iso` (`ac0a5721…`) y la anterior, `aa1ac76a…`,
@@ -794,15 +802,35 @@ Y de ahí se rehace cualquier volumen `CIDATA` con `fabricar-seed.sh`. Los
 volúmenes de la vuelta de E4 **no se conservaron a propósito**: son
 reproducibles, y el disco del banco no daba para todo.
 
-**Las huellas vigentes desde el 2026-08-13** (§4.34), que son las que hay que
-ver salir de `fabricar-seed.sh`:
+**Las huellas vigentes desde el 2026-08-13** (`MEDICIONES.md` §4.37), que son las
+que hay que ver salir de `fabricar-seed.sh`:
 
 ```
 faeca3a9…  autofirma_1.9.1+encina4_all.deb
-51b6603c…  encina-branding_0.1.8_all.deb
-972ec932…  encina-firefox-native_0.2.1_all.deb
-86da3cc9…  encina-meta_0.2.1_all.deb          <- 0.2.1 desde el 2026-08-13 (D18 reescrita)
+9ec0a49d…  encina-branding_0.1.8_all.deb        6158932 bytes
+640f508e…  encina-firefox-native_0.2.1_all.deb    10876
+204081f0…  encina-meta_0.2.1_all.deb               6904   <- 0.2.1 desde el 2026-08-13 (D18 reescrita)
 ```
+
+**LAS TRES DE ENCINA CAMBIARON ESE MISMO DÍA Y EL CONTENIDO DE LOS PAQUETES NO.**
+Las anteriores —`51b6603c…`, `972ec932…` y `86da3cc9…`— **no eran las de un
+paquete, sino las de UNA CONSTRUCCIÓN CONCRETA**, y por eso no se podían
+reproducir desde un clon. La causa, medida hasta el offset: `dpkg-buildpackage`
+ya exporta `SOURCE_DATE_EPOCH` derivado del changelog, pero **`dpkg-deb` RECORTA
+los mtimes posteriores y DEJA PASAR los anteriores**, así que la fecha que un
+fichero tuviera en el disco se colaba dentro del `.deb`. Ese dato no está en git.
+
+**La consecuencia práctica, y es buena: los tres SÍ son reproducibles desde el
+clon.** Un checkout siempre pone fechas posteriores al changelog, el recorte las
+absorbe todas y la huella sale estable — comprobado construyendo con mtimes
+distintos a propósito. Lo que no se reproducía era la huella vieja.
+
+**Y el aviso que va con esto: `ac0a5721…` ya no se fabrica desde este
+repositorio.** Esa ISO lleva dentro los `.deb` viejos y un seed que exige las
+huellas viejas: es coherente **consigo misma**, no con el árbol de hoy. La
+próxima ISO tendrá otra huella por dos motivos a la vez —estas tres y el modo de
+§4.36k— y hasta que se fabrique y se mida, **este documento no tiene una huella
+de ISO vigente que ofrecer**.
 
 **Y DESDE EL 2026-08-13 NO SON CUATRO COSAS: SON SEIS, y las dos nuevas no se
 dedujeron, se cazaron gastando una instalación cada una** (§4.34h). Las cuatro de
@@ -1457,6 +1485,23 @@ que `dpkg-scanpackages` indexaría. Consecuencias, y las dos importan:
 2. **Pero contar entradas `._` ya no demuestra nada**, porque hoy da `0` en los
    dos casos. La comprobación que **sí puede fallar** es cotejar las huellas de
    lo que salió y de lo que llegó, a los dos lados.
+
+**Y el 2026-08-13, transfiriendo los 28 `.deb` de la cosecha, se midió una tercera
+que no se sabía** (§4.37j): **`COPYFILE_DISABLE=1` NO suprime las cabeceras
+pax.** Suprime los ficheros `._`, que este `libarchive` ya no escribe de todas
+formas. Con la variable puesta salieron los 29 avisos igual:
+
+```
+COPYFILE_DISABLE=1 tar -cf - *.deb | ssh … tar -xf -
+tar: Se desestima la palabra clave de la cabecera extendida desconocida
+     'LIBARCHIVE.xattr.com.apple.provenance'              (x28)
+     'LIBARCHIVE.xattr.com.docker.grpcfuse.ownership'
+28 .deb llegaron   entradas que no son .deb: 0
+```
+
+O sea que la variable **no es la protección**, es higiene barata; la protección
+es el cotejo de huellas, y en esa transferencia dio iguales con el control de que
+una cambiada en un carácter la señala.
 
 **25. `tar xzf … | head -2` mata el `tar` a mitad por SIGPIPE.** Se extrajo medio
 árbol de fuentes, el `set -e` de la línea siguiente falló en un `cd` que no tenía
