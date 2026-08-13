@@ -21,21 +21,35 @@ Este bloque es el que convierte «constrúyela tú» de promesa en instrucción,
 él los bloques 2, 3 y 4 no valen nada: se publicaría algo que nadie puede auditar
 rehaciéndolo.
 
+- [x] ~~**Fijar de dónde sale `autofirma_1.9.1+encina4_all.deb`**~~ **HECHO el
+      2026-08-13: `encina-autofirma` es público.** Era el único de los 28 con
+      bloqueo duro; ahora es **construible desde fuente pública**, con el parche
+      dentro (`debian/patches/0001-perfiles-mozilla-todas-las-rutas.patch`). Y la
+      licencia quedó comprobada leyendo el código: la cabecera de AutoFirma
+      concede EUPL «1.1 or (at your option) any later version» en 683 de 1 308
+      `.java`, así que EUPL-1.2 aquí es coherente y **no hay nada que cambiar**.
+      *Lo que NO desbloquea, medido:* el `.deb` **no viaja en el clon** —está en
+      `.gitignore`, y bien— así que sigue habiendo que construirlo.
+- [x] ~~**La lista de los 24 de fuera sólo vive dentro de la ISO**~~ **CORTADO el
+      2026-08-13 con `imagen/repo-manifiesto.tsv`**, que es la raíz de la
+      circularidad y no el `.deb`: sin él, `cosechar-repo.sh` necesitaría una ISO
+      anterior para saber **qué** cosechar. Ahora la lista —origen, paquete,
+      versión, fichero, tamaño y `sha256` de los 28— está versionada aquí, con sus
+      controles: las 28 huellas cuadran con los bytes que viajan, las 4 propias
+      cuadran con lo que exige `encina-seed.sh`, y una huella saboteada la señala.
 - [ ] **`imagen/cosechar-repo.sh`, que reconstruye `/encina-repo` desde cero.**
-      No hay que inventar la lista: el `Packages` que ya tenemos lleva **nombre,
-      versión, tamaño y `SHA256` de los 28**, así que el guion se escribe desde el
-      índice. Baja los 24 de fuera del archivo de Ubuntu y de Mozilla, y falla si
-      una huella no cuadra.
+      Ya no hay que inventar nada: lee `imagen/repo-manifiesto.tsv`, baja los **24
+      de origen `ARCHIVO`** de Ubuntu y de Mozilla, y falla si una huella no cuadra.
+      Después genera el `Packages` con `dpkg-scanpackages` —que no existe en macOS,
+      así que eso se hace en `encina-dev` (`SCRIPTS.md`)—.
       *Hecha cuando:* partiendo de un directorio vacío produce 28 `.deb` cuyas
-      huellas **coinciden una a una** con las del `Packages` vigente, y con el
-      control de que una huella saboteada la hace fallar.
-- [ ] **Fijar de dónde sale `autofirma_1.9.1+encina4_all.deb`.** Hoy sale de
-      `encina-autofirma`, que es privado, así que es el eslabón que rompe la
-      cadena para cualquiera que no seas tú. Decide una de las dos: publicar ese
-      repositorio (va también en el bloque 2, que lo exige por otro motivo) o
-      publicar el `.deb` construido con su huella y su receta.
-      *Hecha cuando:* `fabricar-iso.sh` pasa el paso 2 en una máquina que **solo**
-      ha clonado `encina-os`.
+      huellas **coinciden una a una** con el manifiesto, y con el control de que una
+      huella saboteada la hace fallar.
+      *Y la casilla que la cierra de verdad:* `fabricar-iso.sh` pasa el paso 2 en
+      una máquina que **sólo** ha clonado `encina-os` y `encina-autofirma`. Medido
+      el 2026-08-13 que hoy **no** pasa —`[FALLO] no esta:
+      autofirma_1.9.1+encina4_all.deb`— con el control de que **con** el directorio
+      bueno pasa los cuatro y las 28 del índice.
 - [ ] **Los tres `.deb` de Encina, construibles desde este repositorio.** Están en
       `debian-packages/` como fuente y `.gitignore` excluye los binarios, que es lo
       correcto; falta comprobar que la receta funciona partiendo de cero.

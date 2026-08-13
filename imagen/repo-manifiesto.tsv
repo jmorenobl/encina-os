@@ -1,0 +1,34 @@
+# Los 28 .deb que viajan en /encina-repo de la ISO de Encina OS.
+# Generado desde el Packages del medio; a partir de aqui es LA FUENTE de esa lista,
+# para que cosechar-repo.sh no necesite una ISO anterior para saber que cosechar.
+# origen: PROPIO = se construye en este proyecto | ARCHIVO = se baja de Ubuntu/Mozilla
+#
+origen	paquete	version	fichero	tamano	sha256
+ARCHIVO	ca-certificates-java	20240118	ca-certificates-java_20240118_all.deb	11624	6d5859b713371c4725cf8deca131685067219ffa30129a6c5b09d53ff63d40e9
+ARCHIVO	firefox	153.0.4~build1	firefox_153.0.4~build1_arm64.deb	76411492	411b2a5790a63eb7dd814e631b7c0655a2877ba8689bf19363727a4646ab54fd
+ARCHIVO	firefox-l10n-es-es	153.0.4~build1	firefox-l10n-es-es_153.0.4~build1_all.deb	436772	600efa563ce2f08d89ca1a325b0cbf956cfa8c654b164c3f71667fa5161d73f9
+ARCHIVO	fonts-dejavu-extra	2.37-8	fonts-dejavu-extra_2.37-8_all.deb	1947322	5502e5ccc416683e5251dc105b37be31158bc2e02133221e56524ea2a8e426fe
+ARCHIVO	gnome-software	46.0-1ubuntu2	gnome-software_46.0-1ubuntu2_arm64.deb	690092	116307159001e090fa41c8eba6200e6594cf0745b7a355e97e3f2cf0e0d94415
+ARCHIVO	gnome-software-common	46.0-1ubuntu2	gnome-software-common_46.0-1ubuntu2_all.deb	14050	c81a594b8ced441f8fabb3dca8841cb4d9d208680b316103240cf24b352d5863
+ARCHIVO	gnome-software-plugin-snap	46.0-1ubuntu2	gnome-software-plugin-snap_46.0-1ubuntu2_arm64.deb	29984	1643a3f79c54e98d78e46b506471b1ba9bd3dfd9be0c0d16bae0a8ecf668e1f7
+ARCHIVO	hunspell-es	1:24.2.1-1	hunspell-es_1%3a24.2.1-1_all.deb	467444	7e40ad79d4922f153bcb3e6896fd910bfd024ea644111945560774168c1248d8
+ARCHIVO	hyphen-es	1:24.2.1-1	hyphen-es_1%3a24.2.1-1_all.deb	49458	89f55b2e28226a5977c2f10ac12865e5fc1d8e7c9ac0ce493f2a62962e7c6718
+ARCHIVO	java-common	0.75+exp1	java-common_0.75+exp1_all.deb	6798	9029d787c97f9b9e9bb04e7a4fb92bfc12fbd10b5809aab8694a8735b85bc070
+ARCHIVO	libatk-wrapper-java	0.40.0-3build2	libatk-wrapper-java_0.40.0-3build2_all.deb	54344	fd4e2ab59f2eedd61a26e711a0d49531d22838af1ed193fad7379560ad95e827
+ARCHIVO	libatk-wrapper-java-jni	0.40.0-3build2	libatk-wrapper-java-jni_0.40.0-3build2_arm64.deb	43538	b57b0b496d6e91c10fb71f55d7ac90fd2423a4867d6fcd83ed8bf070e58ee798
+ARCHIVO	libnss3-tools	2:3.98-1ubuntu0.2	libnss3-tools_2%3a3.98-1ubuntu0.2_arm64.deb	598166	02d5f5e9d7a40d79fd23448b3f4016b7c83113f2b0df9f55efa16a39be33ce97
+ARCHIVO	libplymouth5	24.004.60-1ubuntu7.2	libplymouth5_24.004.60-1ubuntu7.2_arm64.deb	140178	2b6e091659ef9957db3b2257a7bdb739842ce6643d151098d801bb4ed8c4d3e6
+ARCHIVO	mythes-es	1:24.2.1-1	mythes-es_1%3a24.2.1-1_all.deb	612950	7aef0f9fff2a69f4d0edfe0d013ca17e767742e56102921d9c52e7a085c5bf76
+ARCHIVO	openjdk-17-jre	17.0.19+10-1~24.04.2	openjdk-17-jre_17.0.19+10-1~24.04.2_arm64.deb	232714	b66c2f6851a90ed7c58af38af647d6d2044a3e89951a90e3f71455ea5bae7885
+ARCHIVO	openjdk-17-jre-headless	17.0.19+10-1~24.04.2	openjdk-17-jre-headless_17.0.19+10-1~24.04.2_arm64.deb	47517766	05a1e87f5200cc6b07897bf7a0e6f9a7f6270759ddf3a2de8975b0ff9e8e7ee2
+ARCHIVO	plymouth	24.004.60-1ubuntu7.2	plymouth_24.004.60-1ubuntu7.2_arm64.deb	134420	318b3fcaa60ad9b36a6c3a77cf518b51269eecb09de7860a9b42e3a16cd3c226
+ARCHIVO	plymouth-label	24.004.60-1ubuntu7.2	plymouth-label_24.004.60-1ubuntu7.2_arm64.deb	9222	060824e89911778848618367a4b7668f353b110e820542dfa3da4f9e3e67f23a
+ARCHIVO	plymouth-theme-spinner	24.004.60-1ubuntu7.2	plymouth-theme-spinner_24.004.60-1ubuntu7.2_arm64.deb	130918	db43bff2c5254d7fdcebfe69160fe7edc54dc39b81ed00404267a2dbba2ae96e
+ARCHIVO	plymouth-theme-ubuntu-text	24.004.60-1ubuntu7.2	plymouth-theme-ubuntu-text_24.004.60-1ubuntu7.2_arm64.deb	9818	aa2e5ca2d7377962a7f224e2fef16452cfe4b88244cf1c4035cd8ef6abde8612
+ARCHIVO	plymouth-themes	24.004.60-1ubuntu7.2	plymouth-themes_24.004.60-1ubuntu7.2_arm64.deb	585728	ed6174c6bef99e2a595e3420ce5a180a98ac6552850f736045f2a9ccce11fb43
+ARCHIVO	simple-scan	46.0-0ubuntu2.1	simple-scan_46.0-0ubuntu2.1_arm64.deb	207338	db3892196ce3dbbb596c83f6ddcb033d135edaf87c1311d52d729fe83731e749
+ARCHIVO	wspanish	1.0.30	wspanish_1.0.30_all.deb	221694	00479a312b1268519b016f6d83ec66334f6231314eb13b67d8ca9b309bda4c39
+PROPIO	autofirma	1.9.1+encina4	autofirma_1.9.1+encina4_all.deb	39570056	faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
+PROPIO	encina-branding	0.1.8	encina-branding_0.1.8_all.deb	6159072	51b6603ca1cfd431d459865f21df095a628200681b6deed1bca0c3c2ccebfdb3
+PROPIO	encina-firefox-native	0.2.1	encina-firefox-native_0.2.1_all.deb	10922	972ec9323140d9aa7522be8a3608ff751b042725a3111154321ea1f304b999f2
+PROPIO	encina-meta	0.2.1	encina-meta_0.2.1_all.deb	6912	86da3cc9ec071bcb597871b1337824fba0f5e7b8c4491b2f6c51f910a631ed2c
