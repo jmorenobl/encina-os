@@ -8141,6 +8141,62 @@ creado.
   se refresca sola cuando le parece. No se ha medido qué pasa si un refresco cambia el
   lanzador del Snap de Firefox.
 - **Qué hace «Actualizar todo».** No se pulsó, con motivo (ñ).
+
+#### (o) LA LIMPIEZA: `encina-E4-tienda` se va, y una condición de §9.a NO se cumplía
+
+Decidido por Jorge al cerrar la sesión. **Su papel estaba traspasado**: `encina-E4-entrega`
+hace lo mismo por mejor camino —nace de la ISO corregida, con el repositorio saliendo
+del medio— y encima lleva las dos casillas `[OJOS]` de esta vuelta.
+
+**Y la condición de §9.a NO se cumplía, así que se dice antes en vez de descubrirse
+después:** *comprobar por huella que su ISO vive también en `e2-medios`*. **No vive:**
+`aa1ac76a…` se había borrado esa misma madrugada, en (l). Se borró igualmente porque lo
+decidió Jorge, y queda escrito que se hizo sin esa condición.
+
+Lo que sí se comprobó antes de tocar nada:
+
+```
+parada                                     stopped
+clon de ISO dentro del bundle (trampa 21)  ninguno
+su seed                                    f99324ff…  (reproducible con fabricar-seed.sh)
+respaldo del registro                      hecho ANTES, plutil -lint OK
+```
+
+**Y el retorno, medido con las dos lecturas pegadas al borrado:**
+
+```
+df ANTES   40 607 152 KiB
+utmctl delete 86AA1724-…
+df DESPUES 52 689 940 KiB
+           ---------------
+DEVUELTO   12 082 788 KiB = 11,523 GiB      y `du` decia 12G  <- AQUI du ACERTO
+```
+
+**Segunda aparición de la fila «independiente» de §9.a**, y confirma la regla: una
+máquina nacida de la ISO no comparte bloques con nadie, así que `du` no miente sobre
+ella. Registro consistente por las dos mitades: **10** en `utmctl list` y **10**
+bundles.
+
+**Y UN HALLAZGO DEL BANCO QUE SALIÓ AL INTENTAR SALVAR SU RASTRO: `debug.log` NO ES UN
+REGISTRO, ES UN VOLÁTIL.** Antes de borrar se copió su `debug.log` a `e2-medios` para
+conservar la evidencia del control de la trampa 16 que §4.34i cita —«1 `-append` y
+cinco unidades»—. **No estaba:**
+
+```
+rastro-encina-E4-tienda/debug.log   -append: 0    media=disk: 2
+CONTROL, encina-E4-entrega arrancada hoy:  -append: 0    media=disk: 2
+```
+
+**UTM lo reescribe en cada arranque**, así que lo que queda es la línea de órdenes del
+**último** inicio, no la de la instalación. Las dos máquinas dicen lo mismo, y las dos
+se instalaron con `-kernel`, `-append autoinstall` y cinco unidades. **Consecuencia de
+método: el control de la trampa 16 hay que LEERLO Y TRANSCRIBIRLO en el momento**, como
+se hizo en (g) y en §4.34i — el fichero que lo contiene no sobrevive al siguiente
+arranque. La transcripción de la medición **es** la evidencia; no hay copia de
+seguridad detrás.
+
+Se conservó igualmente `e2-medios/rastro-encina-E4-tienda/` (119 KB: `debug.log`,
+`screenshot.png` y `config.plist`), **diciendo lo que es y lo que no es**.
 - **Las cinco pantallas de esta ISO.** No se repiten a propósito: la forma no ha
   cambiado y las cerró `encina-E4-cinco` (§4.32f). Lo que aquí no se mide es que el
   `autoinstall.yaml` de **dentro** de la ISO se lea desde `/cdrom` — lo gana el

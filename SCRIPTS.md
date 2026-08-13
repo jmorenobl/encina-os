@@ -904,6 +904,24 @@ grep -o "\-drive [^ ]*" debug.log   # exactamente dos: la ISO y el disco de dest
 O sea: **la prueba de que la ISO se bastó sola es lo que NO había conectado**, y
 eso solo se ve desde fuera, antes de arrancar.
 
+**Y HAY QUE LEERLO EN EL MOMENTO, porque `debug.log` NO ES UN REGISTRO: ES UN
+VOLÁTIL** (`MEDICIONES.md` §4.35o, encontrado al intentar salvar el rastro de una VM
+antes de borrarla). **UTM lo reescribe entero en cada arranque**, así que lo que hay
+dentro es la línea de órdenes del **último** inicio, no la de la instalación — y
+después de una instalación se le quitan a la VM la ISO y los argumentos, con lo cual
+el fichero acaba diciendo lo contrario de lo que se midió:
+
+```
+encina-E4-tienda, que se instalo con 1 -append y cinco unidades:
+  su debug.log, meses despues   -append: 0   media=disk: 2
+CONTROL, encina-E4-entrega, instalada igual y arrancada el mismo dia:
+  su debug.log                  -append: 0   media=disk: 2
+```
+
+**La regla: el control de la trampa 16 se lee y se TRANSCRIBE a la medición en el
+momento.** La transcripción **es** la evidencia; no hay copia de seguridad detrás.
+Guardar el `debug.log` «por si acaso» no conserva nada: lo comprobé y no estaba.
+
 **17. `unsquashfs` en el Mac revienta a mitad, y no es la imagen.**
 Leyendo el código del instalador que viaja dentro de la ISO (§4.21e):
 
