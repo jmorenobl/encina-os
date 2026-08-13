@@ -1063,8 +1063,10 @@ mete dentro de la ISO.
 ### 6bis.2 Lo medido al abrir, que ya no se pregunta
 
 Todo en `MEDICIONES.md` §4.14, sobre la ISO oficial
-`ubuntu-24.04.4-desktop-arm64.iso` (`sha256 c2610520…`, verificada contra el
-`SHA256SUMS` de cdimage):
+`ubuntu-24.04.4-desktop-arm64.iso` (`sha256 c2610520…`, verificada desde el
+2026-08-13 contra la **firma** de Canonical y no sólo contra el `SHA256SUMS` de
+cdimage, que se baja del mismo sitio que la ISO y por tanto no es un control
+independiente — `MEDICIONES.md` §4.39d):
 
 | Pregunta | Respuesta medida |
 |---|---|
@@ -1611,7 +1613,8 @@ Nada de esto existe todavía; se escribe según se mida.
 | `imagen/autoinstall.yaml` | **El de E2, y se queda como está.** Es la única prueba que queda de que la receta entera funciona **sin humano**, y sigue corriendo con `CIDATA` en el banco. Su contraseña de laboratorio es legítima ahí y **no viaja a ninguna ISO** |
 | `imagen/encina-seed.sh` | **El mismo, sin cambios.** Los dos seeds llevan su base64 y `fabricar-seed.sh` se sigue negando si se separan |
 | `imagen/verificar-instalacion.sh` | **El mismo, sin cambios**: la máquina que sale tiene que ser la misma |
-| `imagen/fabricar-iso.sh` | **Escrito el 2026-08-10, y ampliado el mismo día.** Construye la ISO a partir de la oficial **añadiendo seis ficheros —el seed y el repo local— y modificando dos, nombrados: `boot/grub/grub.cfg` (el `locale=` del instalador) y `md5sum.txt` (su precio, §4.21d)**. Comprueba las huellas de los tres binarios firmados antes y después, compara **las 501 entradas del medio** contra la oficial, verifica las 266 líneas de `md5sum.txt` contra la ISO construida, y **se niega** si algo no cuadra, como `fabricar-seed.sh`. Es reproducible: misma entrada, misma huella |
+| `imagen/fabricar-iso.sh` | **Escrito el 2026-08-10, y ampliado el mismo día.** Construye la ISO a partir de la oficial **añadiendo seis ficheros —el seed y el repo local— y modificando dos, nombrados: `boot/grub/grub.cfg` (el `locale=` del instalador) y `md5sum.txt` (su precio, §4.21d)**. Comprueba las huellas de los tres binarios firmados antes y después, compara **las 501 entradas del medio** contra la oficial, verifica las 266 líneas de `md5sum.txt` contra la ISO construida, y **se niega** si algo no cuadra, como `fabricar-seed.sh`. **Y desde el 2026-08-13 fija también el MODO de lo que añade** —`0644` los ficheros, `0755` el directorio, con un guardián que comprueba que el `chmod` se aplicó (trampa 13)—, porque `cp` heredaba el modo del disco del Mac y ese modo viajaba dentro de la ISO (§4.36k). **Es reproducible, y ya no es una afirmación: cinco construcciones dieron la misma huella, una de ellas desde un directorio con cuatro ficheros fuera de `0644` a propósito (§4.39f)** |
+| `imagen/construir-todo.sh` | **Escrito el 2026-08-13** (§4.39i). **De un árbol versionado a la ISO en una sola orden**: construye los tres `.deb`, cosecha los 24 de fuera y `autofirma`, genera el `Packages` y fabrica el medio. **Cruza dos máquinas y no hay remedio**: `dpkg-buildpackage` y `dpkg-scanpackages` no existen en macOS y `fabricar-iso.sh` sólo corre aquí, así que los pasos 1 y 3 van por `ssh` al constructor. Construye **`git archive HEAD` y no el directorio de trabajo** —§4.37d convertido en regla— y **se niega sobre un árbol sucio**. Comprueba que no haya dos VMs encendidas (trampa 14). Su definición de terminado no es «sale una ISO» sino que **dos pasadas seguidas den la misma huella**, y lo dice al final en vez de fingir que una sola lo demuestra |
 
 ~~**Un apaño pequeño que hace falta antes del paso 1:** `fabricar-seed.sh` tiene
 la ruta `autoinstall.yaml` fija.~~ **HECHO, y la deuda estaba mal contada: no se

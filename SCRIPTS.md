@@ -827,10 +827,61 @@ distintos a propósito. Lo que no se reproducía era la huella vieja.
 
 **Y el aviso que va con esto: `ac0a5721…` ya no se fabrica desde este
 repositorio.** Esa ISO lleva dentro los `.deb` viejos y un seed que exige las
-huellas viejas: es coherente **consigo misma**, no con el árbol de hoy. La
-próxima ISO tendrá otra huella por dos motivos a la vez —estas tres y el modo de
-§4.36k— y hasta que se fabrique y se mida, **este documento no tiene una huella
-de ISO vigente que ofrecer**.
+huellas viejas: es coherente **consigo misma**, no con el árbol de hoy.
+
+**LA HUELLA QUE ESTE REPOSITORIO PRODUCE, MEDIDA EL 2026-08-13**
+(`MEDICIONES.md` §4.39). Se predijo que tendría otra por dos motivos a la vez
+—las tres huellas nuevas y el modo de §4.36k— y así fue:
+
+```
+95758c9e954d834f6324b6f5e0464741742478247d29a2637009ad03e2a8aef6   3 715 366 912 bytes
+```
+
+**Cuatro pasadas de `imagen/construir-todo.sh` y una construcción manual dieron
+esa misma huella**, así que es reproducible y no una foto. La diferencia contra
+`ac0a5721…` son **cinco ficheros de 531** —los tres `.deb`, el `Packages` que los
+describe y el `autoinstall.yaml` que lleva el seed empotrado— más el modo, que no
+vive en el contenido de ningún fichero sino en los registros de directorio. Los
+otros 526 son byte a byte iguales.
+
+**Y OJO CON CÓMO SE LEE ESA HUELLA, porque no es lo mismo que la de arriba:**
+`ac0a5721…` es el medio que **se probó** —se arrancó y se instaló (§4.34,
+§4.35g)—, y `95758c9e…` es el que **este repositorio fabrica hoy**. Ninguna de
+las cinco ISOs de §4.39 se ha arrancado. Hasta que una lo haga, ésta es una
+huella de construcción, no de entrega. **Y otra vez el mismo tamaño exacto que la
+vigente**, que es la tercera: se compara por huella y nunca por tamaño.
+
+**DE UN CLON A LA ISO EN UNA SOLA ORDEN**, desde el 2026-08-13, que es lo que
+antes había que encadenar a mano:
+
+```
+./imagen/construir-todo.sh --constructor jorge@192.168.64.3 \
+                           --llave ~/.ssh/encina-e2-medicion \
+                           --iso-oficial <ubuntu-24.04.4-desktop-arm64.iso> \
+                           --autofirma ~/Projects/encina-autofirma/salida \
+                           --salida <encina.iso>
+```
+
+Cruza dos máquinas y no es un capricho: `dpkg-buildpackage` y
+`dpkg-scanpackages` **no existen en macOS** y `fabricar-iso.sh` sólo corre aquí.
+Construye **`git archive HEAD` y no el directorio de trabajo** —es §4.37d
+convertido en regla— y **se niega sobre un árbol sucio**, porque lo que saldría
+no sería lo que ves. Con `--vm <uuid>` enciende y apaga la VM él, y comprueba
+antes que no haya otra encendida (trampa 14).
+
+**Y la ISO oficial de entrada ya no se cree por su huella escrita a mano.** Desde
+el 2026-08-13 se comprueba contra la **firma de Canonical**, que es un control
+independiente del guion:
+
+```
+gpgv --keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg \
+     SHA256SUMS.gpg SHA256SUMS          <- en encina-dev; en macOS no hay gpg
+gpgv: Firma correcta de "Ubuntu CD Image Automatic Signing Key (2012)"
+```
+
+La clave sale del paquete `ubuntu-keyring`, **no de un servidor de claves**, que
+sería confiar en un sitio más. Y `SHA256SUMS.gpg` está en el mismo directorio de
+`cdimage` que `SHA256SUMS`: llevaba ahí desde siempre y nadie lo usaba.
 
 **Y DESDE EL 2026-08-13 NO SON CUATRO COSAS: SON SEIS, y las dos nuevas no se
 dedujeron, se cazaron gastando una instalación cada una** (§4.34h). Las cuatro de

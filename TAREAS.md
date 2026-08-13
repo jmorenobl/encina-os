@@ -37,6 +37,22 @@ Este bloque es el que convierte «constrúyela tú» de promesa en instrucción,
 él los bloques 2, 3 y 4 no valen nada: se publicaría algo que nadie puede auditar
 rehaciéndolo.
 
+**BLOQUE CERRADO EL 2026-08-13** (`MEDICIONES.md` §4.39). Las seis casillas están
+marcadas y la última se cerró midiendo, no decretando: **de un árbol versionado a
+la ISO en una sola orden, y cuatro pasadas dieron la misma huella,
+`95758c9e954d834f6324b6f5e0464741742478247d29a2637009ad03e2a8aef6`.** El medio ya
+no se hereda: se fabrica.
+
+*Y lo que este bloque NO desbloquea, dicho aquí para que nadie lo confunda:*
+**ninguna de esas ISOs se ha arrancado.** Lo cerrado es que el medio se
+**fabrica** de forma reproducible, no que funcione — eso es el bloque 4, y hasta
+entonces `ac0a5721…` sigue siendo el único medio que se probó de verdad.
+
+*Y una premisa de este mismo documento que resultó falsa:* decía que en este Mac
+no había ninguna ISO. Había trece, la oficial entre ellas y en dos copias. El
+`find` que lo midió llevaba `-maxdepth 6` y la ruta tiene nueve componentes: no
+dijo «no hay», dijo «no he mirado».
+
 - [x] ~~**Fijar de dónde sale `autofirma_1.9.1+encina4_all.deb`**~~ **HECHO el
       2026-08-13: `encina-autofirma` es público.** Era el único de los 28 con
       bloqueo duro; ahora es **construible desde fuente pública**, con el parche
@@ -89,32 +105,38 @@ rehaciéndolo.
       que cambian son las fechas, y por eso los tres son más pequeños.
       *Y una corrección:* el `0.1.8` no «sólo salía de la ISO» — no estaba en el
       Mac, pero en `encina-dev` estaba en cuatro sitios, encontrado por huella.
-- [ ] **El MODO de lo que añade `fabricar-iso.sh`: DECIDIDO Y ESCRITO el
-      2026-08-13, FALTA MEDIRLO.** La decisión la tomó Jorge —se fija, como ya se
-      fija la fecha y por el mismo motivo (§4.36k)— y el guion ya lo hace: `0644`
-      los ficheros, `0755` el directorio del repo, con un guardián que comprueba
-      **que el `chmod` se aplicó** antes de escribir un byte de medio (trampa 13).
-      Probado aislado con el caso real —en `debian-packages/` conviven hoy `.deb`
-      en `0600` y en `0644`— y con su control negativo: un `chmod` neutralizado da
-      `[FALLO] 1 ficheros no quedaron en 644`. **La casilla sigue abierta porque la
-      otra mitad de su «hecha cuando» NO está medida:** no se ha fabricado ninguna
-      ISO. Se aplazó al medir que **en este Mac no hay ninguna ISO** —ni la oficial
-      `c2610520…`, que es la entrada del guion, ni la vigente— así que fabricarla
-      cuesta ~3,5 GB de red que no estaban previstos, y comparar sector a sector
-      contra `ac0a5721…` no se puede hacer aquí.
-      *Hecha cuando:* dos construcciones seguidas desde el mismo repositorio dan la
-      misma huella, y los 29 ficheros de dentro salen `-rw-r--r--`, ninguno `0700`.
-- [ ] **Un `construir-todo.sh` que encadene las cuatro cosas.** Cosecha, construye
-      los tres, trae `autofirma`, fabrica la ISO. Las cuatro piezas ya existen y
-      están medidas por separado (§4.36, §4.37); lo que falta es la orden única.
-      **Y su «hecha cuando» se reescribió el 2026-08-13, porque el anterior decía
-      algo que ya no puede ser cierto:** pedía «la misma huella que la vigente», y
-      `ac0a5721…` **no se fabrica desde este repositorio** — lleva dentro los tres
-      `.deb` viejos y un seed que exige sus huellas, así que es coherente consigo
-      misma y no con el árbol de hoy.
-      *Hecha cuando:* de `git clone` a ISO en una sola orden, y **dos pasadas
-      seguidas dan la misma huella** — que es lo que de verdad se quería comprobar,
-      y se puede comprobar sin depender de ningún medio anterior.
+- [x] ~~**El MODO de lo que añade `fabricar-iso.sh`.**~~ **HECHA el 2026-08-13**
+      (`MEDICIONES.md` §4.39). Dos construcciones seguidas desde el mismo
+      repositorio dan **`95758c9e…`, la misma huella**, y dentro salen **30
+      ficheros `-rw-r--r--` y ninguno `0700`** —los 29 de `/encina-repo` más
+      `/autoinstall.yaml`—. *Y la mitad que de verdad valía:* dos pasadas desde el
+      mismo directorio no atacan la causa de §4.36k, que era el modo **en el
+      disco**, así que se construyó también desde una copia con **cuatro ficheros
+      fuera de 644** —el caso real de §4.36k— y salió **la misma huella**. Con el
+      `chmod` y su guardián neutralizados, **otra** (`3d10678e…`, mismo tamaño), y
+      esos 4 sectores son el campo `PX` en sus dos copias y sus dos árboles: es
+      §4.36k provocado a voluntad. *Y una cosa que enseña más que el verde:* el
+      guion neutralizado imprime `[OK] modo fijado` igual — lo que lo cazaba era
+      el guardián, no la línea de `[OK]`.
+      *Y la premisa sobre la que se había aplazado era falsa:* **la ISO oficial
+      estaba en este Mac en dos copias**, y la vigente también. El `find` de
+      §4.37a llevaba `-maxdepth 6` y la ruta tiene nueve componentes.
+- [x] ~~**Un `construir-todo.sh` que encadene las cuatro cosas.**~~ **HECHA el
+      2026-08-13** (`MEDICIONES.md` §4.39). De un árbol versionado a la ISO en una
+      orden: construye los tres `.deb`, cosecha los 24 y `autofirma`, genera el
+      `Packages` y fabrica el medio. Cruza dos máquinas porque no hay remedio
+      —`dpkg-buildpackage` y `dpkg-scanpackages` no existen en macOS y
+      `fabricar-iso.sh` sólo corre aquí—, construye **`git archive HEAD` y no el
+      directorio de trabajo** (§4.37d convertido en regla) y **se niega sobre un
+      árbol sucio**, probado en rojo.
+      *Hecha cuando, y medido:* **cuatro pasadas dieron `95758c9e…`**, la misma que
+      la ruta manual — y con un cruce que no se buscaba, porque la manual llevaba
+      dentro los tres `.deb` del runner **amd64** de la CI y las otras los
+      construidos en `encina-dev`, **arm64**. §4.38b comprobado hasta el bit del
+      medio.
+      *Lo que NO cierra:* **ninguna de las cinco ISOs se ha arrancado**. Lo medido
+      es que el medio se **fabrica** igual, no que funcione, así que `95758c9e…`
+      todavía no es «la ISO vigente»: es la que produce este repositorio hoy.
 
 ---
 
