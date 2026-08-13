@@ -173,7 +173,19 @@ for g in 03-construir.sh 07-firefox-construir.sh 10-meta-construir.sh; do
     echo "        $g"
     R "cd ~/$REMOTO && ENCINA_REPO=~/$REMOTO bash scripts/$g" > "$TMP_PROPIO/$g.log" 2>&1 \
         || { tail -25 "$TMP_PROPIO/$g.log"; fallo "$g no paso"; }
-    echo "          $(grep -cE '^\[OK\]|^  OK|✓' "$TMP_PROPIO/$g.log") comprobaciones, 0 fallos"
+    # los tres guiones COLOREAN su salida (lib.sh), asi que hay que quitar los
+    # codigos ANSI antes de contar. Y UN RECUENTO DE CERO NO ES «TODO BIEN»: es
+    # que este contador no sabe leer la salida, y se trata como fallo. La primera
+    # version de esta linea imprimia «0 comprobaciones, 0 fallos» sobre tres
+    # construcciones que en realidad hacen 25, 39 y 14 (§4.37f).
+    ESC=$(printf '\033')
+    sed "s/${ESC}\[[0-9;]*m//g" "$TMP_PROPIO/$g.log" > "$TMP_PROPIO/$g.limpio"
+    NOK=$(grep -c '\[OK\]'    "$TMP_PROPIO/$g.limpio")
+    NML=$(grep -c '\[FALLO\]' "$TMP_PROPIO/$g.limpio")
+    [ "$NOK" -gt 0 ] || { tail -25 "$TMP_PROPIO/$g.limpio"
+        fallo "$g no imprimio ni una comprobacion: el contador no sabe leer su salida"; }
+    [ "$NML" -eq 0 ] || { grep '\[FALLO\]' "$TMP_PROPIO/$g.limpio"; fallo "$g dio $NML fallos"; }
+    echo "          $NOK comprobaciones, $NML fallos"
 done
 mkdir -p "$TMP_PROPIO/propios"
 R "cd ~/$REMOTO/debian-packages && tar -cf - *.deb" | tar -xf - -C "$TMP_PROPIO/propios" \
