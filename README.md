@@ -99,10 +99,14 @@ en **[TAREAS.md](TAREAS.md)**.
 
 ## Cómo está construido
 
-Cuatro paquetes Debian y dos guiones. Los guiones son la parte que no se puede
-teclear a mano dos veces igual:
+Cuatro paquetes Debian y unos cuantos guiones. Los guiones son la parte que no
+se puede teclear a mano dos veces igual:
 
 ```
+imagen/construir-todo.sh          DE UN CLON A LA ISO, EN UNA SOLA ORDEN
+imagen/traer-iso-oficial.sh       trae la ISO de Ubuntu y comprueba su FIRMA
+imagen/cosechar-repo.sh           rehace el repositorio offline: los 28 .deb, por huella
+imagen/repo-manifiesto.tsv        la lista de los 28, versionada -- la raiz de la circularidad
 imagen/fabricar-iso.sh            construye la ISO a partir de la oficial de Ubuntu
 imagen/fabricar-seed.sh           construye el volumen del instalador desatendido
 imagen/encina-seed.sh             lo que corre dentro del instalador
@@ -111,9 +115,39 @@ imagen/autoinstall-unattended.yaml  el seed desatendido, de laboratorio
 imagen/verificar-instalacion.sh   comprueba la máquina que ha salido, con sus controles
 ```
 
-`fabricar-iso.sh` no se cree a sí mismo: compara la ISO construida contra la
-oficial **fichero a fichero**, comprueba que los tres binarios firmados del
-arranque siguen intactos y se niega si cambió algo que no debía.
+## Construirla tú
+
+**No hace falta ninguna ISO anterior**, y eso costó cerrarlo: hasta el
+2026-08-13, para fabricar la ISO hacía falta *la ISO*, porque los 28 `.deb` del
+repositorio offline sólo vivían dentro del medio. Ya no
+(`MEDICIONES.md` §4.36–§4.39).
+
+```
+./imagen/traer-iso-oficial.sh            # la de Ubuntu, ~3,3 GiB, a medios/
+./imagen/construir-todo.sh --constructor usuario@maquina-linux \
+                           --autofirma <dir con autofirma_*.deb> \
+                           --salida medios/encina-os.iso
+```
+
+Hacen falta **dos máquinas** y no es un capricho: `dpkg-buildpackage` y
+`dpkg-scanpackages` no existen en macOS, y `fabricar-iso.sh` usa herramientas de
+macOS. El constructor es cualquier Ubuntu 24.04 arm64 con `ssh`.
+
+`medios/` está en `.gitignore`: la ISO son 3,3 GiB y no viaja en el clon, pero
+**la orden de traerla sí** — y con ella el instrumento que sabe decir
+`[RETIRADO]` el día que Canonical la quite del archivo. Ver `medios/LEEME.md`.
+
+**Se comprueba a sí misma, y de las dos maneras.** `fabricar-iso.sh` compara la
+ISO construida contra la oficial **fichero a fichero**, verifica que los tres
+binarios firmados del arranque siguen intactos y se niega si cambió algo que no
+debía. Y `construir-todo.sh` construye **lo versionado y no tu directorio de
+trabajo**, así que se niega sobre un árbol sucio. **Dos pasadas seguidas dan la
+misma huella**: medido cinco veces el 2026-08-13, con los `.deb` viniendo unas
+de un runner amd64 y otras de una máquina arm64.
+
+*Lo que no está medido, dicho aquí y no en letra pequeña:* **ninguna de esas
+cinco ISOs se ha arrancado.** Lo comprobado es que el medio se **fabrica** igual,
+no que funcione.
 
 ## Documentación
 

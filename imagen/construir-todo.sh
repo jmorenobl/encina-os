@@ -63,7 +63,11 @@ while [ $# -gt 0 ]; do
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
 done
-[ -n "$CONSTRUCTOR" ] && [ -n "$ISO_OFICIAL" ] && [ -n "$AUTOFIRMA" ] && [ -n "$SALIDA" ] || uso
+# --iso-oficial vale por defecto medios/, que es donde la deja
+# imagen/traer-iso-oficial.sh. Ese directorio esta en .gitignore: la ISO son
+# 3,3 GiB y no viaja en el clon, pero la ORDEN de traerla si (medios/LEEME.md).
+[ -n "$ISO_OFICIAL" ] || ISO_OFICIAL="$RAIZ/medios/ubuntu-24.04.4-desktop-arm64.iso"
+[ -n "$CONSTRUCTOR" ] && [ -n "$AUTOFIRMA" ] && [ -n "$SALIDA" ] || uso
 
 fallo() { echo "[FALLO] $*"; exit 1; }
 ok()    { echo "[OK]    $*"; }
@@ -91,7 +95,9 @@ echo "        xorriso    $(xorriso -version 2>&1 | sed -n 's/^xorriso version *:
 for c in xorriso git shasum python3; do
     command -v "$c" >/dev/null || fallo "no hay $c en este Mac"
 done
-[ -f "$ISO_OFICIAL" ] || fallo "no existe la ISO oficial: $ISO_OFICIAL"
+[ -f "$ISO_OFICIAL" ] || fallo "no esta la ISO oficial: $ISO_OFICIAL
+        Traela y comprueba su firma con:  ./imagen/traer-iso-oficial.sh
+        (medios/ esta en .gitignore a proposito: ver medios/LEEME.md)"
 [ -d "$AUTOFIRMA" ]   || fallo "no existe el directorio de autofirma: $AUTOFIRMA"
 [ -f "$MANIFIESTO" ]  || fallo "no existe el manifiesto: $MANIFIESTO"
 

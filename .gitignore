@@ -20,3 +20,11 @@ debian-packages/*/debian/debhelper-build-stamp
 # distribuya. encina-os pesa kilobytes y conviene que siga pesandolos: es la
 # misma cuenta que decidio no meter AutoFirma como submodulo (MEDICIONES.md 4.8).
 assets/wallpaper/
+
+# Los medios: la ISO oficial de Ubuntu (3,3 GiB) y las que salen de aqui. NO
+# caben en git y no tienen por que estar: lo que si esta versionado es la ORDEN
+# de traerla -- imagen/traer-iso-oficial.sh -- y el instrumento que sabe decir
+# [RETIRADO] el dia que Canonical la quite. El LEEME si viaja, para que quien
+# clone encuentre el directorio y sepa que poner dentro.
+medios/*
+!medios/LEEME.md

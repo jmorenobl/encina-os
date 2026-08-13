@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Encina OS - E3. Fabrica la ISO que se entrega, EN MACOS.
 #
-#     ./fabricar-iso.sh --iso <oficial.iso> --repo <dir> --salida <encina.iso>
+#     ./fabricar-iso.sh [--iso <oficial.iso>] --repo <dir> --salida <encina.iso>
+#
+# --iso vale por defecto medios/ubuntu-24.04.4-desktop-arm64.iso, que es donde
+# la deja imagen/traer-iso-oficial.sh. Ese directorio esta en .gitignore: la ISO
+# oficial son 3,3 GiB y no viaja en el clon, pero la ORDEN de traerla si.
 #
 # QUE HACE: coge la ISO oficial de Ubuntu, le ANADE lo de Encina y MODIFICA dos
 # ficheros, ni uno mas. Los cuatro sitios estan nombrados aqui porque la
@@ -72,7 +76,7 @@ H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
 # INSTALADOR se vea en el mismo idioma. Los dos sitios dicen lo mismo a proposito.
 LOCALE=es_ES.UTF-8
 
-uso() { sed -n '2,6p' "$0"; exit 2; }
+uso() { sed -n '2,10p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
     case "$1" in
         --iso)    ISO="$2";    shift 2 ;;
@@ -83,13 +87,16 @@ while [ $# -gt 0 ]; do
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
 done
-[ -n "$ISO" ] && [ -n "$REPO" ] && [ -n "$SALIDA" ] || uso
+[ -n "$ISO" ] || ISO="$AQUI/../medios/ubuntu-24.04.4-desktop-arm64.iso"
+[ -n "$REPO" ] && [ -n "$SALIDA" ] || uso
 
 fallo() { echo "[FALLO] $*"; exit 1; }
 ok()    { echo "[OK]    $*"; }
 
 command -v xorriso >/dev/null || fallo "no hay xorriso (brew install xorriso)"
-[ -f "$ISO" ]  || fallo "no existe la ISO: $ISO"
+[ -f "$ISO" ]  || fallo "no esta la ISO oficial: $ISO
+        Traela y comprueba su firma con:  ./imagen/traer-iso-oficial.sh
+        (medios/ esta en .gitignore a proposito: ver medios/LEEME.md)"
 [ -f "$YAML" ] || fallo "no existe el seed: $YAML"
 
 # --- 1. la ISO de partida es la medida, no otra -----------------------------
