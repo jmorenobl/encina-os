@@ -9557,15 +9557,71 @@ primer telemetry / WAITING   21:11:56.444
 ```
 
 **La hipótesis pasa de «encaja» a «encaja con un número»:** si el tick es la
-diferencia en segundos truncada, `loading` y `keyboard` **caen los dos en el tick
-0** y el segundo machaca al primero, porque `Stages` es un diccionario indexado
-por ese tick. En §4.32f salieron en `0` y `1`, o sea que allí pasó **más** de un
-segundo entre las dos. **Sigue SIN ESTAR DEMOSTRADA**, y lo que la separa de una
-medición es una sola comprobación barata: **arrancar la ISO y leer el `telemetry`
-de la sesión viva sin instalar nada.** Si ahí aparece `loading`, la etapa se
-registra y se pierde después; si no aparece, no se registra nunca. **La prueba
-sabe dar sus dos respuestas y no cuesta ni un disco de destino ni una pantalla
-que contestar.**
+diferencia en segundos truncada, `loading` y `keyboard` **caerían los dos en el
+tick 0** y el segundo machacaría al primero, porque `Stages` es un diccionario
+indexado por ese tick. En §4.32f salieron en `0` y `1`, o sea más de un segundo
+entre las dos.
+
+#### (c bis) LA HIPÓTESIS ERA MÍA Y ERA FALSA — medido el mismo día
+
+La prueba que la decidía costaba **16 MiB y diez minutos**: arrancar la ISO en
+una VM **sin disco de destino** y leer el `telemetry` de la **sesión viva**, sin
+instalar nada. `encina-viva-loading`, ISO por enlace duro (0 bytes) y un canal
+FAT vacío para sacar el dato.
+
+```
+{"Type":"Flutter","OEM":false,"Media":"Ubuntu 24.04.4 LTS","Stages":{"0":"keyboard"}}
+```
+
+**Una sola etapa, `keyboard`, en el tick 0. `loading` no está tampoco aquí.** Y
+lo que mata la hipótesis no es eso —una colisión daría el mismo fichero—, sino
+**cuándo** se escribió, leído en el registro del cliente:
+
+```
+22:17:54.002  ApplicationState.WAITING
+22:17:54.008  telemetry: Writing report to /var/log/installer/telemetry   <- ya dice {"0":"keyboard"}
+22:17:54.751  Showing only pages requested by subiquity: {keyboard,…}     <- la pagina, 0,742 s DESPUES
+```
+
+**El fichero ya decía `keyboard` 0,742 s antes de que se dibujara ninguna
+pantalla.** Si `loading` se hubiera registrado alguna vez, ese primer volcado
+—hecho 6 ms después de pasar a `WAITING`— la llevaría. No la lleva. **No hay
+ningún instante en que `Stages` valiera `{"0":"loading"}`, así que no hay nada
+que colisione.**
+
+Y el remate, sobre los dos arranques y con su control:
+
+```
+                loading   CONTROL keyboard   lineas
+instalacion        0            14            117
+sesion viva        0            11             38
+```
+
+**La palabra `loading` no aparece NI UNA VEZ en el registro del cliente**, y el
+mismo `grep` encuentra `keyboard` catorce y once veces, o sea que no está mudo.
+
+**LO QUE QUEDA MEDIDO, y es bastante más de lo que se buscaba:**
+
+1. **`loading` no se registra nunca en esta ISO.** No es azar de aquella
+   instalación ni un tick perdido: es **reproducible en dos arranques
+   independientes**, uno con instalación completa y otro sin instalar nada.
+2. **El `[FALLO]` es del verificador y no del medio.** Nada de lo que Encina OS
+   añade a la ISO toca el cliente del instalador.
+3. **La etapa se registra al DECIDIR la primera página, no al dibujarla**, que es
+   por lo que `keyboard` cae en el tick 0 aunque la pantalla salga después.
+
+**Y LO QUE SIGUE SIN EXPLICAR, que hay que decir entero:** por qué §4.32f **sí**
+tenía `loading`. Esa instalación salió de `aa1ac76a…`, y esa ISO **ya no existe**
+—se borró en §4.35l—, así que aquel arranque **no se puede reproducir**. Lo
+honesto es que hoy hay dos arranques que no la escriben, cero explicación de por
+qué hubo uno que sí, y ninguna forma de volver a preguntárselo a aquel medio.
+
+**Lo que esto le deja a la casilla, y es de Jorge:** con la causa medida, la
+corrección que NO afloja nada es exigir **las ocho** y admitir `loading` como
+posible pero no obligatoria, **con este párrafo al lado**. La lista seguiría
+fallando si falta cualquiera de las ocho o si aparece `locale` o `source`, que es
+para lo que existe. Lo que no se puede hacer es quitarla en silencio para que
+salga verde.
 
 #### (d) LOS TRES `.deb`, DENTRO DE LA MÁQUINA — la casilla que §4.37k dejó abierta
 
@@ -9683,9 +9739,12 @@ un enlace duro a `medios/`. Lo real es `disco.img` con 22 695 264 bloques de 512
 
 #### (h) Lo que esta medición NO contesta
 
-- **POR QUÉ FALTA `loading`.** Hay una hipótesis (c) y no está demostrada. **La
-  casilla de §6ter.3 que depende del verificador NO se marca**, y el asterisco
-  del bloque 0 se queda donde está.
+- ~~**POR QUÉ FALTA `loading`.**~~ **CONTESTADO EL MISMO DÍA en (c bis), y mi
+  hipótesis era falsa:** no se registra nunca en esta ISO, medido en dos
+  arranques y con la palabra ausente del registro del cliente. **Lo que sigue sin
+  explicar es por qué §4.32f sí la tenía, y su ISO ya no existe.** La casilla de
+  §6ter.3 que depende del verificador **NO se marca** y el asterisco del bloque 0
+  se queda: la lista del verificador hay que decidirla, y eso es de Jorge.
 - **La firma real sobre esta máquina.** No se intentó (e). Sigue siendo la
   casilla más cara que queda.
 - **Que la tienda instale en ESTA máquina.** Se midió que está y que
@@ -9808,7 +9867,8 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un `find` acotado contesta «no hay» cuando quería decir «no he mirado»** | `find / -maxdepth 6 -name '*.iso'` no encuentra ninguna, y de ahí sale «en este Mac no hay ninguna ISO»: se aplaza una casilla, se presupuestan 3,5 GB de red y se declara imposible una comparación que sí se podía hacer | El `-maxdepth` estaba por debajo de la profundidad real. Las ISOs vivían a **nueve** componentes (`~/Library/Containers/com.utmapp.UTM/Data/Documents/e2-medios/`) y había **trece**. Es la familia de la 5: **una comprobación que no puede dar una de sus dos respuestas no es una comprobación**, y una búsqueda vacía sólo significa «no hay» si el instrumento podía encontrarlo. Se dice el ámbito al lado del resultado, o se busca sin acotar (§4.39a) |
 | **Un `[OK]` que sigue saliendo con la comprobación desactivada** | El guion imprime `[OK] modo fijado: 32 ficheros en 644` y produce una ISO con cuatro ficheros que **no** están en 644 | La línea de `[OK]` describe lo que el guion *pidió*, no lo que *pasó*. Lo único que separaba las dos cosas era el guardián de la trampa 13 — verificar la mutación **antes** de leer su resultado. Neutralizado el guardián, el `[OK]` se imprime igual y la ISO sale rota (§4.39g) |
 | **Un `[FALLO]` esperado en medio de una pasada buena** | Una vuelta que termina en verde lleva un `[FALLO] el repositorio NO esta completo` a la mitad, y nadie se para | Era el control —la cosecha se pide en dos órdenes y la primera sale incompleta a propósito— pero no iba anunciado. Un `[FALLO]` sin explicar dentro de una salida buena **enseña a saltarse los `[FALLO]`**, que es justo lo contrario de para lo que están. Se anuncia antes y se comprueba que dé exactamente el número esperado (§4.39j) |
-| **Una lista exacta que da por segura una etapa que no siempre está** | El verificador exige nueve etapas en `telemetry` y una instalación buena escribe **ocho**: falta `loading`. La máquina está entera —51 comprobaciones en verde, `ESTADO=COMPLETO`— y la casilla no se puede marcar | La lista se hizo exacta **añadiendo `loading` porque se escribió que “toda instalación la escribe”**, y eso era una generalización sobre **una** medición (§4.32g). Las claves de `Stages` son un contador, no una hora: en la instalación que lo escribió, `loading` ocupaba el tick `0` y `keyboard` el `1`; en ésta `keyboard` ocupa el `0`. **Una lista exacta es más fuerte que una laxa sólo si cada elemento está medido, no supuesto** — y aflojarla sin causa la convierte en una que ya no distingue (§4.40c) |
+| **Una lista exacta que da por segura una etapa que no siempre está** | El verificador exige nueve etapas en `telemetry` y una instalación buena escribe **ocho**: falta `loading`. La máquina está entera —51 comprobaciones en verde, `ESTADO=COMPLETO`— y la casilla no se puede marcar | La lista se hizo exacta **añadiendo `loading` porque se escribió que “toda instalación la escribe”**, y eso era una generalización sobre **una** medición (§4.32g). En esta ISO **no se registra nunca**: medido en dos arranques —uno instalando y otro sin instalar nada— y la palabra no sale ni una vez del registro del cliente, con el control de que el mismo `grep` encuentra `keyboard` catorce veces. **Una lista exacta es más fuerte que una laxa sólo si cada elemento está medido, no supuesto** — y aflojarla sin causa la convierte en una que ya no distingue (§4.40c, c bis) |
+| **Una hipótesis que “encaja con los datos” y aun así es falsa** | Dos ficheros compatibles con una explicación —`loading` y `keyboard` colisionando en el mismo tick—, un número que la apoyaba (0,688 s de separación, menos de un tick) y estaba **equivocada** | Encajar con el resultado no es ser la causa: la colisión y la ausencia **producen el mismo fichero**. Lo que las separa no es el contenido sino **cuándo** se escribió, y eso estaba en el registro del cliente: el primer volcado, 6 ms después de arrancar y 0,742 s **antes** de dibujarse ninguna pantalla, ya decía `keyboard`. **Nunca hubo un instante que colisionar.** Y la prueba que lo decidió costó 16 MiB: arrancar el medio **sin disco de destino** y leer la sesión viva (§4.40c bis) |
 | **Comparar un `.deb` contra los `.md5sums` de dpkg no puede cuadrar** | Dos paquetes «no cuadran» por 3 y 2 ficheros, el tercero cuadra, y los cinco que faltan existen y están bien | **dpkg no mete los conffiles en `.md5sums`**: los registra aparte, en `/var/lib/dpkg/status`. Los cinco eran exactamente los ficheros bajo `/etc/`, uno a uno, y el paquete que cuadró es el único que no instala nada ahí. Es la familia de la 5 escrita por uno mismo: **una comprobación que busca el dato donde el dato no puede estar**. Para atar un `.deb` instalado sirve `dpkg -V` —con el control de que sepa señalar algo en el sistema— y los conffiles hay que ir a buscarlos a `status` (§4.40d) |
 | **Un sabotaje que sí cambia el fichero y aun así no es un control** | `cmp` confirma que el fichero cambió, y la herramienta sigue dando verde | Cambiar el fichero no basta: hay que cambiarlo **por donde la herramienta mira**. Meter `$SINCOMILLAS` en un guion cambia dos líneas y `shellcheck -S warning` lo ignora, porque no es un defecto de ese nivel. Es la 24 de `SCRIPTS.md` un paso más allá: el sabotaje tiene que sabotear **la comprobación**, no sólo los bytes (§4.39k) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |

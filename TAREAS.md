@@ -290,23 +290,26 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
 
 ## Sueltas, de un rato cada una
 
-- [ ] **POR QUÉ FALTA `loading` EN EL `telemetry`, y qué hacer con la lista.** Es
-      el único `[FALLO]` de §4.40 y bloquea el asterisco del bloque 0 y las
-      casillas de §6ter.3 que dependen del verificador. **La lista no se afloja
-      sin causa:** su valor es que es exacta y falla si sobra o falta una
-      pantalla. Lo que hay medido: las claves de `Stages` son un contador, no una
-      hora, y **el tick 0 está anclado**: `network` está en el 200 y el registro
-      dice que Jorge acabó el teclado a las `21:15:16.728`, o sea tick 0 =
-      `21:11:56.728`, que es cuando se dibujó `keyboard`. **Entre el primer
-      `telemetry` y esa pantalla pasaron 0,688 s**, menos de un tick; en §4.32f
-      salieron en `0` y `1`, o sea más de uno. La hipótesis —colisión de tick—
-      encaja con un número y **no está demostrada**.
-      *Hecha cuando:* **se arranca la ISO y se lee `/var/log/installer/telemetry`
-      en la sesión viva, sin instalar nada.** Si `loading` está, se registra y se
-      pierde después; si no está, no se registra nunca. Cuesta una VM **sin disco
-      de destino** —así que ~0 GiB— y ninguna pantalla que contestar: en la
-      sesión viva se entra con `ubuntu` y contraseña vacía. **La prueba sabe dar
-      sus dos respuestas.**
+- [ ] **QUÉ HACER CON LA LISTA DE ETAPAS DEL VERIFICADOR. La causa ya está
+      medida; lo que queda es una decisión.** Es el único `[FALLO]` de §4.40 y
+      bloquea el asterisco del bloque 0 y las casillas de §6ter.3 que dependen
+      del verificador.
+      *Lo medido (§4.40c bis):* **`loading` no se registra nunca en esta ISO** —
+      dos arranques independientes, uno instalando y otro sin instalar nada, y la
+      palabra **no sale ni una vez** del registro del cliente, con el control de
+      que el mismo `grep` encuentra `keyboard` catorce veces. El primer volcado
+      del `telemetry`, **0,742 s antes de dibujarse ninguna pantalla**, ya decía
+      `{"0":"keyboard"}`. **El fallo es del verificador, no del medio.**
+      *La corrección que NO afloja nada:* exigir **las ocho** y admitir `loading`
+      como posible pero no obligatoria, **con el motivo escrito al lado**. La
+      lista seguiría fallando si falta cualquiera de las ocho o si aparece
+      `locale` o `source`, que es para lo que existe.
+      *Lo que sigue sin explicar:* por qué §4.32f **sí** la tenía. Su ISO
+      `aa1ac76a…` se borró en §4.35l, así que **aquel arranque no se puede
+      reproducir** y no hay a quién preguntárselo.
+      *Hecha cuando:* la lista está decidida, el guion la aplica y la casilla
+      correspondiente falla en rojo con una pantalla de más — probado, no
+      supuesto.
 - [ ] **Cerrar el eslabón que quedó a medias de §4.40d.** Los conffiles no van en
       `.md5sums` sino en `/var/lib/dpkg/status`, así que los cinco ficheros bajo
       `/etc/` de `encina-branding` y `encina-firefox-native` **no se compararon**
