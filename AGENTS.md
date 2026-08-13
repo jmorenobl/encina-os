@@ -1268,7 +1268,7 @@ ficheros en `imagen/` y ninguno toca la ISO oficial.**
 | `imagen/encina-seed.sh` | El fuente **legible** de esa tercera, que viaja en base64. Hace, en este orden: monta el volumen por etiqueta, copia el repo a `/srv/encina-repo` **comprobando las cuatro huellas**, purga `snapd`, ejecuta los pasos 2, 3 y 4 de §6.4 y **comprueba lo que ha dejado** (bloque 14, desde el 2026-08-11). Deja 1900 líneas de registro dentro de `/target` y **nunca sale distinto de 0** |
 | `imagen/meta-data` | `instance-id` y `local-hostname` |
 | `imagen/fabricar-seed.sh` | Fabrica el volumen `CIDATA` en macOS. **Se niega** si un `.deb` no coincide con su huella o si el YAML y el guion se han separado |
-| `imagen/verificar-e2.sh` | Verifica la máquina que sale, **como root**, cada comprobación con su control. Su bloque 6 lee el veredicto del seed |
+| `imagen/verificar-instalacion.sh` | Verifica la máquina que sale, **como root**, cada comprobación con su control. Su bloque 6 lee el veredicto del seed |
 
 **EL VEREDICTO DEL SEED, nuevo el 2026-08-11** (`MEDICIONES.md` §4.27). Hasta ese
 día el guion hacía sus seis pasos, apuntaba seis `rc` en un fichero que nadie lee
@@ -1280,7 +1280,7 @@ al objetivo por `dpkg` y deja **`/etc/encina-estado`** con
 `ENCINA_ESTADO=COMPLETO|INCOMPLETO` y `ENCINA_FALTA=<lo que falta>`, con su
 control dentro —un paquete inventado— que hace que un comprobador ciego **no
 pueda certificar nada**. El testigo del seed termina desde entonces en `estado=…`,
-y es lo que le permite a `verificar-e2.sh` distinguir «esta máquina no puede
+y es lo que le permite a `verificar-instalacion.sh` distinguir «esta máquina no puede
 contestar» (seed anterior, `[OMIT]`) de «esta máquina tenía que contestar y no
 está el fichero» (`[FALLO]`).
 
@@ -1390,7 +1390,7 @@ es suya.
    es la parte que sobrevive entera.
 
 **Y se puede quitar la identidad sin romper nada, comprobado leyendo y no
-supuesto:** ni `imagen/encina-seed.sh` ni `imagen/verificar-e2.sh` nombran al
+supuesto:** ni `imagen/encina-seed.sh` ni `imagen/verificar-instalacion.sh` nombran al
 usuario, ni usan `/home` ni `$HOME`. Todo el trabajo es del sistema
 —`/srv/encina-repo`, `apt`, purgar `snapd`—, que es consecuencia directa de **R1**
 (nada de `/etc/skel`). La receta es **agnóstica del usuario**, y eso no se sabía
@@ -1506,7 +1506,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       sea autocomplaciente:** con el `md5sum.txt` **oficial** tiene que fallar
       **exactamente una** línea, la de `./boot/grub/grub.cfg` — que es la ISO que
       se entregaría si alguien editara el `grub.cfg` y no pagara el precio.
-- [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-e2.sh` como
+- [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-instalacion.sh` como
       root, **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c,
       **con el usuario que haya elegido quien instaló**, no con uno fijo. *Roto:*
       cualquier diferencia — y sería un hallazgo, porque el trabajo del seed es
@@ -1607,16 +1607,16 @@ Nada de esto existe todavía; se escribe según se mida.
 
 | Fichero | Qué es |
 |---|---|
-| `imagen/autoinstall-e3.yaml` | **Escrito el 2026-08-10. El seed de la entrega.** Siete claves: `version`; `interactive-sections` con las **cinco** secciones que contesta quien instala (`keyboard`, `network`, `storage`, `identity`, `timezone`); **`locale: es_ES.UTF-8`** y **`source: ubuntu-desktop-minimal`** con `codecs` y `drivers` en `false`, **que son las que NO se preguntan porque son el producto**; y las **mismas tres `late-commands` de E2, byte a byte** (comprobado con `diff`). Sin `identity:`, sin `ssh:`, sin `storage:`, **sin ninguna credencial**. Va a la **raíz del ISO9660** con el nombre `autoinstall.yaml` |
+| `imagen/autoinstall.yaml` | **Escrito el 2026-08-10. El seed de la entrega.** Siete claves: `version`; `interactive-sections` con las **cinco** secciones que contesta quien instala (`keyboard`, `network`, `storage`, `identity`, `timezone`); **`locale: es_ES.UTF-8`** y **`source: ubuntu-desktop-minimal`** con `codecs` y `drivers` en `false`, **que son las que NO se preguntan porque son el producto**; y las **mismas tres `late-commands` de E2, byte a byte** (comprobado con `diff`). Sin `identity:`, sin `ssh:`, sin `storage:`, **sin ninguna credencial**. Va a la **raíz del ISO9660** con el nombre `autoinstall.yaml` |
 | `imagen/autoinstall.yaml` | **El de E2, y se queda como está.** Es la única prueba que queda de que la receta entera funciona **sin humano**, y sigue corriendo con `CIDATA` en el banco. Su contraseña de laboratorio es legítima ahí y **no viaja a ninguna ISO** |
 | `imagen/encina-seed.sh` | **El mismo, sin cambios.** Los dos seeds llevan su base64 y `fabricar-seed.sh` se sigue negando si se separan |
-| `imagen/verificar-e2.sh` | **El mismo, sin cambios**: la máquina que sale tiene que ser la misma |
+| `imagen/verificar-instalacion.sh` | **El mismo, sin cambios**: la máquina que sale tiene que ser la misma |
 | `imagen/fabricar-iso.sh` | **Escrito el 2026-08-10, y ampliado el mismo día.** Construye la ISO a partir de la oficial **añadiendo seis ficheros —el seed y el repo local— y modificando dos, nombrados: `boot/grub/grub.cfg` (el `locale=` del instalador) y `md5sum.txt` (su precio, §4.21d)**. Comprueba las huellas de los tres binarios firmados antes y después, compara **las 501 entradas del medio** contra la oficial, verifica las 266 líneas de `md5sum.txt` contra la ISO construida, y **se niega** si algo no cuadra, como `fabricar-seed.sh`. Es reproducible: misma entrada, misma huella |
 
 ~~**Un apaño pequeño que hace falta antes del paso 1:** `fabricar-seed.sh` tiene
 la ruta `autoinstall.yaml` fija.~~ **HECHO, y la deuda estaba mal contada: no se
 hizo el 2026-08-12, se había hecho antes y este párrafo no se enteró.**
-`fabricar-seed.sh` acepta `--yaml <ruta>` desde que se escribió `autoinstall-e3.yaml`
+`fabricar-seed.sh` acepta `--yaml <ruta>` desde que se escribió `autoinstall.yaml`
 —es lo que usa `--actualizar-yaml` sobre los dos seeds—, y **ninguna de sus
 negativas se aflojó**: sigue negándose si un `.deb` no coincide por huella y si
 el YAML y `encina-seed.sh` se han separado. Comprobado el 2026-08-12 rehaciendo
@@ -1791,7 +1791,7 @@ ninguna sin la salida literal.**
       no estimado: 1,17 GB declarados, `.snap` de 1,1 GB, **2 GiB** en el disco del
       invitado. **Y ABRE, desde la rejilla y en español:**
       `soffice.bin --writer`, ventana «Sin título 1 — LibreOffice Writer», barra de
-      estado «Español (España)». La máquina entera: `verificar-e2.sh --visibles 34`
+      estado «Español (España)». La máquina entera: `verificar-instalacion.sh --visibles 34`
       como root, **51 correctas, 0 fallos**
 - [x] **El manejador del PDF, atado, y medido en LAS DOS COLUMNAS.** *Sano:*
       `xdg-mime query default application/pdf` da el visor **con

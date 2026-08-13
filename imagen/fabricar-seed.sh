@@ -3,7 +3,7 @@
 #
 # Que produce: una imagen CRUDA con etiqueta CIDATA que lleva dentro
 #
-#     user-data          <- imagen/autoinstall.yaml
+#     user-data          <- imagen/autoinstall-unattended.yaml
 #     meta-data          <- imagen/meta-data
 #     encina-repo/       <- los cuatro .deb y el indice Packages
 #
@@ -21,7 +21,7 @@ set -u
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
 GUION="$AQUI/encina-seed.sh"
-YAML="$AQUI/autoinstall.yaml"
+YAML="$AQUI/autoinstall-unattended.yaml"
 METADATA="$AQUI/meta-data"
 
 REPO=""
@@ -41,10 +41,10 @@ uso: fabricar-seed.sh --repo DIR --salida IMG [--yaml RUTA] [--tam-mb N] [--actu
   --repo DIR          directorio con los .deb de Encina, el resto del repo
                       offline (nivel 3 de §4.27) y el fichero Packages
   --salida IMG        imagen CIDATA a escribir (se sobrescribe)
-  --yaml RUTA         seed a meter como user-data. Por defecto autoinstall.yaml,
+  --yaml RUTA         seed a meter como user-data. Por defecto autoinstall-unattended.yaml,
                       que es el de E2 (desatendido, con contrasena de
                       laboratorio). Para medir la forma de E3 se le pasa
-                      autoinstall-e3.yaml, que pregunta y no lleva credenciales
+                      autoinstall.yaml, que pregunta y no lleva credenciales
   --tam-mb N          tamano del volumen en MiB (por defecto 768)
   --actualizar-yaml   reescribe la late-command del YAML elegido a partir de
                       encina-seed.sh, en vez de solo comprobar que coinciden
@@ -149,7 +149,7 @@ else
     ok "control: enfrentado a la huella de otro fichero, el comparador lo ve"
 fi
 
-echo "== 3. la late-command de autoinstall.yaml == encina-seed.sh"
+echo "== 3. la late-command del seed == encina-seed.sh"
 B64=$(base64 -i "$GUION" | tr -d '\n')
 LINEA="    - sh -c 'echo $B64 | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh; true'"
 if [ "$ACTUALIZAR" = 1 ]; then
@@ -162,10 +162,10 @@ for l in open(ruta, encoding="utf-8"):
     salida.append(linea + "\n" if l.startswith("    - sh -c 'echo ") else l)
 open(ruta, "w", encoding="utf-8").write("".join(salida))
 PY
-    ok "autoinstall.yaml actualizado desde encina-seed.sh"
+    ok "el seed actualizado desde encina-seed.sh"
 fi
 grep -qxF "$LINEA" "$YAML" \
-    || fallo "autoinstall.yaml y encina-seed.sh se han separado.
+    || fallo "el seed y encina-seed.sh se han separado.
         Vuelve a lanzar esto con --actualizar-yaml"
 ok "coinciden ($(wc -c <"$GUION" | tr -d ' ') bytes de guion, ${#B64} de base64)"
 

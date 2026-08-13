@@ -220,7 +220,7 @@ update configuration of vm with {qemu additional arguments:{ ¬
 UTM escribe la línea de órdenes entera de QEMU en `Data/debug.log`, y ahí se lee
 `-append autoinstall` **suelto**.
 
-**6. La máquina que sale se verifica con `imagen/verificar-e2.sh`**, copiado a la
+**6. La máquina que sale se verifica con `imagen/verificar-instalacion.sh`**, copiado a la
 VM y ejecutado **como root** (`telemetry` es 0600). Cada comprobación lleva su
 control dentro; el script sale con código distinto de cero si hay un solo
 `[FALLO]` y te recuerda que no marques ninguna casilla.
@@ -359,6 +359,38 @@ son fotografías. El script sigue sabiendo fabricar el degradado, así que
 hace después —que son JPEG y que difieren entre sí— saldrían en verde igualmente.
 Sin `--forzar` las omite, que es lo correcto. Si alguna vez hay que regenerarlas,
 se rehacen desde `assets/wallpaper/`, no con el script.
+
+## Los nombres cambiaron el 2026-08-13, y aquí está la equivalencia
+
+Tres ficheros se llamaban por la **fase en la que nacieron** en vez de por lo que
+hacen, y eso ya mentía: `verificar-e2.sh` no es de E2 —se corrió el 2026-08-13 sobre
+la máquina de E4, con `--visibles 34`— y `-e3` no le decía a nadie que ése es
+justamente **el seed que va dentro de la ISO**.
+
+```
+ANTES                        AHORA                              QUE ES
+imagen/autoinstall.yaml   -> imagen/autoinstall-unattended.yaml  el DESATENDIDO,
+                                                                 con contrasena de
+                                                                 laboratorio. Va en
+                                                                 el volumen CIDATA
+imagen/autoinstall-e3.yaml-> imagen/autoinstall.yaml             EL DE LA ENTREGA:
+                                                                 pregunta, no lleva
+                                                                 credenciales, y es
+                                                                 el que viaja DENTRO
+                                                                 de la ISO
+imagen/verificar-e2.sh    -> imagen/verificar-instalacion.sh     verifica LA MAQUINA
+                                                                 QUE SALE, sea de la
+                                                                 forma que sea
+```
+
+**El renombrado no tocó un solo byte**, comprobado por huella antes y después
+(`b280ce66…`, `5655205d…`, `dcaa98ab…`). Y **`/autoinstall.yaml` dentro de la ISO NO
+cambia**: es la ruta donde el instalador lo busca, el quinto sitio de
+`select_autoinstall`, y eso lo fija Ubuntu y no nosotros.
+
+**`MEDICIONES.md` y `DIARIO.md` conservan los nombres viejos a propósito**: son el
+registro de lo que literalmente se ejecutó aquel día, y reescribirlos sería falsear
+una salida. Esta tabla es la que los hace legibles.
 
 ## Ubicación del repositorio
 
@@ -760,7 +792,7 @@ producto LLEVA, hay dos sitios más que guardan la lista por su cuenta**:
 
 ```
 5. imagen/encina-seed.sh      la LISTA DE LO QUE TIENE QUE ESTAR en el objetivo
-6. imagen/verificar-e2.sh     la MISMA LISTA, otra vez, y por su cuenta
+6. imagen/verificar-instalacion.sh     la MISMA LISTA, otra vez, y por su cuenta
 ```
 
 - La **quinta** se delató sola: la instalación salió con `ESTADO=INCOMPLETO` y
@@ -779,8 +811,8 @@ QUE HACERLA DOS VECES** (`MEDICIONES.md` §4.35c). `encina-seed.sh` no viaja sue
 viaja **empotrado en base64 dentro de un YAML**, y hay **dos** YAML que lo llevan:
 
 ```
-7. imagen/autoinstall.yaml      <- el de E2, el que va en el volumen CIDATA
-   imagen/autoinstall-e3.yaml   <- EL QUE VIAJA DENTRO DE LA ISO
+7. imagen/autoinstall-unattended.yaml   <- el DESATENDIDO, el que va en el CIDATA
+   imagen/autoinstall.yaml              <- EL QUE VIAJA DENTRO DE LA ISO
 ```
 
 El 2026-08-12 se rehízo el seed y **se regeneró solo el primero**. Nadie lo notó
@@ -788,7 +820,7 @@ porque **aquel día no se fabricó ninguna ISO**. Al fabricarla al día siguient
 guardián del paso 3 de `fabricar-iso.sh` lo cazó:
 
 ```
-[FALLO] autoinstall-e3.yaml y encina-seed.sh se han separado.
+[FALLO] el seed y encina-seed.sh se han separado.
 ```
 
 Y no era cosmético: el guion empotrado en la ISO exigía `H_META=85c8cc56…` —la
@@ -797,7 +829,7 @@ repositorio corregido y ese seed habría rechazado su propio `.deb`**. Se pone a
 con la herramienta versionada, no a mano:
 
 ```
-./fabricar-seed.sh --yaml imagen/autoinstall-e3.yaml --actualizar-yaml \
+./fabricar-seed.sh --yaml imagen/autoinstall.yaml --actualizar-yaml \
                    --repo <dir> --salida <img de usar y tirar>
 ```
 
@@ -832,7 +864,7 @@ Y para la VM nueva, dos cosas que costaron un arranque fallido cada una:
 ## Y una decimoquinta, generando la contraseña del seed (2026-08-10)
 
 **15. En macOS, `crypt` de Python **no** hace SHA-512: cae a DES sin avisar.**
-Generando el hash de la contraseña de `imagen/autoinstall.yaml` (`MEDICIONES.md`
+Generando el hash de la contraseña de `imagen/autoinstall-unattended.yaml` (`MEDICIONES.md`
 §4.20b), esto es lo que salió:
 
 ```
@@ -1037,7 +1069,7 @@ falla en la dirección que hace falta. Lo que funcionó siempre:
 ```
 # en el Mac: 16 MiB, FAT, con el verificador dentro; se conecta como segunda unidad
 dd if=/dev/zero of=canal.img bs=1m count=16
-newfs_msdos -F 12 -v CANAL <dispositivo>          # y se copia imagen/verificar-e2.sh
+newfs_msdos -F 12 -v CANAL <dispositivo>          # y se copia imagen/verificar-instalacion.sh
 
 # dentro, tecleado por codigos crudos:
 sudo mount /dev/vdb /mnt
@@ -1058,7 +1090,7 @@ instalación**, que hay que guardar antes de tocar nada. Después ya da igual.
   porque el código 53 es `/` allí y `-` aquí. **Se ve en pantalla, que es la
   regla de la trampa 1.** Para el invitado español: `/` es `Shift`+código 8,
   `"` es `Shift`+código 3, y `-` es el código 53 a secas.
-- **`sh` es `dash`**: `verificar-e2.sh` usa `set -o pipefail` y sale
+- **`sh` es `dash`**: `verificar-instalacion.sh` usa `set -o pipefail` y sale
   `Illegal option -o pipefail`. Va con `bash`.
 - **`script -q -c` en vez de `>`**, y no por elegancia: el `>` español está en la
   tecla ISO que ni existe en el mapa de EE.UU. Menos signos raros, menos
@@ -1431,7 +1463,7 @@ que no podían dar una de sus dos respuestas** — la familia de la 5 y de la 11
 que ya va por la cuarta aparición.
 
 **27. Una lista de etapas exacta a la que le falta la etapa que siempre está.**
-`verificar-e2.sh --forma e3` esperaba
+`verificar-instalacion.sh --forma e3` esperaba
 `confirm,done,identity,install,keyboard,network,storage,timezone` y la máquina
 dio esa misma lista **más `loading`**, que toda instalación escribe — la rama E2
 del mismo guion, dos líneas más arriba, **ya la esperaba**. El fallo entró al

@@ -8,7 +8,7 @@
 # definicion de terminado de E3 se comprueba contra esta lista.
 #
 # ANADE:
-#     /autoinstall.yaml   <- imagen/autoinstall-e3.yaml, que es donde el
+#     /autoinstall.yaml   <- imagen/autoinstall.yaml, que es donde el
 #                            instalador lo busca: /cdrom/autoinstall.yaml, el
 #                            QUINTO sitio de select_autoinstall (MEDICIONES.md
 #                            §4.21c), leido en el codigo que viaja en la ISO
@@ -62,7 +62,7 @@ set -uo pipefail
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
 GUION="$AQUI/encina-seed.sh"
-YAML="$AQUI/autoinstall-e3.yaml"
+YAML="$AQUI/autoinstall.yaml"
 
 ISO=""; REPO=""; SALIDA=""
 # la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
@@ -152,7 +152,7 @@ if grep -qE '^\s*(identity|ssh):|password|ssh-ed25519' "$YAML"; then
 fi
 ok "el seed no lleva identidad, ni contrasena, ni clave ssh"
 # CONTROL de esa busqueda: tiene que encontrarlas en el seed de laboratorio
-if grep -qE 'password|ssh-ed25519' "$AQUI/autoinstall.yaml"; then
+if grep -qE 'password|ssh-ed25519' "$AQUI/autoinstall-unattended.yaml"; then
     ok "control: la misma busqueda SI las encuentra en el seed de laboratorio"
 else
     fallo "CONTROL ROTO: no sabe encontrar credenciales ni donde las hay"

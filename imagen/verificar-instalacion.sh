@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Encina OS. Verifica la maquina que produce imagen/autoinstall.yaml.
+# Encina OS. Verifica la maquina que produce imagen/autoinstall-unattended.yaml.
 #
 # Se ejecuta EN LA MAQUINA INSTALADA, arrancada de su disco, y COMO ROOT:
 #
-#     sudo ./verificar-e2.sh                # forma E2: desatendida, nadie la toca
-#     sudo ./verificar-e2.sh --forma e3     # forma E3: la ISO pregunta cinco pantallas
-#     sudo ./verificar-e2.sh --visibles 28  # cuantas aplicaciones se ESPERAN (ver abajo)
+#     sudo ./verificar-instalacion.sh                # forma E2: desatendida, nadie la toca
+#     sudo ./verificar-instalacion.sh --forma e3     # forma E3: la ISO pregunta cinco pantallas
+#     sudo ./verificar-instalacion.sh --visibles 28  # cuantas aplicaciones se ESPERAN (ver abajo)
 #
 # EL NOMBRE ES HISTORICO y se conserva a proposito: este guion verifica LA
 # MAQUINA, y las dos formas producen la misma maquina. Lo unico que cambia entre

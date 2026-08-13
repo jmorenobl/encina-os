@@ -1,35 +1,72 @@
 #cloud-config
 #
-# Encina OS - E2. El seed de verdad.
+# Encina OS - E3. El seed de la ISO que se entrega.
 #
-# Se sirve en un volumen FAT etiquetado CIDATA junto a 'meta-data' y al
-# directorio 'encina-repo/', que lleva los cuatro .deb y su indice Packages.
-# Lo fabrica imagen/fabricar-seed.sh; la ISO oficial NO se toca.
+# DONDE VIVE ESTE FICHERO: en la RAIZ del ISO9660, con el nombre
+# 'autoinstall.yaml'. El instalador lo encuentra como /cdrom/autoinstall.yaml,
+# que es el QUINTO sitio que mira select_autoinstall (server.py:889-924), leido
+# en el codigo que viaja dentro de la propia ISO (MEDICIONES.md §4.21c).
+# E3 NO usa el volumen CIDATA. Y ojo: el CIDATA va CUARTO, o sea que si alguien
+# conecta uno, GANA sobre este fichero. Es una propiedad util del producto -- la
+# ISO se puede anular sin tocarla -- y una trampa para medir (trampa 16).
 #
-# LO QUE ESTE FICHERO NO PUEDE HACER, y esta leido en el codigo del instalador
-# que viaja dentro de la ISO (MEDICIONES.md §4.16a): quitar el clic de
-# confirmacion. La puerta es 'if "autoinstall" in self.app.kernel_cmdline'
-# (install.py:587-597), y ninguna clave del YAML toca /proc/cmdline. La palabra
-# la pone el hipervisor, SUELTA -- 'autoinstall=1' NO vale -- y esa decision
-# esta tomada con su motivo en ENCINA-OS.md §10. E3 hereda la deuda de ponerla
-# sin hipervisor.
+# LO QUE CAMBIA RESPECTO DEL SEED DE E2: ESTA ISO PREGUNTA, MENOS UNA COSA.
 #
-# TODO EL TRABAJO DE ENCINA VA EN UNA SOLA late-command, en base64:
-#   - en base64 para que no haya ni una comilla que YAML o el interprete puedan
-#     interpretar de otra manera;
-#   - en una sola porque asi lleva su propio registro dentro de /target, y cada
-#     intento cuesta una instalacion entera de ~9 minutos;
-#   - el fuente legible es imagen/encina-seed.sh, y fabricar-seed.sh se niega a
-#     construir el volumen si los dos se han separado.
+# Las secciones de 'interactive-sections' las contesta quien instala, en las
+# pantallas de siempre de Ubuntu. Las que NO estan en esa lista las decide este
+# fichero. Los nombres no son inventados: son los 'autoinstall_key' de los
+# controladores de ESTA ISO (subiquity/server/controllers/*.py), y el mecanismo
+# esta en controller.py:113-127.
 #
-# CUIDADO CON LA IDENTIDAD DE ABAJO: la contrasena y la clave ssh son de
-# laboratorio, desechables y publicas. Sirven para medir. Una entrega de verdad
-# las cambia.
+# LA QUE NO SE PREGUNTA, Y ES A PROPOSITO: 'source'. Encina OS SE CONSTRUYE
+# SOBRE LA INSTALACION MINIMA, y eso no es una preferencia de instalacion sino
+# la forma del producto: la base es minima y lo que se anade encima se declara
+# en encina-meta, que es el eje por el que crece (incremento E4). Si se
+# preguntara, media entrega dependeria de que el usuario acertara con una
+# pantalla, y dos maquinas de Encina OS no serian la misma cosa.
+# Por el mismo motivo van fijos 'codecs' y 'drivers': software de terceros que
+# la base minima no lleva.
+#
+# POR ESO AQUI NO HAY 'identity:', NI CONTRASENA, NI CLAVE SSH. No es que se
+# hayan quitado por prudencia: es que sobran. La contrasena del seed de E2
+# ('encina', debil y publica) existia porque una instalacion sin nadie delante
+# tiene que traer el usuario escrito. Con alguien delante, el usuario lo crea el.
+# Decision de Jorge, 2026-08-10, con su motivo en AGENTS.md §6ter.0.
+#
+# Y SE PUEDE QUITAR SIN ROMPER NADA, y esta comprobado leyendo, no supuesto:
+# ni imagen/encina-seed.sh ni imagen/verificar-e2.sh nombran al usuario, ni usan
+# /home ni $HOME. Todo el trabajo es del sistema -- /srv/encina-repo, apt, purgar
+# snapd -- que es consecuencia directa de R1 (nada de /etc/skel).
+#
+# LO QUE ESTE FICHERO SIGUE SIN PODER HACER: quitar el clic de confirmacion. Y
+# aqui ya no hace falta que lo haga: con secciones interactivas hay una persona
+# delante, y esa pantalla es la de "instalar ahora" de toda la vida. Por eso E3
+# NO necesita tocar el grub.cfg de la ISO ni, con el, su md5sum.txt.
+#
+# TODO EL TRABAJO DE ENCINA VA EN UNA SOLA late-command, en base64, y es LA MISMA
+# de imagen/autoinstall.yaml, byte a byte: el fuente legible es
+# imagen/encina-seed.sh. Si se cambia el guion hay que rehacer las dos.
 autoinstall:
   version: 1
+
+  # lo que contesta quien instala, como en Ubuntu
+  interactive-sections:
+    - keyboard     # teclado: es HARDWARE, y no todo el que quiere el sistema en
+                   # espanol tiene un teclado espanol. Se pregunta.
+    - network      # red
+    - storage      # disco  (filesystem.py:248 -- la clave se llama 'storage')
+    - identity     # usuario y contrasena
+    - timezone     # zona horaria
+
+  # lo que NO se pregunta, porque es lo que hace que esto sea Encina OS
+  #
+  # EL IDIOMA VA FIJO, y por el mismo motivo que 'source': es el producto, no una
+  # preferencia de instalacion. Encina OS existe para firmar con la
+  # administracion espanola; el seed instala firefox-l10n-es-es sin condicion y
+  # encina-meta arrastra el resto del idioma (hunspell-es, language-pack-es...).
+  # Si el idioma se preguntara, quien eligiera otro se llevaria una maquina a
+  # medias: sistema en un idioma y navegador en espanol. Se fija y se dice.
   locale: es_ES.UTF-8
-  keyboard:
-    layout: es
   source:
     id: ubuntu-desktop-minimal
     search_drivers: false
@@ -37,23 +74,6 @@ autoinstall:
     install: false
   drivers:
     install: false
-  storage:
-    layout:
-      name: direct
-      match:
-        # no es adorno: el volumen del seed es otro disco, y sin esto
-        # 'direct' podria elegirlo a el como destino (§4.14b)
-        size: largest
-  identity:
-    realname: Encina E2
-    username: encina
-    hostname: encina-e2-completa
-    password: "$6$X7olMGXFyS5DEjp$YAhAR8.YfZ9d4jsjTFdntvm3EBycrE4e5eAVEZR0uWs.ymcHgTUTsrPzrU7YAFF5Yyci.Pj/j5TMvnRwloB9k/"
-  ssh:
-    install-server: true
-    allow-pw: false
-    authorized-keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGwuk6h/RqwaQdPCHM+8gNtqvZMuxt53qvxTNxsnGeH1 encina-e2-medicion-efimera
   late-commands:
     # los dos testigos de §4.14e, que anclan esta instalacion con aquellas: uno
     # escrito sobre /target desde el entorno del instalador y otro por dentro
