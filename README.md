@@ -34,7 +34,11 @@ solo. Nada más. Todo lo que hace está medido y escrito.
 
 **Todavía no hay una imagen que descargar.** La ISO existe, se instala sola en
 nueve minutos y está verificada, pero **no está publicada**, y no por pereza:
-faltan tres cosas concretas, que están abiertas en [TAREAS.md](TAREAS.md).
+faltan tres cosas concretas, y están abiertas con su motivo en
+[TAREAS.md](TAREAS.md) — que **el medio se pueda fabricar sin partir de una ISO
+anterior**, que **deje de llevar la marca de Ubuntu**, y **dónde vive un fichero
+de 3,46 GB**, que no cabe en un release de GitHub. La cuarta, la de publicar las
+fuentes, ya está hecha: está aquí abajo, en «Licencia y fuentes».
 
 Lo que puedes hacer hoy, si quieres verlo funcionar:
 
@@ -124,9 +128,36 @@ Este proyecto escribe lo que mide, incluido lo que sale mal.
 | **[AGENTS.md](AGENTS.md)** | Las definiciones de terminado, casilla a casilla |
 | **[DIARIO.md](DIARIO.md)** | Qué se hizo cada día |
 
-## Licencia y marcas
+## Licencia y fuentes
 
 El código de este repositorio se publica bajo **EUPL-1.2** (ver [LICENSE](LICENSE)).
+
+### La fuente correspondiente, sin pedirla
+
+El AutoFirma que se instala **no es el oficial**: es la versión 1.9.1 con un
+parche. Distribuir una imagen que lo lleva obliga a ofrecer con qué
+reconstruirlo, y esa oferta no es una dirección de correo: es esta tabla.
+
+| Qué | Dónde | Anclado en |
+|---|---|---|
+| El empaquetado y **el parche** | [jmorenobl/encina-autofirma](https://github.com/jmorenobl/encina-autofirma) — `debian/patches/0001-perfiles-mozilla-todas-las-rutas.patch` | `main` |
+| AutoFirma | [jmorenobl/clienteafirma](https://github.com/jmorenobl/clienteafirma) | `v1.9.1` |
+| jmulticard | [jmorenobl/jmulticard](https://github.com/jmorenobl/jmulticard) | `v2.1` |
+| Bibliotecas externas | [jmorenobl/clienteafirma-external](https://github.com/jmorenobl/clienteafirma-external) | `v1.0.7` |
+| Los tres paquetes de Encina | este repositorio, en [debian-packages/](debian-packages/) | — |
+| Todo lo demás | Ubuntu 24.04 LTS y Mozilla, **sin modificar**. Los 28 `.deb` que viajan, con versión y huella, en [imagen/repo-manifiesto.tsv](imagen/repo-manifiesto.tsv) | — |
+
+Que la oferta funciona no es una promesa: la CI de `encina-autofirma` hace
+exactamente eso en cada `push` —clona los tres forks por su tag, construye el
+`.deb` y lo verifica— y está en verde.
+
+Y una advertencia que va con la oferta: ese AutoFirma parcheado **no es una
+versión mejor** que el oficial. Es una muleta, con su condición de retirada
+escrita y comprobable con una orden — ver
+[cuándo se retira](https://github.com/jmorenobl/encina-autofirma#cuándo-se-retira-este-repositorio).
+Si el oficial te funciona, usa el oficial.
+
+### Marcas
 
 Ubuntu es una marca registrada de Canonical Ltd. Encina OS es un trabajo
 derivado **no avalado por Canonical**, y hoy el medio todavía lleva marca de
