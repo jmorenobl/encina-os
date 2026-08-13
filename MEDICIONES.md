@@ -9014,8 +9014,13 @@ hay»; dice «no he mirado», y se leyó como lo primero.
 |---|---|---|---|
 | red | 3,54 GB + 158 MB | ~165 MB | **~960 MB** |
 | disco nuevo, pico | ~11,8 GB | ~7,3 GiB | **~19,6 GiB** (calculado, no muestreado) |
-| libre | 52,6 GiB | | 51,5 → 40,4 → **35,6 GiB** |
+| libre | 52,6 GiB | | 51,5 → 40,4 → 35,6 → **47,1 GiB** |
 | VMs | 1 a la vez | | `encina-dev`, 1 a la vez, apagada al terminar |
+
+Al terminar se borró **lo reproducible** —tres ISOs duplicadas, la de control y
+tres cosechas— y se conservó una ISO y su cosecha, que es §4.36l otra vez: 35,6
+→ **47,1 GiB**. La vuelta costó **5,5 GiB netos** de los ~19,6 que llegó a
+ocupar.
 
 **Las dos veces me pasé por el mismo motivo: conté una vuelta y se hicieron
 cinco.** Cada pasada de `construir-todo.sh` rehace la cosecha **desde cero** —a
