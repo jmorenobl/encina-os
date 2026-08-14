@@ -41,9 +41,26 @@ Y tres motivos más, independientes de la regla:
    del README, con la pregunta incómoda de qué licencia ampara unos iconos que
    reproducen artwork de Apple.
 
-**Candidatos que no llevan la cara de nadie:** Colloid o Graphite (mismo autor,
-neutros, con variante verde de fábrica), o forkear Yaru con el verde encina
-—máxima compatibilidad, cero sorpresas, menos efecto—.
+**Y el candidato dejó de ser una terna el 2026-08-14: es forkear Yaru.** Lo
+preguntó Jorge —*«¿no sería más fácil clonar Yaru y tunearlo?»*— y la medición
+del mismo día dice que sí, por una razón que no es estética:
+
+**Yaru es el único tema al que el escritorio entero hace caso.** Ubuntu parchea
+libadwaita para que siga su acento y trae el tema del shell. Colloid, Graphite y
+WhiteSur son temas **GTK3**, y en GNOME 46 la mitad del escritorio es
+GTK4/libadwaita y los ignora. Eso no es una hipótesis:
+`design/capturas/antes/06-archivos-gtk4.png` enseña Archivos **en claro mientras
+el shell va en oscuro**, con las carpetas de Yaru en berenjena. Comprar un tema
+de fuera es comprar la mitad del escritorio y encima romper la coherencia.
+
+Forkear Yaru conserva la coherencia y cambia el color. Y R8 deja de ser un
+problema, porque Yaru no imita a nadie.
+
+*Lo que sigue sin decidirse, y va después de medir el acento:* **el tamaño del
+fork**. Si el acento admite un color propio, no hay fork. Si es una lista
+cerrada, el fork puede ser sólo un acento más en un SCSS. Las dos decisiones que
+lo acompañan —repo aparte y el nombre del paquete, que un `apt upgrade` puede
+pisar en silencio— están en [0-decidir.md](0-decidir.md).
 
 ## El límite técnico que cambia el cálculo de todo, y está SIN MEDIR
 

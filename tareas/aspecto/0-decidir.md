@@ -34,10 +34,40 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
 
 - [ ] **El tema base, elegido, anclado y con la licencia leída.** WhiteSur está
       descartado por R8 y el motivo está en [LEEME.md](LEEME.md).
-      *Hecha cuando:* está escrito **qué tema, anclado a qué commit, con qué
-      licencia, y por qué no los otros dos**.
-      *Y una condición que ahorra la decisión entera:* esta casilla **se puede
-      aplazar hasta después de [2-golpes-baratos.md](2-golpes-baratos.md)**. Si
-      allí se confirma que el acento y los iconos dan el grueso del cambio, el
-      tema GTK pasa a ser una guinda y se elige con capturas delante en vez de
-      con una preferencia.
+      **Y desde el 2026-08-14 el candidato no es ninguno de los de fuera: es
+      FORKEAR YARU**, preguntado por Jorge y contestado con la medición del mismo
+      día. El motivo no es que Yaru sea bonito, es que **es el único tema al que
+      el escritorio entero hace caso**: Ubuntu parchea libadwaita para que siga su
+      acento y trae el tema del shell. La captura
+      `design/capturas/antes/06-archivos-gtk4.png` enseña el problema del otro
+      camino —Archivos en claro mientras el shell va en oscuro—, y ése es el
+      estado en el que dejaría el escritorio cualquier tema GTK3 de terceros:
+      comprado a medias y encima incoherente. Forkear Yaru conserva la coherencia
+      y cambia el color, y de paso R8 deja de ser un problema porque Yaru no
+      imita a nadie.
+      *Hecha cuando:* está escrito **qué tema, anclado a qué versión, con qué
+      licencia, y por qué no los otros**.
+      *Y una condición que ahorra la decisión entera:* esta casilla **se aplaza
+      hasta después de [2-golpes-baratos.md](2-golpes-baratos.md)**, porque la
+      medición del acento no compite con el fork: **decide su tamaño**. Si el
+      acento admite un color propio, no hay fork y es una línea de
+      `gschema.override`. Si es una lista cerrada de diez, o se elige el verde más
+      cercano de los suyos o se forkea **sólo para añadir un acento más**, que es
+      una diferencia de datos en un SCSS y no un rediseño.
+
+- [ ] **Si hay fork de Yaru: dónde vive, y cómo no lo pisa un `apt upgrade`.**
+      Dos decisiones, y la segunda es la que se paga cara si se descubre tarde.
+      **(a) Repo aparte, por las mismas cuatro razones que `encina-autofirma`:**
+      es un fork de un proyecto ajeno con su propia licencia (GPL-3.0 /
+      CC-BY-SA), necesita su propia construcción —meson y sassc— que no encaja en
+      la cadena de `03-construir.sh`, tiene una relación de rebase con aguas
+      arriba que debe verse anclada, y su oferta de fuente **es un repositorio y
+      no un directorio de aquí**. Este repositorio lo consumiría por huella en
+      `imagen/repo-manifiesto.tsv`, igual que consume `autofirma`.
+      **(b) El nombre del paquete.** Si el fork conserva `yaru-theme-gtk` con una
+      versión tipo `24.04.1+encina1`, **un `apt upgrade` con una versión mayor lo
+      sobrescribe en silencio**. Es la misma familia del problema que obligó a
+      anclar el repositorio de Mozilla con `encina-mozilla`. Las salidas son
+      nombres propios (`encina-theme-*`) o anclaje por `preferences.d`.
+      *Hecha cuando:* la decisión está escrita **con el control que la demuestra**:
+      un `apt upgrade` simulado sobre la máquina no toca el tema.
