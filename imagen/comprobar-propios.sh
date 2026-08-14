@@ -197,6 +197,18 @@ if command -v dpkg-deb >/dev/null; then
         echo "        $(huella "$f")  $f"
       done )
     echo "        ficheros: $(cd "$TMP/x" && find . -type f | wc -l | tr -d ' ')"
+    # LOS ENLACES VAN APARTE Y HAY QUE DECIRLOS: no tienen contenido que
+    # huellar, y 'find -type f' NO los ve. Desde el 2026-08-15 encina-branding
+    # envia uno -la mascara de gnome-initial-setup, a /dev/null- y sin esta
+    # linea el listado diria «ficheros: N» sin mencionarlo. Es la misma familia
+    # que el cotejo de construir-todo.sh, que dio [FALLO] por lo mismo.
+    N_ENL=$(cd "$TMP/x" && find . -type l | wc -l | tr -d ' ')
+    if [ "$N_ENL" -gt 0 ]; then
+        ( cd "$TMP/x" && find . -type l | sort | while IFS= read -r l; do
+            echo "        (enlace, sin huella)  $l -> $(readlink "$l")"
+          done )
+    fi
+    echo "        enlaces:  $N_ENL"
 fi
 
 echo

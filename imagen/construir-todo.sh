@@ -159,9 +159,18 @@ R "rm -rf ~/$REMOTO && mkdir -p ~/$REMOTO" || fallo "no pude preparar ~/$REMOTO"
 git archive HEAD | R "tar -xf - -C ~/$REMOTO" || fallo "no pude enviar el arbol"
 # el cotejo, que es lo unico que protege de verdad (trampa 24: COPYFILE_DISABLE
 # no suprime las cabeceras pax, y contar entradas '._' ya no demuestra nada)
+#
+# Y '-o -type l' NO es una precaucion: el 2026-08-15 este cotejo dio [FALLO] con
+# UNA diferencia sobre un arbol que habia llegado entero. El fichero era
+#   debian-packages/encina-branding/src/etc/systemd/user/gnome-initial-setup-first-login.service
+# el primer ENLACE SIMBOLICO versionado de este repositorio -la mascara de
+# gnome-initial-setup, que apunta a /dev/null-. 'git archive' lo lista como una
+# entrada mas y 'find -type f' NO lo ve, asi que los dos lados contaban cosas
+# distintas. El fallo apunta en la direccion buena -dice que falta algo que si
+# esta-, pero es del instrumento, no del arbol.
 TMP_PROPIO=$(mktemp -d) || fallo "mktemp"
 git archive HEAD | tar -tf - | grep -v '/$' | LC_ALL=C sort > "$TMP_PROPIO/aqui"
-R "cd ~/$REMOTO && find . -type f | sed 's|^\./||' | LC_ALL=C sort" > "$TMP_PROPIO/alli"
+R "cd ~/$REMOTO && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C sort" > "$TMP_PROPIO/alli"
 D=$(diff "$TMP_PROPIO/aqui" "$TMP_PROPIO/alli" | grep -c '^[<>]')
 [ "$D" -eq 0 ] || fallo "el arbol no llego entero: $D diferencias
 $(diff "$TMP_PROPIO/aqui" "$TMP_PROPIO/alli" | head -10)"
