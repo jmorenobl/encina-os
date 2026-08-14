@@ -62,12 +62,68 @@ Con la ISO aquí, la vuelta entera es una orden
 
 ```
 ubuntu-24.04.4-desktop-arm64.iso   c2610520…   la ENTRADA, firmada por Canonical
-encina-os-E4-es-0.2.1.iso          ac0a5721…   el medio que SE PROBO: se arranco y se instalo
+encina-os-E4-es-0.2.1.iso          ac0a5721…   el medio que se probo el 2026-08-13
+encina-os-nueva.iso                95758c9e…   el que produce este repositorio HOY
 ```
 
 **`ac0a5721…` ya no se fabrica desde este repositorio** —lleva dentro los `.deb`
 viejos y un seed que exige sus huellas, así que es coherente consigo misma y no
-con el árbol de hoy— y se conserva porque es el único medio que alguien ha
-arrancado de verdad. Lo que este repositorio produce hoy es
-`95758c9e954d834f6324b6f5e0464741742478247d29a2637009ad03e2a8aef6`, medido en
-cinco construcciones, **y todavía no lo ha arrancado nadie**.
+con el árbol de hoy— y se conserva porque durante un día fue el único medio que
+alguien había arrancado.
+
+**Y desde el 2026-08-13/14 ya no es el único: `95758c9e…` SE HA ARRANCADO E
+INSTALADO** (`MEDICIONES.md` §4.40). VM desde cero sin ningún `CIDATA`, las cinco
+pantallas contestadas a mano, el seed salido de `/cdrom/autoinstall.yaml` y el
+repositorio del medio, y los tres `.deb` nuevos instalados y atados por huella.
+**Conserva el nombre provisional a propósito**: el verificador da 51 de 52 y el
+que falta —la etapa `loading` del `telemetry`, que es un defecto del verificador
+y no del medio— está sin decidir. **El nombre con versión se le pone a un medio
+que se entrega, no a uno que casi.**
+
+## `deb-historicos/` — lo único que no se puede rehacer
+
+Los `.deb` **propios** de versiones ya superadas, rescatados el 2026-08-14 de
+scratchpads de sesiones muertas antes de borrarlos. No están en
+`imagen/repo-manifiesto.tsv` y **no salen del clon**: §4.37 midió que sus huellas
+eran de **una construcción** —`dpkg-deb` dejaba pasar los mtimes que los ficheros
+tuvieran en el disco, y ese dato no está en git—, así que si se pierden estos
+bytes, se pierden.
+
+Sirven para una sola cosa: **rehacer un medio histórico** si alguna vez hiciera
+falta auditarlo. Para construir Encina OS hoy no valen ni deben usarse.
+
+```
+autofirma_1.9.1+encina2_all.deb        d5a0ebe1…
+encina-branding_0.1.7_all.deb          d4205134…
+encina-firefox-native_0.2.0_all.deb    3880b8aa…
+encina-firefox-native_0.2.1_all.deb    972ec932…   <- OJO, leer abajo
+encina-meta_0.1.1_all.deb              e15ce56f…
+encina-meta_0.2.0_all.deb              85c8cc56…   (el que §4.35l salvo a proposito)
+```
+
+**Y AQUÍ HAY UNA TRAMPA QUE HAY QUE VER ANTES DE COGER NINGUNO: el nombre no
+identifica el fichero.** `encina-firefox-native_0.2.1_all.deb` aparece **dos
+veces con dos huellas distintas** — `972ec932…` aquí y `640f508e…` en el
+manifiesto vigente. Mismo paquete, misma versión, **otros bytes**: es §4.37 otra
+vez, la reconstrucción desde el clon cambió las fechas de dentro sin cambiar el
+contenido. **Se coge por huella, nunca por nombre**, igual que las VMs.
+
+## `rastro-95758c9e/` — la evidencia de §4.40
+
+Lo que la máquina dejó escrito sola en la instalación del 2026-08-13/14, salvado
+porque **el único punto que quedó abierto se discute sobre estos ficheros** y
+hasta hoy sólo vivían en un scratchpad:
+
+```
+telemetry-instalacion.json          las 8 etapas, sin 'loading'
+telemetry-sesion-viva.json          {"0":"keyboard"} — el mismo medio SIN instalar nada
+ubuntu_bootstrap-*.log              los dos registros del cliente del instalador
+verificar-instalacion-salida.txt    51 correctas, 1 fallo, entero
+encina-seed.log                     lo que hizo el seed dentro, paso a paso
+```
+
+**Lo que es y lo que no es:** son los registros de **una** instalación y **un**
+arranque de `95758c9e…`. No son un patrón contra el que comparar, y no
+sustituyen a la transcripción de `MEDICIONES.md` §4.40 — que es la evidencia
+(§4.35o). Están aquí porque el `debug.log` de UTM enseñó que lo que no se
+transcribe se pierde.
