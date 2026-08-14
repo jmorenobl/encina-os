@@ -594,8 +594,15 @@ for tema in ["Encina", "Yaru"]:
     t.set_theme_name(tema)
     for n in NOMBRES:
         p = t.lookup_icon(n, None, 16, 1, Gtk.TextDirection.NONE, 0)
+        # OJO: en GTK 4 'lookup_icon' NUNCA falla. Ante un nombre que no
+        # existe devuelve el icono de reserva, cuyo GFile NO TIENE RUTA, asi
+        # que get_path() vale None. La primera version de esto solo miraba si
+        # el lookup era nulo y comparaba contra la cadena "NO-RESUELVE": el
+        # control salio [FALLO] con «obtenido: None» sobre un sistema sano.
+        # Era mi guion preguntando mal, no el producto (§4.42f otra vez).
         f = p.get_file() if p else None
-        print("%s\t%s\t%s" % (tema, n, f.get_path() if f else "NO-RESUELVE"))
+        ruta = f.get_path() if f else None
+        print("%s\t%s\t%s" % (tema, n, ruta if ruta else "NO-RESUELVE"))
 PY
 )
 if RES=$(python3 -c "$RESOLVEDOR" 2>/dev/null) && [ -n "$RES" ]; then

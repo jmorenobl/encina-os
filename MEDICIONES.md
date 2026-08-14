@@ -10060,6 +10060,287 @@ CONTROL: el buscador NO esta mudo -> encuentra ~/Documents/CertificadoJMB.p12
 
 ---
 
+### 4.43 EL TEMA DE ICONOS GANA, EL NOMBRE ERA OTRO — y el botón sigue con el logo de Ubuntu (2026-08-14)
+
+**La casilla NO se marca.** El paquete hace todo lo que se propuso —el tema
+propio gana, resuelve al icono de Encina y no rompe nada, con el verificador en
+**62 de 62**—, y **el botón de la rejilla sigue pintando el logotipo de
+Ubuntu**, mirado en pantalla después de un reinicio completo. Las dos sospechas
+que se escribieron por adelantado están **descartadas con dato**, y lo que queda
+es una tercera que nadie había puesto sobre la mesa.
+
+#### (a) LAS CUATRO MEDIDAS, antes de escribir una línea del paquete
+
+Sobre `encina-95758c9e`, por su canal FAT, con `script <fichero>` sin `-c`. La
+sesión de verdad estaba viva y el guion lo comprobó primero: `Type=wayland`,
+`Active=yes`, `gnome-shell` en el pid 1744.
+
+```
+(a) icon-theme de la sesion (por el bus de jorge)   'Yaru'
+    con XDG_CURRENT_DESKTOP=ubuntu:GNOME            'Yaru'
+    por defecto del gschema, sin overrides          'Adwaita'
+    CONTROL: una clave que no existe                No such key ?clave-que-no-existe-jamas?
+
+(c) el fichero de hoy, y de quien es
+    /usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+        -> yaru-theme-icon                     <- por eso R5 prohibe pisarlo
+        -> y ES UN ENLACE: ../places/start-here-symbolic.svg
+    CONTROL: un fichero inventado -> dpkg-query: no path found matching pattern
+    CONTROL: uno ajeno conocido   -> /usr/share/icons/Yaru/index.theme -> yaru-theme-icon
+
+(d) un tema de PRUEBA con Inherits=Yaru,hicolor y un cuadrado dentro,
+    preguntado al resolvedor de GTK 4, que es el que decide:
+      tema=EncinaPrueba  view-app-grid-symbolic -> /usr/share/icons/EncinaPrueba/…  <- GANA
+                         folder                 -> /usr/share/icons/Yaru/16x16/places/folder.png
+                         firefox                -> /usr/share/icons/hicolor/16x16/apps/firefox.png
+                         system-run-symbolic    -> /usr/share/icons/Yaru/scalable/actions/…
+      tema=Yaru          view-app-grid-symbolic -> /usr/share/icons/Yaru/scalable/actions/…
+    CONTROL: el mismo comparador, con tema='Yaru', da OTRO fichero: distingue
+    Y el instrumento se borro solo, con su comprobacion: quedan 0 directorios
+```
+
+**La (d) contesta la sospecha nº1 antes de gastar nada: un tema que hereda de
+Yaru GANA para lo suyo y no rompe el resto.** Y contesta también la pregunta
+que no se hizo: sin el tema instalado, con `set_theme_name('Encina')`, **todo**
+resuelve a `None` — o sea que el resolvedor no miente por inercia.
+
+#### (b) EL HALLAZGO QUE CAMBIÓ EL PAQUETE, y es la medida que valió la vuelta
+
+`view-app-grid-symbolic` **no es el nombre que pide el botón**:
+
+```
+/usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com/appIcons.js:1371
+    this._iconActor.iconName = `view-app-grid-${Main.sessionMode.currentMode}-symbolic`;
+```
+
+Eso es un JS, o sea un argumento. **Atado al sistema vivo**, que es lo que lo
+convierte en medición:
+
+```
+/proc/<pid de gnome-shell>/environ   GNOME_SHELL_SESSION_MODE=ubuntu
+                                     XDG_CURRENT_DESKTOP=ubuntu:GNOME
+    CONTROL de ese lector: USER=jorge   (no sale vacio a todo)
+los cuatro .desktop de sesion        Exec=env GNOME_SHELL_SESSION_MODE=ubuntu …
+los modos instalados                 initial-setup.json  ubuntu.json
+nombre deducido                      view-app-grid-ubuntu-symbolic
+y existe                             lrwxrwxrwx … -> ../places/start-here-symbolic.svg
+    CONTROL: el mismo ls sobre un nombre inventado -> No such file or directory
+```
+
+**Un paquete con `view-app-grid-symbolic.svg` dentro se habría construido,
+instalado y verificado sin un solo error, y no habría cambiado nada.** El SVG
+que había en `assets/` llevaba ese nombre.
+
+**Y la segunda mitad, la del `gschema.override`:** Ubuntu fija `icon-theme`
+**sólo por escritorio**, y esto decide si el fichero sirve de algo:
+
+```
+10_ubuntu-settings.gschema.override, con su seccion:
+    [org.gnome.desktop.interface:GNOME-Greeter]  icon-theme = "Yaru"
+    [org.gnome.desktop.interface:ubuntu]         icon-theme = "Yaru"
+    [org.gnome.desktop.interface:Unity]          icon-theme = "ubuntu-mono-dark"
+    [org.gnome.desktop.interface:communitheme]   icon-theme = "Suru"
+    NO HAY SECCION GENERICA
+dconf del usuario para icon-theme    <vacio>   -> el override gana
+    CONTROL: la misma orden si contesta '46.0' para welcome-dialog-last-shown-version
+```
+
+Es la trampa de 0.1.2 —la del fondo— vista **antes** de tropezar con ella.
+
+#### (c) EL PAQUETE, y las siete cosas
+
+`encina-branding` **0.1.9**: `/usr/share/icons/Encina` con `Inherits=Yaru,hicolor`,
+el icono en `scalable/actions/` con **los dos nombres y un solo fichero fuente**
+—el genérico lo hace `debian/rules` a partir del otro, igual que ya hacía con
+`logo.png`—, e `icon-theme='Encina'` en las secciones genérica y `:ubuntu`.
+
+```
+7c2390dd93974ff440b89ba322575e69b82751ce1f15b0ab86997fb767ae1b49   6 161 756 bytes
+```
+
+**Reproducible, y comprobado a propósito:** dos árboles extraídos del mismo
+commit, al segundo se le pusieron **todos los mtimes en otra fecha** con
+`touch`, y la huella salió idéntica. (La fecha del changelog se puso a las
+09:00 del día por esto mismo: `dpkg-deb` recorta los mtimes posteriores y **deja
+pasar los anteriores**, §4.37.)
+
+Las siete de `SCRIPTS.md`, con el control de la regla delante —`grep` del nombre
+viejo por `imagen/` entero, y el mismo `grep` con el nuevo—:
+
+```
+1. encina-seed.sh        H_BRANDING y el nombre del fichero
+2. fabricar-seed.sh      el array FICHEROS
+3. el indice Packages    regenerado en la VM: 28 entradas, la huella vieja 0 veces,
+                         la nueva 1
+5. la lista del seed     no cambia: sigue siendo 'encina-branding'
+6. la del verificador    no cambia por version, PERO gana la seccion 8 (abajo)
+7. LOS DOS YAML          autoinstall.yaml y autoinstall-unattended.yaml
+   autoinstall.yaml            -> 1 linea distinta
+   autoinstall-unattended.yaml -> 1 linea distinta
+   CONTROL del diff: el fichero consigo mismo da 0
+mas fabricar-iso.sh y repo-manifiesto.tsv, que tambien llevan el nombre dentro
+```
+
+**Y el malo a propósito, antes del bueno** — el `.deb` viejo con el nombre nuevo:
+
+```
+[FALLO] huella distinta en encina-branding_0.1.9_all.deb
+        esperada 7c2390dd…   real 9ec0a49d…
+```
+
+#### (d) UN `[OK]` MÍO QUE NO COMPROBABA NADA — y un arreglo que daba verde sobre el fallo
+
+`03-construir.sh` dijo esto sobre un árbol cuyo changelog decía 0.1.9:
+
+```
+[OK] Generado: encina-branding_0.1.7_all.deb
+```
+
+Se invocó sin `ENCINA_REPO`, y `raiz_repo()` usa `~/encina` por defecto: **otro
+clon, de cuatro días antes**. El guion lo construyó entero sin una queja. Lo
+cazó de rebote la lista de ficheros esperados —tres `[FALLO]` de iconos—, y la
+versión pasó en verde.
+
+**Y el arreglo obvio no servía, que es lo que hay que llevarse.** Comparar la
+versión del `.deb` con la del changelog **da verde sobre este mismo fallo**,
+porque el desvío se lleva las dos cosas al mismo sitio equivocado. Está en la
+salida del rojo reproducido:
+
+```
+0. ROJO (sin ENCINA_REPO)
+   [OK]    Generado: encina-branding_0.1.7_all.deb
+   [FALLO] Se ha construido OTRO arbol, no el que tienes delante
+           | aqui:       /home/jorge/rejilla3/debian-packages/encina-branding
+           | construido: /home/jorge/encina/debian-packages/encina-branding
+   [OK]    La version del .deb es la del changelog (0.1.7)   <- EL ARREGLO FACIL, EN VERDE
+   correctas: 26   fallos: 4   rc=1
+
+1. VERDE (con ENCINA_REPO)
+   [OK]    Generado: encina-branding_0.1.9_all.deb
+   [OK]    El arbol construido es el de aqui (…/rejilla3/…)
+   correctas: 30   fallos: 0   rc=0
+```
+
+Lo que separa los dos casos no es la versión: es **que el árbol construido sea
+el que tienes delante**, y hay que leerlo antes del `cd` que hace el propio
+guion — la primera versión de la comprobación lo leía después y por eso salió
+verde las dos veces.
+
+#### (e) LA INSTALACIÓN, con el antes y el después de lo único que decide
+
+`dpkg -i` sobre la máquina, sin red y sin refabricar la ISO. El `.deb` se
+comprobó por huella **antes** de instalarlo, con su control contra una huella de
+ceros.
+
+```
+                                    ANTES (0.1.8)            DESPUES (0.1.9)
+icon-theme por defecto (ubuntu:GNOME)   'Yaru'                   'Encina'
+/usr/share/icons/Encina/index.theme     No such file             1865 bytes, de encina-branding
+tema=Encina  view-app-grid-ubuntu-…     None                     /usr/share/icons/Encina/…
+tema=Encina  view-app-grid-symbolic     None                     /usr/share/icons/Encina/…
+tema=Encina  folder                     None                     /usr/share/icons/Yaru/…
+tema=Yaru    view-app-grid-ubuntu-…     /usr/share/icons/Yaru/…  /usr/share/icons/Yaru/…   <- CONTROL
+```
+
+**Y el de Yaru sigue siendo de Yaru (R5), sin tocar:**
+
+```
+/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg  yaru-theme-icon
+lrwxrwxrwx 1 root root 33 Apr 18 2024 … -> ../places/start-here-symbolic.svg
+dpkg -V encina-branding   -> ni una linea
+    CONTROL: dpkg -V sobre el sistema entero -> 1 linea (no esta mudo)
+```
+
+El verificador, como root, con la sección 8 nueva:
+
+```
+[OK] 62   [FALLO] 0   [AVISO] 0   [OMIT] 0
+```
+
+**62 = las 52 de §4.41 más 10.** Las 52 siguen en verde: el paquete no rompió
+nada. Las 10 nuevas preguntan **a qué fichero resuelve el nombre**, con el
+control que las hace valer: *el mismo comparador, preguntado por `Yaru`, tiene
+que contestar OTRO fichero*.
+
+**Y una de esas diez salió `[FALLO]` la primera vez, por mi culpa y no del
+producto** (§4.42f otra vez):
+
+```
+[FALLO] control: un icono inventado no resuelve
+        | esperado: NO-RESUELVE
+        | obtenido: None
+```
+
+En GTK 4 `lookup_icon` **nunca falla**: ante un nombre inventado devuelve el
+icono de reserva, cuyo `GFile` no tiene ruta y `get_path()` vale `None`. El
+control funcionaba; lo que estaba mal era la cadena que yo esperaba.
+
+#### (f) EL ROJO, mirado en pantalla — y las dos sospechas previstas, descartadas
+
+Reinicio completo de la máquina, sesión nueva, `Super+A`:
+
+```
+EL BOTON DE APLICACIONES DEL DOCK SIGUE SIENDO EL LOGOTIPO NARANJA DE UBUNTU
+```
+
+**Sospecha nº1, «el tema propio no gana a Yaru para ese icono»: FALSA.**
+
+```
+gsettings get org.gnome.desktop.interface icon-theme   (EN LA SESION VIVA de jorge)
+  -> 'Encina'
+tema=Encina  view-app-grid-ubuntu-symbolic -> /usr/share/icons/Encina/scalable/actions/…
+```
+
+**Sospecha nº2, «gnome-shell cachea y hace falta reiniciar la sesión»: no lo
+explica.** No se reinició la sesión: se reinició **la máquina entera**, y el
+`gnome-shell` que pintó ese botón arrancó con el tema ya puesto.
+
+**Lo que queda, y es una tercera que no estaba escrita:** el tema efectivo es
+`Encina`, el resolvedor de GTK 4 devuelve el fichero de Encina para el nombre
+exacto que el JS del dock construye, y el shell pinta otro. Se para aquí a
+propósito, sin tocar nada más.
+
+#### (g) EL COSTE
+
+```
+libre al empezar   'df -h' decia 64Gi        11 VMs, las 11 paradas
+libre al terminar   65 760 572 KiB = 62,71 GiB   11 VMs, las 11 paradas
+```
+
+**Y hay un defecto en esta propia cuenta, que se dice:** el `df` inicial se tomó
+en `-h`, que redondea a 1 GiB, así que el gasto sólo se puede acotar entre 0,3 y
+1,8 GiB. Se declararon ≤0,8 GiB. `df -k` a los dos lados, la próxima vez.
+
+Lo que sí está medido: **el repo offline son 169 MB, no 3,4 GB** —eso es la ISO
+entera—, y no hubo que extraerlo de ningún medio: cuatro repos cosechados del
+constructor cuadraban con las huellas del seed, y `~/cosecha` no, lo cual sirvió
+de control natural. **No se fabricó ninguna ISO.**
+
+#### (h) Lo que esta medición NO contesta
+
+- **POR QUÉ EL SHELL NO PINTA EL ICONO DEL TEMA.** Es lo que queda. Tres cosas
+  que no se han medido y que separan las explicaciones: a qué resuelve el nombre
+  **a 48 px** —todo lo de arriba se preguntó a 16, y el dock usa
+  `dash-max-icon-size 48`—; si `Main.sessionMode.currentMode` vale de verdad
+  `ubuntu` **dentro del shell** y no sólo en su entorno; y si el `St` del shell
+  usa otra cadena de temas que la `Gtk.IconTheme` con la que se midió.
+- **El color.** El icono se envía con `fill="#808080"`, que es la convención del
+  fichero de Yaru al que sustituye, y **no se ha visto pintado**, así que no se
+  sabe si el recoloreado del shell lo trata como se espera.
+- **`view-app-grid-ubiquity-symbolic`** —el del modo del instalador— no se toca:
+  es la otra mitad del bloque 1.
+- **La ISO no se ha refabricado**, así que la huella de un medio con 0.1.9
+  dentro no existe. El seed y los dos YAML ya la exigen, o sea que **el árbol de
+  hoy no puede fabricar la ISO vieja**, que es lo correcto.
+- **Una sola máquina, y no virgen.** `encina-95758c9e` lleva ahora 0.1.9
+  instalado por encima de 0.1.8. Que una instalación **desde el medio** dé lo
+  mismo no está medido.
+- **La primera sesión sigue diciendo Ubuntu:** `gnome-initial-setup` abre con la
+  corona y «Le damos la bienvenida a Ubuntu 24.04.4 LTS». Es del bloque 1 y no
+  estaba inventariado.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

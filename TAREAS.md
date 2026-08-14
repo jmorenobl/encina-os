@@ -204,6 +204,17 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       aplicaciones lleva el logotipo de Ubuntu.
       *Hecha cuando:* lleva la encina, mirado en pantalla, y el resto del escritorio
       no ha cambiado.
+      **SIGUE ABIERTA, y ahora se sabe mucho más (`MEDICIONES.md` §4.43).**
+      `encina-branding` 0.1.9 está construido, instalado y verificado —**62 de 62,
+      0 fallos**—, con un tema propio `/usr/share/icons/Encina` que hereda de Yaru
+      y no pisa nada (R5). **Y el botón sigue con el logotipo de Ubuntu**, mirado
+      tras un reinicio completo. Las dos sospechas previstas están descartadas con
+      dato: el tema efectivo de la sesión **es `Encina`** y el resolvedor de GTK 4
+      devuelve el fichero de Encina para `view-app-grid-ubuntu-symbolic`, que es el
+      nombre que el dock construye de verdad —no `view-app-grid-symbolic`, que era
+      lo que parecía—. Lo que falta por medir está en §4.43h: **a 48 px**, el
+      `sessionMode` dentro del shell, y si el `St` del shell usa otra cadena de
+      temas que la `Gtk.IconTheme` con la que se midió.
 - [ ] **El nombre del volumen de la ISO.**
       *Hecha cuando:* `xorriso -indev` da un `Volume id` propio y el medio sigue
       arrancando — que es lo que hay que comprobar, porque el nombre del volumen lo
