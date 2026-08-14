@@ -767,6 +767,29 @@ orden. *La lista de abajo se conserva como estaba, con su numeración rara
 incluida, porque el `0.` de en medio se escribió así el 2026-08-12 y renumerarla
 borraría por qué.*
 
+**SEGUNDA CORRECCIÓN, EL MISMO DÍA, subiendo `encina-branding` a 0.1.12: no son
+cinco, son SEIS.** Falta **`imagen/fabricar-iso.sh`**, que lleva su PROPIO array
+`FICHEROS=(…)` con los cuatro nombres —los nombres llevan la versión dentro—,
+duplicado del de `fabricar-seed.sh` y a cuatro líneas de las huellas que sí saca
+de `encina-seed.sh`. Es la sexta, y no se descubrió construyendo nada: se vio
+buscando `0.1.11` por `imagen/` antes de tocar. *La buena noticia es que este
+sitio no falla en silencio* —sin actualizarlo, `fabricar-iso.sh` para en seco con
+`no esta: …encina-branding_0.1.11_all.deb`—, así que el riesgo es de tiempo
+perdido y no de fabricar un medio equivocado. La mala es la de siempre: **la
+lista de nombres vive en dos ficheros**, y mientras siga así habrá una séptima.
+
+*Y una nota de procedimiento que sirve para la próxima:* para rehacer los dos
+YAML hace falta un `--repo` completo que pase las comprobaciones 1 y 2, o sea los
+28 `.deb` **y** su `Packages`. El 2026-08-15 esos bytes se sacaron de la ISO
+anterior (`tar -xf` sobre el `.iso`, que `bsdtar` lee) y **se verificaron uno a
+uno contra `repo-manifiesto.tsv`**: 28 de 28, con el control de que el `.deb`
+cambiado sale señalado. Eso NO reabre la circularidad que cerró
+`cosechar-repo.sh`, y conviene tener clara la diferencia: lo prohibido es sacar
+**la lista** de un medio, y la lista siguió saliendo del manifiesto. Del medio
+salieron solo los **bytes**, que el manifiesto valida. Los `.deb` de
+`encina-firefox-native` y `encina-meta` que hay sueltos en `debian-packages/`
+llevan la versión buena y **otros bytes** —§4.13 otra vez—, así que no valen.
+
 1. **`imagen/encina-seed.sh`**: la huella (`H_FFNATIVE=…`) **y** el nombre del
    fichero, que lleva la versión dentro.
 2. **`imagen/fabricar-seed.sh`**: el nombre en el array `FICHEROS`.
