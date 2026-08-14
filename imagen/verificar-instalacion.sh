@@ -124,6 +124,25 @@ fi
 # no se vio antes porque desde que se reescribio el verificador en la vuelta de
 # E4 no se habia medido ninguna maquina de forma E3. No se afloja: la lista
 # sigue siendo exacta, solo gana la etapa que siempre esta.
+#
+# Y ESA CORRECCION ESTABA MAL, CORREGIDA A SU VEZ EL 2026-08-14 (§4.40c bis).
+# «Toda instalacion la escribe» era una generalizacion sobre UNA medicion. En la
+# ISO 95758c9e NO SE REGISTRA NUNCA, y eso esta medido en dos arranques
+# independientes -uno instalando y otro sin instalar nada- con la palabra
+# ausente del registro del cliente y el control de que el mismo grep encuentra
+# 'keyboard' catorce veces. El primer volcado del telemetry, 0,742 s ANTES de
+# dibujarse ninguna pantalla, ya decia {"0":"keyboard"}: no hubo ningun instante
+# que colisionar.
+#
+# POR QUE SACARLA DE LA LISTA NO ES AFLOJARLA, y hay que leerlo antes de tocar
+# esto otra vez: la casilla existe para saber UNA cosa -que una persona contesto
+# lo que Ubuntu pregunta y nada mas-. Las ocho que quedan dicen exactamente eso;
+# 'loading' no dice quien contesto que, dice como arranco el cliente del
+# instalador. Meterla en una lista exacta no la hizo mas estricta: le metio una
+# etapa que puede faltar sin que nada este mal, y una casilla que falla cuando
+# todo esta bien enseña a saltarse los fallos (§4.39j). Sigue fallando si falta
+# cualquiera de las OCHO, si sobra una, o si aparecen 'locale' o 'source'.
+# Y no se ignora: se DICE si estaba, que es mas informativo que exigirla.
 T=/var/log/installer/telemetry
 if [ -r "$T" ]; then
     ETAPAS=$(python3 -c 'import json,sys;print(",".join(sorted(json.load(open(sys.argv[1]))["Stages"].values())))' "$T" 2>/dev/null)
@@ -135,8 +154,16 @@ if [ -r "$T" ]; then
             ok "no aparece ninguna pantalla contestada a mano"
         fi
     else
-        igual "las etapas por las que paso el instalador" \
-              "confirm,done,identity,install,keyboard,loading,network,storage,timezone" "$ETAPAS"
+        # 'loading' se aparta ANTES de comparar, y se dice aparte. Los tres sed
+        # cubren las tres posiciones posibles y no se pisan entre ellos.
+        ETAPAS_OCHO=$(echo "$ETAPAS" | sed -e 's/,loading,/,/' -e 's/^loading,//' -e 's/,loading$//')
+        igual "las etapas por las que paso el instalador (las OCHO que deciden)" \
+              "confirm,done,identity,install,keyboard,network,storage,timezone" "$ETAPAS_OCHO"
+        # 'loading' es DATO y no casilla, con su motivo escrito arriba
+        case ",$ETAPAS," in
+            *,loading,*) dato "'loading' SI aparece (no decide: mide como arranco el cliente)" ;;
+            *)           dato "'loading' NO aparece, que es lo normal en esta ISO (§4.40c bis)" ;;
+        esac
         # LO QUE E2 NO PODIA PREGUNTAR: que las dos que fija el seed NO se hayan
         # preguntado. Si alguna aparece, el producto dejo de ser el mismo en dos
         # maquinas distintas, que es justo lo que 'source' y 'locale' evitan.

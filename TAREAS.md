@@ -59,12 +59,25 @@ están instalados**, atados por sus tres huellas —`9ec0a49d…`, `640f508e…`
 `204081f0…`— y por un `dpkg -V` sin una sola diferencia, con el control de que
 `dpkg -V` sí señala algo en esa máquina.
 
-***PERO EL ASTERISCO SE QUEDA, y por un `[FALLO]` que no es del producto:***
-`verificar-instalacion.sh --forma e3` da **51 correctas y 1 fallo**, y el fallo
-es que **falta la etapa `loading`** en `/var/log/installer/telemetry`. El
-verificador la exige desde §4.32g porque allí se escribió que «toda instalación
-la escribe», y **esta no la escribió**. Hasta saber por qué, no se marca ninguna
-casilla que dependa del verificador — está de tarea suelta abajo.
+~~***PERO EL ASTERISCO SE QUEDA…***~~ **EL ASTERISCO SE CAYÓ EL 2026-08-14**
+(`MEDICIONES.md` §4.41). El `[FALLO]` era del verificador y no del producto:
+exigía la etapa `loading` porque el 2026-08-12 se escribió que «toda instalación
+la escribe» —una generalización sobre **una** medición—, y **en esta ISO no se
+registra nunca**, medido en dos arranques con la palabra ausente del registro del
+cliente. Corregido **con la causa delante**: exige las **ocho** que dicen quién
+contestó qué y `loading` pasa a `[DATO]`.
+
+```
+verificar-instalacion.sh --forma e3 --visibles 27, como root:
+  52 correctas · 0 fallos · 0 avisos · 0 omitidas          rc=0
+  Y CON SU ROJO: metiendo "999":"source" en el telemetry -> 2 fallos, rc=1
+  restaurado con huella IDENTICA (9b4e0030…), y verde otra vez
+```
+
+**Y el medio se ganó su nombre:** `medios/encina-os-E4-es-0.2.1-95758c9e.iso`.
+Lleva la huella además de la versión porque **la versión sola no lo distingue**
+de `ac0a5721…` —mismo E4, mismo `es`, misma 0.2.1 y el mismo tamaño exacto—, que
+es el defecto que §4.35m dejó nombrado.
 
 *Y una premisa de este mismo documento que resultó falsa:* decía que en este Mac
 no había ninguna ISO. Había trece, la oficial entre ellas y en dos copias. El
@@ -267,6 +280,14 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
       no sea del banco, y **mirando la pantalla**.
       *Hecha cuando:* arranca, se instala contestando lo que pregunta, y
       `verificar-instalacion.sh` como root da 0 fallos.
+      **NO SE MARCA, y lo que falta es UNA palabra de la casilla.** El 2026-08-13
+      se hizo todo lo demás (`MEDICIONES.md` §4.40): arrancó, se instaló
+      contestando las cinco pantallas mirándolas, y el verificador da **52
+      correctas y 0 fallos**. Lo que **no** se cumple es *«en una máquina que no
+      sea del banco»*: fue una VM de UTM en este mismo Mac. **Y esa palabra no es
+      un detalle de forma** — es lo único que separa «me funciona a mí» de «se la
+      puedes dar a alguien», y es justo lo que este bloque promete. Hace falta
+      hardware real, o al menos otro anfitrión.
 - [ ] **Poner el enlace en el README** y quitar de él la frase «todavía no hay una
       imagen que descargar».
 
@@ -290,11 +311,17 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
 
 ## Sueltas, de un rato cada una
 
-- [ ] **QUÉ HACER CON LA LISTA DE ETAPAS DEL VERIFICADOR. La causa ya está
-      medida; lo que queda es una decisión.** Es el único `[FALLO]` de §4.40 y
-      bloquea el asterisco del bloque 0 y las casillas de §6ter.3 que dependen
-      del verificador.
-      *Lo medido (§4.40c bis):* **`loading` no se registra nunca en esta ISO** —
+- [x] ~~**QUÉ HACER CON LA LISTA DE ETAPAS DEL VERIFICADOR.**~~ **HECHA el
+      2026-08-14** (`MEDICIONES.md` §4.41): exige las **ocho** que dicen quién
+      contestó qué, `loading` pasa a `[DATO]`, y **el motivo entero va en el
+      propio guion**, encima de la comprobación, para que se lo encuentre quien
+      vuelva a tocarlo. *Hecha cuando, cumplido:* **52 de 52 en verde y el rojo
+      probado en la misma máquina** —`source` metido en el `telemetry` da 2
+      fallos y `rc=1`, y se restaura con huella idéntica—, más la lógica probada
+      antes en el Mac con las tres posiciones de `loading` y cuatro casos que
+      tienen que fallar. *Lo que sigue sin explicar:* por qué §4.32f **sí** la
+      escribió; su ISO ya no existe, **pero ya no bloquea nada**.
+      *Lo que se midió para llegar aquí (§4.40c bis):* **`loading` no se registra nunca en esta ISO** —
       dos arranques independientes, uno instalando y otro sin instalar nada, y la
       palabra **no sale ni una vez** del registro del cliente, con el control de
       que el mismo `grep` encuentra `keyboard` catorce veces. El primer volcado

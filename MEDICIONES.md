@@ -9760,6 +9760,106 @@ un enlace duro a `medios/`. Lo real es `disco.img` con 22 695 264 bloques de 512
 
 ---
 
+### 4.41 EL VERIFICADOR CORREGIDO CON SU CAUSA DELANTE: 52 de 52, y el medio se gana su nombre (2026-08-14)
+
+La única cosa que quedaba abierta de §4.40, hecha con la causa ya medida y no
+para desatascar una casilla.
+
+#### (a) EL CAMBIO, y por qué sacar una etapa de una lista exacta NO la afloja
+
+La casilla existe para saber **una** cosa: *que una persona contestó lo que
+Ubuntu pregunta, y nada más*. Las ocho que quedan dicen exactamente eso.
+`loading` no dice quién contestó qué — dice **cómo arrancó el cliente del
+instalador**. Meterla en una lista exacta no la hizo más estricta: le metió una
+etapa que puede faltar sin que nada esté mal, y **una casilla que falla cuando
+todo está bien enseña a saltarse los fallos**, que es §4.39j otra vez.
+
+```
+antes:    confirm,done,identity,install,keyboard,loading,network,storage,timezone
+ahora:    confirm,done,identity,install,keyboard,network,storage,timezone   <- exigidas
+          'loading' -> [DATO], y se dice si estaba
+```
+
+**No se ignora, se DICE**, que es más informativo que exigirla y más que
+callarla. Y el motivo entero va en el propio guion, encima de la comprobación,
+porque el que vuelva a tocar esto merece encontrárselo ahí y no en un `git log`.
+
+**La lógica se probó primero en el Mac, que es gratis**, con las tres posiciones
+donde puede caer la etapa y con los casos que **tienen que fallar**:
+
+```
+loading en medio / al principio / al final / ausente   -> las cuatro dan las OCHO
+falta 'storage'                                        -> falla, como debe
+sobra 'source'                                         -> falla, como debe
+sobra 'locale'                                         -> falla, como debe
+falta 'keyboard' con 'loading' dentro                  -> falla, como debe
+```
+
+#### (b) EL PAR VERDE/ROJO SOBRE LA MÁQUINA DE VERDAD, con la mutación verificada
+
+Una casilla que sólo se ha visto en verde no está medida, está escrita (trampa
+27). El sabotaje mete **`source`**, que es justo lo que el seed fija y lo que la
+casilla existe para detectar — o sea que sabotea **la comprobación** y no sólo
+los bytes (§4.39k):
+
+```
+0. VERDE     telemetry 9b4e0030…
+             [OK] las etapas … (confirm,done,identity,install,keyboard,network,storage,timezone)
+             [DATO] 'loading' NO aparece, que es lo normal en esta ISO
+             [OK] 52   [FALLO] 0   [AVISO] 0   [OMIT] 0        rc=0
+
+1. ROJO      se mete "999":"source"        telemetry b15b8ce3…
+             [OK] el sabotaje SI cambio el fichero      <- verificado ANTES de leer nada
+             [FALLO] las etapas por las que paso el instalador (las OCHO que deciden)
+                     | obtenido: …,keyboard,network,source,storage,timezone
+             [FALLO] se pregunto algo que el seed tiene que fijar
+             [OK] 50   [FALLO] 2   rc=1
+
+2. RESTAURADO  huella 9b4e0030…  IDENTICA a la de antes     <- trampa 13, por los dos lados
+
+3. VERDE      [OK] 52   [FALLO] 0    rc=0
+```
+
+**Los dos `[FALLO]` del rojo son los dos que tenían que salir**, y eso importa:
+la lista lo caza por su lado y el `grep` de `locale|source` por el suyo. Dos
+comprobaciones independientes viendo el mismo defecto.
+
+#### (c) EL MEDIO SE GANA SU NOMBRE — y el nombre lleva la huella, no sólo la versión
+
+`encina-os-nueva.iso` era un provisional declarado. Ya no lo es:
+
+```
+medios/encina-os-E4-es-0.2.1-95758c9e.iso    95758c9e…   el que produce este repositorio
+medios/encina-os-E4-es-0.2.1.iso             ac0a5721…   el de §4.35
+```
+
+**Y el nombre lleva los ocho primeros dígitos de la huella por un motivo medido,
+no por gusto:** §4.35m dejó escrito que `encina-os-E4-es.iso` a secas ya
+significó **dos artefactos distintos**, y §4.35f que **el tamaño no los separa**
+—los dos pesan 3 715 366 912 bytes exactos—. Aquí vuelve a pasar: estas dos ISOs
+tienen **el mismo E4, el mismo `es` y la misma 0.2.1**, y son ficheros
+distintos, porque los tres `.deb` se reconstruyeron desde el clon (§4.37). Un
+nombre que sólo lleve la versión **no puede distinguirlas**. El de la huella sí.
+
+```
+mv en el mismo volumen        -> 0 bytes
+huella DESPUES del renombrado -> 95758c9e…, la misma
+enlace duro con el bundle     -> inodo 89645149, 2 enlaces: sobrevive
+```
+
+#### (d) Lo que esta vuelta NO contesta
+
+- **Por qué §4.32f sí escribió `loading`.** Sigue sin explicar y su ISO ya no
+  existe (§4.40c bis). Lo que ha cambiado es que **ya no bloquea nada**: la
+  casilla no depende de esa etapa y la etapa se sigue diciendo.
+- **La firma real sobre esta máquina.** Intacta como casilla, y ahora es **la más
+  cara que queda** de verdad, porque ya no hay nada rojo delante.
+- **Una sola instalación.** `95758c9e…` se ha instalado **una vez**. Dos
+  instalaciones dando la misma máquina sigue sin medirse.
+- **Que la tienda instale en ESTA máquina.** Sigue medida sobre otra (§4.35i).
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

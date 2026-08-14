@@ -1398,6 +1398,24 @@ interfaz de accesibilidad —la aplicación aparece, pero el árbol de un snap c
 sale truncado y `queryAction` da `timeout from dbind`— y las teclas del ratón de
 GNOME, que **desplazan la página** en vez de mover el puntero.
 
+**Y ANTES QUE TODO LO DEMÁS: COMPRUEBA QUE LA VENTANA DE LA VM EXISTE**
+(2026-08-14). `utmctl start` arranca la máquina **pero no siempre abre su
+consola**: si UTM lleva rato abierto, la VM pasa a `started` y **no hay ninguna
+ventana**. Entonces `System Events` entrega las teclas a la **lista de UTM**, y
+ahí no hay error, no hay aviso y no pasa nada — salvo que la lista tiene VMs
+dentro y una tecla suelta puede arrancar la que no es. Lo que lo arregla es
+cerrar UTM y volver a abrirlo antes del `utmctl start`, y el control cuesta una
+línea:
+
+```
+osascript -e 'tell application "System Events" to tell process "UTM" to get name of every window'
+  -> UTM                        <- SOLO la lista: las teclas se van a ninguna parte
+  -> encina-95758c9e, UTM       <- hay consola: ya se puede teclear
+```
+
+Y después de un susto así, lo primero es contar las encendidas:
+`utmctl list | grep -v stopped` tiene que dar **una**.
+
 **Y TRES FORMAS DE PERDER LO QUE TECLEAS, del 2026-08-13** (`MEDICIONES.md`
 §4.40f). Las tres son de `teclear-vm.sh texto`, **las tres son mudas** —ni un
 error, ni un aviso— y las tres se cazaron mirando la pantalla antes de pulsar

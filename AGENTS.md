@@ -1452,7 +1452,32 @@ justamente para no llegar al reempaquetado con tres candidatos.
 Cada casilla con lo que daría en un sistema sano y en uno roto. **No marcar
 ninguna sin la salida literal.**
 
-**CONTRA QUÉ ISO ESTÁ MARCADA CADA UNA, que desde el 2026-08-10 hay dos y sin
+**REMARCADAS ENTERAS EL 2026-08-13/14 CONTRA `95758c9e…`, que es la ISO que
+produce este repositorio** (`MEDICIONES.md` §4.40 y §4.41). Las tres que hablan
+de **arrancar** se habían reabierto con cada ISO nueva y llevaban desde el
+2026-08-13 abiertas sobre ésta, porque **nadie la había arrancado**. Ya está
+arrancada e instalada:
+
+```
+la VM, desde cero y sin ningun CIDATA:  0 -append · 1 media=disk · 1 media=cdrom · 0 CIDATA
+                                        transcrito ANTES de arrancar (el debug.log es volatil)
+las cinco pantallas:                    contestadas por Jorge, y el instalador en español
+lo que la maquina dejo escrito sola:    CIDATA -> <no encontrado>
+                                        REPO ELEGIDO -> /cdrom/encina-repo
+                                        ENCINA_ESTADO=COMPLETO
+verificar-instalacion.sh --forma e3 --visibles 27, como root:
+                                        52 correctas · 0 fallos · 0 avisos · 0 omitidas
+                                        y con su ROJO probado: metiendo 'source' da 2 fallos y rc=1,
+                                        restaurado por huella identica
+los tres .deb nuevos, DENTRO:           9ec0a49d… · 640f508e… · 204081f0…, y dpkg -V sin una
+                                        sola diferencia, con el control de que sabe senalar
+```
+
+**Y el medio ya se llama `encina-os-E4-es-0.2.1-95758c9e.iso`**: el nombre lleva
+la huella porque la versión sola **no distingue** esta ISO de `ac0a5721…` —mismo
+E4, mismo `es`, misma 0.2.1, y el mismo tamaño exacto— (§4.41c).
+
+**CONTRA QUÉ ISO ESTABA MARCADA CADA UNA ANTES, que desde el 2026-08-10 hay dos y sin
 esto la lista mentiría.** Las ocho se marcaron contra `encina-os-E3.iso`
 (`0a1127f4…`), la del instalador en inglés. La novena obliga a una ISO nueva,
 `encina-os-E3-es.iso` (`02ab929d…`), y **una ISO distinta es otro artefacto**:
@@ -1485,6 +1510,15 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       conectado, y eso solo se ve desde fuera y antes de arrancar.**
       **Reabierta el 2026-08-10:** se marcó con el `debug.log` de la ISO
       `0a1127f4…`, y el `debug.log` de otra ISO es otro `debug.log`.
+      **REMARCADA el 2026-08-13 contra `95758c9e…` (§4.40a):** `0` `-append`,
+      **una** `media=disk` y **una** `media=cdrom`, `0` `CIDATA`, `0` `-kernel`,
+      `0` `-initrd`, con el control de que el mismo `grep` sí encuentra `edk2`.
+      Y antes de arrancar, el bundle entero: `config.plist`, `disco.img` y la
+      ISO, **y nada más**; el disco de destino con **0 bytes distintos de cero**
+      y el control de que el mismo contador da 101 265 107 sobre la ISO.
+      **La trampa se demostró sola una hora después:** quitada la ISO, el
+      **mismo** `debug.log` pasó a decir dos `media=disk` y cero `cdrom`. Quien
+      lo leyera entonces mediría lo contrario de lo que pasó.
 - [x] **La ISO es la oficial reempaquetada, y se demuestra.** **REESCRITA el
       2026-08-10 con su motivo, al añadir la novena casilla:** decía «solo
       ficheros añadidos, ninguno modificado», y eso dejaba de ser verdad en
@@ -1517,6 +1551,17 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       Y **ahora la casilla dice más de lo que decía**, porque el `locale=` del
       `grub.cfg` toca la sesión viva: si esa máquina saliera distinta, el arreglo
       del idioma habría cambiado algo que no tenía que cambiar.
+      **REMARCADA el 2026-08-14 contra `95758c9e…`: 52 correctas, 0 fallos**
+      (§4.40c, §4.41b). El número ya no es 35: el verificador ha crecido con el
+      producto. **Y esta vez la casilla se marcó con el ROJO probado en la misma
+      máquina** —metiendo `source` en el `telemetry` da 2 fallos y `rc=1`, y se
+      restaura con huella idéntica—, que es lo que separa una casilla medida de
+      una escrita (trampa 27).
+      **Y hubo que corregir el verificador para llegar aquí, con la causa
+      medida y no para desatascar la casilla** (§4.40c bis): exigía la etapa
+      `loading` porque el 2026-08-12 se escribió que «toda instalación la
+      escribe», y **en esta ISO no se registra nunca**. Ahora exige las **ocho**
+      que dicen quién contestó qué, y `loading` se **dice** como dato.
 - [x] **En la ISO no hay ninguna credencial.** *Sano:* ni `identity:`, ni
       contraseña, ni hash, ni clave ssh en el seed que viaja dentro — comprobado
       sobre el fichero extraído de la ISO construida, no sobre el del
@@ -1533,6 +1578,16 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       **Reabierta el 2026-08-10:** se marcó instalando `0a1127f4…`. La ISO que se
       entrega es `02ab929d…`, y esta casilla es literalmente «se la puedes dar a
       alguien»: no la puede heredar una ISO de otra.
+      **REMARCADA el 2026-08-13 instalando `95758c9e…`** (§4.40a y b), y **va
+      acompañada de lo que se contestó**, como pide la casilla: teclado
+      **Español/Español**; red **cableada, conectada** (sin ella la instalación
+      se para en 4 461 MB, D9); disco **borrar e instalar**, sin cifrado, `vda`,
+      `vda1` fat32 `/boot/efi` y `vda2` ext4 `/`; identidad `Jorge` / `jorge` /
+      equipo `encina-95758c9e`, **sin** inicio de sesión automático; zona horaria
+      **Madrid**; y el botón de **Instalar**. **Y en «Revise sus elecciones» el
+      renglón «Aplicaciones» salió VACÍO**, que es `source` sin preguntar visto
+      por el otro lado. Ni una orden, ni un fichero, ni una edición: el canal con
+      el verificador se conectó **después** de instalar (trampa 20).
 
 - [x] **NOVENA CASILLA, añadida el 2026-08-10 DESPUES de marcar las ocho, con
       su motivo (§4.23e).** *El instalador se ve en el idioma del producto.*
@@ -1559,8 +1614,18 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       `encina-os-E3-es.iso` (`02ab929d…`) existe, es reproducible y los tres
       binarios firmados siguen intactos. **Lo que queda es mirar la pantalla**, y
       eso es de Jorge.
-      **MARCADA el 2026-08-10 (§4.25d). Lo declara Jorge: «el instalador se ve en
-      español».** Yo no he visto esa pantalla y así queda escrito. Y la máquina
+      **REMARCADA el 2026-08-13 contra `95758c9e…`, y esta vez SÍ la he visto
+      yo** (§4.40b): la primera pantalla dice «Elija la disposición del teclado»,
+      «Seleccione la variante del teclado» y «Escriba aquí para probar el
+      teclado», leído en una captura de la VM. **Y no hubo pantalla de idioma ni
+      de bienvenida**: el instalador entró directo a `keyboard`, que es
+      `interactive-sections` funcionando. Además `ubuntu_bootstrap.log` deja
+      escrito `getInteractiveSections() ["keyboard","network","storage",
+      "identity","timezone"]` y `Showing only pages requested by subiquity`, o
+      sea **la primera casilla de esta lista medida en el propio instalador y no
+      por sus consecuencias**.
+      **MARCADA el 2026-08-10 (§4.25d). Lo declaró Jorge: «el instalador se ve en
+      español».** Yo no había visto esa pantalla y así quedó escrito. Y la máquina
       que sale es **idéntica** a la de §4.23d —36 correctas, 0 fallos—, que es lo
       que prueba que el `locale=` **no tocó nada que no tuviera que tocar**: toca
       la sesión viva, o sea el entorno donde corren las `late-commands`.

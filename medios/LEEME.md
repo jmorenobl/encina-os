@@ -61,10 +61,17 @@ Con la ISO aquí, la vuelta entera es una orden
 ## Qué hay aquí hoy, y no es lo mismo
 
 ```
-ubuntu-24.04.4-desktop-arm64.iso   c2610520…   la ENTRADA, firmada por Canonical
-encina-os-E4-es-0.2.1.iso          ac0a5721…   el medio que se probo el 2026-08-13
-encina-os-nueva.iso                95758c9e…   el que produce este repositorio HOY
+ubuntu-24.04.4-desktop-arm64.iso        c2610520…  la ENTRADA, firmada por Canonical
+encina-os-E4-es-0.2.1-95758c9e.iso      95758c9e…  el que produce este repositorio,
+                                                   arrancado e instalado (§4.40)
+encina-os-E4-es-0.2.1.iso               ac0a5721…  el de §4.35, que ya no se fabrica aqui
 ```
+
+**Fijese en que las dos de Encina son `E4`, `es` y `0.2.1`, y son ficheros
+distintos** — y encima **pesan exactamente lo mismo**, 3 715 366 912 bytes. Por
+eso la que se entrega lleva **la huella en el nombre**: la versión sola no las
+distingue, y §4.35m ya se encontró con dos artefactos distintos compartiendo
+nombre. **Se coge por huella, nunca por nombre.**
 
 **`ac0a5721…` ya no se fabrica desde este repositorio** —lleva dentro los `.deb`
 viejos y un seed que exige sus huellas, así que es coherente consigo misma y no
@@ -72,13 +79,15 @@ con el árbol de hoy— y se conserva porque durante un día fue el único medio
 alguien había arrancado.
 
 **Y desde el 2026-08-13/14 ya no es el único: `95758c9e…` SE HA ARRANCADO E
-INSTALADO** (`MEDICIONES.md` §4.40). VM desde cero sin ningún `CIDATA`, las cinco
-pantallas contestadas a mano, el seed salido de `/cdrom/autoinstall.yaml` y el
-repositorio del medio, y los tres `.deb` nuevos instalados y atados por huella.
-**Conserva el nombre provisional a propósito**: el verificador da 51 de 52 y el
-que falta —la etapa `loading` del `telemetry`, que es un defecto del verificador
-y no del medio— está sin decidir. **El nombre con versión se le pone a un medio
-que se entrega, no a uno que casi.**
+INSTALADO** (`MEDICIONES.md` §4.40 y §4.41). VM desde cero sin ningún `CIDATA`,
+las cinco pantallas contestadas a mano, el seed salido de
+`/cdrom/autoinstall.yaml` y el repositorio del medio, los tres `.deb` nuevos
+instalados y atados por huella, y `verificar-instalacion.sh --forma e3` en **52
+correctas y 0 fallos**, con su rojo probado.
+
+**Lo que todavía NO se ha hecho con ella, y es lo que separa «me funciona» de
+«se la puedes dar a alguien»: instalarla en una máquina que no sea del banco.**
+Todo lo medido es sobre una VM de UTM en el Mac del autor.
 
 ## `deb-historicos/` — lo único que no se puede rehacer
 
