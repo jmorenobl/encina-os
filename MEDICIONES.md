@@ -10341,6 +10341,201 @@ de control natural. **No se fabricó ninguna ISO.**
 
 ---
 
+### 4.44 FUERA LA BIENVENIDA DE UBUNTU: no era una clave, era una unidad de systemd (2026-08-15)
+
+**La casilla se marca.** Una sesión nueva de `encina-95758c9e` entra directa al
+escritorio de Encina y la ventana no aparece, con `encina-branding` 0.1.11
+instalado. Y lo que la quita no es lo que esta casilla suponía —«un paquete que
+sobra o una clave que lo desactiva»—: **no hay ninguna clave, y el paquete no
+sobra**. Lo que hay es una unidad de usuario de systemd, y se enmascara.
+
+#### (a) QUÉ LA LANZA, medido en `encina-dev` por `ssh`
+
+```
+$ dpkg -l gnome-initial-setup | tail -1
+ii  gnome-initial-setup 46.3-1ubuntu3~24.04.2 arm64
+
+$ cat /usr/lib/systemd/user/gnome-initial-setup-first-login.service
+[Unit]
+Description=GNOME Initial Setup
+BindsTo=gnome-session.target
+After=gnome-session.target
+Conflicts=gnome-session@gnome-login.target
+Conflicts=gnome-session@gnome-initial-setup.target
+ConditionPathExists=!%E/gnome-initial-setup-done
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/gnome-initial-setup --existing-user
+Restart=no
+
+$ ls -la /usr/lib/systemd/user/gnome-session.target.wants/
+gnome-initial-setup-first-login.service -> ../gnome-initial-setup-first-login.service
+```
+
+**Y el `.desktop` de `/etc/xdg/autostart/` NO es el que decide**, aunque es el
+sitio donde uno mira primero:
+
+```
+$ cat /etc/xdg/autostart/gnome-initial-setup-first-login.desktop
+Exec=/usr/libexec/gnome-initial-setup --existing-user
+AutostartCondition=unless-exists gnome-initial-setup-done
+X-GNOME-HiddenUnderSystemd=true          <-- esta linea
+```
+
+`X-GNOME-HiddenUnderSystemd=true` significa «si la sesión la gestiona systemd,
+ignórame», y la de Ubuntu 24.04 la gestiona systemd. Los dos caminos existen;
+sólo uno está vivo.
+
+#### (b) POR QUÉ VOLVÍA EN CADA SESIÓN, con su control
+
+La puerta es `ConditionPathExists=!%E/gnome-initial-setup-done`, o sea
+`~/.config/gnome-initial-setup-done`, **que sólo se escribe si el asistente se
+termina**. En la máquina del producto no existe; en el constructor sí, y por eso
+allí la ventana no sale nunca. Ése es el control de la explicación, y las dos
+mitades están medidas:
+
+```
+encina-dev        $ ls -la ~/.config/gnome-initial-setup-done
+-rw-rw-r-- 1 jorge jorge 3 ago  6 21:38 /home/jorge/.config/gnome-initial-setup-done
+
+encina-95758c9e   $ ls -l /home/jorge/.config/gnome-initial-setup-done
+ls: no se puede acceder a '/home/jorge/.config/gnome-initial-setup-done': No existe el archivo o el directorio
+```
+
+#### (c) POR QUÉ NO SE ARREGLA CON ESE FICHERO, y es R1 en estado puro
+
+Ese fichero es **del usuario**. Ponerlo por defecto para todos exige
+`/etc/skel`, que R1 prohíbe: sólo alcanza a los usuarios creados después y no se
+puede actualizar. Así que se ataca **la unidad**, no la puerta.
+
+#### (d) LA MÁSCARA, y su mecanismo probado por los dos lados
+
+`/etc/systemd/user/` gana a `/usr/lib/systemd/user/` en la ruta de búsqueda de
+systemd, así que un enlace a `/dev/null` con el nombre de la unidad la
+enmascara **sin sobrescribir el fichero de `gnome-initial-setup`** (R5). Es la
+misma sombra que el paquete ya usa para `/etc/dconf/profile/gdm` y
+`encina-firefox-native` para `firefox_firefox.desktop`.
+
+Probado a mano en `encina-dev` **antes** de meterlo en el paquete, con los dos
+controles y devolviendo la máquina a como estaba:
+
+```
+CONTROL, antes de nada                        static
+con la mascara puesta a mano                  masked
+y retirada, que es el control por el otro lado  static
+queda algo?   ls: no se puede acceder ... No existe el archivo o el directorio
+```
+
+**Y tiene que ser un enlace a `/dev/null`:** un fichero normal vacío con ese
+nombre no enmascara, systemd lo lee como una unidad sin secciones. Es lo que
+deja un clon de git con `core.symlinks=false`, así que `03-construir.sh` lo
+comprueba (`[OK] La máscara de la bienvenida apunta a /dev/null`).
+
+#### (e) EN LA MÁQUINA DEL PRODUCTO, con el control por delante
+
+`encina-95758c9e`, a ciegas con `teclear-vm.sh` y capturando antes de cada
+Intro. **El control se tomó primero**, en la sesión que se abrió antes de
+instalar nada:
+
+```
+sesion recien abierta, 0.1.10   la ventana SALE, entera, con la corona
+                                (design/capturas/despues/06-control-la-bienvenida-vuelve.png)
+$ systemctl --user is-enabled gnome-initial-setup-first-login.service
+static
+```
+
+Y después de `sudo dpkg -i encina-branding_0.1.11_all.deb`:
+
+```
+Desempaquetando encina-branding (0.1.11) sobre (0.1.10) ...
+Configurando encina-branding (0.1.11) ...
+
+$ systemctl --user is-enabled gnome-initial-setup-first-login.service
+masked
+$ ls -l /etc/systemd/user/gnome-initial-setup-first-login.service
+lrwxrwxrwx 1 root root 9 ago 15 00:11 ... -> /dev/null
+```
+
+**Reiniciada la máquina y abierta sesión otra vez: no sale**
+(`design/capturas/despues/06-primera-sesion-sin-bienvenida.png`). El resto de la
+primera sesión sigue igual —fondo, dock abajo, bellota—, que es el control que
+pedía la casilla.
+
+#### (f) EL CONFUSOR QUE HABÍA QUE DESCARTAR, y se descartó
+
+Durante la sesión de antes se intentó cerrar la ventana con Escape y con
+Alt+F4 y en algún momento desapareció de la pantalla. **Si el asistente se
+hubiera completado, habría escrito el marcador y la ausencia posterior no
+probaría nada.** Medido después del reinicio, dentro de la sesión nueva:
+
+```
+$ ls -l /home/jorge/.config/gnome-initial-setup-done
+ls: no se puede acceder a ... : No existe el archivo o el directorio
+```
+
+Sigue sin existir. La ventana falta **por la máscara**, no por la puerta.
+
+#### (g) LA BATERÍA, con el control de la purga dentro
+
+`05-verificar.sh` en `encina-dev` — **14 correctas, 0 fallos**. La comprobación
+nueva no vale sin su control, y el control es la purga:
+
+```
+=== 2. La bienvenida de Ubuntu, enmascarada (0.1.11) ===
+  [OK]    /etc/systemd/user/gnome-initial-setup-first-login.service -> /dev/null
+  [OK]    systemctl --user is-enabled ... -> masked
+=== 4. Purga: desinstalación limpia ===
+  [OK]    Control: purgado, la unidad vuelve a 'static' (la bienvenida volvería)
+```
+
+`03-construir.sh`: **33 correctas, 0 fallos, 0 avisos**, `lintian` sin una
+línea. El enlace a `/dev/null` no le molesta.
+
+#### (h) UNA CORRECCIÓN DE ALGO QUE IBA A ESCRIBIR SIN MEDIRLO
+
+Iba a justificar «no se desinstala `gnome-initial-setup` porque se lleva por
+delante `ubuntu-desktop-minimal`». **Falso.** Medido:
+
+```
+$ apt-cache show ubuntu-desktop-minimal | (campo de cada linea)
+Recommends            <- las dos versiones del indice
+Recommends
+
+$ sudo apt-get -s purge gnome-initial-setup
+Los siguientes paquetes se ELIMINARÁN:  gnome-initial-setup*
+0 actualizados, 0 nuevos se instalarán, 1 para eliminar y 15 no actualizados.
+```
+
+Es un `Recommends:`, y purgarlo no arrastra a nadie. El motivo real de no
+quitarlo es otro: **quitar un paquete cambia el juego de paquetes del medio**
+—otra fila del manifiesto y otra ISO— y un `Recommends:` desinstalado vuelve en
+cuanto apt reconsidere `ubuntu-desktop-minimal`. La máscara cuesta un enlace
+simbólico y no se deshace sola.
+
+#### (i) LA DECISIÓN QUE ACOMPAÑA, tomada y no dejada caer
+
+**En su sitio no va nada**, decisión de Jorge del 2026-08-15. La primera
+impresión pasa a ser el escritorio de Encina. La pantalla propia que cuente el
+producto queda **abierta como decisión**, no cerrada.
+
+#### (j) LO QUE ESTA MEDICIÓN NO CONTESTA
+
+- **Una sesión sin systemd.** Si algún día la sesión no la gestionara systemd,
+  el `.desktop` de `/etc/xdg/autostart/` volvería a mandar y la máscara no lo
+  taparía. No hay forma de sombrear ese fichero sin `/etc/skel` (R1) ni
+  sobrescribirlo (R5); hoy no hace falta y queda dicho.
+- **`gnome-initial-setup-copy-worker.service` no se toca.** Corre antes de la
+  sesión y no pinta nada.
+- **Un usuario nuevo en la máquina del producto.** La máscara es del sistema y
+  `05-verificar.sh` crea el usuario `prueba` en el constructor, pero **entrar
+  con él en la sesión gráfica sigue siendo `[OJOS]`** y no se ha hecho.
+- **Un aviso que no es de este cambio:** tras el reinicio salió el diálogo de
+  apport «…error interno», y `/var/crash` tiene **un** volcado,
+  `_usr_bin_spice-vdagent.1000.crash` de las 00:25 — el agente de invitado de
+  UTM, no `gnome-initial-setup`. No se ha investigado.
+
+---
+
 ### A3 — Por qué se suprimió `encina-locale-es` (2026-08-07)
 
 Registro para no volver a plantearla. **Medido en VM Ubuntu 24.04 arm64 en español**,

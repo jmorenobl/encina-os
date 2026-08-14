@@ -100,6 +100,45 @@ else
     ok "R5 — no se toca os-release"
 fi
 
+# --- R5 + la máscara de la bienvenida (0.1.11) -----------------------------
+# La ventana «Le damos la bienvenida a Ubuntu 24.04.4 LTS» la lanza la unidad
+# de usuario gnome-initial-setup-first-login.service, que pertenece al paquete
+# gnome-initial-setup y vive en /usr/lib/systemd/user/. Se desactiva
+# ENMASCARÁNDOLA desde /etc/systemd/user/, que gana en la ruta de búsqueda de
+# systemd y NO sobrescribe el fichero de nadie.
+#
+# Y la máscara SOLO funciona si es un enlace simbólico a /dev/null: un fichero
+# normal vacío con ese nombre no enmascara nada, se lee como una unidad sin
+# secciones y la ventana vuelve. Es justo lo que deja un clon de git con
+# core.symlinks=false, así que esta comprobación no es decorativa.
+MASCARA="$PKG/src/etc/systemd/user/gnome-initial-setup-first-login.service"
+if [[ -e "$PKG/src/usr/lib/systemd" ]]; then
+    fallo "R5 — el paquete envía unidades en /usr/lib/systemd" \
+"$(find "$PKG/src/usr/lib/systemd" -mindepth 1 2>/dev/null)
+Ese árbol pertenece a los paquetes que traen las unidades. Para desactivar
+una, se enmascara desde /etc/systemd/user/."
+else
+    ok "R5 — no se envían unidades en /usr/lib/systemd"
+fi
+if [[ -L "$MASCARA" ]]; then
+    DESTINO=$(readlink "$MASCARA")
+    if [[ "$DESTINO" == "/dev/null" ]]; then
+        ok "La máscara de la bienvenida apunta a /dev/null"
+    else
+        fallo "La máscara de la bienvenida apunta a otra cosa" \
+"$MASCARA -> $DESTINO
+systemd solo entiende como máscara un enlace a /dev/null."
+    fi
+elif [[ -e "$MASCARA" ]]; then
+    fallo "La máscara de la bienvenida NO es un enlace simbólico" \
+"$(ls -l "$MASCARA")
+Un fichero normal con ese nombre no enmascara: systemd lo lee como una unidad
+vacía y gnome-initial-setup vuelve a salir en cada sesión."
+else
+    fallo "Falta la máscara de gnome-initial-setup-first-login.service" \
+"esperada en $MASCARA como enlace a /dev/null"
+fi
+
 # --- R6: tema basado en spinner, nunca en bgrt -----------------------------
 if [[ -f "$PLY/encina.plymouth" ]]; then
     if grep -qi "bgrt" "$PLY/encina.plymouth"; then
@@ -255,7 +294,8 @@ for esperado in \
     "etc/dconf/db/gdm.d/99-encina" \
     "usr/share/icons/Encina/index.theme" \
     "usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg" \
-    "usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg"
+    "usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg" \
+    "etc/systemd/user/gnome-initial-setup-first-login.service"
 do
     if echo "$CONTENIDO" | grep -q "$esperado"; then
         ok "Incluye $esperado"

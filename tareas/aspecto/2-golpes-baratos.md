@@ -13,25 +13,37 @@ sea el 99 del nombre. Y es especialmente traicionero porque **`gsettings get`
 desde una terminal devuelve el valor de Encina y parece que todo está bien**.
 Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
 
-- [ ] **QUITAR LA PANTALLA QUE DICE «Le damos la bienvenida a Ubuntu 24.04.4
-      LTS». Es la primera de la lista y no estaba en ninguna.** Medido el
-      2026-08-14 al entrar por primera vez en `encina-95758c9e`
-      (`design/capturas/antes/04-bienvenida-dice-ubuntu.png`): nada más iniciar
-      sesión sale `gnome-initial-setup` **a pantalla completa**, con la corona
-      naranja de Ubuntu, el texto en español y un botón «Siguiente» naranja.
-      **Todo el trabajo de marca se lo pasa por delante esta ventana**: el fondo,
-      el logotipo de GDM, el tema de iconos y `GRUB_DISTRIBUTOR` los ve alguien
-      que ya está dentro; esto lo ve **antes que nada**, y es lo único que un
-      desconocido lee palabra por palabra.
-      *Por qué está entre los baratos:* no es un tema ni un icono. Es un paquete
-      que sobra o una clave que lo desactiva, así que cuesta una línea — hay que
-      medir cuál de las dos, y si quitarlo se lleva algo por delante.
-      *Hecha cuando:* una sesión nueva **no** enseña esa ventana, mirado en
-      pantalla, con el control de que el resto de la primera sesión sigue igual.
-      *Y una decisión que hay que tomar de paso, no dejarla caer:* si en su sitio
-      va **una pantalla propia** que diga qué es Encina OS y qué trae, o si no va
-      nada. Lo segundo es defendible y más barato; lo primero es la única
-      oportunidad de contar el producto.
+- [x] ~~**QUITAR LA PANTALLA QUE DICE «Le damos la bienvenida a Ubuntu 24.04.4
+      LTS».**~~ **HECHO el 2026-08-15 en `encina-branding` 0.1.11**, mirado en
+      pantalla sobre `encina-95758c9e`: una sesión nueva entra directa al
+      escritorio y la ventana no aparece
+      (`design/capturas/despues/06-primera-sesion-sin-bienvenida.png`), con el
+      resto de la primera sesión igual —fondo, dock abajo, bellota—.
+      *Y esta casilla se equivocaba en el diagnóstico, que es lo que hay que
+      guardar:* decía «es un paquete que sobra o **una clave** que lo
+      desactiva». **No hay ninguna clave y el paquete no sobra.** Lo que la
+      lanza es una **unidad de usuario de systemd**,
+      `gnome-initial-setup-first-login.service`, enlazada desde
+      `gnome-session.target.wants/`; el `.desktop` de `/etc/xdg/autostart/`
+      —donde uno mira primero— lleva `X-GNOME-HiddenUnderSystemd=true` y **no
+      es el que decide**.
+      *Por qué volvía en cada sesión:* su puerta es
+      `~/.config/gnome-initial-setup-done`, que sólo se escribe si el asistente
+      se **termina**. Y como es del usuario, ponerlo por defecto sería
+      `/etc/skel` y lo prohíbe R1: por eso se ataca la unidad y no la puerta.
+      *Lo que hace el paquete:*
+      `/etc/systemd/user/gnome-initial-setup-first-login.service -> /dev/null`.
+      `/etc/systemd/user` gana a `/usr/lib/systemd/user`, así que no se
+      sobrescribe nada de `gnome-initial-setup` (R5) y la purga lo retira.
+      *Los controles, que son tres y están en `MEDICIONES.md` §4.44:* la ventana
+      **sí** salía en la sesión de antes de instalar (`static`); la máscara pasa
+      a `masked` y al purgar vuelve a `static`; y el marcador
+      `gnome-initial-setup-done` **sigue sin existir** después de todo, así que
+      la ventana falta por la máscara y no porque el asistente se completara.
+      *Y la decisión que acompañaba, tomada:* **en su sitio no va nada**
+      —decisión de Jorge—. La primera impresión pasa a ser el escritorio de
+      Encina. La pantalla propia que cuente el producto sigue **abierta como
+      decisión** en [0-decidir.md](0-decidir.md), no descartada.
 
 - [ ] **El acento, que resultó no ser un color sino un NOMBRE DE TEMA.** Medido
       el 2026-08-14 en `encina-dev` por `ssh`, y las tres preguntas que traía esta

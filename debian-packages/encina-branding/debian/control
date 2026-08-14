@@ -24,8 +24,14 @@ Description: Identidad visual y valores por defecto de Encina OS
  maquina de la entrega traia Evince instalado y no se abria nunca, porque
  application/pdf resolvia al navegador.
  .
+ Y desde la 0.1.11 QUITA LA VENTANA DE BIENVENIDA DE UBUNTU, que salia a
+ pantalla completa nada mas iniciar sesion y era lo primero que leia un
+ desconocido. Se enmascara la unidad de usuario
+ gnome-initial-setup-first-login.service desde /etc/systemd/user, sin
+ desinstalar ni sobrescribir nada.
+ .
  Todos los valores se instalan como predeterminados del sistema mediante
- gschema.override, perfiles de dconf y un mimeapps.list PROPIO en
- /etc/xdg. Ninguno sobrescribe el conffile de otro paquete (R5), y los
- usuarios creados despues de la instalacion los heredan igual y pueden
- sobrescribirlos.
+ gschema.override, perfiles de dconf, un mimeapps.list PROPIO en
+ /etc/xdg y una mascara de systemd en /etc/systemd/user. Ninguno
+ sobrescribe el conffile de otro paquete (R5), y los usuarios creados
+ despues de la instalacion los heredan igual y pueden sobrescribirlos.

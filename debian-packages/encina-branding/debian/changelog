@@ -1,3 +1,56 @@
+encina-branding (0.1.11) noble; urgency=medium
+
+  * FUERA LA VENTANA DE BIENVENIDA DE UBUNTU. Nada mas iniciar sesion
+    salia a pantalla completa, con la corona naranja, «Le damos la
+    bienvenida a Ubuntu 24.04.4 LTS» y un boton «Siguiente». Era lo
+    primero que leia un desconocido, y NO salia una sola vez: volvia en
+    CADA sesion (design/capturas/antes/04-bienvenida-dice-ubuntu.png).
+  * QUE LA LANZA, medido el 2026-08-15 en encina-dev: la unidad de
+    usuario gnome-initial-setup-first-login.service, que gnome-initial-
+    setup enlaza desde gnome-session.target.wants/. El .desktop de
+    /etc/xdg/autostart/ lleva X-GNOME-HiddenUnderSystemd=true y la
+    sesion de Ubuntu 24.04 la gestiona systemd, asi que el que decide es
+    la unidad, no el autostart.
+  * POR QUE VOLVIA CADA VEZ: su puerta es ConditionPathExists=!%E/gnome-
+    initial-setup-done, o sea ~/.config/gnome-initial-setup-done, que
+    solo se escribe si el asistente se TERMINA. Cerrandolo, no se
+    escribe y vuelve. En encina-dev ese fichero SI existe -de ago 6- y
+    por eso alli la ventana no sale: ese es el control de la
+    explicacion.
+  * POR QUE NO SE ARREGLA CON ESE FICHERO: es del usuario. Ponerlo por
+    defecto seria /etc/skel, que lo prohibe R1 -solo alcanza a los
+    usuarios creados despues y no se puede actualizar-. Por eso se ataca
+    la unidad y no la puerta.
+  * COMO: /etc/systemd/user/gnome-initial-setup-first-login.service ->
+    /dev/null, la mascara de systemd. /etc/systemd/user gana a
+    /usr/lib/systemd/user en la ruta de busqueda, asi que NO se
+    sobrescribe el fichero de gnome-initial-setup (R5) -es la misma
+    sombra que el paquete ya usa para /etc/dconf/profile/gdm-. Alcanza a
+    todos los usuarios, incluidos los futuros, y la purga la retira.
+  * Y TIENE QUE SER UN ENLACE A /dev/null: un fichero normal vacio con
+    ese nombre no enmascara nada, systemd lo lee como una unidad sin
+    secciones y la ventana vuelve. 03-construir.sh lo comprueba, porque
+    un clon de git con core.symlinks=false lo convierte en fichero
+    normal sin decir nada.
+  * POR QUE NO SE DESINSTALA gnome-initial-setup, y aqui se corrige lo
+    que yo mismo iba a escribir sin medirlo. Creia que purgarlo
+    arrastraba a ubuntu-desktop-minimal por un Depends: FALSO. Medido:
+    esta en su Recommends -en las dos versiones del indice-, y «apt-get
+    -s purge gnome-initial-setup» saca «1 para eliminar» y ninguno mas.
+    El motivo de no quitarlo es otro: quitar un paquete cambia el juego
+    de paquetes del medio -otra fila del manifiesto y otra ISO-, y un
+    Recommends desinstalado vuelve en cuanto apt reconsidere ubuntu-
+    desktop-minimal. La mascara cuesta un enlace simbolico y no se
+    deshace sola.
+  * LO QUE VA EN SU SITIO: NADA, decision de Jorge del 2026-08-15. La
+    primera impresion pasa a ser el escritorio de Encina -su fondo, el
+    dock abajo y el verde sage-. La pantalla propia que cuente el
+    producto queda escrita como decision abierta, no cerrada.
+  * Lo que NO se toca: gnome-initial-setup-copy-worker.service, que
+    corre antes de la sesion y no pinta nada.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 15 Aug 2026 00:11:11 +0200
+
 encina-branding (0.1.10) noble; urgency=medium
 
   * EL ACENTO, EL DOCK Y EL PADRE DEL TEMA DE ICONOS. Tres decisiones de

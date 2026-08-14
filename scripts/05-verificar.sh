@@ -74,7 +74,40 @@ quien use modo oscuro verá el fondo claro."
 done
 
 # ============================================================================
-titulo "2. Idempotencia: cinco instalaciones seguidas (R9)"
+titulo "2. La bienvenida de Ubuntu, enmascarada (0.1.11)"
+
+echo "  La ventana «Le damos la bienvenida a Ubuntu 24.04.4 LTS» la lanza la"
+echo "  unidad de usuario gnome-initial-setup-first-login.service. Su puerta"
+echo "  es ~/.config/gnome-initial-setup-done, que es del USUARIO: ponerlo por"
+echo "  defecto seria /etc/skel y lo prohibe R1. Por eso se enmascara la"
+echo "  unidad desde /etc/systemd/user/, que alcanza a todos los usuarios."
+echo
+
+MASCARA=/etc/systemd/user/gnome-initial-setup-first-login.service
+if [[ -L "$MASCARA" && "$(readlink "$MASCARA")" == "/dev/null" ]]; then
+    ok "$MASCARA -> /dev/null"
+else
+    fallo "La máscara no está instalada como enlace a /dev/null" \
+"$(ls -l "$MASCARA" 2>&1)
+Un fichero normal con ese nombre NO enmascara: systemd lo lee como una unidad
+vacía y la ventana vuelve en cada sesión."
+fi
+
+# Y esto es lo que de verdad decide, porque le pregunta a systemd y no al
+# sistema de ficheros. El control de esta comprobación está en la purga: allí
+# la misma orden tiene que volver a decir 'static'.
+EST=$(systemctl --user is-enabled gnome-initial-setup-first-login.service 2>&1 || true)
+if [[ "$EST" == "masked" ]]; then
+    ok "systemctl --user is-enabled ... -> masked"
+else
+    fallo "systemd NO ve la unidad enmascarada" \
+"is-enabled dijo: $EST
+Esperado: masked. /etc/systemd/user gana a /usr/lib/systemd/user en la ruta
+de búsqueda; si dice 'static', la máscara no está llegando."
+fi
+
+# ============================================================================
+titulo "3. Idempotencia: cinco instalaciones seguidas (R9)"
 
 instantanea() {
     {
@@ -121,10 +154,11 @@ comprobar "Integridad de los ficheros instalados (dpkg -V)" sudo dpkg -V encina-
 
 # ============================================================================
 if (( SIN_PURGA )); then
-    titulo "3. Purga — OMITIDA por --sin-purga"
+    titulo "4. Purga — OMITIDA por --sin-purga"
     omitido "apt purge restaura el tema de arranque original"
+    omitido "EL CONTROL de la máscara: sin purgar, 'masked' no demuestra nada"
 else
-titulo "3. Purga: desinstalación limpia"
+titulo "4. Purga: desinstalación limpia"
 
 paso "sudo apt purge encina-branding"
 if salida=$(sudo apt-get purge -y encina-branding 2>&1); then
@@ -148,6 +182,18 @@ else
     ok "Los fondos se han eliminado"
 fi
 
+# EL CONTROL DE LA COMPROBACIÓN 2, y sin él aquel 'masked' no vale: una
+# comprobación que no puede dar sus dos respuestas no es una comprobación.
+EST_PURGA=$(systemctl --user is-enabled gnome-initial-setup-first-login.service 2>&1 || true)
+if [[ "$EST_PURGA" == "static" ]]; then
+    ok "Control: purgado, la unidad vuelve a 'static' (la bienvenida volvería)"
+else
+    fallo "Tras purgar, la unidad NO vuelve a su estado original" \
+"is-enabled dijo: $EST_PURGA
+Esperado: static. Si sigue diciendo 'masked', la máscara ha sobrevivido a la
+purga y el paquete no es reversible."
+fi
+
 paso "Reinstalando para dejar el sistema como estaba"
 if sudo apt-get install -y "$DEB" >/dev/null 2>&1; then
     ok "Paquete reinstalado"
@@ -166,6 +212,10 @@ pendiente_visual "Cierra sesión y entra en GNOME como '$USUARIO_PRUEBA' (contra
 echo "            El escritorio debe salir con tu fondo. Cambia a modo oscuro"
 echo "            en Ajustes y comprueba que también cambia."
 pendiente_visual "Reinicia y confirma: GRUB, splash, GDM y escritorio con tu identidad"
+pendiente_visual "Al entrar NO debe salir la ventana «Le damos la bienvenida a Ubuntu»"
+echo "            Y el control es que el resto de la primera sesion siga igual:"
+echo "            dock, fondo y rejilla donde estaban. 'masked' lo dice systemd;"
+echo "            que no se pinte la ventana solo lo dice la pantalla."
 echo
 echo "Cuando eso pase, marca las casillas de ENCINA-OS.md §7 y anota el día:"
 echo "    ./scripts/diario.sh \"A1 verificado. Siguiente: CI (06-ci.sh)\""
