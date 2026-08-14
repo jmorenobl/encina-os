@@ -84,7 +84,7 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # contenido huella a huella, mismos modos, duenos, tamanos y rutas; lo unico
 # que cambia son las fechas, y por eso los tres .deb son ahora MAS PEQUENOS.
 H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-H_BRANDING=7c2390dd93974ff440b89ba322575e69b82751ce1f15b0ab86997fb767ae1b49
+H_BRANDING=fe5e87b00d8b41e024eb50a9e6f6c4d543a6065747b1bf0a7a35113cd3c510cf
 H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
 H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 
@@ -244,7 +244,7 @@ run sh -c "ls /target/srv/encina-repo/ | wc -l"
 run sh -c "du -sh /target/srv/encina-repo"
 say "-- las cuatro huellas de Encina, comparadas una a una:"
 huella /target/srv/encina-repo/autofirma_1.9.1+encina4_all.deb      "$H_AUTOFIRMA"
-huella /target/srv/encina-repo/encina-branding_0.1.9_all.deb        "$H_BRANDING"
+huella /target/srv/encina-repo/encina-branding_0.1.11_all.deb       "$H_BRANDING"
 huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
 huella /target/srv/encina-repo/encina-meta_0.2.1_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"
