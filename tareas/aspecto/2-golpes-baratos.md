@@ -95,15 +95,30 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       *Flotante y no pegado al borde entero* para que se lea como una decisión y
       no como el mismo dock girado.
 
-- [ ] **Actualizar `imagen/repo-manifiesto.tsv`, que ha quedado desfasado.** El
-      manifiesto clava `encina-branding` **0.1.9** en `7c2390dd…` y el paquete va
-      por **0.1.10**, así que hoy la ISO **no se puede fabricar**.
-      *Y no se arregla pegando la huella del `.deb` que se construyó hoy:* ése
-      salió de un `tar` del árbol de trabajo, no de `git archive HEAD`, que es la
-      regla de §4.37d. La huella buena es la que produzca `construir-todo.sh`
-      sobre el árbol versionado.
-      *Hecha cuando:* `construir-todo.sh` pasa entero y **dos pasadas dan la
-      misma huella de ISO**.
+- [x] ~~**Actualizar `imagen/repo-manifiesto.tsv`, que ha quedado desfasado.**~~
+      **HECHO el 2026-08-15, y con la ISO fabricada dos veces:**
+      `1224b5b17b559007…`, **3 715 366 912 bytes las dos**, `cmp` idénticas byte
+      a byte, y el control de que la comparación sabe decir «distintas» es la ISO
+      anterior (`ac0a5721…`), otros bytes y otra huella.
+      *La huella salió de donde tenía que salir:* `fe5e87b0…`, **6 165 162
+      bytes**, construida sobre `git archive HEAD`. El `.deb` que se instaló en
+      la máquina del producto, salido de un `tar` del árbol de trabajo, pesaba
+      **6 165 258** — 96 bytes de diferencia que son sólo fechas (§4.37).
+      *Y no eran cuatro sitios, son cinco.* SCRIPTS.md dice cuatro
+      —manifiesto, `H_BRANDING` y el nombre en `encina-seed.sh`, y el array
+      `FICHEROS` de `fabricar-seed.sh` y de `fabricar-iso.sh`— y falta **el
+      quinto: los dos `autoinstall*.yaml`**, que llevan el seed dentro en base64
+      y hay que rehacerlos con `fabricar-seed.sh --actualizar-yaml`. No se
+      descubrió leyendo: lo dijo `fabricar-iso.sh` con un `[FALLO]` que nombra la
+      orden que lo arregla.
+      *Y de regalo, un fallo del instrumento que sólo podía salir hoy:* el cotejo
+      del árbol de `construir-todo.sh` usaba `find -type f` y **no veía los
+      enlaces simbólicos**, así que dio `[FALLO]` sobre un árbol que había
+      llegado entero — el primer enlace versionado del repositorio es justo la
+      máscara de la casilla de arriba. Arreglado, y lo mismo en
+      `comprobar-propios.sh`, que decía «ficheros: N» sin mencionarlo.
+      *Lo que esta casilla NO dice:* que la ISO arranque. Eso es una VM desde
+      cero y no se ha hecho con este medio.
 
 ---
 

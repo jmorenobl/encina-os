@@ -62,10 +62,17 @@ Con la ISO aquí, la vuelta entera es una orden
 
 ```
 ubuntu-24.04.4-desktop-arm64.iso        c2610520…  la ENTRADA, firmada por Canonical
-encina-os-E4-es-0.2.1-95758c9e.iso      95758c9e…  el que produce este repositorio,
-                                                   arrancado e instalado (§4.40)
+encina-os-E4-es-0.2.1-1224b5b1.iso      1224b5b1…  EL DE HOY: encina-branding 0.1.11
+                                                   dentro, fabricado dos veces con la
+                                                   misma huella (§4.45). SIN ARRANCAR
+encina-os-E4-es-0.2.1-95758c9e.iso      95758c9e…  el anterior, arrancado e instalado (§4.40)
 encina-os-E4-es-0.2.1.iso               ac0a5721…  el de §4.35, que ya no se fabrica aqui
 ```
+
+**Ojo con el `0.2.1` de los tres nombres:** es la versión de `encina-meta`, que no
+ha cambiado. Lo que distingue a `1224b5b1…` de los otros dos es `encina-branding`
+**0.1.11** —el acento salvia, el dock abajo y la bienvenida de Ubuntu fuera—, y
+eso **no sale en el nombre**. Otra razón para cogerlas por huella.
 
 **Fijese en que las dos de Encina son `E4`, `es` y `0.2.1`, y son ficheros
 distintos** — y encima **pesan exactamente lo mismo**, 3 715 366 912 bytes. Por

@@ -755,7 +755,17 @@ testigos.**
 ## Cómo se rehace el seed cuando cambia un `.deb` (2026-08-10)
 
 Vale para cualquier cambio de paquete, y son cuatro cosas, no una
-(`MEDICIONES.md` §4.19g):
+(`MEDICIONES.md` §4.19g).
+
+**CORRECCIÓN DEL 2026-08-15: no son cuatro, son CINCO** (`MEDICIONES.md` §4.45).
+Falta **el `autoinstall.yaml` Y el `autoinstall-unattended.yaml`**, que llevan el
+seed entero dentro en base64 como `late-command`: cambiar `encina-seed.sh` sin
+rehacerlos los separa. Se rehacen con
+`./fabricar-seed.sh --yaml <ruta> --actualizar-yaml …`, **uno por uno, los dos**.
+No hizo falta acordarse: `fabricar-iso.sh` lo dice con un `[FALLO]` que nombra la
+orden. *La lista de abajo se conserva como estaba, con su numeración rara
+incluida, porque el `0.` de en medio se escribió así el 2026-08-12 y renumerarla
+borraría por qué.*
 
 1. **`imagen/encina-seed.sh`**: la huella (`H_FFNATIVE=…`) **y** el nombre del
    fichero, que lleva la versión dentro.

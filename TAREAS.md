@@ -16,7 +16,7 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 | Bloque | Qué | Abiertas |
 |---|---|---|
-| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **28** |
+| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **26** |
 | [marca-del-medio.md](tareas/marca-del-medio.md) | Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar | 5 |
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |
