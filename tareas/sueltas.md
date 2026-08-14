@@ -1,0 +1,54 @@
+# Sueltas, de un rato cada una
+
+- [ ] **La huella de la CA del socket, comparada con la del paquete.** §4.33f lo
+      hizo (`73f752a4…` a los dos lados) y §4.42 **no**: allí se midió que la CA
+      llega sola y al perfil correcto, no que sea la misma que instala el `.deb`.
+      Cuesta dos órdenes y cierra el único cabo suelto de la firma.
+      *Hecha cuando:* las dos huellas se enseñan juntas, con el control de que
+      `certutil` sabe decir que no de un apodo inventado.
+
+- [x] ~~**QUÉ HACER CON LA LISTA DE ETAPAS DEL VERIFICADOR.**~~ **HECHA el
+      2026-08-14** (`MEDICIONES.md` §4.41): exige las **ocho** que dicen quién
+      contestó qué, `loading` pasa a `[DATO]`, y **el motivo entero va en el
+      propio guion**, encima de la comprobación, para que se lo encuentre quien
+      vuelva a tocarlo. *Hecha cuando, cumplido:* **52 de 52 en verde y el rojo
+      probado en la misma máquina** —`source` metido en el `telemetry` da 2
+      fallos y `rc=1`, y se restaura con huella idéntica—, más la lógica probada
+      antes en el Mac con las tres posiciones de `loading` y cuatro casos que
+      tienen que fallar. *Lo que sigue sin explicar:* por qué §4.32f **sí** la
+      escribió; su ISO ya no existe, **pero ya no bloquea nada**.
+      *Lo que se midió para llegar aquí (§4.40c bis):* **`loading` no se registra nunca en esta ISO** —
+      dos arranques independientes, uno instalando y otro sin instalar nada, y la
+      palabra **no sale ni una vez** del registro del cliente, con el control de
+      que el mismo `grep` encuentra `keyboard` catorce veces. El primer volcado
+      del `telemetry`, **0,742 s antes de dibujarse ninguna pantalla**, ya decía
+      `{"0":"keyboard"}`. **El fallo es del verificador, no del medio.**
+      *La corrección que NO afloja nada:* exigir **las ocho** y admitir `loading`
+      como posible pero no obligatoria, **con el motivo escrito al lado**. La
+      lista seguiría fallando si falta cualquiera de las ocho o si aparece
+      `locale` o `source`, que es para lo que existe.
+      *Lo que sigue sin explicar:* por qué §4.32f **sí** la tenía. Su ISO
+      `aa1ac76a…` se borró en §4.35l, así que **aquel arranque no se puede
+      reproducir** y no hay a quién preguntárselo.
+      *Hecha cuando:* la lista está decidida, el guion la aplica y la casilla
+      correspondiente falla en rojo con una pantalla de más — probado, no
+      supuesto.
+- [x] ~~**Cerrar el eslabón que quedó a medias de §4.40d.**~~ **HECHA el
+      2026-08-14** (`MEDICIONES.md` §4.41d). Los 5 conffiles —3 de
+      `encina-branding` y 2 de `encina-firefox-native`, leídos de
+      `/var/lib/dpkg/status`— **salen de los bytes del `.deb` que viajó en el
+      medio**, con el control de que un md5 saboteado se señala; y `encina-meta`,
+      con **0** conffiles, es el control natural que explica por qué en §4.40d
+      fue el único que cuadró. **La cadena queda atada entera**: los bytes del
+      `.deb` → lo que dpkg registró (`.md5sums` **y** `status`) → los ficheros
+      que hay en el disco (`dpkg -V`, con su control).
+- [ ] **Medir qué puede romper un autorrefresco de `snapd`.** El 2026-08-13 se
+      autorrefrescó solo y llevó el Snap de Firefox de rev 7764 a 8753 sin que nadie
+      lo pidiera. No rompió nada y está medido, **pero nadie lo controla**: la
+      máquina del producto se actualiza sola cuando le parece.
+- [ ] **Un agente no sabe pulsar un botón del invitado.** Cinco vías descartadas y
+      medidas (`MEDICIONES.md` §4.35i). Mientras no haya una sexta, toda casilla
+      `[OJOS]` que exija pulsar necesita una mano — y eso hay que tenerlo en cuenta
+      **al escribir la casilla**, no al llegar a ella.
+- [ ] **DNIe con lector** (`opensc`, PKCS#11). Incremento futuro, no deuda.
+- [ ] **Chrome y Chromium.** No se han medido; hoy el perímetro dice Firefox.

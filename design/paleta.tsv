@@ -1,0 +1,23 @@
+# La paleta de Encina OS. ESTA ES LA FUENTE de los hex: cualquier otro sitio
+# donde aparezca un color -gschema.override, el SVG del logotipo, un theme.txt de
+# GRUB- es una copia, y generar.sh comprueba que las copias cuadran.
+#
+# estado: VIGENTE = medido en el producto | PROPUESTO = escrito, sin aplicar
+#         SIN DECIDIR = el papel existe y el color no
+#
+# El papel manda sobre el nombre: un color se elige por lo que hace, no por como
+# se llama. Si algun dia el acento deja de ser #3A664E, el papel 'acento' sigue
+# siendo el mismo y lo que hay que cambiar es una fila.
+#
+papel	nombre	hex	estado	donde se usa hoy
+acento	verde encina	#3A664E	VIGENTE	logotipo (copa, tronco), README (insignia de licencia)
+acento-profundo	verde profundo	#2F4033	VIGENTE	primary-color y secondary-color de los fondos, gschema.override
+acento-claro	verde hoja	#5B7553	VIGENTE	extremo claro del degradado de 02-activos.sh
+tierra	tierra ibera	#A78B75	VIGENTE	README (insignias de base y arquitectura)
+arcilla	arcilla	#D6BFA0	VIGENTE	logotipo (malla y nodos), README (insignia de imagen)
+neutro	gris pizarra	#E6E8E6	VIGENTE	identidad.png, sin uso en el sistema
+papel	blanco roto	-	SIN DECIDIR	identidad.png dice #FFFFFF, que NO es un blanco roto
+texto	-	-	SIN DECIDIR	hoy lo pone el tema, no la paleta
+correcto	-	-	SIN DECIDIR	candidato natural: el propio acento
+aviso	-	-	SIN DECIDIR	no hay ninguno elegido
+error	-	-	SIN DECIDIR	no hay ninguno elegido, y es el que mas falta hace

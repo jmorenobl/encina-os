@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Encina OS — distribución derivada de Ubuntu con la firma digital española funcionando de fábrica" width="100%">
+  <img src="design/banner.png" alt="Encina OS — distribución derivada de Ubuntu con la firma digital española funcionando de fábrica" width="100%">
 </p>
 
 <p align="center">

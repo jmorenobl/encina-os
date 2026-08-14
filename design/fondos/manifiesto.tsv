@@ -1,0 +1,27 @@
+# Los fondos de pantalla de Encina OS: de que maestro sale cada uno de los que
+# viajan dentro de encina-branding, y con que huella.
+#
+# Mismo papel que imagen/repo-manifiesto.tsv con los 28 .deb: la lista
+# VERSIONADA que permite rehacer sin tener el original delante. Los maestros
+# pesan ~2,7 MB cada uno y estan en .gitignore; este fichero no.
+#
+# maestro   fichero de design/fondos/maestros/, 3936x2624
+# derivado  fichero que viaja, 3840x2160, en
+#           debian-packages/encina-branding/src/usr/share/backgrounds/encina/
+# orden     LA ORDEN que convierte uno en otro. Sin tabuladores dentro.
+#           '-' significa QUE NO SE SABE: se hizo a mano el 2026-08-08.
+#
+# ATENCION - EL HUECO QUE MAS PESA NO ES TECNICO:
+# la columna 'licencia' esta entera SIN DETERMINAR. Seis fotografias viajan hoy
+# dentro de la ISO y no hay escrito de donde salieron ni con que permiso. Para un
+# proyecto que publica la oferta de fuente de AutoFirma con cuatro repositorios y
+# sus tags, esto es el mismo tipo de agujero. Es casilla de bloqueo para publicar,
+# no un flecos: ver tareas/aspecto/0-decidir.md
+#
+maestro	derivado	licencia	origen	sha256-maestro	sha256-derivado	orden
+caliza.jpg	encina.jpg	SIN DETERMINAR	SIN DETERMINAR	91679707c9a62f08736f2cf22166b33216b3309a7172bb3ecc60be23e2d8e7b7	4ce9ec234506b1c8f395b0e83b96639cc41bd323e9d90d3321ef1eaa8ccd3579	-
+caliza.jpg	encina-dark.jpg	SIN DETERMINAR	SIN DETERMINAR	91679707c9a62f08736f2cf22166b33216b3309a7172bb3ecc60be23e2d8e7b7	cd305409fa9ebf8cfa68c79129dedd1b76014ca7fff415d618121b75ba35fa75	-
+amapolas.jpg	amapolas.jpg	SIN DETERMINAR	SIN DETERMINAR	7245e2da1d0caf7f9f814cf2b352a478ff88c3f8222aa0c0be57c2daa4ab32bc	977346b421f680495846a3443497dbadfa016cbf99d1f7c7cd82dedfcceaa401	-
+farallon.jpg	farallon.jpg	SIN DETERMINAR	SIN DETERMINAR	be810ca789aae5c2b5708bb7fd1ce61438a5fef95da1097e4bef53bf8b38c5fa	4b89f2a05eed905fc7d565dc98a2f8e0b61f28c1fbf19e3b2629e3df46a582cc	-
+olivar.jpg	olivar.jpg	SIN DETERMINAR	SIN DETERMINAR	3c6998e14fc19f3c17b1775f8e1fa8dc73a0f9ed1ec15e4adb8868362a610fea	be6495737c0425120bcffbd608b246a9b0c4a170867709478a4f3383070ab4ca	-
+sierra.jpg	sierra.jpg	SIN DETERMINAR	SIN DETERMINAR	86eefebd291cafd412024af0df7cc8d77c572161e34e352436a68e3a8a016b43	13bb2da99052424d2470ddbc0c23ed953d891a520138f8ef5cde2a3d7a7bfd7d	-

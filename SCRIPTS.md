@@ -367,7 +367,14 @@ son fotografías. El script sigue sabiendo fabricar el degradado, así que
 `--forzar` **las sustituiría por él sin preguntar** y las dos comprobaciones que
 hace después —que son JPEG y que difieren entre sí— saldrían en verde igualmente.
 Sin `--forzar` las omite, que es lo correcto. Si alguna vez hay que regenerarlas,
-se rehacen desde `assets/wallpaper/`, no con el script.
+se rehacen desde `design/fondos/maestros/`, no con el script.
+
+**Y desde el 2026-08-14 hay quien lo hace mejor: `design/generar.sh`.** Los
+maestros se movieron a `design/fondos/maestros/`, de dónde sale cada derivado
+está escrito en `design/fondos/manifiesto.tsv` con las doce huellas, y ese guion
+las comprueba —con su rojo probado— en vez de fabricar un degradado. Retirar los
+degradados de aquí es una casilla abierta:
+`tareas/aspecto/1-instrumentacion.md`.
 
 ## Los nombres cambiaron el 2026-08-13, y aquí está la equivalencia
 

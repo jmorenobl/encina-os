@@ -19,7 +19,12 @@ debian-packages/*/debian/debhelper-build-stamp
 # Al repositorio entran ya redimensionados, dentro del src/ del paquete que los
 # distribuya. encina-os pesa kilobytes y conviene que siga pesandolos: es la
 # misma cuenta que decidio no meter AutoFirma como submodulo (MEDICIONES.md 4.8).
-assets/wallpaper/
+#
+# Lo que SI viaja es design/fondos/manifiesto.tsv: de que maestro sale cada
+# derivado, con las doce huellas. Mismo papel que imagen/repo-manifiesto.tsv con
+# los 28 .deb -- la lista versionada que permite comprobar sin tener el original
+# delante. Sin el, un maestro perdido se lleva el fondo consigo y nadie se entera.
+design/fondos/maestros/
 
 # Los medios: la ISO oficial de Ubuntu (3,3 GiB) y las que salen de aqui. NO
 # caben en git y no tienen por que estar: lo que si esta versionado es la ORDEN
