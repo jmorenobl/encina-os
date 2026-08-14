@@ -311,6 +311,13 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
 
 ## Sueltas, de un rato cada una
 
+- [ ] **La huella de la CA del socket, comparada con la del paquete.** §4.33f lo
+      hizo (`73f752a4…` a los dos lados) y §4.42 **no**: allí se midió que la CA
+      llega sola y al perfil correcto, no que sea la misma que instala el `.deb`.
+      Cuesta dos órdenes y cierra el único cabo suelto de la firma.
+      *Hecha cuando:* las dos huellas se enseñan juntas, con el control de que
+      `certutil` sabe decir que no de un apodo inventado.
+
 - [x] ~~**QUÉ HACER CON LA LISTA DE ETAPAS DEL VERIFICADOR.**~~ **HECHA el
       2026-08-14** (`MEDICIONES.md` §4.41): exige las **ocho** que dicen quién
       contestó qué, `loading` pasa a `[DATO]`, y **el motivo entero va en el
