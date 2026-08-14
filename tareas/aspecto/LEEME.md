@@ -62,24 +62,36 @@ cerrada, el fork puede ser sólo un acento más en un SCSS. Las dos decisiones q
 lo acompañan —repo aparte y el nombre del paquete, que un `apt upgrade` puede
 pisar en silencio— están en [0-decidir.md](0-decidir.md).
 
-## El límite técnico que cambia el cálculo de todo, y está SIN MEDIR
+## El límite técnico, MEDIDO el 2026-08-14 — y no era el que yo decía
 
-En GNOME 46 —el de Ubuntu 24.04— **un tema GTK3 ya no pinta la mitad del
-escritorio**. Archivos, Ajustes, el Centro de aplicaciones, el visor de imágenes:
-todo eso es GTK4/libadwaita y **ignora el tema**. Instalar un tema esperando que
-el sistema entero cambie de cara puede dar un escritorio partido: unas ventanas
-de una manera y otras de otra.
+Lo que este fichero decía, y hay que corregir: *«en GNOME 46 un tema GTK3 ya no
+pinta la mitad del escritorio; Archivos, Ajustes y el Centro de aplicaciones son
+GTK4/libadwaita e ignoran el tema»*. **Como frase general es cierta; como
+conclusión sobre Yaru, no.** Medido en `encina-dev`:
 
-Lo que sí alcanza a todo, y cuesta una línea, es **el color de acento**.
+- **cada variante de Yaru trae su propia hoja `gtk-4.0/gtk.css`**, que importa un
+  `gresource` con el tema entero, y la `libadwaita` de la base es
+  `1.5.0-1ubuntu2` — parcheada. O sea que **Yaru sí llega a GTK4**;
+- lo que no llega a GTK4 es **un tema que no traiga hoja `gtk-4.0`**, que es el
+  caso de los de fuera;
+- y **el tema del shell no tiene variantes**: hay uno solo, así que la barra
+  superior y el resumen **no** cambian con el acento.
 
-**La hipótesis de este bloque, escrita para poder equivocarse:** *acento +
-iconos + fondo + arranque dan el grueso del cambio de cara, y el tema GTK da
-poco.* Si se confirma, la elección del tema base deja de ser urgente y pasa a ser
-una guinda. **No está medida**, y medirla es lo primero que se hace después de
-tener con qué mirar.
+*Y de paso, una interpretación mía que era falsa:* de la captura de Archivos
+—clara mientras el shell iba oscuro— deduje que el tema no llegaba. **No era
+eso**: Archivos sale claro porque el `color-scheme` es claro, y el shell va
+siempre oscuro en Ubuntu. Era el aspecto normal, no una grieta.
 
-Por eso el orden de los ficheros es el que es: primero decidir, luego poder ver,
-luego lo barato, y el tema **el cuarto**.
+**Lo que sí resultó falso es la hipótesis del acento**, y con ella el orden de
+todo lo barato: **no existe una clave `accent-color` en Ubuntu 24.04**. El acento
+es un **nombre de tema** —`gtk-theme` e `icon-theme` a `Yaru-<acento>`—, hay diez
+variantes cerradas y `#3A664E` no está entre ellas. Los detalles y los cuatro
+verdes disponibles, en [2-golpes-baratos.md](2-golpes-baratos.md).
+
+Consecuencia para el orden, que no cambia pero ahora se sabe por qué: hay **un
+golpe barato de dos líneas** —ponerse uno de los cuatro verdes que ya viajan en
+la máquina, sin paquete nuevo— y sólo después se decide si el verde exacto vale
+un fork.
 
 **Y la regla que hace que ese orden se sostenga, aprendida el 2026-08-14 al
 escribirlo mal:** en `0-decidir.md` sólo van casillas que se cierran **pensando y

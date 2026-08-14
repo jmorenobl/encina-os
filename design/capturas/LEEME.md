@@ -112,9 +112,14 @@ Dos criterios, y los dos costaron un defecto del instrumento antes de existir:
 - **El dock entero es de Ubuntu**: el Centro de aplicaciones con su «A» naranja,
   el icono de ayuda, y el botón de la rejilla.
 - **Archivos, que es GTK4/libadwaita, sale en claro mientras el shell va en
-  oscuro**, y **sus carpetas son las de Yaru** —berenjena—. Es el dato que
-  decide `3-tema-e-iconos.md`: ahí un tema GTK3 no pinta nada, y lo que sí
-  cambiaría el color de esas carpetas es el acento.
+  oscuro**, y **sus carpetas son las de Yaru** —berenjena—.
+  *Y la lectura que hice de esto el mismo día era falsa, corregida el 2026-08-14
+  midiendo en `encina-dev`:* deduje que el tema no llegaba a GTK4. No era eso —
+  Archivos sale claro porque el `color-scheme` es claro y el shell va siempre
+  oscuro en Ubuntu; es el aspecto normal, no una grieta. **Yaru sí llega a
+  GTK4**, con su propia hoja `gtk-4.0/gtk.css` por variante. Lo que sí cambia el
+  color de esas carpetas es el acento, y eso resultó ser un **nombre de tema** y
+  no un color.
 
 ## Lo que el instrumento todavía NO hace
 

@@ -33,20 +33,43 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       nada. Lo segundo es defendible y más barato; lo primero es la única
       oportunidad de contar el producto.
 
-- [ ] **El acento. Ésta es la que más puede rendir y la que hay que medir
-      primero.** Ubuntu 24.04 trae selector de color de acento, y su
-      implementación **puede alcanzar a las aplicaciones GTK4/libadwaita**, que
-      son las que un tema GTK3 no toca.
-      *Lo primero que hay que averiguar, porque decide si la vía existe:* si el
-      acento admite **un color propio** o sólo una **lista cerrada** de nombres.
-      Si es cerrada, `#3A664E` no está en ella y hay que elegir el más cercano o
-      descartar la vía.
-      *Y la segunda mitad, que rendiría sola:* si el acento **arrastra el color
-      de las carpetas de Yaru**. Si lo arrastra, medio tema de iconos se resuelve
-      sin enviar un solo icono.
-      *Hecha cuando:* la captura de Archivos con el acento puesto sale verde, **y
-      el control es la misma captura con el acento por defecto**. Dos capturas, no
-      una.
+- [ ] **El acento, que resultó no ser un color sino un NOMBRE DE TEMA.** Medido
+      el 2026-08-14 en `encina-dev` por `ssh`, y las tres preguntas que traía esta
+      casilla están contestadas:
+      **(a) NO existe la clave `accent-color`** en Ubuntu 24.04 —`gsettings list-keys
+      org.gnome.desktop.interface` no la tiene, y pedirla da «No existe la clave»—.
+      La hipótesis de esta casilla era falsa. Lo que hace el selector de Ajustes es
+      cambiar **`gtk-theme` e `icon-theme` a `Yaru-<acento>`**.
+      **(b) La lista es cerrada: diez variantes**, y las cuatro verdes son
+      `viridian #03875B`, `sage #657B69`, `olive #4B8501` y
+      `prussiangreen #308280`. El de Encina es `#3A664E`, y **no está**.
+      **(c) Sí arrastra las carpetas.** `Yaru-viridian` hereda de `Yaru` y trae
+      **469 ficheros propios**; `48x48/places/folder.png` tiene md5 distinto en
+      las cuatro variantes. Y arrastra **también GTK4**: cada variante trae
+      `gtk-4.0/gtk.css`, con `libadwaita 1.5.0-1ubuntu2`.
+      *Lo que NO arrastra:* el tema del shell. Hay **uno solo**
+      (`/usr/share/gnome-shell/theme/Yaru/`), sin variantes de acento, así que la
+      barra superior y el resumen no cambian.
+      **EL GOLPE BARATO EXISTE Y CUESTA DOS LÍNEAS:** poner `gtk-theme` e
+      `icon-theme` a un verde de los que **ya viajan en la máquina** —los diez
+      vienen dentro de `yaru-theme-gtk` y `yaru-theme-icon`, no hay paquete nuevo,
+      ni `.deb`, ni fila en el manifiesto—.
+      *Hecha cuando:* la captura del escritorio y la de Archivos salen verdes, **y
+      el control es la misma captura con `Yaru` por defecto**. Dos capturas, no
+      una. Y antes, comprobar que las variantes están en `encina-95758c9e` y no
+      sólo en el constructor.
+
+- [ ] **Elegir el verde prestado, y decidir si el fork merece la pena.** Ahora es
+      una pregunta con números y no una preferencia. Distancia RGB a `#3A664E`:
+      **sage 55**, prussiangreen 58, viridian 65, olive 85. Por carácter, `sage`
+      es el más parecido —verde apagado, como el nuestro— aunque más claro;
+      `viridian` es esmeralda y se ve mucho más.
+      *La pregunta que hay que contestar mirando las capturas, no antes:* ¿merece
+      un repositorio aparte, una CI y un rebase con cada Yaru nuevo **la
+      diferencia entre `sage` y `#3A664E`**? Si al verlo no se distingue, el fork
+      es coste recurrente por una diferencia invisible.
+      *Hecha cuando:* está elegido cuál se usa, con la captura al lado, y escrito
+      si se forkea o no **y por qué**.
 
 - [ ] **La tipografía.** Es el cambio con más efecto y menos riesgo de todo el
       bloque: la letra es lo que más grita «Ubuntu» del escritorio, más que el
