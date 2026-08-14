@@ -9,25 +9,70 @@ ninguna otra parte.
 Ya existen `scripts/capturar-vm.sh` y `scripts/teclear-vm.sh`. Falta
 encadenarlos.
 
-- [ ] **Un guion que tome las seis pantallas canónicas de la VM**: menú de
-      arranque, Plymouth, GDM, escritorio, rejilla de aplicaciones, y **una
-      ventana GTK4 junto a una GTK3**. La sexta es la que más informa y la que
-      nadie hace: es la que contesta si merece la pena empaquetar un tema, porque
-      enseña de un vistazo hasta dónde llega en GNOME 46.
-      *Hecha cuando:* una orden produce seis PNG fechados **y dos pasadas
-      seguidas sin tocar nada dan seis capturas iguales**. Ese control es lo que
-      hace que la diferencia que se vea después sea del cambio y no del reloj, del
-      puntero o de una notificación.
-      *Y lo que hay que tener en cuenta al escribir la casilla, no al llegar a
-      ella:* **un agente no sabe pulsar un botón del invitado** —cinco vías
-      descartadas y medidas en §4.35i—, así que abrir la rejilla o una ventana
-      puede necesitar una mano. Si la necesita, se dice en el guion.
+- [x] ~~**Un guion que tome las pantallas canónicas de la VM.**~~ **HECHA el
+      2026-08-14.** Es `scripts/capturar-aspecto.sh`, y **no cronometra las
+      pantallas: las detecta** —dispara en ráfaga todo el arranque y agrupa los
+      fotogramas consecutivos idénticos; cada grupo es una fase y de cada fase se
+      guarda el último—. El día que el arranque tarde el doble salen las mismas
+      fases con otros tiempos, que es lo que un `sleep 10` no aguanta.
+      *Hecha cuando, cumplido:* dos pasadas seguidas dan las mismas fases —`[OK]`
+      idéntica byte a byte la del arranque, `[AVISO]` 379 píxeles en GDM y todos
+      en la franja del reloj— con **`rc=0`**, y **el rojo probado**: la misma fase
+      volteada da `[FALLO] cambia POR DEBAJO de la franja` y `rc=1`.
+      *Y los dos criterios costaron un defecto del instrumento cada uno, que es
+      lo que enseña:*
+      **(a)** agrupando por la huella del PNG entero salían **cinco** fases donde
+      hay tres, porque **el reloj del invitado parte GDM en dos**. Se agrupa sin
+      la franja de arriba de 130 px, y el 130 no es a ojo: `diferencia.py` situó
+      las diferencias en la caja `y 6..119`. Probado con las dos huellas de la
+      misma pantalla —distintas enteras, **idénticas sin la franja**—.
+      **(b)** el recorte lo hacía `sips`, y `sips --cropOffset` **devuelve el
+      fichero entero sin recortar y sin decir una palabra**. El «arreglo» estuvo
+      un rato dando 4 fases por casualidad del minuto. Ahora lo hace
+      `scripts/huella-recorte.py`, que decodifica el PNG a mano como
+      `diferencia.py`, y lleva su control de que recortar 0 y recortar 130 dan
+      huellas distintas.
+      *Y un fallo mío en el propio guion, cazado por el control:* `..` dentro de
+      un `split()` de `awk` es una **expresión regular**, así que la caja se leía
+      mal y salía `[FALLO]` sobre diferencias que estaban dentro de la franja.
 
-- [ ] **La foto del «antes», guardada.** Las seis de hoy, con `encina-branding`
-      0.1.9 puesto, en `design/capturas/antes/`.
-      *Hecha cuando:* existen las seis y están versionadas — es a lo que se
-      comparará todo lo demás, y el día que se pierdan no se pueden rehacer,
-      porque la máquina habrá cambiado.
+- [ ] **Que el guion llegue a la sesión.** Hoy se para en GDM: entrar exige la
+      contraseña del usuario, y **no vive en este repositorio** —`encina-95758c9e`
+      se instaló contestando las cinco pantallas a mano—. El guion ya lo dice y
+      la acepta por `ENCINA_CLAVE`; el camino de dentro está escrito y **sin
+      probar**.
+      *Lo que falta y es la mitad de la lista:* el escritorio, la rejilla de
+      aplicaciones y las dos ventanas — justo la mitad donde vive el tema.
+      *Y lo que hay que medir en cuanto se pueda entrar, porque decide si la
+      rejilla se puede capturar sin una mano:* **si la tecla Super llega al
+      invitado**. El ratón no llega (§4.35i), pero el teclado sí, y GNOME abre la
+      rejilla con teclado. Si Super la intercepta UTM como hace con Ctrl+Alt, esa
+      captura necesita una persona.
+
+- [ ] **Subir la cadencia del disparo, o declarar el límite.** Mide **3,1 s de
+      media** entre capturas —los `delay` de `capturar-vm.sh` son 2 s por
+      llamada—, así que **una pantalla más corta que eso se pierde**. No es
+      teórico: la del firmware que dice `Boot0005 "Ubuntu"` salió en el
+      reconocimiento y **no** en ninguna de las dos pasadas buenas, y por eso
+      viaja con el nombre `reconocimiento-`.
+      *Hecha cuando:* o la ráfaga baja de 1 s, o está escrito que las pantallas
+      de menos de 3 s no se capturan y cuáles son.
+
+- [ ] **Rehacer la lista canónica, que se escribió sin mirar.** Decía seis
+      pantallas y **dos de ellas no existen en esta máquina**: el menú de GRUB
+      está oculto porque sólo hay un sistema operativo, y Plymouth **no se ve
+      nunca** —la pantalla del invitado está apagada todo el arranque—. La lista
+      de verdad, medida, está en `design/capturas/LEEME.md`.
+      *Hecha cuando:* la lista dice las pantallas que hay, y para las que no hay
+      está escrito **por qué no las hay**, que es más información que la captura.
+
+- [x] ~~**La foto del «antes», guardada.**~~ **HECHA A MEDIAS el 2026-08-14, y la
+      mitad que falta es la que falta por la contraseña.** En
+      `design/capturas/antes/` están las **tres fases del arranque** con
+      `encina-branding` 0.1.9 puesto, más su `fases.tsv` y la del firmware del
+      reconocimiento. Se marca porque es lo que el instrumento alcanza hoy y
+      porque **el día que se pierdan no se pueden rehacer**: la máquina habrá
+      cambiado. Las de dentro de la sesión cuelgan de la casilla de abajo.
 
 - [ ] **Inventariar dónde se ve Ubuntu en el sistema INSTALADO**, midiendo y no
       suponiendo. El medio va aparte. Cuenta el fondo, la tipografía, el tema de
