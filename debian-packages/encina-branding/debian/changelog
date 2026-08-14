@@ -1,3 +1,28 @@
+encina-branding (0.1.12) noble; urgency=medium
+
+  * EL FONDO POR DEFECTO ES PROPIO. Hasta la 0.1.11 el escritorio, el
+    salvapantallas y GDM ensenaban una fotografia de Unsplash recortada
+    (caliza, de Amanda Anusane). Desde esta version salen de dos
+    maestros propios que aporta Jorge: el mismo paisaje de La Mancha,
+    con la encina delante, de dia y de noche.
+  * Y EL FONDO OSCURO DEJA DE SER UN DERIVADO DEL CLARO. Hasta ahora era
+    la misma fotografia atenuada; ahora es una imagen propia -el mismo
+    paisaje de noche, con luna y estrellas-, asi que alternar entre tema
+    claro y oscuro cambia LA HORA DEL DIA y no el sitio. El comentario
+    de encina.xml decia lo primero y se ha enmendado.
+  * debian/copyright DECIA QUE ESTOS DOS FICHEROS SON DE OTRA PERSONA, y
+    desde hoy seria falso: los seis fondos iban en un solo parrafo DEP-5
+    atribuido a Amanda Anusane. Los dos nuevos salen de ahi a un parrafo
+    propio con EUPL-1.2, la licencia del resto del paquete. Las otras
+    cuatro fotografias no se tocan y siguen siendo suyas.
+  * Y LAS ORDENES QUE REHACEN ESTOS DOS FONDOS ESTAN ESCRITAS, en
+    design/fondos/manifiesto.tsv, con su medida: dos pasadas dan la
+    misma sha256. La columna orden deja de ser - en dos de las seis
+    filas, que era medio agujero de reproducibilidad; las cuatro de
+    Unsplash siguen sin ella.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 15 Aug 2026 01:19:12 +0200
+
 encina-branding (0.1.11) noble; urgency=medium
 
   * FUERA LA VENTANA DE BIENVENIDA DE UBUNTU. Nada mas iniciar sesion

@@ -106,9 +106,16 @@ encadenarlos.
       mano el 2026-08-08 y **no están escritos**. Hoy los fondos se comprueban por
       huella pero no se rehacen, que es media reproducibilidad — el mismo agujero
       del Bloque 0 con otro disfraz.
-      *Lo que ya está hecho, y era la mitad difícil:* `caliza.jpg` **es el maestro
-      de `encina.jpg` y `encina-dark.jpg`**, medido el 2026-08-14 mirándolas; era
-      el que parecía un maestro sin destino.
+      *Enmienda del 2026-08-15:* la casilla **pasa de seis filas a cuatro**. El
+      fondo por defecto ya no sale de `caliza.jpg` sino de un maestro propio que
+      aportó Jorge, y sus dos filas llevan **su orden escrita y reproducible** —dos
+      pasadas dan la misma `sha256`, con su control: una huella cambiada da
+      `[FALLO]`—. Lo que decía esta casilla y ya no vale: que `caliza.jpg` era el
+      maestro de `encina.jpg` y `encina-dark.jpg`; lo fue, medido el 2026-08-14
+      mirándolas, y hoy es un maestro sin derivado.
+      *Y el fleco que abre la enmienda:* `design/generar.sh` **no ejecuta** todavía
+      esas dos órdenes, así que el «hecha cuando» de abajo sigue sin cumplirse
+      aunque dos filas ya no tengan `-`. Le falta `ffmpeg` como requisito.
       *Hecha cuando:* la columna `orden` de `design/fondos/manifiesto.tsv` no
       tiene ningún `-`, y `./design/generar.sh --escribir` sobre un directorio de
       derivados **borrado** los deja con las huellas del manifiesto cuadrando una

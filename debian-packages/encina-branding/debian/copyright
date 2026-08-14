@@ -8,7 +8,23 @@ License: EUPL-1.2
 
 Files: src/usr/share/backgrounds/encina/encina.jpg
        src/usr/share/backgrounds/encina/encina-dark.jpg
-       src/usr/share/backgrounds/encina/amapolas.jpg
+Copyright: 2026 Jorge MB <jmorenobl@gmail.com>
+License: EUPL-1.2
+Comment: DESDE EL 2026-08-15 ESTOS DOS FICHEROS YA NO SON DE UNSPLASH, y por
+ eso salen del parrafo de abajo: hasta la 0.1.11 los dos derivaban de la
+ fotografia 'caliza' de Amanda Anusane, y desde la 0.1.12 salen de dos maestros
+ propios, design/fondos/maestros/encina-os-splash-4k-3840x2160.png y
+ encina-os-splash-dark-4k-3840x2160.png. Dejar la atribucion anterior habria
+ sido atribuir a otra persona un trabajo que no es suyo, que es tan falso como
+ omitir una atribucion debida.
+ .
+ Cada uno sale de SU maestro, ya a 3840x2160, con las ordenes escritas en
+ design/fondos/manifiesto.tsv. El oscuro NO es el claro atenuado, como lo era
+ hasta la 0.1.11: es el mismo paisaje de noche, de modo que alternar entre tema
+ claro y oscuro cambia la hora del dia y no el sitio.
+ .
+
+Files: src/usr/share/backgrounds/encina/amapolas.jpg
        src/usr/share/backgrounds/encina/farallon.jpg
        src/usr/share/backgrounds/encina/olivar.jpg
        src/usr/share/backgrounds/encina/sierra.jpg
@@ -16,9 +32,7 @@ Copyright: Amanda Anusane
 License: Unsplash
 Comment: Fotografias publicadas en Unsplash (https://unsplash.com) y obtenidas
  de alli. Todas se distribuyen modificadas: recortadas a 16:9 y reescaladas a
- 3840x2160. Ademas, encina.jpg y encina-dark.jpg proceden de la MISMA
- fotografia, y la segunda esta atenuada (gamma 0,35) para servir de fondo en
- modo oscuro sin cambiar de paisaje al alternar el tema.
+ 3840x2160.
  .
  La Unsplash License no exige atribucion. Se hace igualmente, que es lo que
  pide R8 y lo que corresponde.

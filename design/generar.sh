@@ -12,8 +12,15 @@
 # LO QUE ESTE GUION TODAVÍA NO PUEDE HACER, dicho por delante: rehacer los
 # fondos. La orden que convierte un maestro de 3936x2624 en el fichero de
 # 3840x2160 que viaja NO SE SABE -se hizo a mano-, y la columna 'orden' del
-# manifiesto está a '-' en las seis filas. Mientras siga así, los fondos se
-# COMPRUEBAN pero no se rehacen, que es media reproducibilidad.
+# manifiesto está a '-' en CUATRO de las seis filas. Mientras siga así, esos
+# cuatro fondos se COMPRUEBAN pero no se rehacen, que es media reproducibilidad.
+#
+# Desde el 2026-08-15 las dos filas del fondo por defecto -encina.jpg y
+# encina-dark.jpg, que salen de un maestro propio- SÍ llevan su orden escrita, y
+# es reproducible: dos pasadas dan la misma sha256. Este guion todavía NO las
+# ejecuta; sigue comprobando huellas y avisando de las filas con '-'. Ejecutarlas
+# es lo que cierra la casilla de tareas/aspecto/1-instrumentacion.md, y hace falta
+# ffmpeg, que no está declarado como requisito de este guion.
 
 # La raíz sale de dónde está este fichero y no de $HOME/encina: este guion vive
 # dentro del árbol, así que puede saberlo, y así funciona sobre un clon en
@@ -154,8 +161,10 @@ fi
 
 # ------------------------------------------------------------------ cierre --
 paso "Lo que este guion NO ha comprobado"
-echo "  - Que los fondos se puedan REHACER: la orden no se sabe (columna 'orden')."
-echo "  - La licencia de las seis fotografías: SIN DETERMINAR en el manifiesto,"
+echo "  - Que los fondos se puedan REHACER. Cuatro no tienen orden escrita, y las"
+echo "    dos que sí la tienen este guion no las ejecuta: comprueba huellas."
+echo "  - La licencia de las cuatro fotografías de Unsplash: SIN DETERMINAR en el"
+echo "    manifiesto -aunque debian/copyright sí las declara: mirar cuál manda-,"
 echo "    y es casilla de bloqueo para publicar."
 echo "  - Nada de lo que se ve en pantalla. Eso son las capturas."
 

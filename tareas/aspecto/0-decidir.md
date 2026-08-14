@@ -13,6 +13,19 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       que se sustituyan.
       *Hecha cuando:* las seis filas tienen `licencia` y `origen`, y lo que diga
       la columna está también en `debian/copyright` de `encina-branding`.
+      *Enmienda del 2026-08-15, y son DOS cosas distintas:* **(a)** las dos filas
+      del fondo por defecto salen de la casilla —maestro propio de Jorge,
+      `EUPL-1.2` en el manifiesto y en `debian/copyright`, que es la primera de
+      las tres salidas—, así que quedan **cuatro**. **(b)** De las cuatro que
+      quedan resulta que **la premisa de esta casilla era falsa desde el
+      principio**: no es verdad que no haya escrito de dónde salieron.
+      `debian/copyright` las declara **desde el 2026-08-08** —Amanda Anusane,
+      Unsplash License, con su párrafo DEP-5 y su advertencia de que la Unsplash
+      License no cumple las DFSG— y `DIARIO.md` lo cuenta ese mismo día. Lo que
+      hay no es un agujero de licencia: es **el manifiesto desactualizado
+      respecto de lo que viaja dentro del `.deb`**. No se ha tocado aquí porque
+      la casilla es de Jorge y conviene mirar cuál de los dos manda antes de
+      copiar nada de uno a otro.
 
 - [ ] **La identidad, como decisión D en `ENCINA-OS.md`.** El texto ya está
       escrito en `design/identidad.md` y `design/paleta.md`; lo que falta es que

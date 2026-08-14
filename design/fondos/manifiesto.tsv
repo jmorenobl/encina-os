@@ -5,22 +5,60 @@
 # VERSIONADA que permite rehacer sin tener el original delante. Los maestros
 # pesan ~2,7 MB cada uno y estan en .gitignore; este fichero no.
 #
-# maestro   fichero de design/fondos/maestros/, 3936x2624
+# maestro   fichero de design/fondos/maestros/. Los cinco de 2026-08-08 son
+#           3936x2624; los dos del 2026-08-15 ya vienen a 3840x2160.
 # derivado  fichero que viaja, 3840x2160, en
 #           debian-packages/encina-branding/src/usr/share/backgrounds/encina/
 # orden     LA ORDEN que convierte uno en otro. Sin tabuladores dentro.
 #           '-' significa QUE NO SE SABE: se hizo a mano el 2026-08-08.
 #
+# ENMIENDA 2026-08-15 - EL FONDO POR DEFECTO YA NO SALE DE caliza.jpg.
+# Las dos filas de caliza.jpg se han sustituido por las de DOS maestros nuevos que
+# aporta Jorge, uno de dia y otro de noche. Lo que se creia y ya no vale:
+# design/fondos/LEEME.md decia que «caliza.jpg es el maestro de los dos fondos que
+# mas se ven». Lo fue hasta hoy. caliza.jpg SIGUE en maestros/ y ya no tiene
+# derivado; el contenido anterior de encina.jpg y encina-dark.jpg esta en el
+# historial de git, con las huellas 4ce9ec23... y cd305409... que estaban aqui.
+#
+# Y CAMBIA LO QUE SIGNIFICA EL FONDO OSCURO, que hasta hoy era una DERIVACION del
+# claro -la misma foto atenuada- y ahora es UNA IMAGEN PROPIA: el mismo paisaje de
+# noche, con luna y estrellas. Durante unas horas del 2026-08-15 el oscuro se hizo
+# aqui multiplicando el claro por 0.50, factor elegido por medida y no a ojo
+# (igualaba el YAVG 53.8 del encina-dark.jpg anterior). Esa fila ya no existe:
+# Jorge trajo el maestro de noche y la orden es una conversion limpia.
+#
+# LA COLUMNA 'orden' DEJA DE SER '-' EN DOS FILAS, que era el otro hueco: las
+# ordenes de hoy se conocen porque se ejecutaron hoy, y son REPRODUCIBLES -dos
+# pasadas dan la misma sha256, comprobado antes de escribir estas filas-.
+#
+# Y UN NUMERO QUE CONVIENE NO CONFUNDIR AL COMPARARLO: medida sobre los JPEG que
+# viajan, la luminancia media del oscuro nuevo es YAVG 46.4, frente al 53.8 del
+# encina-dark.jpg anterior. Es algo mas oscuro, y es una decision de Jorge, no una
+# desviacion. OJO: la misma medida sobre el PNG maestro da 55.8 y NO es otra
+# imagen -es otra escala-: ffmpeg mide el PNG en rango limitado y el JPEG en rango
+# completo. Comparar un PNG con un JPEG por este numero da un susto falso.
+#
 # ATENCION - EL HUECO QUE MAS PESA NO ES TECNICO:
-# la columna 'licencia' esta entera SIN DETERMINAR. Seis fotografias viajan hoy
-# dentro de la ISO y no hay escrito de donde salieron ni con que permiso. Para un
-# proyecto que publica la oferta de fuente de AutoFirma con cuatro repositorios y
-# sus tags, esto es el mismo tipo de agujero. Es casilla de bloqueo para publicar,
-# no un flecos: ver tareas/aspecto/0-decidir.md
+# la columna 'licencia' esta SIN DETERMINAR en las cuatro filas de Unsplash. Para
+# un proyecto que publica la oferta de fuente de AutoFirma con cuatro repositorios
+# y sus tags, esto es el mismo tipo de agujero. Es casilla de bloqueo para
+# publicar, no un fleco: ver tareas/aspecto/0-decidir.md
+#
+# Y OJO CON UNA CONTRADICCION QUE ESTE FICHERO ARRASTRA, vista el 2026-08-15 y NO
+# corregida aqui a proposito, porque la decision es de Jorge: debian/copyright del
+# paquete SI declara esas cuatro -Amanda Anusane, Unsplash License, con su parrafo
+# DEP-5 propio desde el 2026-08-08, y DIARIO.md lo cuenta-. O sea que 'SIN
+# DETERMINAR' en estas cuatro filas y lo que viaja dentro del .deb no dicen lo
+# mismo. Una de las dos esta desactualizada, y lo probable es que sea esta.
+#
+# Las dos filas del maestro propio si estan cuadradas con debian/copyright: EUPL-1.2
+# como el resto del paquete, que es la licencia de lo que hace Jorge. Puesta el
+# 2026-08-15 al separar esos dos ficheros del parrafo de Unsplash; si Jorge quiere
+# otra para las imagenes, se cambia aqui y en debian/copyright, que son dos sitios.
 #
 maestro	derivado	licencia	origen	sha256-maestro	sha256-derivado	orden
-caliza.jpg	encina.jpg	SIN DETERMINAR	SIN DETERMINAR	91679707c9a62f08736f2cf22166b33216b3309a7172bb3ecc60be23e2d8e7b7	4ce9ec234506b1c8f395b0e83b96639cc41bd323e9d90d3321ef1eaa8ccd3579	-
-caliza.jpg	encina-dark.jpg	SIN DETERMINAR	SIN DETERMINAR	91679707c9a62f08736f2cf22166b33216b3309a7172bb3ecc60be23e2d8e7b7	cd305409fa9ebf8cfa68c79129dedd1b76014ca7fff415d618121b75ba35fa75	-
+encina-os-splash-4k-3840x2160.png	encina.jpg	EUPL-1.2	Jorge MB, 2026-08-15	2a82746338de6a93521d1899608bf1d9dea2a6ccf0b07d86bc98d1572087af40	153629e44914e4ff343e33455a59f20dce085e08bbd07e3c80816b39032f685d	ffmpeg -y -i maestros/encina-os-splash-4k-3840x2160.png -q:v 2 encina.jpg
+encina-os-splash-dark-4k-3840x2160.png	encina-dark.jpg	EUPL-1.2	Jorge MB, 2026-08-15	dc0f0285811638c39f19cd196d33c55d0ade9050f3e82eeb33e3dd2055f18447	b34f3ac066b7e9224f57e1df37e1128205890e59b52a00e47cad138ac9807bd9	ffmpeg -y -i maestros/encina-os-splash-dark-4k-3840x2160.png -q:v 2 encina-dark.jpg
 amapolas.jpg	amapolas.jpg	SIN DETERMINAR	SIN DETERMINAR	7245e2da1d0caf7f9f814cf2b352a478ff88c3f8222aa0c0be57c2daa4ab32bc	977346b421f680495846a3443497dbadfa016cbf99d1f7c7cd82dedfcceaa401	-
 farallon.jpg	farallon.jpg	SIN DETERMINAR	SIN DETERMINAR	be810ca789aae5c2b5708bb7fd1ce61438a5fef95da1097e4bef53bf8b38c5fa	4b89f2a05eed905fc7d565dc98a2f8e0b61f28c1fbf19e3b2629e3df46a582cc	-
 olivar.jpg	olivar.jpg	SIN DETERMINAR	SIN DETERMINAR	3c6998e14fc19f3c17b1775f8e1fa8dc73a0f9ed1ec15e4adb8868362a610fea	be6495737c0425120bcffbd608b246a9b0c4a170867709478a4f3383070ab4ca	-
