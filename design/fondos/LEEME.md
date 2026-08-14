@@ -56,6 +56,51 @@ maestro devuelve 55,8, y no es otra imagen — es otra escala, porque el PNG se 
 en rango limitado y el JPEG en rango completo. Comparar un PNG con un JPEG por
 este número da un susto falso.
 
+## La zona segura: dónde puede ir una marca dentro del fondo
+
+Medido el 2026-08-15, mirando la primera captura del fondo nuevo en pantalla.
+**Es la regla que faltaba, y no se sabía porque hasta ahora ningún fondo llevaba
+nada escrito encima.**
+
+`picture-options` está en `zoom`: GNOME **rellena la pantalla y recorta** lo que
+sobra. Una imagen 16:9 solo se ve entera en una pantalla exactamente 16:9; en
+cualquier otra se pierde por los lados —o por arriba y abajo, si la pantalla es
+más ancha—. Los números, sobre 3840×2160:
+
+| Pantalla | Recorte | Se come… |
+|---|---|---|
+| 16:9 | 0 | nada |
+| 16:10 | 192 px por lado (5 %) | la bellota |
+| 3:2 | 300 px por lado (7,8 %) | la bellota y parte del texto |
+| 4:3 | 480 px por lado (12,5 %) | la bellota y el texto |
+| 21:9 | 257 px arriba y abajo | el texto, por abajo |
+
+**La zona segura es la intersección de todas**, o sea el recuadro central que
+sobrevive tanto al 4:3 como al 21:9:
+
+```
+x:  480 .. 3360      (2880 px de ancho)
+y:  257 .. 1903      (1646 px de alto)
+```
+
+Está dibujada en [zona-segura.png](zona-segura.png), en verde, con las bandas de
+recorte de cada proporción y —en blanco— la caja donde está hoy la marca:
+`x 136..1076, y 1784..2060`. Se ve de un vistazo que **la marca actual está casi
+entera fuera**: empieza a 136 px del borde, el 3,5 % del ancho.
+
+**Todo lo que tenga que leerse siempre —logotipo, palabra, versión— va dentro del
+recuadro verde.** El paisaje puede salirse: para eso está el recorte.
+
+*Y la alternativa que se descartó, con su medida, porque volverá a proponerse:*
+`picture-options='scaled'` no recorta nunca y pone franjas del color de relleno
+—0 % en 16:9, 5 % de la altura en 16:10—. Se probó en caliente en `encina-dev` el
+2026-08-15 y **funciona**: la bellota sale entera y las franjas apenas se notan,
+porque `#2F4033` queda pegado a la barra de GNOME (captura
+`design/capturas/fondo-0.1.12/prueba-5-escritorio-scaled.png`). Se descartó por
+decisión de Jorge el mismo día: prefiere arreglar el maestro y no pagar franjas
+en ninguna pantalla. Si algún día vuelve a hacer falta, está medido y es una
+palabra en el `gschema.override` y en `encina.xml`.
+
 ## La licencia, que es el hueco que de verdad pesa
 
 **Las seis imágenes viajan dentro de la ISO sin que esté escrito con qué permiso
