@@ -59,17 +59,27 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       una. Y antes, comprobar que las variantes están en `encina-95758c9e` y no
       sólo en el constructor.
 
-- [ ] **Elegir el verde prestado, y decidir si el fork merece la pena.** Ahora es
-      una pregunta con números y no una preferencia. Distancia RGB a `#3A664E`:
-      **sage 55**, prussiangreen 58, viridian 65, olive 85. Por carácter, `sage`
-      es el más parecido —verde apagado, como el nuestro— aunque más claro;
-      `viridian` es esmeralda y se ve mucho más.
-      *La pregunta que hay que contestar mirando las capturas, no antes:* ¿merece
-      un repositorio aparte, una CI y un rebase con cada Yaru nuevo **la
-      diferencia entre `sage` y `#3A664E`**? Si al verlo no se distingue, el fork
-      es coste recurrente por una diferencia invisible.
-      *Hecha cuando:* está elegido cuál se usa, con la captura al lado, y escrito
-      si se forkea o no **y por qué**.
+- [ ] **Elegir el verde, ahora con las capturas delante.** Probado el 2026-08-14
+      **en la máquina del producto, en caliente y sin empaquetar nada**
+      (`design/capturas/acento/`): dos órdenes `gsettings` y el escritorio cambia
+      —carpetas, selección, y **el botón «Siguiente» de la bienvenida, que es
+      GTK4/libadwaita, deja de ser naranja**—. El mecanismo entero funciona.
+      *Lo que las capturas contestan, y no lo hacía el número:* **ninguno de los
+      dos prestados es el verde de Encina.** `sage` `#657B69` es el más cercano
+      por distancia RGB y **el que peor cuenta la identidad**: tan desaturado que
+      pasa por gris, no parece que se haya decidido nada. `viridian` `#03875B` sí
+      cambia la cara, pero es un esmeralda — más de aplicación que de dehesa.
+      *Y con eso la pregunta del fork está contestada por una captura y no por
+      una preferencia:* **si se quiere `#3A664E`, hay que forkear**, porque no hay
+      dónde escribir ese color. Lo que queda por decidir es si se acepta
+      `viridian` como verde de la casa —gratis, hoy, sin paquete— o si el verde
+      encina vale un repositorio y un rebase.
+      *Hecha cuando:* está elegido cuál se usa y escrito **si se forkea o no, y
+      por qué**, con las tres capturas al lado.
+      *Lo que este experimento dejó probado de paso, y es un control gratis:* al
+      resetear, `icon-theme` vuelve a **`Encina`** y no a `Yaru` — el
+      `gschema.override` de `encina-branding` está vivo y gana cuando el usuario
+      no tiene valor propio.
 
 - [ ] **La tipografía.** Es el cambio con más efecto y menos riesgo de todo el
       bloque: la letra es lo que más grita «Ubuntu» del escritorio, más que el
