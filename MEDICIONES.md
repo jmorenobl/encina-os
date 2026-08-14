@@ -9847,7 +9847,54 @@ huella DESPUES del renombrado -> 95758c9e…, la misma
 enlace duro con el bundle     -> inodo 89645149, 2 enlaces: sobrevive
 ```
 
-#### (d) Lo que esta vuelta NO contesta
+#### (d) EL ESLABÓN QUE §4.40d DEJÓ A MEDIAS POR UN DEFECTO MÍO, cerrado
+
+Allí comparé lo de dentro del `.deb` contra `/var/lib/dpkg/info/*.md5sums` y dos
+paquetes «no cuadraban» por 3 y 2 ficheros. **No era el producto: dpkg no mete
+los conffiles en `.md5sums`**, los registra en `/var/lib/dpkg/status`. Una
+comprobación que busca el dato **donde el dato no puede estar** no es una
+comprobación, y ésa la escribí yo.
+
+Cerrado por su lado bueno — los conffiles que dpkg registró, contra **los bytes
+que viajan dentro del `.deb` del medio**:
+
+```
+encina-branding        9ec0a49d…   3 conffiles registrados
+  [OK] los 3 SALEN de los bytes de este .deb
+       /etc/dconf/db/gdm.d/99-encina        b16e964b…
+       /etc/dconf/profile/gdm               ecb70675…
+       /etc/xdg/mimeapps.list               f0f26fff…
+  [OK] control: con un md5 saboteado la comparacion lo senala (2)
+
+encina-firefox-native  640f508e…   2 conffiles registrados
+  [OK] los 2 SALEN de los bytes de este .deb
+       /etc/apt/preferences.d/encina-mozilla    ed8dd610…
+       /etc/apt/sources.list.d/mozilla.sources  ae9db12c…
+  [OK] control: con un md5 saboteado la comparacion lo senala (2)
+
+encina-meta            204081f0…   0 conffiles
+  [DATO] no instala nada bajo /etc/  <- EL CONTROL NATURAL: en §4.40d fue el
+                                        unico que cuadro, y ahora se ve por que
+
+paquetes con conffiles que no cuadran: 0
+```
+
+**Con esto la cadena está atada entera y sin huecos**, que es lo que la casilla
+(d) de §4.40 quería decir:
+
+```
+los BYTES del .deb que viajo en la ISO      -> sha256 contra la huella declarada   §4.40d
+   -> los NO-conffiles que dpkg registro    -> .md5sums                            §4.40d
+   -> los CONFFILES que dpkg registro       -> status                              aqui
+   -> los FICHEROS QUE HAY EN EL DISCO      -> dpkg -V, con el control de que
+                                              senala 1 en todo el sistema
+                                              (missing c /etc/apparmor.d/nautilus)
+```
+
+**Los tres `.deb` reconstruidos desde el clon no sólo están instalados: cada
+fichero suyo que hay en el disco sale de los bytes que viajaron en el medio.**
+
+#### (e) Lo que esta vuelta NO contesta
 
 - **Por qué §4.32f sí escribió `loading`.** Sigue sin explicar y su ISO ya no
   existe (§4.40c bis). Lo que ha cambiado es que **ya no bloquea nada**: la

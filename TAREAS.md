@@ -337,12 +337,15 @@ clon y `cosechar-repo.sh` sigue sin existir — eso es el bloque 0.
       *Hecha cuando:* la lista está decidida, el guion la aplica y la casilla
       correspondiente falla en rojo con una pantalla de más — probado, no
       supuesto.
-- [ ] **Cerrar el eslabón que quedó a medias de §4.40d.** Los conffiles no van en
-      `.md5sums` sino en `/var/lib/dpkg/status`, así que los cinco ficheros bajo
-      `/etc/` de `encina-branding` y `encina-firefox-native` **no se compararon**
-      contra los bytes del `.deb`. Los eslabones 1 y 3 sí están atados.
-      *Hecha cuando:* la comparación incluye los conffiles leídos de `status`, y
-      lleva su control de que sabe señalar uno cambiado.
+- [x] ~~**Cerrar el eslabón que quedó a medias de §4.40d.**~~ **HECHA el
+      2026-08-14** (`MEDICIONES.md` §4.41d). Los 5 conffiles —3 de
+      `encina-branding` y 2 de `encina-firefox-native`, leídos de
+      `/var/lib/dpkg/status`— **salen de los bytes del `.deb` que viajó en el
+      medio**, con el control de que un md5 saboteado se señala; y `encina-meta`,
+      con **0** conffiles, es el control natural que explica por qué en §4.40d
+      fue el único que cuadró. **La cadena queda atada entera**: los bytes del
+      `.deb` → lo que dpkg registró (`.md5sums` **y** `status`) → los ficheros
+      que hay en el disco (`dpkg -V`, con su control).
 - [ ] **Medir qué puede romper un autorrefresco de `snapd`.** El 2026-08-13 se
       autorrefrescó solo y llevó el Snap de Firefox de rev 7764 a 8753 sin que nadie
       lo pidiera. No rompió nada y está medido, **pero nadie lo controla**: la
