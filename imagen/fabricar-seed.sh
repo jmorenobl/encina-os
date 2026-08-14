@@ -81,7 +81,7 @@ declare -a FICHEROS HUELLAS
 # -d5a0ebe1... (+encina2), 2d985724... (+encina3) y faeca3a9... (+encina4)- y
 # un 'ls -t | head -1' construye una cosa distinta de la que crees (§4.13).
 FICHEROS=(autofirma_1.9.1+encina4_all.deb
-          encina-branding_0.1.8_all.deb
+          encina-branding_0.1.9_all.deb
           encina-firefox-native_0.2.1_all.deb
           encina-meta_0.2.1_all.deb)
 HUELLAS=("$(huella_de H_AUTOFIRMA)"

@@ -13,6 +13,12 @@ requiere_cmd dpkg-buildpackage lintian
 
 PKG="$(PKG_DIR)"
 SALIDA_DIR="$(raiz_repo)/debian-packages"
+# DESDE DONDE SE LANZO, capturado ANTES de que nada haga 'cd'. Se usa mas
+# abajo para comprobar que el arbol construido es el que tienes delante, y
+# tiene que leerse aqui: la seccion de construccion hace 'cd "$PKG"', asi que
+# a partir de ahi $PWD ya es el destino y comparar los dos siempre da igual
+# -- que es como esta comprobacion salio verde sobre el fallo que caza.
+INVOCADO_EN="$PWD"
 [[ -d "$PKG/debian" ]] || { echo "No existe $PKG/debian. Ejecuta antes ./scripts/01-repo.sh"; exit 1; }
 
 MANT=("$PKG/debian/postinst" "$PKG/debian/prerm" "$PKG/debian/postrm")
@@ -189,6 +195,44 @@ if [[ -z "$DEB" ]]; then
     resumen; exit 1
 fi
 ok "Generado: $(basename "$DEB")"
+
+# DOS COMPROBACIONES, Y LA PRIMERA ES LA QUE IMPORTA.
+#
+# EL 2026-08-14 ESTE GUION DIJO
+#     [OK] Generado: encina-branding_0.1.7_all.deb
+# sobre un arbol cuyo changelog decia 0.1.9. Se invoco sin ENCINA_REPO, y
+# raiz_repo() usa ~/encina por defecto: otro clon, de cuatro dias antes. El
+# guion construyo ESE, entero y sin una queja. Lo cazo de rebote la lista de
+# ficheros esperados -tres [FALLO] de iconos- y solo entonces se miro el
+# numero de version.
+#
+# Y OJO CON EL ARREGLO FACIL, que fue mi primer intento: comparar la version
+# del .deb con la del changelog NO SIRVE PARA ESTO. Cuando raiz_repo se
+# desvia, se lleva las dos cosas al mismo sitio equivocado y las dos
+# coinciden: la comprobacion habria dado verde sobre el fallo que dice cazar.
+# Lo que separa los dos casos es OTRA cosa: que el arbol que se construye sea
+# el que tienes delante.
+if [[ -f "$INVOCADO_EN/debian-packages/encina-branding/debian/changelog" ]] \
+   && [[ "$INVOCADO_EN/debian-packages/encina-branding" != "$PKG" ]]; then
+    fallo "Se ha construido OTRO arbol, no el que tienes delante" \
+"aqui:       $INVOCADO_EN/debian-packages/encina-branding
+construido: $PKG
+raiz_repo() usa \$ENCINA_REPO, y si no esta, ~/encina. Vuelve a lanzarlo asi:
+    ENCINA_REPO=\"\$PWD\" ./scripts/03-construir.sh"
+else
+    ok "El arbol construido es el de aqui ($PKG)"
+fi
+# Y la segunda, barata, contra la trampa de §4.13: 'ls -t | head -1' sobre un
+# directorio con varios .deb devuelve el mas nuevo, no el tuyo.
+VER_CHANGELOG=$(dpkg-parsechangelog -l "$PKG/debian/changelog" -S Version)
+VER_DEB=$(dpkg-deb -f "$DEB" Version)
+if [[ "$VER_CHANGELOG" == "$VER_DEB" ]]; then
+    ok "La version del .deb es la del changelog ($VER_DEB)"
+else
+    fallo "El .deb no es el de este changelog" \
+"changelog: $VER_CHANGELOG
+.deb:      $VER_DEB   ($DEB)"
+fi
 
 # ============================================================================
 titulo "Contenido del paquete"

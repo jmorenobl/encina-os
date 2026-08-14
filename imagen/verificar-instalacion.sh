@@ -524,6 +524,123 @@ DA=$(dpkg -S /usr/share/applications/gnome-mimeapps.list 2>/dev/null | cut -d: -
 if [ -n "$DA" ]; then ok "control: gnome-mimeapps.list es de '$DA' (dpkg -S no esta mudo)"
 else fallo "CONTROL ROTO: dpkg -S no sabe de quien es gnome-mimeapps.list"; fi
 
+# ============================================================================
+titulo "8. EL ICONO DE LA REJILLA (bloque 1, la mitad del sistema instalado)"
+#
+# QUE SE MIDE Y POR QUE ASI. La casilla es «el boton de aplicaciones lleva la
+# encina, y el resto del escritorio no ha cambiado». Lo que decide no es que
+# el fichero exista: es A QUE FICHERO RESUELVE EL NOMBRE que pide el dock.
+#
+# Y EL NOMBRE NO ES EL QUE PARECE. ubuntu-dock pide (appIcons.js:1371)
+#     view-app-grid-${Main.sessionMode.currentMode}-symbolic
+# y el modo de la sesion de escritorio es 'ubuntu'. Un paquete que enviara
+# solo 'view-app-grid-symbolic' se instalaria sin un solo error y no cambiaria
+# nada, asi que aqui se pregunta POR EL NOMBRE DE VERDAD.
+#
+# EL CONTROL QUE ESTA COMPROBACION NECESITA, y es el que la hace valer: el
+# mismo comparador, preguntado con tema='Yaru', TIENE QUE CONTESTAR QUE EL
+# FICHERO ES EL DE YARU. Si dijera «Encina» en los dos casos -o «Yaru» en los
+# dos- no estaria distinguiendo nada, solo diciendo que hay un icono.
+#
+# SANO:  tema efectivo 'Encina'; el nombre resuelve a /usr/share/icons/Encina;
+#        con tema='Yaru' el mismo nombre resuelve a /usr/share/icons/Yaru;
+#        y los iconos ajenos siguen saliendo de Yaru y de hicolor.
+# ROTO:  resuelve a Yaru con el tema puesto (el tema propio no gana), o los
+#        ajenos dejan de resolver (la herencia esta rota y el escritorio se
+#        queda sin iconos).
+
+# 8.1 el tema esta, y es NUESTRO -- no encima del de nadie (R5)
+TEMA_ENC=/usr/share/icons/Encina/index.theme
+if esta "$TEMA_ENC"; then
+    DUENO_T=$(dpkg -S "$TEMA_ENC" 2>/dev/null | cut -d: -f1)
+    igual "el tema de iconos es NUESTRO (R5)" "encina-branding" "${DUENO_T:-<sin dueno>}"
+else
+    fallo "no esta $TEMA_ENC: el tema de iconos de Encina no lo instala nadie"
+fi
+# 8.2 y NO se ha pisado el de Yaru, que es lo que R5 prohibe
+Y_GRID=/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+DUENO_Y=$(dpkg -S "$Y_GRID" 2>/dev/null | cut -d: -f1)
+igual "el icono de Yaru sigue siendo de Yaru (R5, no lo hemos pisado)" \
+      "yaru-theme-icon" "${DUENO_Y:-<sin dueno>}"
+
+# 8.3 el valor por defecto del sistema, que es lo que heredaria un usuario
+#     nuevo. Se pregunta CON XDG_CURRENT_DESKTOP puesto porque Ubuntu fija
+#     icon-theme SOLO en la seccion ':ubuntu' y sin la variable se lee otra
+#     cosa -- es la trampa de 0.1.2, y aqui se cae por el mismo sitio.
+ICO_T=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | tr -d "'")
+igual "el tema de iconos por defecto del sistema" "Encina" "${ICO_T:-<vacio>}"
+# CONTROL: el mismo gsettings tiene que saber contestar otra cosa distinta
+GTK_T=$(XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
+if [ -n "$GTK_T" ] && [ "$GTK_T" != "Encina" ]; then
+    ok "control: gtk-theme sigue siendo '$GTK_T' (gsettings no contesta 'Encina' a todo)"
+else
+    fallo "CONTROL ROTO: gtk-theme contesta '$GTK_T'" \
+"Si gsettings devolviera lo mismo para todo, la comprobacion de arriba no
+diria nada."
+fi
+
+# 8.4 LA QUE DECIDE: a que fichero resuelve el nombre, con su control por tema
+RESOLVEDOR=$(cat <<'PY'
+import sys
+NOMBRES = ["view-app-grid-ubuntu-symbolic", "view-app-grid-symbolic",
+           "folder", "system-run-symbolic", "icono-que-no-existe-jamas"]
+RUTAS = ["/usr/local/share/icons", "/usr/share/icons", "/usr/share/pixmaps"]
+import gi
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk
+for tema in ["Encina", "Yaru"]:
+    t = Gtk.IconTheme.new()
+    t.set_search_path(RUTAS)
+    t.set_theme_name(tema)
+    for n in NOMBRES:
+        p = t.lookup_icon(n, None, 16, 1, Gtk.TextDirection.NONE, 0)
+        f = p.get_file() if p else None
+        print("%s\t%s\t%s" % (tema, n, f.get_path() if f else "NO-RESUELVE"))
+PY
+)
+if RES=$(python3 -c "$RESOLVEDOR" 2>/dev/null) && [ -n "$RES" ]; then
+    lee() { echo "$RES" | awk -F'\t' -v t="$1" -v n="$2" '$1==t && $2==n {print $3}'; }
+    for n in view-app-grid-ubuntu-symbolic view-app-grid-symbolic; do
+        CON=$(lee Encina "$n")
+        case "$CON" in
+            /usr/share/icons/Encina/*) ok "'$n' resuelve a Encina ($CON)" ;;
+            *) fallo "'$n' NO resuelve al icono de Encina" \
+"obtenido: ${CON:-<nada>}
+El tema propio no esta ganando. NO lo arregles pisando el de Yaru (R5)." ;;
+        esac
+        # EL CONTROL DE VERDAD: preguntado por Yaru tiene que decir OTRO
+        SIN=$(lee Yaru "$n")
+        if [ -n "$SIN" ] && [ "$SIN" != "$CON" ] && [ "${SIN#/usr/share/icons/Yaru/}" != "$SIN" ]; then
+            ok "control: con tema='Yaru' el mismo nombre da OTRO fichero ($SIN)"
+        else
+            fallo "CONTROL ROTO: el comparador no distingue de que tema sale '$n'" \
+"con Encina: ${CON:-<nada>}
+con Yaru:   ${SIN:-<nada>}
+Si contesta lo mismo en los dos casos, el [OK] de arriba solo dice que HAY un
+icono, no que sea el nuestro."
+        fi
+    done
+    # 8.5 la herencia no rompe el resto del escritorio
+    ROTOS=""
+    for n in folder system-run-symbolic; do
+        R=$(lee Encina "$n")
+        case "$R" in
+            /usr/share/icons/Yaru/*|/usr/share/icons/hicolor/*) ;;
+            *) ROTOS="$ROTOS $n=${R:-<nada>}" ;;
+        esac
+    done
+    if [ -z "$ROTOS" ]; then
+        ok "con el tema puesto, los iconos ajenos siguen saliendo de Yaru (Inherits funciona)"
+    else
+        fallo "el tema propio ha roto la herencia" "$ROTOS"
+    fi
+    # CONTROL de que el resolvedor sabe decir que NO
+    igual "control: un icono inventado no resuelve" "NO-RESUELVE" "$(lee Encina icono-que-no-existe-jamas)"
+else
+    aviso "no hay resolvedor de iconos (python3-gi con Gtk 4.0): lo que decide
+           el icono NO se ha comprobado, solo que los ficheros estan"
+fi
+
 titulo "Resumen"
 echo "  [OK] $N_OK   [FALLO] $N_MAL   [AVISO] $N_AVI   [OMIT] $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then
