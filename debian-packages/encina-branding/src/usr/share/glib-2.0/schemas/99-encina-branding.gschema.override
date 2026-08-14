@@ -30,6 +30,34 @@
 # cualquier otro escritorio, donde Ubuntu no define variante propia.
 # ---------------------------------------------------------------------------
 
+# EL TEMA DE ICONOS. Aqui la seccion ':ubuntu' NO es una precaucion: es la
+# UNICA que hace algo. Medido en la maquina instalada, sobre el fichero de
+# Ubuntu que compite con este:
+#
+#   /usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override
+#     [org.gnome.desktop.interface:GNOME-Greeter]  icon-theme = "Yaru"
+#     [org.gnome.desktop.interface:ubuntu]         icon-theme = "Yaru"
+#     [org.gnome.desktop.interface:Unity]          icon-theme = "ubuntu-mono-dark"
+#     [org.gnome.desktop.interface:communitheme]   icon-theme = "Suru"
+#
+# NO HAY SECCION GENERICA. Ubuntu solo lo fija por escritorio, y la sesion
+# corre con XDG_CURRENT_DESKTOP=ubuntu:GNOME. Un [org.gnome.desktop.interface]
+# a secas aqui perderia contra ':ubuntu' por muy alto que sea el 99 del
+# nombre, exactamente igual que le paso al fondo en 0.1.2. La generica se
+# conserva para la sesion "GNOME" pura, donde Ubuntu no define variante.
+#
+# Y la otra mitad, tambien medida: el usuario NO tiene el valor escrito en su
+# dconf -'dconf read /org/gnome/desktop/interface/icon-theme' sale vacio, con
+# el control de que la misma orden si devuelve '46.0' para
+# welcome-dialog-last-shown-version-, asi que este override GANA. Si algun dia
+# alguien lo cambia a mano en Ajustes, ganara la persona: es lo correcto.
+
+[org.gnome.desktop.interface]
+icon-theme='Encina'
+
+[org.gnome.desktop.interface:ubuntu]
+icon-theme='Encina'
+
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/encina/encina.jpg'
 picture-uri-dark='file:///usr/share/backgrounds/encina/encina-dark.jpg'

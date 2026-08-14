@@ -208,7 +208,10 @@ for esperado in \
     "usr/share/backgrounds/encina/encina-dark.jpg" \
     "usr/share/glib-2.0/schemas/99-encina-branding.gschema.override" \
     "usr/share/plymouth/themes/encina/encina.plymouth" \
-    "etc/dconf/db/gdm.d/99-encina"
+    "etc/dconf/db/gdm.d/99-encina" \
+    "usr/share/icons/Encina/index.theme" \
+    "usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg" \
+    "usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg"
 do
     if echo "$CONTENIDO" | grep -q "$esperado"; then
         ok "Incluye $esperado"

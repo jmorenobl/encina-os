@@ -1,3 +1,39 @@
+encina-branding (0.1.9) noble; urgency=medium
+
+  * EL LOGO DE LA REJILLA (bloque 1). Hasta hoy el boton de aplicaciones
+    del dock llevaba el logotipo de Ubuntu. Se anade un TEMA DE ICONOS
+    PROPIO, /usr/share/icons/Encina, con Inherits=Yaru,hicolor, y el
+    gschema.override pasa a fijar icon-theme='Encina'.
+  * NO se instala el icono encima del de Yaru. El fichero de hoy es
+    /usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+    -un enlace a ../places/start-here-symbolic.svg- y es de
+    yaru-theme-icon: pisarlo viola R5, la misma regla que obligo a
+    dpkg-divert con os-release. Y hicolor no vale: es el ultimo de la
+    cadena y pierde contra Yaru siempre.
+  * EL NOMBRE DEL ICONO NO ERA EL ESPERABLE, y esto costo una medicion
+    antes de escribir una linea (MEDICIONES.md 4.43b). El dock no pide
+    'view-app-grid-symbolic': pide
+    view-app-grid-${Main.sessionMode.currentMode}-symbolic
+    (ubuntu-dock@ubuntu.com/appIcons.js:1371), y el modo de la sesion de
+    escritorio es 'ubuntu' -leido en el entorno del gnome-shell que
+    corria, GNOME_SHELL_SESSION_MODE=ubuntu, y en los cuatro .desktop de
+    sesion-. Un paquete con solo el nombre generico dentro se habria
+    instalado sin un solo error Y NO HABRIA CAMBIADO NADA.
+  * La seccion ':ubuntu' del override tampoco es decorativa: Ubuntu fija
+    icon-theme SOLO por escritorio -no hay seccion generica en su
+    10_ubuntu-settings.gschema.override- y la sesion corre con
+    XDG_CURRENT_DESKTOP=ubuntu:GNOME. Es la trampa de 0.1.2 otra vez, y
+    esta vez se comprobo antes de tropezar con ella.
+  * El icono lo dibujo Jorge: una encina de 16x16 cuya copa y raices son
+    la misma red de nodos del logotipo. Se conserva su geometria tal
+    cual; lo unico que cambia es el color declarado, de 'currentColor' a
+    #808080, que es la convencion del fichero de Yaru al que sustituye.
+  * No se llama a gtk-update-icon-cache desde el postinst (R2, R3): un
+    tema sin cache se resuelve igual, y libgtk tiene un disparador de
+    dpkg sobre /usr/share/icons.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Fri, 14 Aug 2026 09:00:00 +0200
+
 encina-branding (0.1.8) noble; urgency=medium
 
   * El manejador por defecto del PDF, atado (D17). Se anade

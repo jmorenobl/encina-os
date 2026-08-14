@@ -2,6 +2,7 @@
 # Todo el arbol de src/ se copia tal cual a la raiz del sistema.
 
 TEMA = debian/encina-branding/usr/share/plymouth/themes/encina
+ICONOS = debian/encina-branding/usr/share/icons/Encina/scalable/actions
 
 %:
 	dh $@
@@ -25,3 +26,15 @@ override_dh_auto_install:
 # Se copia aqui, en vez de duplicarlo en src/, para que 02-activos.sh siga
 # siendo el unico sitio que genera el fichero y las dos copias no se separen.
 	install -D -m 644 src/usr/share/backgrounds/encina/logo.png $(TEMA)/logo.png
+#
+# EL ICONO DE LA REJILLA VIAJA CON DOS NOMBRES Y UN SOLO FICHERO FUENTE.
+#
+# El que decide es el que lleva el modo de sesion dentro -ubuntu-dock pide
+# view-app-grid-${sessionMode}-symbolic y el modo es 'ubuntu'-, y es el que
+# vive en src/. El generico se hace AQUI a partir de el, por el mismo motivo
+# que logo.png de arriba: para que las dos copias no puedan separarse.
+#
+# Si algun dia hay que dibujarlo distinto, se toca UN fichero.
+	install -D -m 644 \
+	    src/usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg \
+	    $(ICONOS)/view-app-grid-symbolic.svg

@@ -1,0 +1,46 @@
+[Icon Theme]
+Name=Encina
+Comment=Iconos de Encina OS. Hereda de Yaru: solo sustituye lo propio.
+Inherits=Yaru,hicolor
+Example=folder
+Directories=scalable/actions
+
+# POR QUE UN TEMA PROPIO Y NO EL ICONO ENCIMA DEL DE YARU (R5).
+#
+# El icono que pinta el boton de aplicaciones es de 'yaru-theme-icon':
+#
+#     /usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+#         -> ../places/start-here-symbolic.svg          (es un ENLACE)
+#
+# Enviar un fichero con esa ruta seria sobrescribir el fichero de otro
+# paquete, que es exactamente lo que R5 prohibe y lo que obligo a usar
+# dpkg-divert con os-release. Y meterlo en 'hicolor' no sirve de nada:
+# hicolor es el ultimo de la cadena y pierde contra Yaru siempre.
+#
+# Un tema propio que HEREDA de Yaru gana para lo que declara y deja el resto
+# intacto. Medido en la maquina, no supuesto (MEDICIONES.md §4.43d): con el
+# tema puesto, 'view-app-grid-symbolic' resuelve al fichero de Encina y
+# 'folder', 'user-home', 'firefox' y 'system-run-symbolic' siguen saliendo de
+# Yaru y de hicolor.
+#
+# POR QUE EL NOMBRE LLEVA 'ubuntu' DENTRO, que es lo que menos se deduce:
+# el dock no pide 'view-app-grid-symbolic'. Pide
+#
+#     view-app-grid-${Main.sessionMode.currentMode}-symbolic
+#         (ubuntu-dock@ubuntu.com/appIcons.js:1371)
+#
+# y el modo de la sesion de escritorio es 'ubuntu', leido en el entorno del
+# gnome-shell que estaba corriendo (GNOME_SHELL_SESSION_MODE=ubuntu) y en los
+# cuatro .desktop de sesion. Un paquete con solo el nombre generico dentro se
+# instala, no da ningun error Y NO CAMBIA NADA. El generico se envia tambien,
+# por coherencia y porque lo usan otras cosas.
+#
+# 'view-app-grid-ubiquity-symbolic' -el del modo del instalador- NO se toca:
+# es la otra mitad del bloque 1, la del medio.
+
+[scalable/actions]
+Context=Actions
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
