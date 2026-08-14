@@ -36,18 +36,30 @@ encadenarlos.
       un `split()` de `awk` es una **expresión regular**, así que la caja se leía
       mal y salía `[FALLO]` sobre diferencias que estaban dentro de la franja.
 
-- [ ] **Que el guion llegue a la sesión.** Hoy se para en GDM: entrar exige la
-      contraseña del usuario, y **no vive en este repositorio** —`encina-95758c9e`
-      se instaló contestando las cinco pantallas a mano—. El guion ya lo dice y
-      la acepta por `ENCINA_CLAVE`; el camino de dentro está escrito y **sin
-      probar**.
-      *Lo que falta y es la mitad de la lista:* el escritorio, la rejilla de
-      aplicaciones y las dos ventanas — justo la mitad donde vive el tema.
-      *Y lo que hay que medir en cuanto se pueda entrar, porque decide si la
-      rejilla se puede capturar sin una mano:* **si la tecla Super llega al
-      invitado**. El ratón no llega (§4.35i), pero el teclado sí, y GNOME abre la
-      rejilla con teclado. Si Super la intercepta UTM como hace con Ctrl+Alt, esa
-      captura necesita una persona.
+- [x] ~~**Que el guion llegue a la sesión.**~~ **HECHA el 2026-08-14 con la clave
+      que dio Jorge**, y trae el hallazgo que más acota el banco de pruebas:
+      **la tecla Super SÍ llega al invitado.** Super abre el resumen y **Super+A
+      la rejilla**, capturadas las dos. UTM intercepta Ctrl+Alt, no la tecla de
+      comando — o sea que §4.35i («un agente no sabe pulsar un botón del
+      invitado») es **más estrecho de lo que se creía**: el ratón no llega, pero
+      GNOME es un escritorio de teclado y la mitad de las capturas que se daban
+      por imposibles no lo son.
+      *Y un fallo del guion que sólo se ve probándolo:* la primera versión
+      tecleaba la contraseña **antes** de elegir usuario, y GDM enseña la lista,
+      no el campo. Ahora va Intro primero, y se captura en cada paso.
+      *Lo que queda suelto:* el Intro de la contraseña cae después sobre el
+      diálogo de bienvenida, que espera un «Siguiente» — en esta pasada eso abrió
+      Firefox con las notas de versión de Ubuntu. El guion teclea a ciegas contra
+      una pantalla que no esperaba.
+
+- [ ] **El control de dos pasadas, también dentro de la sesión.** Las tres fases
+      del arranque lo tienen; las de dentro se tomaron **una vez**, así que hoy
+      no hay con qué distinguir un cambio del tema de un cambio del reloj o de
+      una notificación.
+      *Y lo que lo hace más difícil que en el arranque, dicho por delante:* la
+      sesión no arranca dos veces igual — hay ventanas abiertas, una bienvenida
+      que avanza y un Firefox que no debería estar. Puede que el control aquí no
+      sea «dos pasadas iguales» sino otro, y decidir cuál es parte de la casilla.
 
 - [ ] **Subir la cadencia del disparo, o declarar el límite.** Mide **3,1 s de
       media** entre capturas —los `delay` de `capturar-vm.sh` son 2 s por

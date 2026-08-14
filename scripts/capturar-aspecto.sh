@@ -130,22 +130,54 @@ comprobar_salida "la VM esta parada antes de empezar" "^stopped$" utmctl status 
 rm -rf "$SALIDA"; mkdir -p "$CRUDAS"
 
 # ---------------------------------------------------------------- rafaga ----
+# rafaga <directorio> <segundos>
+rafaga() {
+    local dir="$1" seg="$2" t0 n f
+    mkdir -p "$dir"
+    t0=$(date +%s); n=0
+    while (( $(date +%s) - t0 < seg )); do
+        n=$((n + 1))
+        f="$(printf '%s/%03d.png' "$dir" "$n")"
+        "$RAIZ/scripts/capturar-vm.sh" "$VM" "$f" >/dev/null 2>&1 || true
+        if [[ -s "$f" ]]; then
+            printf '%s\t%s\t%s\t%s\n' "$n" "$(( $(date +%s) - t0 ))" \
+                "$(shasum -a 256 "$f" | awk '{print $1}')" "$(huella_sin_franja "$f")" \
+                >> "$dir/tiempos.tsv"
+        else
+            rm -f "$f"
+        fi
+    done
+}
+
+# agrupar <dir crudas> <dir salida> <prefijo> <fichero tsv>
+agrupar() {
+    printf 'fase\tdesde_s\thasta_s\tfotogramas\tfichero\tsha256_sin_franja\n' > "$4"
+    python3 - "$1" "$2" "$3" "$4" <<'PY'
+import sys, os, shutil
+crudas, salida, prefijo, fases = sys.argv[1:5]
+filas = [l.rstrip("\n").split("\t") for l in open(os.path.join(crudas, "tiempos.tsv"))]
+grupos, act = [], None
+for n, t, _entera, h in filas:
+    if act and act["sha"] == h:
+        act["hasta"], act["n"], act["ultimo"] = t, act["n"] + 1, n
+    else:
+        act = {"sha": h, "desde": t, "hasta": t, "n": 1, "ultimo": n}
+        grupos.append(act)
+with open(fases, "a") as f:
+    for i, g in enumerate(grupos, 1):
+        dst = f"{prefijo}-{i:02d}.png" if prefijo else f"{i:02d}-fase.png"
+        shutil.copy(os.path.join(crudas, f"{int(g['ultimo']):03d}.png"),
+                    os.path.join(salida, dst))
+        f.write(f"{i}\t{g['desde']}\t{g['hasta']}\t{g['n']}\t{dst}\t{g['sha']}\n")
+print(f"  fases: {len(grupos)}")
+for i, g in enumerate(grupos, 1):
+    print(f"    {i:02d}  {g['desde']:>3}s..{g['hasta']:>3}s  {g['n']:>2} fotogramas  {g['sha'][:12]}...")
+PY
+}
+
 paso "Arrancando y disparando en rafaga durante ${SEGUNDOS}s"
 utmctl start "$VM" >/dev/null 2>&1 &
-T0=$(date +%s)
-N=0
-while (( $(date +%s) - T0 < SEGUNDOS )); do
-    N=$((N + 1))
-    F="$(printf '%s/%03d.png' "$CRUDAS" "$N")"
-    "$RAIZ/scripts/capturar-vm.sh" "$VM" "$F" >/dev/null 2>&1 || true
-    if [[ -s "$F" ]]; then
-        printf '%s\t%s\t%s\t%s\n' "$N" "$(( $(date +%s) - T0 ))" \
-            "$(shasum -a 256 "$F" | awk '{print $1}')" "$(huella_sin_franja "$F")" \
-            >> "$CRUDAS/tiempos.tsv"
-    else
-        rm -f "$F"
-    fi
-done
+rafaga "$CRUDAS" "$SEGUNDOS"
 
 if [[ ! -s "$CRUDAS/tiempos.tsv" ]]; then
     fallo "no se tomo ni una captura" \
@@ -159,28 +191,7 @@ ok "$(wc -l < "$CRUDAS/tiempos.tsv" | tr -d ' ') fotogramas en ${SEGUNDOS}s"
 # Fase = fotogramas CONSECUTIVOS con la misma huella. Se guarda el ultimo de
 # cada una: es el que ya no tiene animacion a medias.
 paso "Agrupando en fases"
-printf 'fase\tdesde_s\thasta_s\tfotogramas\tfichero\tsha256_sin_franja\n' > "$FASES"
-python3 - "$CRUDAS" "$SALIDA" "$FASES" <<'PY'
-import sys, os, shutil
-crudas, salida, fases = sys.argv[1], sys.argv[2], sys.argv[3]
-filas = [l.rstrip("\n").split("\t") for l in open(os.path.join(crudas, "tiempos.tsv"))]
-grupos, act = [], None
-for n, t, _entera, h in filas:
-    if act and act["sha"] == h:
-        act["hasta"], act["n"], act["ultimo"] = t, act["n"] + 1, n
-    else:
-        act = {"sha": h, "desde": t, "hasta": t, "n": 1, "ultimo": n}
-        grupos.append(act)
-with open(fases, "a") as f:
-    for i, g in enumerate(grupos, 1):
-        dst = f"{i:02d}-fase.png"
-        shutil.copy(os.path.join(crudas, f"{int(g['ultimo']):03d}.png"),
-                    os.path.join(salida, dst))
-        f.write(f"{i}\t{g['desde']}\t{g['hasta']}\t{g['n']}\t{dst}\t{g['sha']}\n")
-print(f"  fases: {len(grupos)}")
-for i, g in enumerate(grupos, 1):
-    print(f"    {i:02d}  {g['desde']:>3}s..{g['hasta']:>3}s  {g['n']:>2} fotogramas  {g['sha'][:12]}...")
-PY
+agrupar "$CRUDAS" "$SALIDA" "" "$FASES"
 
 NFASES=$(( $(wc -l < "$FASES") - 1 ))
 if (( NFASES < 2 )); then
@@ -198,18 +209,42 @@ if [[ -z "${ENCINA_CLAVE:-}" ]]; then
     echo "      Faltan escritorio, rejilla de aplicaciones y las dos ventanas."
     echo "      Exportala y vuelve a lanzarlo para tomarlas."
 else
-    "$RAIZ/scripts/teclear-vm.sh" "$VM" texto "$ENCINA_CLAVE" >/dev/null 2>&1 || true
-    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 36 >/dev/null 2>&1 || true   # intro
-    /bin/sleep 25
-    "$RAIZ/scripts/capturar-vm.sh" "$VM" "$SALIDA/escritorio.png" >/dev/null 2>&1 || true
-    comprobar_fichero "escritorio.png" "$SALIDA/escritorio.png"
-    # La rejilla: el dock no se puede pulsar, pero GNOME la abre con teclado.
-    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 53 >/dev/null 2>&1 || true   # esc
-    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 55 >/dev/null 2>&1 || true   # super
+    # EL ORDEN IMPORTA Y LA PRIMERA VERSION LO TENIA MAL: GDM ensena la LISTA de
+    # usuarios, no el campo de la clave. Teclear la contrasena ahi no escribe en
+    # ningun sitio. Primero Intro para elegir al usuario, y solo entonces la
+    # clave. Se captura en cada paso: si algo no llega, se ve en que pantalla se
+    # quedo en vez de tener un PNG final sin explicacion.
+    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 36 >/dev/null 2>&1 || true   # intro: elegir usuario
     /bin/sleep 3
+    "$RAIZ/scripts/capturar-vm.sh" "$VM" "$SALIDA/sesion-1-pide-clave.png" >/dev/null 2>&1 || true
+    comprobar_fichero "sesion-1-pide-clave.png" "$SALIDA/sesion-1-pide-clave.png"
+
+    "$RAIZ/scripts/teclear-vm.sh" "$VM" texto "$ENCINA_CLAVE" >/dev/null 2>&1 || true
+    /bin/sleep 1
+    "$RAIZ/scripts/capturar-vm.sh" "$VM" "$SALIDA/sesion-2-tecleada.png" >/dev/null 2>&1 || true
+    comprobar_fichero "sesion-2-tecleada.png" "$SALIDA/sesion-2-tecleada.png"
+    pendiente_visual "sesion-2: cuenta los puntos. teclear-vm.sh se come caracteres (§4.32h)"
+
+    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 36 >/dev/null 2>&1 || true   # intro: entrar
+    # El escritorio tarda, y cuanto no se sabe: se dispara en rafaga y se agrupa
+    # igual que el arranque, en vez de adivinar un sleep.
+    rafaga "$CRUDAS/sesion" 45
+    agrupar "$CRUDAS/sesion" "$SALIDA" "sesion" "$SALIDA/fases-sesion.tsv"
+
+    # LA REJILLA SE PUEDE CAPTURAR SIN UNA MANO, y esto acota §4.35i: el raton no
+    # llega al invitado, pero SUPER SI -- medido el 2026-08-14, Super abrio el
+    # resumen y Super+A la rejilla-. UTM intercepta Ctrl+Alt, no la tecla de
+    # comando. Como GNOME es un escritorio de teclado, la mitad de las capturas
+    # que se daban por imposibles no lo son.
+    #
+    # Super SOLO abre el RESUMEN, no la rejilla: hace falta Super+A (key code 0).
+    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 53 >/dev/null 2>&1 || true        # esc
+    /bin/sleep 1
+    "$RAIZ/scripts/teclear-vm.sh" "$VM" tecla 0 command >/dev/null 2>&1 || true # super+a
+    /bin/sleep 4
     "$RAIZ/scripts/capturar-vm.sh" "$VM" "$SALIDA/rejilla.png" >/dev/null 2>&1 || true
     comprobar_fichero "rejilla.png" "$SALIDA/rejilla.png"
-    pendiente_visual "mira rejilla.png: si es el resumen y no la rejilla, la tecla Super no llego"
+    pendiente_visual "rejilla.png: mira el boton del dock -- la casilla abierta es que lleva el logo de Ubuntu"
 fi
 
 paso "Salida"

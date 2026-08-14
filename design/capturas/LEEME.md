@@ -25,9 +25,27 @@ La máquina del producto, con `encina-branding` 0.1.9, arrancada desde frío.
 | `01-firmware-barra.png` | 6 s | La barra «Start boot option» del firmware. **Transitoria** |
 | `02-pantalla-apagada.png` | 9–20 s | **«Display output is not active.»** Todo el arranque, en negro |
 | `03-gdm.png` | 23–81 s | El saludador de GDM |
+| `04-bienvenida-dice-ubuntu.png` | tras entrar | **«Le damos la bienvenida a Ubuntu 24.04.4 LTS»**, a pantalla completa |
+| `05-rejilla.png` | Super+A | La rejilla de aplicaciones, con AutoFirma dentro |
+| `06-archivos-gtk4.png` | — | Archivos, que es GTK4/libadwaita |
 | `reconocimiento-firmware-dice-ubuntu.png` | ~10 s | El firmware cargando `\EFI\ubuntu\shimaa64.efi` |
 
-## Los tres hallazgos, y ninguno se esperaba
+## EL HALLAZGO, y no estaba en ninguna lista
+
+**Lo primero que ve alguien que entra por primera vez en Encina OS es una
+pantalla completa que dice «Le damos la bienvenida a Ubuntu 24.04.4 LTS»**, con
+la corona naranja de Ubuntu en el centro y un botón «Siguiente» naranja.
+
+Es `gnome-initial-setup`, sale nada más entrar, y **no aparecía en ninguna
+casilla ni en ningún inventario**. Todo el trabajo de marca del sistema
+instalado —fondo, logotipo de GDM, tema de iconos, GRUB_DISTRIBUTOR— se lo pasa
+por delante esta ventana, que es la que un desconocido mira primero y la única
+que lee palabra por palabra.
+
+Va a `tareas/aspecto/2-golpes-baratos.md`: no es un tema, es un paquete que
+sobra o una clave que lo desactiva, y por tanto es de los baratos.
+
+## Los tres hallazgos del arranque, y ninguno se esperaba
 
 **1. No hay menú de GRUB.** Con un solo sistema operativo está oculto, así que la
 captura que la lista canónica pedía **no existe en esta máquina**. Lo que sí se ve
@@ -83,13 +101,37 @@ Dos criterios, y los dos costaron un defecto del instrumento antes de existir:
   exigirle que coincida sería exigir que las dos dispararan en el mismo
   milisegundo.
 
+## Lo que se vio dentro de la sesión
+
+- **El fondo funciona.** El escritorio lleva la fotografía de `caliza`, que es lo
+  que `encina-branding` pone. Es lo único que se ve de la identidad de Encina en
+  toda la sesión.
+- **El botón de la rejilla lleva el logotipo de Ubuntu**, visto iluminado en el
+  dock con la rejilla abierta. Es la casilla que sigue abierta desde §4.43,
+  ahora con captura y no sólo con `dpkg -S`.
+- **El dock entero es de Ubuntu**: el Centro de aplicaciones con su «A» naranja,
+  el icono de ayuda, y el botón de la rejilla.
+- **Archivos, que es GTK4/libadwaita, sale en claro mientras el shell va en
+  oscuro**, y **sus carpetas son las de Yaru** —berenjena—. Es el dato que
+  decide `3-tema-e-iconos.md`: ahí un tema GTK3 no pinta nada, y lo que sí
+  cambiaría el color de esas carpetas es el acento.
+
 ## Lo que el instrumento todavía NO hace
 
-- **No pasa de GDM.** Entrar en la sesión exige la contraseña del usuario, que no
-  vive en este repositorio: `encina-95758c9e` se instaló contestando las cinco
-  pantallas a mano. **Faltan el escritorio, la rejilla y las dos ventanas** — la
-  mitad de la lista canónica, y justo la mitad donde vive el tema.
 - **Dispara cada 3,1 s de media**, así que una pantalla más corta que eso se
   pierde. Le pasó a la del firmware: salió en el reconocimiento y **no** en las
   dos pasadas buenas. Por eso viaja aquí con el nombre `reconocimiento-`, para
   que se sepa que no sale del mismo sitio que las otras tres.
+- **No tiene control de dos pasadas dentro de la sesión.** Las tres del arranque
+  sí lo tienen; las de dentro se tomaron una vez.
+- **El Intro de la contraseña cae después sobre el diálogo de bienvenida**, que
+  está esperando un «Siguiente». En la pasada del 2026-08-14 eso abrió Firefox
+  con las notas de versión de Ubuntu. No rompe la captura, pero enseña que el
+  guion teclea a ciegas contra una pantalla que no esperaba.
+
+## Y lo que esta pasada le hizo a la máquina, dicho sin maquillar
+
+`encina-95758c9e` **no está como estaba**: se entró en la sesión, se abrieron
+Firefox —con las notas de versión de Ubuntu— y Archivos, y el diálogo de
+bienvenida avanzó de pantalla. Es una máquina medida, y esto queda escrito aquí
+porque la próxima medición que se haga sobre ella tiene que saberlo.

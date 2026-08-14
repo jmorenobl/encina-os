@@ -51,6 +51,12 @@ hacen los iconos y el límite declarado.
 
 - [ ] **El límite de libadwaita, declarado.** En GNOME 46, Archivos, Ajustes, el
       Centro de aplicaciones y el visor de imágenes **ignoran el tema GTK3**.
+      *Primer dato, del 2026-08-14* (`design/capturas/antes/06-archivos-gtk4.png`):
+      Archivos sale **en claro mientras el shell va en oscuro**, y **sus carpetas
+      son las de Yaru**, en berenjena. Ahí un tema GTK3 no pinta nada; lo que sí
+      cambiaría el color de esas carpetas es **el acento**. Es un argumento más
+      para no comprar tema hasta medir
+      [2-golpes-baratos.md](2-golpes-baratos.md).
       *Hecha cuando:* la captura 6 —GTK4 y GTK3 lado a lado— está tomada con el
       tema puesto, y está escrito **qué no cambia y por qué**. No es un defecto:
       es un límite, y en este proyecto los límites se escriben con la forma de D9,

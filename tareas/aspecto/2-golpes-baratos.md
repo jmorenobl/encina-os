@@ -13,6 +13,26 @@ sea el 99 del nombre. Y es especialmente traicionero porque **`gsettings get`
 desde una terminal devuelve el valor de Encina y parece que todo está bien**.
 Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
 
+- [ ] **QUITAR LA PANTALLA QUE DICE «Le damos la bienvenida a Ubuntu 24.04.4
+      LTS». Es la primera de la lista y no estaba en ninguna.** Medido el
+      2026-08-14 al entrar por primera vez en `encina-95758c9e`
+      (`design/capturas/antes/04-bienvenida-dice-ubuntu.png`): nada más iniciar
+      sesión sale `gnome-initial-setup` **a pantalla completa**, con la corona
+      naranja de Ubuntu, el texto en español y un botón «Siguiente» naranja.
+      **Todo el trabajo de marca se lo pasa por delante esta ventana**: el fondo,
+      el logotipo de GDM, el tema de iconos y `GRUB_DISTRIBUTOR` los ve alguien
+      que ya está dentro; esto lo ve **antes que nada**, y es lo único que un
+      desconocido lee palabra por palabra.
+      *Por qué está entre los baratos:* no es un tema ni un icono. Es un paquete
+      que sobra o una clave que lo desactiva, así que cuesta una línea — hay que
+      medir cuál de las dos, y si quitarlo se lleva algo por delante.
+      *Hecha cuando:* una sesión nueva **no** enseña esa ventana, mirado en
+      pantalla, con el control de que el resto de la primera sesión sigue igual.
+      *Y una decisión que hay que tomar de paso, no dejarla caer:* si en su sitio
+      va **una pantalla propia** que diga qué es Encina OS y qué trae, o si no va
+      nada. Lo segundo es defendible y más barato; lo primero es la única
+      oportunidad de contar el producto.
+
 - [ ] **El acento. Ésta es la que más puede rendir y la que hay que medir
       primero.** Ubuntu 24.04 trae selector de color de acento, y su
       implementación **puede alcanzar a las aplicaciones GTK4/libadwaita**, que
