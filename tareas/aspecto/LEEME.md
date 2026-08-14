@@ -64,12 +64,20 @@ tener con qué mirar.
 Por eso el orden de los ficheros es el que es: primero decidir, luego poder ver,
 luego lo barato, y el tema **el cuarto**.
 
+**Y la regla que hace que ese orden se sostenga, aprendida el 2026-08-14 al
+escribirlo mal:** en `0-decidir.md` sólo van casillas que se cierran **pensando y
+escribiendo**. En cuanto un «hecha cuando» pide una captura, una orden o una
+máquina, la casilla ya no es una decisión y baja al fichero que trae el
+instrumento. El inventario de dónde se ve Ubuntu estaba en el 0 y exigía una
+captura por línea: hacía el plan circular —el 0 no se podía terminar sin el 1— y
+se movió al 1, que es donde nace el instrumento que lo prueba.
+
 ## El orden
 
 | | Qué |
 |---|---|
-| [0-decidir.md](0-decidir.md) | La identidad escrita, la licencia de las fotos, el inventario y el tema base |
-| [1-instrumentacion.md](1-instrumentacion.md) | Poder ver lo que se cambia sin reinstalar |
+| [0-decidir.md](0-decidir.md) | La licencia de las fotos, la identidad escrita, los colores que faltan y el tema base |
+| [1-instrumentacion.md](1-instrumentacion.md) | Poder ver lo que se cambia sin reinstalar, y el inventario |
 | [2-golpes-baratos.md](2-golpes-baratos.md) | Acento, tipografía, fondos |
 | [3-tema-e-iconos.md](3-tema-e-iconos.md) | El tema y los iconos |
 | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) | Plymouth, GDM, GRUB |

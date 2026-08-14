@@ -32,16 +32,6 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       el contraste del texto sobre el fondo está **comprobado con un número**, no
       mirado.
 
-- [ ] **Inventariar dónde se ve Ubuntu en el sistema INSTALADO**, midiendo y no
-      suponiendo. El medio va aparte. Cuenta el fondo, la tipografía, el tema de
-      iconos, el acento, el dock, la rejilla, GDM, el menú de GRUB y `os-release`.
-      *Hecha cuando:* hay una lista de ajuste/fichero/cadena, **cada uno con la
-      captura de dónde se ve**. Sin la captura es una lista de sospechas.
-      *Y con el objetivo dicho bien, para no perseguir un imposible:* no se trata
-      de que la palabra «Ubuntu» no exista —`ID_LIKE` tiene que seguir ahí, y la
-      atribución es obligación legal—, sino de que **nada en pantalla presente el
-      producto como Ubuntu**.
-
 - [ ] **El tema base, elegido, anclado y con la licencia leída.** WhiteSur está
       descartado por R8 y el motivo está en [LEEME.md](LEEME.md).
       *Hecha cuando:* está escrito **qué tema, anclado a qué commit, con qué

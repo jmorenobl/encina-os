@@ -29,6 +29,21 @@ encadenarlos.
       comparará todo lo demás, y el día que se pierdan no se pueden rehacer,
       porque la máquina habrá cambiado.
 
+- [ ] **Inventariar dónde se ve Ubuntu en el sistema INSTALADO**, midiendo y no
+      suponiendo. El medio va aparte. Cuenta el fondo, la tipografía, el tema de
+      iconos, el acento, el dock, la rejilla, GDM, el menú de GRUB y `os-release`.
+      *Hecha cuando:* hay una lista de ajuste/fichero/cadena, **cada uno con la
+      captura de dónde se ve**. Sin la captura es una lista de sospechas.
+      *Y con el objetivo dicho bien, para no perseguir un imposible:* no se trata
+      de que la palabra «Ubuntu» no exista —`ID_LIKE` tiene que seguir ahí, y la
+      atribución es obligación legal—, sino de que **nada en pantalla presente el
+      producto como Ubuntu**.
+      *Por qué está aquí y no en [0-decidir.md](0-decidir.md), que es donde se
+      escribió primero:* su «hecha cuando» exige una captura por línea, así que
+      **depende del guion de arriba**. Puesta entre las decisiones hacía el plan
+      circular — el fichero 0 no se podía terminar sin el 1. Es el primer uso real
+      del instrumento, y las seis capturas del «antes» son justamente su prueba.
+
 - [ ] **La orden que rehace un fondo, escrita.** Los maestros son 3936×2624 y lo
       que viaja es 3840×2160: hay un recorte y un redimensionado que se hicieron a
       mano el 2026-08-08 y **no están escritos**. Hoy los fondos se comprueban por
