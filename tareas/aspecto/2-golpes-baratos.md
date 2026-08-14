@@ -59,47 +59,39 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       una. Y antes, comprobar que las variantes están en `encina-95758c9e` y no
       sólo en el constructor.
 
-- [ ] **Elegir el verde, ahora con las capturas delante.** Probado el 2026-08-14
-      **en la máquina del producto, en caliente y sin empaquetar nada**
-      (`design/capturas/acento/`): dos órdenes `gsettings` y el escritorio cambia
-      —carpetas, selección, y **el botón «Siguiente» de la bienvenida, que es
-      GTK4/libadwaita, deja de ser naranja**—. El mecanismo entero funciona.
-      *Lo que las capturas contestan, y no lo hacía el número:* **ninguno de los
-      dos prestados es el verde de Encina.** `sage` `#657B69` es el más cercano
-      por distancia RGB y **el que peor cuenta la identidad**: tan desaturado que
-      pasa por gris, no parece que se haya decidido nada. `viridian` `#03875B` sí
-      cambia la cara, pero es un esmeralda — más de aplicación que de dehesa.
-      *Y con eso la pregunta del fork está contestada por una captura y no por
-      una preferencia:* **si se quiere `#3A664E`, hay que forkear**, porque no hay
-      dónde escribir ese color. Lo que queda por decidir es si se acepta
-      `viridian` como verde de la casa —gratis, hoy, sin paquete— o si el verde
-      encina vale un repositorio y un rebase.
-      *Hecha cuando:* está elegido cuál se usa y escrito **si se forkea o no, y
-      por qué**, con las tres capturas al lado.
-      *Lo que este experimento dejó probado de paso, y es un control gratis:* al
-      resetear, `icon-theme` vuelve a **`Encina`** y no a `Yaru` — el
-      `gschema.override` de `encina-branding` está vivo y gana cuando el usuario
-      no tiene valor propio.
+- [x] ~~**Elegir el verde, ahora con las capturas delante.**~~ **ELEGIDO `sage`
+      el 2026-08-14, decisión de Jorge —«el otro es muy llamativo»— y APLICADO en
+      `encina-branding` 0.1.10**, junto con el dock abajo. Construido en
+      `encina-dev` con `03-construir.sh` —**30 correctas, 0 fallos**, `lintian`
+      sin una línea— e instalado en la máquina del producto; el después está en
+      `design/capturas/despues/`.
+      *Lo que hace el paquete, y por qué así:* `gtk-theme='Yaru-sage'` con su
+      sección `:ubuntu`, y el tema de iconos `Encina` pasa a
+      `Inherits=Yaru-sage,Yaru,hicolor` — **así las carpetas salen verdes sin
+      enviar un solo icono**, y `Encina` sigue siendo el tema efectivo, que es lo
+      que mantiene la bellota.
+      *Y queda escrito lo que es, sin maquillar:* `sage` es **un verde prestado**.
+      El de Encina, `#3A664E`, no está en la lista cerrada de Ubuntu y para
+      tenerlo hay que forkear Yaru — [0-decidir.md](0-decidir.md).
 
-- [ ] **La tipografía.** Es el cambio con más efecto y menos riesgo de todo el
-      bloque: la letra es lo que más grita «Ubuntu» del escritorio, más que el
-      naranja, porque el naranja se ve y la letra se lee sin mirarla. Los
-      criterios y las candidatas están en `design/tipografia.md`, y el primer
-      criterio descarta solo: **si no está empaquetada en el archivo de Ubuntu,
-      no entra**.
-      *Hecha cuando:* la fuente elegida viaja como `.deb` **con su huella en
-      `imagen/repo-manifiesto.tsv`**, el override la fija con su sección
-      `:ubuntu`, y se ve en la captura. Con el control de la comprobación
-      medida: `XDG_CURRENT_DESKTOP=ubuntu:GNOME gsettings get …` dice la nueva.
+- [x] ~~**El dock, abajo.**~~ **HECHO el 2026-08-14, decisión de Jorge.**
+      `dock-position='BOTTOM'` y `extend-height=false` en la sección
+      `[org.gnome.shell.extensions.dash-to-dock:ubuntu]`, que es **la única que
+      hace algo**: `10_ubuntu-dock.gschema.override` fija `'LEFT'` ahí mismo y una
+      sección genérica nuestra perdería. Misma trampa que le pasó al fondo en
+      0.1.2 y al tema de iconos en 0.1.9, y esta vez se supo de antemano.
+      *Flotante y no pegado al borde entero* para que se lea como una decisión y
+      no como el mismo dock girado.
 
-- [ ] **Los fondos, revisados.** Ya hay seis puestos y funcionan. Lo que falta es
-      mirarlos con la identidad delante: si el par claro/oscuro se lee como dos
-      variantes del mismo sitio, y si el de GDM es el que debe.
-      *Hecha cuando:* está decidido cuál es el de fábrica y por qué, y las
-      capturas 3 y 4 lo enseñan.
-      *Y un dato que ya está y ahorra la mitad del trabajo:* `caliza.jpg` es el
-      maestro de los dos que se ven, y `encina-dark.jpg` es el mismo recorte
-      oscurecido — o sea que el par ya es coherente por construcción.
+- [ ] **Actualizar `imagen/repo-manifiesto.tsv`, que ha quedado desfasado.** El
+      manifiesto clava `encina-branding` **0.1.9** en `7c2390dd…` y el paquete va
+      por **0.1.10**, así que hoy la ISO **no se puede fabricar**.
+      *Y no se arregla pegando la huella del `.deb` que se construyó hoy:* ése
+      salió de un `tar` del árbol de trabajo, no de `git archive HEAD`, que es la
+      regla de §4.37d. La huella buena es la que produzca `construir-todo.sh`
+      sobre el árbol versionado.
+      *Hecha cuando:* `construir-todo.sh` pasa entero y **dos pasadas dan la
+      misma huella de ISO**.
 
 ---
 

@@ -52,11 +52,55 @@
 # welcome-dialog-last-shown-version-, asi que este override GANA. Si algun dia
 # alguien lo cambia a mano en Ajustes, ganara la persona: es lo correcto.
 
+# EL TEMA GTK. Desde 0.1.10 es 'Yaru-sage' y no 'Yaru', y esto NO es un tema de
+# terceros: los diez acentos de Ubuntu viajan DENTRO de yaru-theme-gtk y
+# yaru-theme-icon, que ya estan en la maquina. No hay paquete nuevo, ni .deb, ni
+# fila en el manifiesto.
+#
+# POR QUE UN ACENTO Y NO UN COLOR: en Ubuntu 24.04 NO EXISTE la clave
+# 'accent-color' -medido el 2026-08-14, 'gsettings list-keys' no la tiene y
+# pedirla da «No existe la clave»-. Lo que el selector de Ajustes cambia es
+# gtk-theme e icon-theme a 'Yaru-<acento>': el acento es un NOMBRE DE TEMA. La
+# lista es cerrada y el verde encina #3A664E no esta en ella.
+#
+# POR QUE 'sage' Y NO 'viridian', decision de Jorge del 2026-08-14 con las tres
+# capturas delante (design/capturas/acento/): viridian #03875B se lee como verde
+# pero es un esmeralda llamativo; sage #657B69 es apagado, que es lo que dice
+# design/identidad.md -sobria, no llamativa-.
+#
+# Y lo que este valor SI alcanza, medido en caliente en la maquina del producto:
+# las carpetas, la seleccion de las listas y las aplicaciones GTK4/libadwaita
+# -el boton «Siguiente» de la bienvenida deja de ser naranja-. Lo que NO alcanza:
+# el dock y la barra superior, porque son iconos de aplicacion y el tema del
+# shell no tiene variantes de acento.
+
 [org.gnome.desktop.interface]
 icon-theme='Encina'
+gtk-theme='Yaru-sage'
 
 [org.gnome.desktop.interface:ubuntu]
 icon-theme='Encina'
+gtk-theme='Yaru-sage'
+
+# EL DOCK, ABAJO. Decision de Jorge del 2026-08-14.
+#
+# La seccion ':ubuntu' aqui NO es una precaucion, es la UNICA que hace algo:
+# 10_ubuntu-dock.gschema.override define
+# [org.gnome.shell.extensions.dash-to-dock:ubuntu] con dock-position='LEFT', y
+# una seccion generica nuestra perderia contra ella por muy alto que sea el 99
+# del nombre. Es la misma trampa que le paso al fondo en 0.1.2 y al tema de
+# iconos en 0.1.9.
+#
+# extend-height=false deja el dock flotante y centrado en vez de ocupar el borde
+# entero: asi se lee como una decision y no como el mismo dock girado.
+
+[org.gnome.shell.extensions.dash-to-dock]
+dock-position='BOTTOM'
+extend-height=false
+
+[org.gnome.shell.extensions.dash-to-dock:ubuntu]
+dock-position='BOTTOM'
+extend-height=false
 
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/encina/encina.jpg'

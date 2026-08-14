@@ -1,3 +1,37 @@
+encina-branding (0.1.10) noble; urgency=medium
+
+  * EL ACENTO, EL DOCK Y EL PADRE DEL TEMA DE ICONOS. Tres decisiones de
+    Jorge del 2026-08-14, tomadas con las capturas delante y no antes
+    (design/capturas/acento/).
+  * gtk-theme pasa a 'Yaru-sage'. NO es un tema de terceros: los diez
+    acentos de Ubuntu viajan dentro de yaru-theme-gtk y yaru-theme-icon,
+    que ya estan en la maquina. Sin paquete nuevo, sin .deb y sin fila
+    nueva en imagen/repo-manifiesto.tsv.
+  * POR QUE UN ACENTO Y NO UN COLOR: en Ubuntu 24.04 NO EXISTE la clave
+    'accent-color'. Lo que el selector de Ajustes cambia es gtk-theme e
+    icon-theme a 'Yaru-<acento>'; el acento es un NOMBRE DE TEMA y la
+    lista es cerrada. El verde encina #3A664E no esta en ella, asi que
+    este valor es un verde PRESTADO y esta escrito que lo es.
+  * POR QUE 'sage' #657B69 Y NO 'viridian' #03875B: probados los dos en
+    caliente en la maquina del producto. viridian se lee como verde pero
+    es un esmeralda llamativo; sage es apagado, que es lo que pide
+    design/identidad.md.
+  * El tema de iconos Encina pasa a Inherits=Yaru-sage,Yaru,hicolor. Asi
+    las carpetas salen verdes SIN ENVIAR UN SOLO ICONO, y Yaru se queda
+    detras como red de seguridad.
+  * EL DOCK, ABAJO Y FLOTANTE: dock-position='BOTTOM' y
+    extend-height=false, en la seccion [...dash-to-dock:ubuntu], que es
+    la UNICA que hace algo -- 10_ubuntu-dock.gschema.override fija
+    dock-position='LEFT' ahi mismo, y una seccion generica nuestra
+    perderia por muy alto que sea el 99 del nombre. Misma trampa que le
+    paso al fondo en 0.1.2 y al tema de iconos en 0.1.9.
+  * Lo que este cambio NO arregla, dicho para que no se confunda: el
+    boton de la rejilla sigue llevando el logotipo de Ubuntu. La bellota
+    esta en el paquete desde 0.1.9 y el shell no la pinta; eso es
+    MEDICIONES.md 4.43h y sigue abierto.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Fri, 14 Aug 2026 16:00:00 +0000
+
 encina-branding (0.1.9) noble; urgency=medium
 
   * EL LOGO DE LA REJILLA (bloque 1). Hasta hoy el boton de aplicaciones

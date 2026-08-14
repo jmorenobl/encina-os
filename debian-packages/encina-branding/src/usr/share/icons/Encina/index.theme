@@ -1,7 +1,12 @@
 [Icon Theme]
 Name=Encina
-Comment=Iconos de Encina OS. Hereda de Yaru: solo sustituye lo propio.
-Inherits=Yaru,hicolor
+Comment=Iconos de Encina OS. Hereda de Yaru-sage: solo sustituye lo propio.
+# Desde 0.1.10 el padre es Yaru-sage y no Yaru, y por eso las carpetas salen
+# verdes sin enviar un solo icono: Yaru-sage trae 469 ficheros propios -las
+# carpetas entre ellos- y hereda de Yaru para el resto. Yaru se conserva detras
+# como red de seguridad: si algun dia falta el paquete del acento, el tema sigue
+# resolviendo en vez de caer a hicolor.
+Inherits=Yaru-sage,Yaru,hicolor
 Example=folder
 Directories=scalable/actions
 

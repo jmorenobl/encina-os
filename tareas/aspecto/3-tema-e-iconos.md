@@ -34,20 +34,25 @@ hacen los iconos y el límite declarado.
       saliendo del padre** — el control que ya se usó en §4.43d, y que es lo único
       que demuestra que se sustituye lo declarado y nada más.
 
-- [ ] **El logotipo de la rejilla, que sigue abierta desde el bloque 1.** Hoy el
-      botón lleva el de Ubuntu. Lo que ya se descartó con dato: el tema efectivo
-      **es `Encina`**, y el resolvedor de GTK 4 devuelve el fichero de Encina para
-      `view-app-grid-ubuntu-symbolic`, que es el nombre que el dock construye de
-      verdad —no `view-app-grid-symbolic`, que era lo que parecía—. **Y el botón
-      sigue con el de Ubuntu.** O sea: el dibujo no es el problema.
-      *Lo que falta por medir, y está en §4.43h:* a **48 px**, el `sessionMode`
-      leído dentro del shell, y si el `St` del shell usa **otra cadena de temas**
-      que la `Gtk.IconTheme` con la que se midió. Esa tercera es la sospecha
-      buena: el shell no pinta sus iconos con GTK.
-      *Hecha cuando:* lleva la encina, mirado en pantalla tras un reinicio
-      completo, y el resto del escritorio no ha cambiado.
-      *Y al cerrarla:* redibujar el símbolo desde `design/logotipo/encina.svg`,
-      porque hoy no comparten silueta y son el mismo árbol.
+- [x] ~~**El logotipo de la rejilla, que sigue abierta desde el bloque 1.**~~
+      **CERRADA el 2026-08-14, y estaba mal leída desde el principio: el botón
+      NUNCA llevó el logotipo de Ubuntu — lleva la bellota, y la lleva desde
+      0.1.9.** La prueba está en `design/capturas/despues/05-rejilla-bellota.png`:
+      con la rejilla abierta, **la bellota sale iluminada**, que es lo que
+      distingue el botón de aplicaciones de cualquier otro icono del dock.
+      *Qué se estaba mirando entonces:* el **icono naranja de Ubuntu que está en
+      mitad del dock**, que no es un botón — es `gnome-initial-setup`
+      ejecutándose, o sea la propia pantalla de bienvenida. Sale en todas las
+      capturas de `design/capturas/antes/`, justo donde el ojo lo busca.
+      *Y por qué no se vio antes, que es lo que lo explica y no es una excusa:*
+      hasta el 2026-08-14 la ventana de UTM medía 2560×1410 y **el fondo del dock
+      quedaba fuera de la captura**. El botón de la rejilla es el último de la
+      fila y sencillamente no salía. Con el dock abajo sale entero.
+      *Lo que esto deja en pie:* el trabajo de §4.43 —tema propio que hereda de
+      Yaru y no pisa nada (R5), y el nombre `view-app-grid-ubuntu-symbolic` que
+      el dock construye de verdad— **estaba bien y funcionaba**. Lo que fallaba
+      era dónde se miraba. Las tres medidas que §4.43h dejó pendientes ya no hacen
+      falta.
 
 - [ ] **El límite de libadwaita, declarado.** En GNOME 46, Archivos, Ajustes, el
       Centro de aplicaciones y el visor de imágenes **ignoran el tema GTK3**.
