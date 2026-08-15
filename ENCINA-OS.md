@@ -289,10 +289,17 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >
 > **Lo que hay que saber antes de tocar nada, y es de hoy:**
 >
-> 1. **`95758c9e…` YA NO ES LA ISO QUE PRODUCE ESTE REPOSITORIO.** Lleva
->    `encina-branding` **0.1.11** dentro y la buena es **0.1.15** (`6d9fcd64…`).
->    La frase «dos pasadas dan esta huella» sigue siendo verdad sobre aquel árbol
->    y **ha dejado de serlo sobre éste**.
+> 1. **NINGUNA DE LAS TRES ISOs DE `medios/` ESTÁ AL DÍA, y son tres cosas
+>    distintas** — medidas con `shasum` el 2026-08-15, no deducidas del nombre:
+>
+>    | Fichero | Huella | Qué es |
+>    |---|---|---|
+>    | `encina-os-E4-es-0.2.1.iso` | `ac0a5721…` | **La entregada de E4**, y la única de las tres que alguien ha arrancado e instalado (§4.35) |
+>    | `encina-os-E4-es-0.2.1-95758c9e.iso` | `95758c9e…` | La primera que salió **reproducible** de este repositorio (§4.39). Nunca arrancada |
+>    | `encina-os-E4-es-0.2.1-1224b5b1.iso` | `1224b5b1…` | **La última que produce este repositorio**, con `encina-branding` **0.1.11** dentro (§4.45). Nunca arrancada |
+>
+>    O sea que **`1224b5b1…` es la que ha caducado hoy**: lleva 0.1.11 y la buena
+>    es **0.1.15** (`6d9fcd64…`). `95758c9e…` ya estaba superada antes.
 > 2. **Se entregan dos cosas naranjas, a propósito y por escrito.** El recuadro de
 >    selección de usuario de GDM y —fuera de esto— el icono de la Ayuda. El de GDM
 >    **no se arregla con el acento**: el saludador es `gnome-shell`, el tema del

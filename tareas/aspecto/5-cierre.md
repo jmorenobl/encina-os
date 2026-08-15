@@ -26,10 +26,15 @@ Así que la secuencia es:
 | 2 | [../marca-del-medio.md](../marca-del-medio.md) entero | Es lo que de verdad bloquea publicar, y toca el medio |
 | 3 | Las **dos últimas** de este fichero, **una sola vez** | Con 0.1.15 **y** la marca del medio dentro |
 
-*Lo que esto no cambia:* que `95758c9e…` **ya no es** la ISO que produce este
-repositorio, porque lleva `encina-branding` 0.1.11 y la buena es 0.1.15. Eso es
-cierto desde hoy y hay que escribirlo donde esa huella esté citada, aunque la
-refabricación se aplace hasta el paso 3.
+*Lo que esto no cambia:* que **`1224b5b1…` ha caducado** — es la última que
+produce este repositorio (§4.45), lleva `encina-branding` 0.1.11 y la buena es
+0.1.15. Cierto desde hoy, aunque la refabricación se aplace hasta el paso 3.
+
+*Y una corrección, porque la primera versión de este párrafo decía `95758c9e…`:*
+se escribió **por el nombre de la VM del banco** —`encina-95758c9e`— y no por la
+huella del fichero. Medidas las tres de `medios/` con `shasum`: `ac0a5721…` es la
+entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
+`1224b5b1…` la última. **Un nombre de VM no es una medición.**
 
 ---
 

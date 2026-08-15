@@ -40,11 +40,17 @@ otra vez dentro de unos días para meter la marca, es pagar dos veces una vuelta
 de medio. Las tres primeras de ese fichero sí se pueden hacer ya, porque no
 refabrican nada.
 
-**Lo que es cierto desde hoy y hay que escribir donde esa huella esté citada:**
-`95758c9e…` **ya no es la ISO que produce este repositorio**, porque lleva
-`encina-branding` **0.1.11** dentro y la buena es **0.1.15**. No es un fallo —es
-lo que pasa cuando cambian los `.deb`—, pero deja de ser verdad la frase «dos
-pasadas dan esta huella».
+**Lo que es cierto desde hoy:** la última ISO que produce este repositorio es
+**`1224b5b1…`** (§4.45), lleva `encina-branding` **0.1.11** dentro y la buena es
+**0.1.15**, así que **ha caducado**. No es un fallo —es lo que pasa cuando
+cambian los `.deb`—, pero deja de ser verdad la frase «dos pasadas dan esta
+huella» sobre el árbol de hoy.
+
+*Y una corrección del mismo día, que es justo la trampa que este proyecto
+persigue:* esto se escribió primero diciendo `95758c9e…`, **por el nombre de la
+VM del banco y no por la huella del fichero**. `95758c9e…` es la primera ISO
+reproducible (§4.39) y ya estaba superada por `1224b5b1…` desde antes. Se cazó
+midiendo las tres con `shasum`, que es lo que había que hacer desde el principio.
 
 **Y una nota de arquitectura que apareció el 2026-08-15 y no cambia nada todavía:**
 `D9` dice *«solo arm64 por ahora; amd64 cuando haya con qué probarlo»*, y su
