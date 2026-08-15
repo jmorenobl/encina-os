@@ -317,6 +317,59 @@ xrender=false      colores=4317  medio=40590    la interfaz entera
 
 No sirve para ventanas Wayland nativas, solo para las de XWayland.
 
+### Qué hay en el banco: `scripts/inventario-vms.sh` (2026-08-15)
+
+**Se ejecuta en el Mac**, como `capturar-vm.sh` y `teclear-vm.sh`. Lista las VMs
+de UTM con su tamaño, su último arranque y **en qué documentos se las nombra**,
+para decidir qué se borra con datos en vez de con el nombre del directorio.
+
+```bash
+ENCINA_REPO="$PWD" ./scripts/inventario-vms.sh
+./scripts/inventario-vms.sh --vms <dir> --documentos <dir>
+```
+
+**NO BORRA NADA Y NO VA A APRENDER.** Qué VM se va es `[OJOS]` de Jorge. El guion
+imprime `[OMIT]` en esa línea a propósito.
+
+**Las dos cosas que este guion NO contesta, y las dice él mismo por delante:**
+
+1. **Cuánto espacio se recupera.** Imprime `du`, y `du` es una **cota superior**.
+   En APFS dos ficheros comparten bloques —es lo que hace `cp -c`, y lo que hace
+   UTM al duplicar una VM— y `du` los cuenta enteros las dos veces. Ya mordió:
+   `MEDICIONES.md` §4.29 duplicó una VM, `du` dijo 9,2 GB y al borrarla `df`
+   devolvió **0,923 GiB**. **La única medición que vale es `df` antes y después
+   de borrar**, y el guion imprime las tres órdenes.
+2. **Si una VM se puede borrar.** Cuenta menciones, que no es lo mismo. Una VM
+   muy citada puede ser historia cerrada —E1 está terminado 12 de 12— y una sin
+   citar puede ser lo único que queda de algo que nadie escribió. El aviso de
+   «no aparece en ningún documento» está redactado **en los dos sentidos** por
+   eso.
+
+**Los tres controles van antes que la medición**, que es la regla de la casa:
+
+- **1** — el buscador de menciones sabe decir 0 (un nombre inventado) y sabe
+  decir más de 0 (`encina-dev`, 80). **Su rojo está probado**: con
+  `--documentos /tmp` el control 2 falla, salen los 11 avisos de «sin respaldo»
+  y `rc=1`.
+- **2** — **reproduce la trampa de §4.29 en dos segundos**: crea un fichero de
+  200 MB, lo clona con `cp -c`, y enseña que `du` dice **409 600 KiB** mientras
+  `df` dice que el clon costó **4 KiB**. No es una advertencia escrita: es la
+  medición, hecha delante de ti cada vez que ejecutas el guion.
+- **3** — `[OMIT]` honrado: la fecha del último arranque se lee del `mtime` de
+  `Data/efi_vars.fd`, y **no se ha comprobado arrancando una VM y viéndola
+  cambiar**. Es un indicio, no una medición, y va marcado como tal.
+
+**Y detecta una cosa que sí es dura:** si un proceso tiene ficheros abiertos
+dentro del bundle (`lsof`), la VM está arrancada o suspendida y se avisa. Esa no
+se toca.
+
+*Por qué existe este guion, que es la parte que conviene no perder:* el
+2026-08-15 se escribió en tres documentos que la ISO `95758c9e…` llevaba
+`encina-branding` 0.1.11, **porque había una VM llamada `encina-95758c9e`**. Era
+falso —la de 0.1.11 es `1224b5b1…`— y se cazó midiendo las tres con `shasum`.
+**Un nombre de directorio no es una medición**, y este guion existe para no
+volver a tomar una decisión de borrado con esa clase de dato.
+
 ### Las VMs de este proyecto no son comparables entre sí
 
 Medido el 2026-08-08. El `Display Hardware` de UTM no es el mismo en todas, y el
