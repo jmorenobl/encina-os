@@ -79,7 +79,7 @@ redacción y la cuarta se enmienda.
 | D3 | **Se construyen `.deb`; se entrega Encina OS.** El producto final es Ubuntu LTS con los `.deb` de Encina aplicados: ni los `.deb` sueltos, ni una base remasterizada desde cero | Partir de `ubuntu-desktop-minimal` y sumar paquetes propios cuesta mucho menos que construir una base, y hereda las actualizaciones de Ubuntu. Es también lo que ordena §6: primero instalación desatendida, la imagen propia al final. **Reescrita el 2026-08-08:** el motivo sigue en pie y la conclusión anterior («el producto es la paquetería, *no* la ISO») confundía lo que se construye con lo que se entrega. Cae con ella su motivo escrito —«nadie reinstala el sistema para arreglar un trámite que vence hoy»—, que describía a un usuario que ya tiene Ubuntu y ha dejado de ser el destinatario |
 | D4 | Todo declarativo y versionado; Cubic solo como laboratorio | Un chroot editado a mano no es reproducible |
 | D5 | **El repositorio es público, y la imagen se publica en cuanto esté lista, DECLARANDO que es solo arm64. Reescrita el 2026-08-13** | La versión anterior aplazaba la imagen «hasta que exista una arquitectura que otros puedan arrancar», y su motivo era el precio: publicar activa dos obligaciones —responder a un fallo de seguridad de AutoFirma cortando imagen nueva, y **ofrecer la fuente correspondiente** del build parcheado, lo que obliga a hacer públicos `encina-autofirma` y los tres forks— para un público que era el autor. Y ella misma dejó escrito quién la cambiaba: *«si se decide publicar la imagen desde la primera versión arm64, es esta celda la que cambia»*. **Se reescribe, y no porque el precio haya bajado: porque YA ESTÁ PAGADO.** Los tres forks nunca fueron privados —son forks de `ctt-gob-es`, así que nacieron públicos—, `jmorenobl/encina-autofirma` es público desde el 2026-08-13, y la oferta de fuente está escrita en el README junto a la licencia. Que la oferta no es un enlace de adorno lo mide la CI de aquel repositorio, que hace exactamente lo que la obligación exige: clona los tres forks anclados por tag (`v1.9.1`, `v2.1`, `v1.0.7`), construye el `.deb` y lo verifica — verde sobre `main` (`31715687820`, 2026-08-13T15:29Z). **Lo que la decisión nueva compra:** «solo arm64» deja de ser un motivo para no publicar y pasa a ser **una línea de la release**, que es donde D9 quiere que esté un límite declarado — un límite leído hasta el final no bloquea, se anuncia. **Y lo que sigue costando, sin maquillar:** la obligación de cortar imagen nueva ante un fallo de seguridad de AutoFirma es real, no se retira con esta celda y se paga con trabajo; se retira el día de D14, cuando el `.deb` oficial pase `verificar-deb.sh` y este ingrediente sobre. **Lo que bloquea publicar ya no es esta decisión:** es el bloque 1 —el medio todavía dice Ubuntu— y el bloque 3 —3,46 GB no caben en un release de GitHub— |
-| D6 | `ID=ubuntu` intacto en `os-release` | Software de terceros comprueba ese campo; cambiarlo produce fallos inconexos durante meses |
+| D6 | `ID=ubuntu` intacto en `os-release`. **Confirmada y ACOTADA el 2026-08-15 por D22: cubre `ID` y nada más** | Software de terceros comprueba ese campo; cambiarlo produce fallos inconexos durante meses. **La acotación no la debilita, la separa de lo que nunca dijo:** los campos de presentación del mismo fichero —`NAME`, `PRETTY_NAME`, `LOGO` y las cuatro URL de `ubuntu.com`— **no estuvieron nunca cubiertos por D6 y cambian**, porque son marca ante el usuario y no un identificador para scripts; el propio formato los separa con esas palabras (§2.1) |
 | D7 | Tema estético (macOS u otro) en paquete separado, nunca en la base | Es preferencia personal, no necesidad jurisdiccional |
 | D8 | Certificado software FNMT antes que DNIe con lector | Cubre el 90% de trámites y no requiere hardware. **Cumplido:** el positivo de `MEDICIONES.md` §4.9 se hizo con certificado real de la FNMT |
 | D9 | **Solo arm64 por ahora.** amd64 cuando haya con qué probarlo | ~~Solo hay un Mac M3, así que arm64 es lo único que se puede medir~~, y en este proyecto lo que no se mide no se da por bueno. **Es un límite de alcance declarado, no un pendiente.** Consecuencia conocida y medida: B6 (`MEDICIONES.md` §4.9c) es específica de arm64 y no aparecería en amd64. **ENMIENDA DEL 2026-08-15, y es al MOTIVO, no a la decisión: el motivo escrito ha dejado de ser cierto.** Hay un segundo Mac, de 2015 y **Intel**, o sea que **sí hay con qué probar amd64** — que era literalmente la condición que esta celda ponía. La decisión **no cambia hoy**, y el motivo que la sostiene ahora es otro y más pequeño: amd64 no es un ajuste sino **E6 entero** —reconstruir los cuatro `.deb`, repetir allí todas las mediciones y volver a medir AutoFirma, porque B6 no aparecería—, y lo que está en curso es entregar la arm64. O sea que **E6 pasa de «no se puede medir» a «no es la prioridad»**, que es una frase distinta y menos firme: el día que se quiera, ya no hay excusa de banco |
@@ -94,9 +94,143 @@ redacción y la cuarta se enmienda.
 | D17 | **Encina OS no trae suite ofimática ni cliente de correo: trae la base para ver, firmar y enviar un PDF, y un escáner. Decisión de Jorge, 2026-08-12.** Entran de serie **el visor de PDF con el manejador por defecto ATADO** y **`simple-scan`** (1 paquete, §4.26d). **No** entran LibreOffice, Thunderbird ni Okular | **Es D2 llevado a su conclusión:** sumar lo que el producto necesita y dejar que el usuario elija el resto. **El visor no es un paquete nuevo, es un defecto:** hoy `application/pdf` resuelve a `firefox.desktop` y **Evince está instalado sin abrirse nunca** (§4.26c), así que lo que cierra ese eslabón es `xdg-mime`, no instalar otro visor. **HECHO el 2026-08-12, y el defecto era MÁS PEQUEÑO de lo que decía §4.26c** (§4.31d): aquella medición se hizo **por `ssh`**, y sin `XDG_CURRENT_DESKTOP` no se lee `gnome-mimeapps.list`, que ya ataba el PDF a Evince. En una sesión de escritorio de verdad **no estaba roto**. Lo que se pone —`/etc/xdg/mimeapps.list`, de `encina-branding` 0.1.8— hace que **la respuesta sea la misma se pregunte como se pregunte**, y está medido en las dos columnas con el control que discrimina: el mismo fichero diciendo `firefox.desktop` cambia las dos. **`simple-scan` también queda cerrado hasta donde se puede sin hardware:** la ventana dice «Escáner de documentos» y «No se detectó ningún escáner», mirado en pantalla. **Okular se descartó con motivo, no por gusto:** su firma de PDF sería **un segundo consumidor del almacén NSS del usuario**, con su propia regla para elegirlo —la familia de B2, B4 y M6, que ha costado tres sesiones—, y **no añade capacidad**, porque AutoFirma ya firma un PDF suelto. **Y el precio, sin maquillar: cada «que lo instale el usuario» es un cheque contra la tienda.** Con esta decisión la tienda deja de ser un elemento más de la lista de E4 y pasa a ser **la premisa de la que cuelgan las tres**: sin ella la entrega no es «un escritorio que crece», es Ubuntu sin ofimática y sin correo (§4.26c: *el hueco grande no es qué aplicaciones, es que la máquina no puede crecer*) **Y ESA PREMISA SE PUSO A PRUEBA POR PRIMERA VEZ EL 2026-08-12/13** (§4.34): hasta ese día la tienda estaba *instalada* pero **nadie la había abierto** —§4.33j lo decía con todas las letras—, así que «que lo instale el usuario» era un cheque sin cobrar. Cobrado: el Centro de aplicaciones **abre, carga catálogo y encuentra LibreOffice y Thunderbird**, mirado en pantalla, en arm64. **D17 se queda de pie, y ahora medida.** ~~Lo que sigue sin medirse es que la tienda **instale**: nadie ha pulsado «Instalar».~~ **PULSADO EL 2026-08-13, y con esto D17 deja de tener ningún cheque sin cobrar** (§4.35i): `snap changes` registra `Instalar snap "libreoffice"` de `08:12` a `08:22`, las aplicaciones visibles pasan de **27 a 34** con **las siete nombradas una a una**, la tienda **sigue siendo una**, y **LibreOffice Writer abre desde la rejilla en español** —`soffice.bin --writer`, «Sin título 1 — LibreOffice Writer», barra de estado «Español (España)»—. El coste real, medido: 1,17 GB declarados de descarga, `.snap` de 1,1 GB, **2 GiB** en el disco del invitado. **Y la forma (c) de D16 sigue en pie después**, con `~/snap/libreoffice` creado y **0** perfiles de Mozilla dentro, con el control de que el mismo patrón encuentra un perfil fabricado a propósito. **Lo pulsó Jorge**, que es lo que un `[OJOS]` admite: lo que prohíbe es una orden, un fichero o una edición. |
 
 | D18 | **La tienda es el «Centro de aplicaciones» (`snap-store`), y `gnome-software` SALE. Decisión de Jorge, 2026-08-12; D18 reescrita entera, no parcheada.** La tienda **no es una línea de `encina-meta`**: es el snap `snap-store`, que viaja **pre-sembrado dentro del medio** y llega al sistema instalado sin que nadie lo pida, porque desde D16 el seed ya no purga `snapd`. Lo que `encina-meta` 0.2.1 declara es **`snapd`**, el motor sin el cual no hay tienda ninguna | **El motivo nuevo que reabrió esta decisión, y por eso se reescribe en vez de parchearse: la versión anterior eligió `gnome-software` SIN HABER CONSIDERADO `snap-store`**, porque el día que se decidió el seed todavía purgaba `snapd` y **esa tienda no existía en la máquina**. Apareció horas después como efecto imprevisto de §4.31h, y con ella **el usuario veía DOS tiendas** — la enfermedad que la propia D18 nombraba, con dos tiendas en vez de dos Firefox. **MEDIDO ENTERO EL 2026-08-12/13 (§4.34), en dos niveles, y el 2 solo porque el 1 salió verde. La tienda que se queda ABRE Y SIRVE en arm64**, mirado en pantalla: ventana «Centro de aplicaciones», catálogo cargado, y encuentra **LibreOffice y Thunderbird** — que es **la premisa entera de D17** puesta a prueba por primera vez. **Y da MÁS de lo que la versión anterior daba por supuesto: no es solo de snaps.** Su filtro ofrece «Paquetes snap» **y** «Paquetes de Debian», y con el segundo encuentra `file-roller`, que no existe como snap; la misma búsqueda da **cero** con un filtro y **uno** con el otro, así que la prueba sabe dar sus dos respuestas. **El precio de `gnome-software` estaba medido y era real:** 4 paquetes, devolvía `snapd` (§4.26d) y metía **su catálogo dentro del buscador de la rejilla** —el bloque «Software, 15 más» que §4.33c vio al firmar—, que se va con él. **Quitarlo no se llevó nada por delante**, y eso se midió en vez de suponerlo: siguen `snapd`, `simple-scan`, `sane-airscan`, `evince` y los tres paquetes de Encina, con la resta del inventario nombrando **una a una** las tres cosas que se fueron. **Las aplicaciones visibles pasan de 28 a 27 y la que se fue está NOMBRADA** (`org.gnome.Software.desktop`, «Software»), con el control de que el contador sabe decir 2, 1 y 0. **Lo que NO cambia:** en la tienda sigue apareciendo el Firefox del Snap, y quien lo abra y firme falla en silencio por B3 (§4.28); **la defensa entera sigue siendo la condición de D16**. Tampoco entran Flathub ni el plugin de flatpak. **Y el precio de esta decisión, sin maquillar: la tienda deja de estar DECLARADA.** Un `.deb` no puede declarar un snap, así que ahora viaja heredada del medio y lo que la protege es `Depends: snapd` más que el seed no purgue `snapd` |
-| D19 | **La identidad visual, cerrada como decisión el 2026-08-15.** **Para quién:** no un usuario de Linux — una gestoría, un autónomo, un funcionario, alguien mayor con el certificado de la FNMT y un plazo que vence. Gente para la que el ordenador tiene **consecuencias legales**. **Qué transmite:** *«esto es serio y no me va a fallar»* — confianza, calma y permanencia; **no** entusiasmo, **no** modernidad, **no** personalidad. Sobria, cálida y arraigada, con sus opuestos declarados: ni llamativa, ni fría, ni genérica. **La metáfora es la encina**, y no se toca: un árbol que aguanta siglos en suelo pobre y no se muere, con la copa hecha de nodos — la red de confianza que hace posible una firma. **Y QUÉ NO DEBE PARECER, que es la mitad que se olvida, con los tres nombres: (1) no debe parecer UBUNTU** —fuera el naranja, la tipografía Ubuntu y Yaru como identidad visible; el objetivo no es que la palabra no exista, porque `ID_LIKE` y la atribución se quedan, sino **que nada en pantalla presente el producto como Ubuntu**, que es lo único comprobable—; **(2) no debe parecer macOS ni Windows**, que ya es R8, y por un motivo que va más allá de la regla: cambiar «esto es Ubuntu» por «esto es un Mac falso» no es avanzar, y el segundo ni siquiera es una base que puedas atribuir; **(3) no debe parecer un producto oficial de la ADMINISTRACIÓN** —ni rojigualda, ni escudos, ni el azul de las sedes, ni tipografías institucionales—. **La voz también es identidad:** frases cortas en indicativo que digan qué está pasando, nada de «¡Bienvenido!» ni «Preparando tu experiencia» | **Por qué es una decisión y no un documento de diseño:** el texto llevaba escrito desde el 2026-08-14 en `design/identidad.md` y `design/paleta.md`, pero **un documento de diseño se rediscute y una decisión con su motivo no**, que es justo lo que §2 existe para evitar. **El tercer «no» es el que justifica la fila él solo:** el README declara en su primera pantalla que el proyecto no tiene relación con la Administración General del Estado, la FNMT ni Canonical, y **el diseño no puede desmentir esa declaración**. Un sistema que sirve para firmar ante el Estado y que *parece* del Estado induce a error sobre quién responde si algo sale mal — es el riesgo menos evidente y el más caro, y la paleta verde-tierra ya protege de él, pero conviene que sea a propósito. **Lo que esta decisión NO cierra, y está abierto en `tareas/aspecto/0-decidir.md`:** el acento propio `#3A664E` no existe en la lista cerrada de Ubuntu, así que hoy viaja `Yaru-sage`, **un verde prestado que pasa por gris**; tenerlo exige forkear Yaru para añadir una variante. Y los colores semánticos —error, aviso, correcto y texto— están **`PROPUESTO` y no `VIGENTE`** en `design/paleta.tsv`, con su contraste calculado. **Y un fallo que salió al medirlos, que esta fila no tapa:** el acento sobre `acento-profundo` da **1,68** — el acento no se lee sobre el fondo oscuro de la propia marca, y ese par no se había medido nunca |
+| D19 | **La identidad visual, cerrada como decisión el 2026-08-15.** **Para quién:** no un usuario de Linux — una gestoría, un autónomo, un funcionario, alguien mayor con el certificado de la FNMT y un plazo que vence. Gente para la que el ordenador tiene **consecuencias legales**. **Qué transmite:** *«esto es serio y no me va a fallar»* — confianza, calma y permanencia; **no** entusiasmo, **no** modernidad, **no** personalidad. Sobria, cálida y arraigada, con sus opuestos declarados: ni llamativa, ni fría, ni genérica. **La metáfora es la encina**, y no se toca: un árbol que aguanta siglos en suelo pobre y no se muere, con la copa hecha de nodos — la red de confianza que hace posible una firma. **Y QUÉ NO DEBE PARECER, que es la mitad que se olvida, con los tres nombres: (1) no debe parecer UBUNTU** —fuera el naranja, la tipografía Ubuntu y Yaru como identidad visible; el objetivo no es que la palabra no exista, porque `ID_LIKE` y la atribución se quedan, sino **que nada en pantalla presente el producto como Ubuntu**, que es lo único comprobable— *(**corrección del 2026-08-15, D22:** la atribución técnica que esta celda situaba en `ID_LIKE` está en realidad en `ID`, que D6 mantiene en `ubuntu`; con `ID=ubuntu`, `ID_LIKE` sigue valiendo `debian` y no cambia. Lo que la celda quería decir sigue en pie)*; **(2) no debe parecer macOS ni Windows**, que ya es R8, y por un motivo que va más allá de la regla: cambiar «esto es Ubuntu» por «esto es un Mac falso» no es avanzar, y el segundo ni siquiera es una base que puedas atribuir; **(3) no debe parecer un producto oficial de la ADMINISTRACIÓN** —ni rojigualda, ni escudos, ni el azul de las sedes, ni tipografías institucionales—. **La voz también es identidad:** frases cortas en indicativo que digan qué está pasando, nada de «¡Bienvenido!» ni «Preparando tu experiencia» | **Por qué es una decisión y no un documento de diseño:** el texto llevaba escrito desde el 2026-08-14 en `design/identidad.md` y `design/paleta.md`, pero **un documento de diseño se rediscute y una decisión con su motivo no**, que es justo lo que §2 existe para evitar. **El tercer «no» es el que justifica la fila él solo:** el README declara en su primera pantalla que el proyecto no tiene relación con la Administración General del Estado, la FNMT ni Canonical, y **el diseño no puede desmentir esa declaración**. Un sistema que sirve para firmar ante el Estado y que *parece* del Estado induce a error sobre quién responde si algo sale mal — es el riesgo menos evidente y el más caro, y la paleta verde-tierra ya protege de él, pero conviene que sea a propósito. **Lo que esta decisión NO cierra, y está abierto en `tareas/aspecto/0-decidir.md`:** el acento propio `#3A664E` no existe en la lista cerrada de Ubuntu, así que hoy viaja `Yaru-sage`, **un verde prestado que pasa por gris**; tenerlo exige forkear Yaru para añadir una variante. Y los colores semánticos —error, aviso, correcto y texto— están **`PROPUESTO` y no `VIGENTE`** en `design/paleta.tsv`, con su contraste calculado. **Y un fallo que salió al medirlos, que esta fila no tapa:** el acento sobre `acento-profundo` da **1,68** — el acento no se lee sobre el fondo oscuro de la propia marca, y ese par no se había medido nunca |
 | D21 | **El icono del Centro de aplicaciones se sustituye SOMBREANDO SU `.desktop`, no desde el tema de iconos. Decisión de Jorge, 2026-08-15.** Un `.desktop` propio en `/usr/share/applications` con el id del snap, `Name=Centro de aplicaciones`, el mismo `Exec`, `TryExec=/snap/bin/snap-store` y `Icon=` de Encina. La aplicación sigue siendo la misma y se abre igual: cambia el cuadrado del dock y de la rejilla. **Y el criterio general, que es lo que no hay que rediscutir la próxima vez:** cuando el icono de una aplicación ajena **no es alcanzable desde el tema**, la vía es sombrear su `.desktop` — **nunca** tocar el fichero ajeno. **Entra en la vuelta de `encina-branding`, y la casilla NO se marca hasta que el icono esté dibujado y visto en pantalla** | **Porque no había otra vía, y eso está medido, no supuesto** (`MEDICIONES.md` §4.47): su `.desktop` no declara un nombre sino una **ruta absoluta dentro del snap** —`Icon=${SNAP}/…/app-center.png`, escrita por el propio snap en su `meta/gui`, idéntica en la revisión del producto (1271) y en la del banco (1391)—, así que `Gio` devuelve un `GFileIcon` y **ningún tema interviene**: ni el nuestro ni el de Ubuntu, con el control de que la misma función da el mismo fichero con los dos. Y el fichero vive en un squashfs de solo lectura que se sustituye entero en cada autorrefresco. **La forma no es nueva:** `encina-firefox-native` sombrea `firefox_firefox.desktop` desde la 0.2.1 y está medido en producción (§4.19); el árbol sintético confirma que `/usr/share` gana a `/var/lib/snapd/desktop`, con el control invertido. **R5 sigue intacta:** fichero nuestro, directorio nuestro, ningún fichero de Canonical tocado — y la objeción de fondo («repintar la aplicación de otro») está contestada con dato: **el propio Ubuntu sirve el icono de aplicaciones ajenas 62 veces de 71**. **El motivo de producto:** es lo único que queda en el escritorio con marca de Canonical a la vista, y encima donde el ojo va primero; el nombre ya no delata nada porque ellos mismos lo traducen. **El precio, sin maquillar:** seis líneas que hay que mantener —no cincuenta y cinco: la ISO fija `locale=es_ES.UTF-8` (§7.7), así que las traducciones del `Name=` no se copian, **y quien cambie el idioma del sistema verá ese nombre en español**—, más lo que Canonical añada a ese fichero y nuestra copia no recoja. Sin `TryExec` quitar la tienda dejaría un lanzador roto. **Y abre trabajo que hoy no existe: el icono hay que dibujarlo**, con la paleta todavía en `PROPUESTO`. **Qué la reabriría:** que el App Center deje de empotrar su icono y pase a declararlo por nombre, o que la tienda cambie (D18) |
 | D20 | **NO se forkea Yaru. El acento del producto es `Yaru-sage`, prestado. Decisión de Jorge, 2026-08-15.** Se queda lo que ya viaja desde `encina-branding` 0.1.10: `gtk-theme='Yaru-sage'` y el tema de iconos `Encina` heredando `Yaru-sage,Yaru,hicolor`. **Y se acepta por escrito lo que cuesta:** `sage` es `#657B69`, **no** el `#3A664E` de la marca, y está tan desaturado que **pasa por gris** — o sea que hoy el producto **no tiene su acento**, tiene uno prestado que casi no se lee como decisión. **Con ella caen dos casillas de `tareas/aspecto/0-decidir.md`**: la del tema base y la de dónde vive el fork, que se queda sin objeto | **El motivo es la agilidad, y se dice tal cual en vez de disfrazarlo de criterio técnico.** La alternativa medida era forkear Yaru para añadir una variante `encina` — que **no es un rediseño**: la lista de acentos es cerrada, `#3A664E` no está en ella, y añadir uno es una diferencia de datos en un SCSS (§2 de `2-golpes-baratos.md`). Pero un fork arrastra **repositorio aparte, construcción con meson y sassc, relación de rebase con aguas arriba, oferta de fuente propia y un anclaje para que un `apt upgrade` no lo pise en silencio** — las mismas cinco cosas que `encina-autofirma`, para cambiar un color. **Lo que se compra:** cero paquetes nuevos, cero filas en el manifiesto y cero mantenimiento; los diez acentos ya viajan dentro de `yaru-theme-gtk` y `yaru-theme-icon`. **Lo que se paga, y no se maquilla:** el verde de la identidad no está en pantalla, y `design/identidad.md` sigue diciendo que la cara del producto es propia. **Qué reabriría esta decisión, que es lo que la hace revisable y no un dogma:** que Ubuntu abra el acento a un valor libre —hoy no existe la clave `accent-color` (§2 de `2-golpes-baratos.md`)—, que el fork deje de costar un repositorio porque el tema del shell obligue a uno de todas formas, o que alguien mire la pantalla y diga que el gris no pasa. **Es una decisión de compromiso tomada a sabiendas, no un descuido** |
+| D22 | **LO QUE OBLIGAN LOS TÉRMINOS DE CANONICAL, leídos el 2026-08-15 y citados literalmente en §2.1.** El documento que manda es **uno solo**: la *IPRights Policy* de Canonical, **fechada el 15 de julio de 2015**. **(1) SE PUEDE nombrar a Ubuntu como hecho técnico y como atribución, nunca como identidad**, y la forma exacta —la única que este proyecto usa— tiene dos versiones. **Larga**, para el README, la página de la publicación y cualquier «Acerca de»: *«Encina OS está construido sobre Ubuntu 24.04 LTS. Ubuntu es una marca registrada de Canonical Ltd. Encina OS no está afiliado a Canonical Ltd. ni avalado por ella.»* **Corta**, donde no quepa: *«Derivado de Ubuntu; ni publicado ni avalado por Canonical Ltd.»* Va en **texto corrido**, y **nunca**: en el nombre del producto, en un título de ventana, en un icono, dentro de un logotipo, ni en el nombre de un volumen, de un fichero, de un paquete o de un dominio. **(2) NO SE PUEDE usar la marca ni los logotipos como identidad del producto**, y de ahí sale el criterio que reparte los 39 sitios de §4.51 en tres pilas, que es lo que esta decisión aporta de verdad: **marca no es cadena**. **Pila A —lo que presenta el producto ante el usuario— SALE, sin excepción:** el `Volume id`, el `menuentry` del GRUB, `/.disk/info` y con él el rótulo del icono del instalador, el título de su ventana, las diapositivas, `NAME`, `PRETTY_NAME` y `LOGO` de `os-release`, `DISTRIB_DESCRIPTION` de `lsb-release`, `/etc/issue`, el `Name=Ubuntu` de la sesión Wayland y el tema de texto de Plymouth. **Pila B —activos gráficos de Canonical— SE QUITAN O SE SUSTITUYEN aunque no lleguen a verse:** `watermark.png` y `bgrt-fallback.png` del `initrd`, `ubuntu-logo.png`, `warty-final-ubuntu.png`, `ubiquity.png`, y `logo-light.svg`, `logo-dark.svg`, `mascot*.svg`, `ubuntu_pro.svg` y `ubuntu_certified.svg` del snap. **Pila C —procedencia técnica— SE QUEDA, y quedarse es lo correcto:** `ID=ubuntu` (D6) y su gemelo `DISTRIB_ID` de `lsb-release`, los 155 nombres de `.deb` con `-Nubuntu`, `Origin: Ubuntu` del `Release` firmado y las fuentes de `apt` que apuntan a `archive.ubuntu.com`. **(3) `os-release`: LA POLÍTICA NO LO NOMBRA** —ni él ni ningún otro fichero, y eso va escrito porque es lo que se cuela—, así que la obligación se deriva de **qué hace cada campo**, y eso sí está escrito: la especificación del formato dice que `NAME` y `PRETTY_NAME` son *«suitable for presentation to the user»* y que `ID` es *«suitable for processing by scripts»*. **Cambian los de presentación y NO cambia `ID`: D6 sigue entera**, porque hablaba solo de `ID` y **nunca autorizó `NAME="Ubuntu"`**. `LOGO=ubuntu-logo` es pila B. **Las cuatro URL de `ubuntu.com` se van** —mandan al usuario al soporte de Canonical, que es lo más parecido a implicar aval que hay en el fichero, y la especificación las declara opcionales—; hasta que existan las propias, se quitan. **Y una corrección a D19 de paso: la atribución que aquella daba por hecha en `ID_LIKE` está en realidad en `ID`**, porque D6 mantiene `ID=ubuntu` y entonces `ID_LIKE` sigue siendo `debian` y no cambia. **Lo que esta decisión NO decide, a propósito: el mecanismo y el momento** —si ese fichero lo escribe un `dpkg-divert` desde un paquete o la construcción de la imagen—, que son de las casillas 3 y 4 | **Porque la casilla pedía una decisión y no una impresión, y el riesgo de esta casilla era exactamente ése: es la única del bloque 1 que no tiene un comando que la demuestre.** De ahí la forma: **cita literal con su URL, su fecha de consulta y la huella del texto en §2.1**, y todo lo interpretado marcado como lectura. **La frase que decide el caso es una sola:** *«Any redistribution of modified versions of Ubuntu must be approved, certified or provided by Canonical if you are going to associate it with the Trademarks. Otherwise you must remove and replace the Trademarks…»* — y Encina OS es exactamente eso, una redistribución modificada y sin aprobar. **Lo que la política NO dice, que es la mitad que se olvida:** no contiene la expresión «derived from Ubuntu» **ni ninguna fórmula autorizada** —la de arriba es **nuestra**, elegida para caber en lo que sí concede: *«you may reference Ubuntu, but must avoid: (i) any implication of endorsement»*—; no nombra ningún fichero; no da umbral de qué cuenta como *modification*; y **no existe ningún documento de Canonical para distribuciones derivadas**, comprobado contra el índice, que tiene 27 entradas y ninguna lo es. **Por qué hace falta «marca no es cadena»:** *remove and replace the Trademarks* no puede querer decir borrar las 39 apariciones, porque `Origin: Ubuntu` vive dentro de un `Release` **firmado por Canonical** que no se puede tocar (§4.32) y los nombres de los 155 `.deb` los pone el propio Ubuntu; leerlo así haría imposible **cualquier** derivada, incluida E5. **El precio, sin maquillar, y es el resultado que importa: con este criterio la ISO de hoy NO SE PUEDE PUBLICAR**, y lo que lo bloquea no son los 60 bytes de `.disk/info` sino la pila B **dentro del snap firmado de 109 MB** (§4.51) — o sea que **D22 no resuelve la decisión de fondo del bloque 1 —reempaquetar o E5—: la endurece**. **Y una incoherencia declarada, no un descuido:** con D6 el producto se identifica ante los scripts como `ubuntu` para siempre mientras la pantalla dice Encina; la política no dice nada de eso y D6 tiene su motivo técnico. **No confundir con las licencias de los paquetes**, que es la otra trampa: los paquetes se redistribuyen por su licencia libre —lo dice la propia política, *«This does not affect your rights under any open source licence»*— y lo que decide **cómo se llama el producto** es esta política y solo ella. **Qué reabriría D22:** que Canonical publique una IPRights Policy nueva —la vigente es de 2015 y en §2.1 queda la huella de lo citado—, que se pida y se obtenga el permiso escrito que el §4 admite, o que el producto deje de derivar de Ubuntu |
+
+---
+
+### 2.1 Los términos de Canonical, citados literalmente
+
+**Esto es la prueba de D22, y va aparte a propósito.** No hay comando que
+demuestre una lectura, así que lo único que la hace verificable es que **cualquiera
+pueda abrir la misma página y comparar**. Lo citado va en inglés y sin traducir;
+la traducción sería ya una lectura.
+
+**Fuente que manda —hay una sola: la *IPRights Policy* de Canonical**,
+`https://ubuntu.com/legal/intellectual-property-policy`. Todo lo demás que se
+cita abajo es apoyo, y va marcado como tal.
+
+| Dato | Valor |
+|---|---|
+| Fecha del documento | **15 de julio de 2015** (la página anterior, del 14 de mayo de 2013, sigue enlazada como *Older versions*) |
+| Consultado | **2026-08-15T20:44Z** |
+| Redirección | `ubuntu.com/…` → **301** → `canonical.com/legal/intellectual-property-policy`, `200` |
+| Huella del texto citado | secciones 1 a 9, texto plano: **7 056 bytes**, `sha256 3e290677…` |
+| Licencia del propio texto | *«published by Canonical Limited … under the Creative Commons CC-BY-SA version 3.0 UK licence»* |
+
+**Y dos cosas medidas sobre las fuentes, que importan porque este proyecto cita
+URL:** la dirección `ubuntu.com/legal/intellectual-property-rights-policy` —con
+el `rights` que lleva el nombre por el que se la conoce— da **404**; la viva es
+`…/intellectual-property-policy`, sin él. Y el enlace *«Ubuntu
+logo guidelines»* del §6 de la propia política, `design.ubuntu.com/brand/ubuntu-logo`,
+**ya no lleva a ninguna directriz**: redirige a `design.ubuntu.com/brand`, que
+tiene valores de marca, logotipos y paleta, y **ni una línea sobre permisos**.
+O sea que **la política remite a unas directrices que no están donde dice**.
+
+#### Lo que el texto DICE — citas literales
+
+> **§3** — *«You can redistribute Ubuntu, but only where there has been no modification to it.»*
+
+> **§3** — *«Any redistribution of modified versions of Ubuntu must be approved, certified or provided by Canonical if you are going to associate it with the Trademarks. Otherwise you must remove and replace the Trademarks and will need to recompile the source code to create your own binaries. This does not affect your rights under any open source licence applicable to any of the components of Ubuntu.»*
+
+> **§3** — *«We do not recommend using modified versions of Ubuntu which are not modified in accordance with this IPRights Policy. … If they use the Trademarks, they are in contravention of this IPRights Policy.»*
+
+> **§4** — *«You can use the Trademarks, in accordance with Canonical's brand guidelines, with Canonical's permission in writing.»*
+
+> **§4** — *«You will require Canonical's permission to use: (i) any mark ending with the letters UBUNTU or BUNTU which is sufficiently similar to the Trademarks or any other confusingly similar mark, and (ii) any Trademark in a domain name or URL or for merchandising purposes.»*
+
+> **§4** — *«You cannot use the Trademarks in software titles. If you are producing software for use with or on Ubuntu you may reference Ubuntu, but must avoid: (i) any implication of endorsement, or (ii) any attempt to unfairly or confusingly capitalise on the goodwill of Canonical or Ubuntu.»*
+
+> **§4** — *«You can write articles, create websites, blogs or talk about Ubuntu, provided that it is clear that you are in no way speaking for or on behalf of Canonical and that you do not imply endorsement by Canonical.»*
+
+> **§2** — *«Ubuntu is an aggregate work of many works, each covered by their own licence(s). … For the avoidance of doubt, where any other licence grants rights, this policy does not modify or reduce those rights under those licences.»*
+
+> **§5** — *«The disk, CD, installer and system images, together with Ubuntu packages and binary files, are in many cases copyright of Canonical … and can only be used in accordance with the copyright licences therein and this IPRights Policy.»*
+
+> **§5** — *«Canonical owns intellectual property rights in the trade dress and look and feel of Ubuntu (including the Unity interface), along with various themes and components that may include unregistered design rights, registered design rights and design patents…»*
+
+**La lista de marcas, y las dos fuentes no dicen lo mismo** —conviene saberlo
+antes de citar una sola—. El §4 de la política lista **seis**: UBUNTU, KUBUNTU,
+EDUBUNTU, XUBUNTU, JUJU, LANDSCAPE. La página de marcas
+(`https://ubuntu.com/legal/trademarks`, consultada el mismo día, redirige a
+`canonical.com`) lista **dieciséis**: las seis más CANONICAL, LAUNCHPAD, LUBUNTU,
+BAZAAR, BOOTSTACK, JAAS, LXD, MAAS, SNAPCRAFT y SNAPPY. Las dos coinciden en la
+que importa aquí —**UBUNTU**— y la segunda añade el aviso de que *«The absence of
+a name or logo from the list above does not constitute a waiver by Canonical of a
+Canonical trademark or other intellectual property rights concerning that name or
+logo»*.
+
+**Y una cita que no es de Canonical**, porque el §3 de D22 se apoya en ella: la
+especificación del formato `os-release`, leída en su fuente
+(`https://raw.githubusercontent.com/systemd/systemd/main/man/os-release.xml`,
+consultada el 2026-08-15 — la página de `freedesktop.org` contesta **418** a un
+cliente que no es un navegador). Define `NAME` como *«A string identifying the operating
+system … suitable for presentation to the user»*, `PRETTY_NAME` como *«A pretty
+operating system name in a format suitable for presentation to the user»*, `ID`
+como *«A lower-case string … suitable for processing by scripts or usage in
+generated filenames»*, `LOGO` como *«the name of an icon … This can be used by
+graphical applications to display an operating system's or distributor's logo»*,
+y de las URL dice *«These settings are optional»* y que van *«behind links with
+captions such as "About this Operating System", "Obtain Support"»*.
+
+#### Lo que el texto NO DICE — y se escribe porque es lo que se cuela
+
+1. **No contiene la expresión «derived from Ubuntu», ni «based on Ubuntu», ni
+   ninguna fórmula autorizada** para que una derivada nombre su base. Lo único
+   que concede es *referenciar* sin implicar aval, y lo concede hablando de
+   *«software for use with or on Ubuntu»* —que no es exactamente nuestro caso—,
+   y de artículos, webs y blogs. **La fórmula de D22 es nuestra**, no de ellos.
+2. **No nombra ningún fichero.** Ni `os-release`, ni `lsb-release`, ni `ID`, ni
+   `ID_LIKE`, ni `/etc/issue`. Todo lo que D22 dice de `os-release` es derivación.
+3. **No da un umbral de qué cuenta como *modification*.** Añadir cuatro `.deb` y
+   un seed a una ISO oficial es obviamente modificarla, pero el texto no gradúa.
+4. **No explica cómo atribuir.** No hay «pon esta línea en el pie».
+5. **No hay ningún documento de Canonical para distribuciones derivadas.**
+   Comprobado el 2026-08-15 contra `canonical.com/legal/terms-and-policies`:
+   **27 entradas** —desde la licencia de la tipografía hasta los términos de la
+   tienda de snaps— y **ninguna** sobre derivadas. Lo que hay en el wiki de la
+   comunidad (`wiki.ubuntu.com/DerivativeTeam/FAQ`) **no es de Canonical, no está
+   mantenido desde enero de 2020**, y a la pregunta de la marca contesta
+   remitiendo a esta misma política.
+
+#### Lectura mía — todo esto es interpretación, no cita
+
+- **«Remove and replace the Trademarks» no puede ser literal sobre cada cadena.**
+  Si lo fuera, ninguna derivada sería posible: `Origin: Ubuntu` está dentro de un
+  `Release` firmado por Canonical, y quitar la palabra de los 155 nombres de
+  `.deb` obligaría a renumerar el archivo entero. Lo que se quita es **la marca
+  usada como marca**: el nombre del producto, sus logotipos y su presentación.
+  De ahí las tres pilas de D22.
+- **La pila B se quita aunque no se vea.** El texto habla de la *redistribución*,
+  no de lo que se enseña, así que lo conservador es no distribuir los activos de
+  Canonical. Hay una lectura más laxa —sólo importa lo que el usuario ve—, y se
+  descarta a propósito: el objetivo de todo el bloque 1 es que publicar sea
+  defendible, no que sea discutible.
+- **`ID=ubuntu` no es un uso de marca.** Es un identificador para scripts, y el
+  formato lo dice. Presentar el producto como Ubuntu es otra cosa, y eso es lo
+  que cambia.
+- **El nombre no colisiona:** «Encina OS» no termina en `UBUNTU` ni en `BUNTU`,
+  así que la cláusula (i) del §4 no aplica; y ninguno de los dominios de §3.1
+  lleva la marca, que es la cláusula (ii).
+- **`recompile the source code to create your own binaries` es la frase más cara
+  del texto y no se acata como está escrita.** El §2 y el propio §3 dicen que la
+  política no reduce los derechos que dan las licencias libres, y esas licencias
+  ya permiten redistribuir los binarios. Lo que sí obliga es sustituir los
+  binarios que **llevan la marca dentro** —el snap del instalador, los temas, los
+  iconos—. **Es una lectura, y si algún día importa de verdad, se pregunta a un
+  abogado y no a este documento.**
+- **R8 se queda corta y conviene precisarlo cuando toque**: dice *«ningún activo
+  de terceros: ni marca Canonical»* y se escribió pensando en **no añadirlos**;
+  §4.51 mide que el medio **los hereda**. La regla no distingue, y con D22 la
+  pila B dice que da igual cómo llegaron.
+- **Yaru no está resuelto aquí.** El §5 reclama derechos sobre *«trade dress and
+  look and feel … along with various themes»*, y D20 decidió seguir usando
+  `Yaru-sage`. Mi lectura es que usar Yaru bajo su licencia es una cosa y
+  presentar el producto como Ubuntu es otra, y que D19 ya prohíbe lo segundo
+  —fuera el naranja y la tipografía Ubuntu—, pero **el texto no lo aclara** y
+  queda dicho que no lo aclara.
 
 ---
 
@@ -269,8 +403,37 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >
 > **Que el medio y el instalador dejen de decir Ubuntu.** Eran **4 casillas** —y
 > antes 5, porque la del logotipo de la rejilla resultó ser una copia rancia de
-> una que ya estaba cerrada—; **la primera está hecha el 2026-08-15 y quedan
-> 3**. Es **lo que bloquea publicar** junto con los 3,46 GB del alojamiento.
+> una que ya estaba cerrada—; **las dos primeras están hechas el 2026-08-15 y
+> quedan 2**. Es **lo que bloquea publicar** junto con los 3,46 GB del
+> alojamiento.
+>
+> **LA SEGUNDA CASILLA, CERRADA HOY: los términos de Canonical están leídos y lo
+> que obligan está escrito — es D22, con las citas literales en §2.1.** Es la
+> única casilla del bloque sin comando que la demuestre, así que lo que la hace
+> verificable es la forma: **fuente, fecha de consulta, redirección y huella del
+> texto**, y **lo leído separado de lo interpretado**. Tres cosas que cambian el
+> trabajo que viene:
+>
+> - **«Marca no es cadena»**, y con eso los 39 sitios de §4.51 se reparten en
+>   **tres pilas**: lo que presenta el producto ante el usuario **sale**; los
+>   activos gráficos de Canonical **salen aunque no se vean**; y la procedencia
+>   técnica —`ID=ubuntu`, los 155 nombres de `.deb`, `Origin: Ubuntu` del
+>   `Release` firmado— **se queda, y quedarse es lo correcto**. Sin este reparto
+>   la casilla siguiente no tiene criterio para parar.
+> - **La fórmula de atribución es NUESTRA, no de ellos.** La política **no
+>   contiene** «derived from Ubuntu» ni ninguna otra autorizada, y **no existe
+>   ningún documento de Canonical para derivadas** (27 entradas en su índice
+>   legal, ninguna lo es). Lo que concede es referenciar sin implicar aval.
+> - **La ISO de hoy no se puede publicar, y el bloqueo tiene nombre:** no son los
+>   60 bytes de `.disk/info`, son los logotipos **dentro del snap firmado de
+>   109 MB**. D22 **no resuelve** la pregunta de fondo del bloque —reempaquetar o
+>   E5—: **la endurece**.
+>
+> **Y dos efectos fuera del bloque:** `os-release` sale **a medias** de §8 —lo
+> decidido es qué campos cambian; sigue fuera el mecanismo, porque el
+> `os-release` del medio vive dentro de una capa de 1,69 GB y un `dpkg-divert`
+> desde un `.deb` **no lo alcanza**—, y **D6 queda acotada, no debilitada**:
+> cubre `ID` y nunca cubrió `NAME`.
 >
 > **LA PRIMERA CASILLA, CERRADA HOY (`MEDICIONES.md` §4.51): el medio dice Ubuntu
 > en 39 sitios, y están todos con su fichero, su cadena y dónde se ve.** Leídos
@@ -296,9 +459,13 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >   literales están en el binario— y si el `whitelabel.yml` se puede apuntar desde
 >   fuera del snap.
 >
-> **Lo siguiente es la casilla 2: leer los términos de Canonical y escribir qué
-> obligan.** Le llega ya con el dato que necesitaba: `os-release` del medio dice
-> `NAME="Ubuntu"`, `ID=ubuntu`, `LOGO=ubuntu-logo` y cuatro URL de `ubuntu.com`.
+> **Lo siguiente es la casilla 3: el arranque y el instalador, con identidad de
+> Encina** — y es la cara que se ve, así que la cierra un `[OJOS]`. Le llegan ya
+> **el inventario** (§4.51, con lo barato y lo caro separados) y **el criterio de
+> parada** (D22, las tres pilas): lo que falta por decidir ahí dentro es **hasta
+> dónde llega el reempaquetado**, con dos cosas todavía sin medir y nombradas en
+> §4.51 — cuál de las dos fuentes rellena `{{ DISTRO }}` y si el `whitelabel.yml`
+> se puede apuntar desde fuera del snap.
 >
 > **Por qué le toca ahora:** `aspecto/` ha cumplido su turno. El 2026-08-15 Jorge
 > dio por bueno lo visual —*«como está, está bastante bien, y ya le da un toque
@@ -827,10 +994,22 @@ No implementar, no preparar, no dejar «ganchos para el futuro»:
 
 `encina-doctor` y cualquier herramienta de diagnóstico · `encina-locale-es` ·
 DNIe, `opensc` y PKCS#11 como funcionalidad · repo APT **firmado** y
-`encina-keyring` · `os-release` y `dpkg-divert` · `live-build`, `debos` y Cubic ·
+`encina-keyring` · ~~`os-release` y `dpkg-divert`~~ **`dpkg-divert` sobre
+`os-release` desde un paquete** · `live-build`, `debos` y Cubic ·
 temas de GTK o iconos · cualquier GUI · amd64.
 
-Tres matices:
+Cuatro matices:
+
+- **`os-release` sale de esta lista a medias, el 2026-08-15, y se dice por qué en
+  vez de cambiarlo en silencio: D22 choca de frente con esta línea.** Lo que
+  estaba fuera de alcance era la pregunta entera, y D22 la contesta: **qué campos
+  cambian y cuáles no está decidido** —presentación fuera, `ID` intacto (D6)—.
+  Lo que sigue fuera de alcance es **el mecanismo**, y ahora con motivo medido:
+  el `os-release` que dice Ubuntu en el arranque del medio **vive dentro de una
+  capa `squashfs` de 1,69 GB** (§4.51), o sea que **un `dpkg-divert` desde un
+  `.deb` no llega a tocarlo** —`encina-branding` no llega al medio, medido: 0
+  ficheros—. Elegir entre divertir desde un paquete y escribir el fichero en la
+  construcción de la imagen es de las casillas 3 y 4 del bloque 1, no de aquí.
 
 - **`encina-locale-es` y `encina-doctor` están aquí de forma permanente.** Los
   dos se midieron antes de abrirlos y los dos resultaron no existir. El resto de

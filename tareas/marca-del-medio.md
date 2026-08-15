@@ -39,10 +39,36 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       rellena `{{ DISTRO }}` —`/cdrom/.disk/info` o `/etc/os-release`, los dos
       literales están en el binario— y si el `whitelabel.yml` se puede apuntar
       desde fuera del snap.
-- [ ] **Leer los términos de Canonical y escribir qué obligan**, en el mismo
+- [x] ~~**Leer los términos de Canonical y escribir qué obligan**, en el mismo
       formato que las decisiones D: qué se puede decir («derivado de Ubuntu»), qué
       no se puede usar (nombre y logotipos como identidad del producto) y qué pasa
-      con `os-release`.
+      con `os-release`.~~ **HECHA EL 2026-08-15: es `ENCINA-OS.md` D22, con las
+      citas literales en §2.1** —fuente, fecha de consulta, redirección y huella
+      del texto—, y con **lo leído y lo interpretado separados**, que es lo que
+      protegía de la trampa de esta casilla: no hay comando que la demuestre, así
+      que el riesgo era colar una impresión con formato de decisión.
+      **Lo que sale, en tres respuestas:**
+      *(1)* **se puede nombrar a Ubuntu como hecho y como atribución, nunca como
+      identidad**, con una fórmula fija de tres frases —**y la fórmula es NUESTRA:
+      la política no contiene «derived from Ubuntu» ni ninguna otra autorizada**,
+      lo que concede es referenciar sin implicar aval—;
+      *(2)* **no se puede usar la marca ni los logotipos como identidad**, y de ahí
+      sale lo que esta casilla aporta de verdad: **marca no es cadena**, y los 39
+      sitios de §4.51 se reparten en **tres pilas** —lo que se ve (sale), los
+      activos gráficos de Canonical (salen aunque no se vean) y la procedencia
+      técnica (`ID=ubuntu`, los 155 `.deb`, el `Release` firmado: se queda)—;
+      *(3)* **`os-release`: la política NO LO NOMBRA**, así que la obligación se
+      deriva de qué hace cada campo — cambian `NAME`, `PRETTY_NAME`, `LOGO` y las
+      cuatro URL; **`ID` no**, y D6 queda **acotada, no debilitada**.
+      **Y el resultado que importa, sin maquillar: con este criterio la ISO de hoy
+      NO SE PUEDE PUBLICAR**, y lo que lo bloquea no son los 60 bytes de
+      `.disk/info` sino los logotipos **dentro del snap firmado de 109 MB**. O sea
+      que esta casilla **no resuelve la decisión de fondo de arriba —reempaquetar
+      o E5—: la endurece**.
+      **`os-release` sale a medias de `ENCINA-OS.md` §8**, por escrito y con su
+      motivo: lo decidido es **qué** cambia; sigue fuera de alcance **el
+      mecanismo**, y ahora con dato — el `os-release` del medio vive dentro de una
+      capa de 1,69 GB, así que un `dpkg-divert` desde un `.deb` **no lo alcanza**.
       *Hecha cuando:* es una decisión escrita en `ENCINA-OS.md`, no una impresión.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en

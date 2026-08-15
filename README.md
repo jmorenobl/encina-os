@@ -212,10 +212,19 @@ Si el oficial te funciona, usa el oficial.
 
 ### Marcas
 
-Ubuntu es una marca registrada de Canonical Ltd. Encina OS es un trabajo
-derivado **no avalado por Canonical**, y hoy el medio todavía lleva marca de
-Ubuntu: sustituirla por la propia es la tarea que bloquea publicar la imagen, y
-está la primera en [TAREAS.md](TAREAS.md).
+Encina OS está construido sobre Ubuntu 24.04 LTS. Ubuntu es una marca registrada
+de Canonical Ltd. Encina OS no está afiliado a Canonical Ltd. ni avalado por
+ella.
+
+Esas tres frases no son una cortesía: son **la forma exacta** que fija
+[ENCINA-OS.md](ENCINA-OS.md) **D22**, tras leer la *IPRights Policy* de Canonical
+—citada literalmente en su §2.1—. La política **no autoriza ninguna fórmula**;
+concede referenciar Ubuntu sin implicar aval, y ésta es la nuestra para caber
+ahí.
+
+Y hoy el medio todavía lleva marca de Ubuntu: sustituirla por la propia es la
+tarea que bloquea publicar la imagen, y está la primera en
+[TAREAS.md](TAREAS.md).
 
 AutoFirma es del Ministerio para la Transformación Digital. La versión que viaja
 aquí está **parcheada** y por eso no es la oficial; el motivo y el parche están
