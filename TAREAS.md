@@ -16,8 +16,8 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 | Bloque | Qué | Abiertas |
 |---|---|---|
-| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **16** — con [0-decidir.md](tareas/aspecto/0-decidir.md) y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) **cerrados enteros, 5 de 5 cada uno**. **La vuelta de `encina-branding` está dada** —0.1.14 y, tres cuartos de hora después, 0.1.15 (§4.48 y §4.49)—: `D21` con **el icono visto en el dock**, los dos no-op de GDM fuera y el comentario del logotipo corregido |
-| [marca-del-medio.md](tareas/marca-del-medio.md) | Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar | 5 |
+| [aspecto/](tareas/aspecto/) | Que el sistema instalado tenga cara propia | **5, y las cinco son [5-cierre.md](tareas/aspecto/5-cierre.md)** — el 2026-08-15 Jorge dio por bueno lo visual (*«como está, está bastante bien»*) y **los bloques 0, 2, 3 y 4 quedan cerrados enteros**, con el 1 **aplazado por escrito**. Las cinco que se cerraron ese día no costaron ni una medición nueva: las pruebas ya estaban en el disco, y **dos de ellas seguían abiertas sólo porque su «hecha cuando» apostaba a una hipótesis falsa** — que el acento alcanzaría a GDM. Detalle en [aspecto/LEEME.md](tareas/aspecto/LEEME.md) |
+| **[marca-del-medio.md](tareas/marca-del-medio.md)** | **Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar.** Es lo que se está haciendo | **4** — eran 5, y la del logotipo de la rejilla era una **copia rancia**: se cerró el 2026-08-14 en `aspecto/`, donde además se descubrió que estaba mal leída —el botón nunca llevó el logotipo de Ubuntu— |
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |
 | [despues-de-publicar.md](tareas/despues-de-publicar.md) | E5, el núcleo en el medio, amd64 | 3 |
@@ -25,10 +25,37 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 ## El orden, y por qué
 
-**`aspecto/` va antes que `marca-del-medio.md`**, y no es comodidad. Todo lo del
-aspecto vive en paquetes, así que **sobrevive intacto al salto a E5**, la imagen
-propia. La marca del medio y del instalador es justo la parte que se tira si E5
-se hace, y esa decisión sigue sin tomar. Uno no se paga dos veces; el otro puede.
+**~~`aspecto/` va antes que `marca-del-medio.md`~~ — CUMPLIDO el 2026-08-15: el
+turno es de `marca-del-medio.md`.** El motivo del orden sigue siendo bueno y se
+conserva escrito, porque explica por qué se hizo así: todo lo del aspecto vive en
+paquetes, así que **sobrevive intacto al salto a E5**, la imagen propia. La marca
+del medio y del instalador es justo la parte que se tira si E5 se hace, y esa
+decisión sigue sin tomar. Uno no se paga dos veces; el otro puede.
+
+**Y el orden nuevo, con el mismo argumento aplicado a lo que queda:** las dos
+últimas casillas de [aspecto/5-cierre.md](tareas/aspecto/5-cierre.md)
+—refabricar la ISO, e instalarla y mirarla— **se pagan DESPUÉS de la marca del
+medio y una sola vez**. Refabricar ahora para meter `encina-branding` 0.1.15, y
+otra vez dentro de unos días para meter la marca, es pagar dos veces una vuelta
+de medio. Las tres primeras de ese fichero sí se pueden hacer ya, porque no
+refabrican nada.
+
+**Lo que es cierto desde hoy y hay que escribir donde esa huella esté citada:**
+`95758c9e…` **ya no es la ISO que produce este repositorio**, porque lleva
+`encina-branding` **0.1.11** dentro y la buena es **0.1.15**. No es un fallo —es
+lo que pasa cuando cambian los `.deb`—, pero deja de ser verdad la frase «dos
+pasadas dan esta huella».
+
+**Y una nota de arquitectura que apareció el 2026-08-15 y no cambia nada todavía:**
+`D9` dice *«solo arm64 por ahora; amd64 cuando haya con qué probarlo»*, y su
+motivo escrito es *«solo hay un Mac M3»*. **Ese motivo ha dejado de ser cierto:**
+hay un Mac de 2015, Intel, o sea **amd64**. No desbloquea nada de lo que está en
+curso —la ISO de hoy es arm64 y **no arranca ahí**—, y amd64 sigue siendo E6 en
+[despues-de-publicar.md](tareas/despues-de-publicar.md), con todo lo que eso
+arrastra: reconstruir los cuatro `.deb`, repetir allí las mediciones y volver a
+medir AutoFirma, porque `B6` es específica de arm64 y no aparecería. Lo que sí
+cambia es que **E6 deja de estar bloqueado por falta de máquina**: pasa de «no se
+puede medir» a «no es la prioridad», que es una frase distinta.
 
 Después van alojamiento y publicar, que no dependen de lo visual salvo en una
 cosa: ~~**la licencia de las seis fotografías que viajan en la ISO está sin

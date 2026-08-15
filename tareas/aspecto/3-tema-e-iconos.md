@@ -33,13 +33,28 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       `../../design/capturas/acento/archivos-sage.png` contra
       `../../design/capturas/antes/06-archivos-gtk4.png`.
 
-- [ ] **El tema del shell**, que no se aplica con un `gsettings` a secas: hace
-      falta la extensión `user-theme` **habilitada por dconf** — nunca por
-      `/etc/skel`, R1, que sólo alcanza a los usuarios creados después y no se
-      puede actualizar.
-      *Hecha cuando:* la barra superior sale distinta en la captura 4, y un
-      usuario **creado después de instalar** la ve igual. Ese segundo control es
-      el que distingue un override de un `/etc/skel` disfrazado.
+- [x] ~~**El tema del shell**~~ **CERRADA SIN OBJETO el 2026-08-15, por la misma
+      puerta que la primera casilla de este fichero: `D20` dice que no se forkea
+      Yaru, así que no existe ningún tema de shell propio que habilitar.** La
+      extensión `user-theme` sirve para **cargar un tema de shell que no sea el
+      del sistema**; sin tema propio, habilitarla sólo añade una extensión que no
+      cambia un píxel.
+      *Y hay un segundo motivo, éste medido y no deducido, que la cerraría igual
+      aunque `D20` se reabriera a medias:* **el tema del shell de Yaru no tiene
+      variantes de acento**. Hay uno solo —está escrito en
+      [LEEME.md](LEEME.md), con la medición del 2026-08-14—, así que la barra
+      superior y el resumen **no cambian con el acento**: `Yaru-sage` alcanza
+      GTK3 y GTK4, y ahí se detiene. O sea que la barra superior seguiría igual
+      con la extensión puesta y sin tema que darle.
+      *Lo que decía, y su aviso sigue valiendo para cualquier ajuste de sesión
+      futuro:* la extensión se habilita **por dconf** y nunca por `/etc/skel`
+      (R1), que sólo alcanza a los usuarios creados después y no se puede
+      actualizar. Su «hecha cuando» pedía además ese segundo control —un usuario
+      creado **después de instalar** lo ve igual—, que es el que distingue un
+      override de un `/etc/skel` disfrazado, y es la forma que hay que copiar el
+      día que se toque cualquier cosa de la sesión.
+      *Si `D20` se reabre, esta casilla vuelve entera*, y con ella la medición de
+      si el tema del shell admite variantes o hay que escribirlas.
 
 - [x] ~~**Los iconos.**~~ **HECHA el 2026-08-15, y la condición se cumplió
       ENTERA: el icono está dibujado y VISTO EN PANTALLA** —`[OJOS]` de Jorge,
@@ -173,7 +188,8 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       era dónde se miraba. Las tres medidas que §4.43h dejó pendientes ya no hacen
       falta.
 
-- [ ] **El límite de libadwaita, declarado.** En GNOME 46, Archivos, Ajustes, el
+- [x] ~~**El límite de libadwaita, declarado.**~~ **CERRADO EL 2026-08-15, Y NO
+      ERA DE LIBADWAITA: ES DEL SHELL.** El desarrollo, abajo. En GNOME 46, Archivos, Ajustes, el
       Centro de aplicaciones y el visor de imágenes **ignoran el tema GTK3**.
       *Primer dato, del 2026-08-14* (`design/capturas/antes/06-archivos-gtk4.png`):
       Archivos sale **en claro mientras el shell va en oscuro**, y **sus carpetas
@@ -189,7 +205,41 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       **«libadwaita ignora el tema GTK3, pero no el acento»**. La casilla sigue
       abierta porque lo que falta es **escribirlo con la forma de D9**, no
       medirlo.
-      *Hecha cuando:* la captura 6 —GTK4 y GTK3 lado a lado— está tomada con el
-      tema puesto, y está escrito **qué no cambia y por qué**. No es un defecto:
-      es un límite, y en este proyecto los límites se escriben con la forma de D9,
-      leídos hasta el final, no se ocultan.
+      ~~*Hecha cuando:* la captura 6 —GTK4 y GTK3 lado a lado— está tomada con el
+      tema puesto, y está escrito **qué no cambia y por qué**.~~
+      **CERRADA EL 2026-08-15, y la captura ya estaba tomada desde el 2026-08-14
+      sin que esta casilla se enterara:** `../../design/capturas/acento/archivos-sage.png`
+      tiene las tres capas **en el mismo fotograma**, con `Yaru-sage` puesto —que
+      es lo que la hace valer como prueba y no como ilustración—:
+      **(1)** **Archivos, GTK4/libadwaita**: carpetas verdes y la fila «Carpeta
+      personal» de la barra lateral seleccionada en verde. *El acento llega.*
+      **(2)** **la terminal, GTK3**, detrás y a la izquierda. *El acento llega.*
+      **(3)** **la barra superior y el dock, que son el shell**: negros y con los
+      mismos iconos naranjas de siempre. *El acento NO llega.*
+
+      **EL LÍMITE, ESCRITO CON LA FORMA DE D9 — y no es el que daba nombre a esta
+      casilla:**
+
+      > **El acento alcanza todo lo que es GTK, y sólo eso.** GTK3 y
+      > GTK4/libadwaita cambian los dos con `Yaru-<acento>`, porque cada variante
+      > trae su propia `gtk-4.0/gtk.css` y la `libadwaita` de la base
+      > (`1.5.0-1ubuntu2`) está parcheada por Ubuntu. **Lo que no cambia es el
+      > shell** —barra superior, resumen, rejilla y el saludador de GDM—, porque
+      > el tema del shell de Yaru **no tiene variantes**: hay uno solo. No es un
+      > fallo de configuración ni algo que quede por intentar: es que el color no
+      > existe en ninguna parte donde ponerlo. Cambiarlo exige reempaquetar
+      > `gnome-shell-theme.gresource`, que es **propiedad de `gnome-shell`** y
+      > choca con **R5** — que es exactamente lo que descartó WhiteSur.
+      > **Consecuencia visible, y va dicha porque se ve la primera:** el recuadro
+      > de selección de usuario de GDM **sigue siendo naranja Yaru**, y así se
+      > entrega. La medición está en la casilla de GDM de
+      > [4-arranque-y-sesion.md](4-arranque-y-sesion.md).
+
+      *Y el título de la casilla era la premisa equivocada, que se deja escrita
+      en vez de corregirla en limpio:* decía «el límite de libadwaita», y
+      libadwaita no tiene ningún límite aquí — el que lo tiene es **el shell**.
+      La confusión venía de `../../design/capturas/antes/06-archivos-gtk4.png`,
+      donde Archivos salía claro mientras el shell iba oscuro; se leyó como «el
+      tema no llega a GTK4» y era simplemente el `color-scheme` claro con el
+      shell, que en Ubuntu va siempre oscuro. **Tres días mirando la capa
+      equivocada.**

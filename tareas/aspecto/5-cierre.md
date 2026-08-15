@@ -3,10 +3,53 @@
 Lo que convierte «se ve bien hoy en mi VM» en algo que se puede entregar y que
 seguirá viéndose bien mañana.
 
+---
+
+## EL ESTADO, 2026-08-15: ESTE FICHERO ES YA LO ÚNICO QUE QUEDA DE `aspecto/`
+
+Los bloques 0, 2, 3 y 4 están **cerrados enteros**, y el 1 está **aplazado por
+escrito**. O sea que estas cinco casillas son el bloque.
+
+**Y el orden en que se pagan NO es el que están escritas.** Las dos últimas
+—refabricar la ISO, e instalarla y mirarla— cuestan **una vuelta entera de
+medio**, y ese precio es **por vuelta y no por cambio**: es el mismo argumento
+con el que `ENCINA-OS.md` §7 metió todo E4 en una sola vuelta y con el que
+[LEEME.md](LEEME.md) juntó lo de `encina-branding`. Pagarlo ahora por meter
+0.1.15, y otra vez dentro de unos días por meter la marca del medio, **es pagarlo
+dos veces**.
+
+Así que la secuencia es:
+
+| | Qué | Por qué ahí |
+|---|---|---|
+| 1 | Las **tres primeras** casillas de este fichero | Se hacen sin refabricar nada |
+| 2 | [../marca-del-medio.md](../marca-del-medio.md) entero | Es lo que de verdad bloquea publicar, y toca el medio |
+| 3 | Las **dos últimas** de este fichero, **una sola vez** | Con 0.1.15 **y** la marca del medio dentro |
+
+*Lo que esto no cambia:* que `95758c9e…` **ya no es** la ISO que produce este
+repositorio, porque lleva `encina-branding` 0.1.11 y la buena es 0.1.15. Eso es
+cierto desde hoy y hay que escribirlo donde esa huella esté citada, aunque la
+refabricación se aplace hasta el paso 3.
+
+---
+
 - [ ] **El verificador aprende a mirar el aspecto.** Hoy
-      `imagen/verificar-instalacion.sh` da 52 de 52 sobre una máquina cuyo botón
-      de aplicaciones lleva el logotipo de Ubuntu: **el aspecto no está en el
-      perímetro**, y por eso puede romperse sin que nada se ponga rojo.
+      `imagen/verificar-instalacion.sh` da 52 de 52 sobre una máquina cuyo
+      aspecto **no está en el perímetro**, y por eso puede romperse sin que nada
+      se ponga rojo.
+      *Corrección del 2026-08-15:* esta casilla decía *«sobre una máquina cuyo
+      botón de aplicaciones lleva el logotipo de Ubuntu»*, y **eso era falso** —
+      el botón lleva la bellota desde 0.1.9 y lo que se estaba mirando era el
+      icono de `gnome-initial-setup` ejecutándose. El ejemplo era malo; **el
+      argumento se sostiene igual**, y de hecho lo refuerza: si el verificador
+      hubiera sabido mirar el aspecto, el error se habría cazado en un día en vez
+      de en tres.
+      *Y ahora hay un ejemplo mejor, del mismo día y más caro:* con 0.1.14 el
+      icono del Centro de aplicaciones **no se pintaba** —había un hueco en el
+      dock— y **las cinco comprobaciones automáticas daban verde**, porque todas
+      medían eslabones anteriores. La cadena es *existe → gana → resuelve →
+      **carga** → se pinta*, y las casillas que se escriban aquí tienen que decir
+      cuál de los cinco miden.
       Casillas: tema efectivo, tema de iconos, acento, tipografía, la alternativa
       de Plymouth y `GRUB_DISTRIBUTOR`.
       *Hecha cuando:* cada una **tiene su control negativo probado en rojo en la

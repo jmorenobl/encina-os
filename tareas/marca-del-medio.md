@@ -23,7 +23,25 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
-- [ ] **El logo de la rejilla.** Es lo que Jorge nombró: hoy el botón de
+- [x] ~~**El logo de la rejilla.**~~ **CERRADA EL 2026-08-14 EN
+      [aspecto/3-tema-e-iconos.md](aspecto/3-tema-e-iconos.md), Y AQUÍ QUEDÓ UNA
+      COPIA RANCIA DICIENDO LO CONTRARIO DURANTE UN DÍA — corregida el
+      2026-08-15.** Se sincroniza porque este fichero es el que se lee para saber
+      qué bloquea publicar, y una casilla abierta de más ahí dentro es del mismo
+      tipo de defecto que el resto del proyecto persigue: **decía que faltaba
+      trabajo que ya no faltaba**.
+      **La casilla estaba MAL LEÍDA desde el principio: el botón NUNCA llevó el
+      logotipo de Ubuntu — lleva la bellota, y la lleva desde 0.1.9.** La prueba
+      es `../design/capturas/despues/05-rejilla-bellota.png`: con la rejilla
+      abierta, **la bellota sale iluminada**, que es lo que distingue el botón de
+      aplicaciones de cualquier otro icono del dock.
+      *Qué se estaba mirando en su lugar:* el **icono naranja de Ubuntu que
+      estaba en mitad del dock**, que no era un botón — era `gnome-initial-setup`
+      **ejecutándose**, o sea la propia pantalla de bienvenida, que 0.1.11 quitó.
+      *Y por qué no se vio antes:* hasta el 2026-08-14 la ventana de UTM medía
+      2560×1410 y **el fondo del dock quedaba fuera de la captura**. El botón de
+      la rejilla es el último de la fila y sencillamente no salía.
+      *Lo que decía esta copia, con lo que sí era cierto de ella:* hoy el botón de
       aplicaciones lleva el logotipo de Ubuntu.
       *Hecha cuando:* lleva la encina, mirado en pantalla, y el resto del escritorio
       no ha cambiado.

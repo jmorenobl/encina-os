@@ -82,7 +82,7 @@ redacción y la cuarta se enmienda.
 | D6 | `ID=ubuntu` intacto en `os-release` | Software de terceros comprueba ese campo; cambiarlo produce fallos inconexos durante meses |
 | D7 | Tema estético (macOS u otro) en paquete separado, nunca en la base | Es preferencia personal, no necesidad jurisdiccional |
 | D8 | Certificado software FNMT antes que DNIe con lector | Cubre el 90% de trámites y no requiere hardware. **Cumplido:** el positivo de `MEDICIONES.md` §4.9 se hizo con certificado real de la FNMT |
-| D9 | **Solo arm64 por ahora.** amd64 cuando haya con qué probarlo | Solo hay un Mac M3, así que arm64 es lo único que se puede medir, y en este proyecto lo que no se mide no se da por bueno. **Es un límite de alcance declarado, no un pendiente.** Consecuencia conocida y medida: B6 (`MEDICIONES.md` §4.9c) es específica de arm64 y no aparecería en amd64 |
+| D9 | **Solo arm64 por ahora.** amd64 cuando haya con qué probarlo | ~~Solo hay un Mac M3, así que arm64 es lo único que se puede medir~~, y en este proyecto lo que no se mide no se da por bueno. **Es un límite de alcance declarado, no un pendiente.** Consecuencia conocida y medida: B6 (`MEDICIONES.md` §4.9c) es específica de arm64 y no aparecería en amd64. **ENMIENDA DEL 2026-08-15, y es al MOTIVO, no a la decisión: el motivo escrito ha dejado de ser cierto.** Hay un segundo Mac, de 2015 y **Intel**, o sea que **sí hay con qué probar amd64** — que era literalmente la condición que esta celda ponía. La decisión **no cambia hoy**, y el motivo que la sostiene ahora es otro y más pequeño: amd64 no es un ajuste sino **E6 entero** —reconstruir los cuatro `.deb`, repetir allí todas las mediciones y volver a medir AutoFirma, porque B6 no aparecería—, y lo que está en curso es entregar la arm64. O sea que **E6 pasa de «no se puede medir» a «no es la prioridad»**, que es una frase distinta y menos firme: el día que se quiera, ya no hay excusa de banco |
 | D10 | No comprar máquina física | SoftHSM2 cubre PKCS#11 sin lector; Hetzner por horas cubre amd64 de escritorio el día que haga falta |
 | D11 | Los dos lanzadores «Firefox» se resuelven **quitando el Snap en la imagen**, no ocultando entradas. **Matizada el 2026-08-10 (§4.19a): no estaba equivocada, estaba incompleta.** Daba por hecho que el segundo lanzador era el del Snap, así que quitarlo bastaba; E2 lo quitó y siguieron saliendo dos, porque **el segundo es nuestro**. Ocultar *nuestra* sombra sí es correcto y es lo que hace la 0.2.1 — y está medido que ocultarla **no** la desactiva, así que el icono anclado del dock de fábrica sigue abriendo el nativo | Ocultar la del Snap borra el icono del dock de una sesión en marcha, y desde un paquete no se puede exigir cerrar sesión: R3 impide llamar a nada y §8 prohíbe cualquier GUI. **Con D3 reescrita, esto deja de ser un aplazamiento indefinido: la imagen es el producto, así que es el sitio donde ocurre.** Y quitar el Snap cierra además B3 y B4 (§4 de este documento) |
 | D12 | **No habrá `encina-locale-es`.** Lo poco que queda va como `Depends:` de `encina-meta` | Medido el 2026-08-07: `check-language-support -l es` sale vacío y el instalador de Ubuntu ya ejecuta ese mismo comando y actúa. Detalle en `MEDICIONES.md` §A3 |
@@ -264,6 +264,48 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 ## 7. Empieza aquí
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
+
+> ### LA TAREA EN CURSO, 2026-08-15: **[tareas/marca-del-medio.md](tareas/marca-del-medio.md)**
+>
+> **Que el medio y el instalador dejen de decir Ubuntu.** Son **4 casillas** —eran
+> 5, y la del logotipo de la rejilla resultó ser una copia rancia de una que ya
+> estaba cerrada—, y es **lo que bloquea publicar** junto con los 3,46 GB del
+> alojamiento.
+>
+> **Por qué le toca ahora:** `aspecto/` ha cumplido su turno. El 2026-08-15 Jorge
+> dio por bueno lo visual —*«como está, está bastante bien, y ya le da un toque
+> personal»*— y de sus 16 abiertas quedan **5**, todas en
+> [tareas/aspecto/5-cierre.md](tareas/aspecto/5-cierre.md): los bloques 0, 2, 3 y
+> 4 están **cerrados enteros** y el 1 **aplazado por escrito**. No se cerraron
+> construyendo nada — se cerraron **leyéndolas hasta el final**, y las pruebas ya
+> estaban en el disco.
+>
+> **Y el orden de lo que queda, con el argumento de siempre —el precio es por
+> vuelta y no por cambio—:** las dos últimas casillas de `5-cierre.md`
+> —refabricar la ISO, e instalarla y mirarla— **se pagan DESPUÉS de la marca del
+> medio, y una sola vez**. Refabricar ahora para meter `encina-branding` 0.1.15 y
+> otra vez dentro de unos días para meter la marca es pagar dos veces la misma
+> vuelta.
+>
+> **Lo que hay que saber antes de tocar nada, y es de hoy:**
+>
+> 1. **`95758c9e…` YA NO ES LA ISO QUE PRODUCE ESTE REPOSITORIO.** Lleva
+>    `encina-branding` **0.1.11** dentro y la buena es **0.1.15** (`6d9fcd64…`).
+>    La frase «dos pasadas dan esta huella» sigue siendo verdad sobre aquel árbol
+>    y **ha dejado de serlo sobre éste**.
+> 2. **Se entregan dos cosas naranjas, a propósito y por escrito.** El recuadro de
+>    selección de usuario de GDM y —fuera de esto— el icono de la Ayuda. El de GDM
+>    **no se arregla con el acento**: el saludador es `gnome-shell`, el tema del
+>    shell de Yaru **no tiene variantes**, y cambiarlo exige reempaquetar
+>    `gnome-shell-theme.gresource`, que choca con **R5**. Está medido con captura
+>    en [tareas/aspecto/4-arranque-y-sesion.md](tareas/aspecto/4-arranque-y-sesion.md).
+> 3. **El tema de arranque de Encina no lo ha visto nadie.** En UTM la pantalla del
+>    invitado está **apagada todo el arranque**. Es un límite del banco, no un
+>    resultado sobre el producto, y **se levanta arrancando la ISO en una máquina
+>    de verdad** — o sea en el paso «instalar desde cero y mirar».
+> 4. **El Mac de 2015 es Intel y NO arranca esta ISO**, que es arm64. Lo que sí
+>    hace es tumbar el motivo escrito de **D9**: ya hay con qué probar amd64, así
+>    que E6 pasa de «no se puede medir» a «no es la prioridad».
 
 **E3 TERMINADO el 2026-08-10, 9 de 9** (§4.25), y con él **la entrega existe**:
 hay una ISO —`encina-os-E3-es.iso`, `02ab929d…`— que se le puede dar a alguien,

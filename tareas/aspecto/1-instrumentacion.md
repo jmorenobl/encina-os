@@ -9,6 +9,38 @@ ninguna otra parte.
 Ya existen `scripts/capturar-vm.sh` y `scripts/teclear-vm.sh`. Falta
 encadenarlos.
 
+---
+
+## LAS SEIS ABIERTAS QUEDAN APLAZADAS — 2026-08-15, decisión de Jorge
+
+**No se marcan como hechas. Se aplazan, que es otra cosa, y por eso siguen con
+la casilla vacía**: un `- [ ]` con «APLAZADA» delante dice la verdad —no está
+hecho— y un `- [x]` diría que sí. Es la misma familia que el `[OMIT]` del
+vocabulario de salida: *no comprobado, no darlo por bueno*.
+
+**El motivo, y es de alcance y no de pereza:** este fichero es **el instrumento,
+no el producto**. Se escribió para poder mirar lo visual sin reinstalar, y **ya
+sirvió para lo que hacía falta**: las capturas del «antes» y del «después»
+existen, el acento se eligió con ellas delante, la casilla de la rejilla se
+corrigió porque una captura enseñó que estaba mal leída, y el hueco del icono de
+0.1.14 lo cazó un `[OJOS]` que este instrumento hizo barato. Afinarlo más no
+acerca la ISO ni un metro, y la ISO es lo que se quiere sacar.
+
+**Qué las reabre**, para que el aplazamiento no sea un entierro: el día que se
+vuelva a trabajar en lo visual de lleno —que es cuando `D20` se reabra, o cuando
+haya hardware real donde mirar el arranque—, este fichero se abre entero y es el
+primero, por el mismo motivo por el que lo era.
+
+**Y una que se aplaza con reparos, dicho por delante:** *«Retirar los degradados
+de `02-activos.sh`»* no es afinar el instrumento — es **un arma cargada**.
+`--forzar` sustituiría dos fotografías por degradados y las dos comprobaciones
+que hace después saldrían **en verde igualmente**. Es un verde que miente, y
+cuesta minutos, no una tarde. Se aplaza porque nadie va a ejecutar `--forzar`
+mañana, pero **es la primera que hay que hacer** cuando se toque este fichero, y
+antes que ninguna de las otras cinco.
+
+---
+
 - [x] ~~**Un guion que tome las pantallas canónicas de la VM.**~~ **HECHA el
       2026-08-14.** Es `scripts/capturar-aspecto.sh`, y **no cronometra las
       pantallas: las detecta** —dispara en ráfaga todo el arranque y agrupa los
@@ -52,7 +84,7 @@ encadenarlos.
       Firefox con las notas de versión de Ubuntu. El guion teclea a ciegas contra
       una pantalla que no esperaba.
 
-- [ ] **El control de dos pasadas, también dentro de la sesión.** Las tres fases
+- [ ] **APLAZADA el 2026-08-15.** **El control de dos pasadas, también dentro de la sesión.** Las tres fases
       del arranque lo tienen; las de dentro se tomaron **una vez**, así que hoy
       no hay con qué distinguir un cambio del tema de un cambio del reloj o de
       una notificación.
@@ -61,7 +93,7 @@ encadenarlos.
       que avanza y un Firefox que no debería estar. Puede que el control aquí no
       sea «dos pasadas iguales» sino otro, y decidir cuál es parte de la casilla.
 
-- [ ] **Subir la cadencia del disparo, o declarar el límite.** Mide **3,1 s de
+- [ ] **APLAZADA el 2026-08-15.** **Subir la cadencia del disparo, o declarar el límite.** Mide **3,1 s de
       media** entre capturas —los `delay` de `capturar-vm.sh` son 2 s por
       llamada—, así que **una pantalla más corta que eso se pierde**. No es
       teórico: la del firmware que dice `Boot0005 "Ubuntu"` salió en el
@@ -70,7 +102,7 @@ encadenarlos.
       *Hecha cuando:* o la ráfaga baja de 1 s, o está escrito que las pantallas
       de menos de 3 s no se capturan y cuáles son.
 
-- [ ] **Rehacer la lista canónica, que se escribió sin mirar.** Decía seis
+- [ ] **APLAZADA el 2026-08-15, y a medias hecha por otra vía:** las dos pantallas que no existen ya están escritas con su motivo —Plymouth en [4-arranque-y-sesion.md](4-arranque-y-sesion.md), el menú de GRUB en su casilla del mismo fichero—, que era la parte que llevaba la información. **Rehacer la lista canónica, que se escribió sin mirar.** Decía seis
       pantallas y **dos de ellas no existen en esta máquina**: el menú de GRUB
       está oculto porque sólo hay un sistema operativo, y Plymouth **no se ve
       nunca** —la pantalla del invitado está apagada todo el arranque—. La lista
@@ -86,7 +118,7 @@ encadenarlos.
       porque **el día que se pierdan no se pueden rehacer**: la máquina habrá
       cambiado. Las de dentro de la sesión cuelgan de la casilla de abajo.
 
-- [ ] **Inventariar dónde se ve Ubuntu en el sistema INSTALADO**, midiendo y no
+- [ ] **APLAZADA el 2026-08-15, y con un aviso: ES LA ÚNICA DE LAS SEIS QUE ALIMENTA OTRO BLOQUE.** Su gemela para **el medio y el instalador** es la primera casilla de [../marca-del-medio.md](../marca-del-medio.md), que sí se hace ahora; ésta, la del sistema **instalado**, se aplaza porque lo visual instalado ya está donde Jorge lo quiere. **Inventariar dónde se ve Ubuntu en el sistema INSTALADO**, midiendo y no
       suponiendo. El medio va aparte. Cuenta el fondo, la tipografía, el tema de
       iconos, el acento, el dock, la rejilla, GDM, el menú de GRUB y `os-release`.
       *Hecha cuando:* hay una lista de ajuste/fichero/cadena, **cada uno con la
@@ -101,7 +133,7 @@ encadenarlos.
       circular — el fichero 0 no se podía terminar sin el 1. Es el primer uso real
       del instrumento, y las seis capturas del «antes» son justamente su prueba.
 
-- [ ] **La orden que rehace un fondo, escrita.** Los maestros son 3936×2624 y lo
+- [ ] **APLAZADA el 2026-08-15.** **La orden que rehace un fondo, escrita.** Los maestros son 3936×2624 y lo
       que viaja es 3840×2160: hay un recorte y un redimensionado que se hicieron a
       mano el 2026-08-08 y **no están escritos**. Hoy los fondos se comprueban por
       huella pero no se rehacen, que es media reproducibilidad — el mismo agujero
@@ -140,7 +172,7 @@ encadenarlos.
       *Hecha cuando:* va montada en el siguiente cambio de versión de
       `encina-branding`, con su huella nueva en el manifiesto.
 
-- [ ] **Retirar los degradados de `02-activos.sh`.** `encina.jpg` y
+- [ ] **APLAZADA el 2026-08-15 CON REPAROS — es un arma cargada, no un afinado, y es la PRIMERA que hay que hacer cuando se reabra este fichero.** El motivo está arriba. **Retirar los degradados de `02-activos.sh`.** `encina.jpg` y
       `encina-dark.jpg` dejaron de ser degradados el 2026-08-08, pero el guion
       sigue sabiendo fabricarlos: `--forzar` **los sustituiría sin preguntar**, y
       las dos comprobaciones que hace después —que son JPEG y que difieren entre

@@ -1,5 +1,68 @@
 # Bloque ASPECTO — que el sistema instalado tenga cara propia
 
+---
+
+## EL BLOQUE SE CIERRA AQUÍ — 2026-08-15, decisión de Jorge
+
+**«Como está, está bastante bien, y ya le da un toque personal.»** No hay fork de
+Yaru —eso ya lo decía `D20`—, y **tampoco hay más trabajo visual en este
+incremento**: lo que quede se hace más adelante, si hace falta, y de lleno. Lo
+que se quiere ahora es **sacar la ISO**.
+
+**Qué pasó con las 16 abiertas al aplicar esa decisión**, y merece la pena porque
+casi ninguna necesitaba trabajo — necesitaba que alguien las leyera hasta el
+final:
+
+| Fichero | Antes | Ahora |
+|---|---|---|
+| [0-decidir.md](0-decidir.md) | 0 | 0 — cerrado entero, 5 de 5 |
+| [1-instrumentacion.md](1-instrumentacion.md) | 6 | **6 APLAZADAS por escrito**, con la casilla vacía a propósito: aplazada no es hecha |
+| [2-golpes-baratos.md](2-golpes-baratos.md) | 0 | 0 — cerrado entero, 5 de 5 |
+| [3-tema-e-iconos.md](3-tema-e-iconos.md) | 2 | **0 — cerrado entero** |
+| [4-arranque-y-sesion.md](4-arranque-y-sesion.md) | 3 | **0 — cerrado entero** |
+| [5-cierre.md](5-cierre.md) | 5 | 5 — **es lo único que queda, y dos de ellas son «sacar la ISO»** |
+
+**Y las cinco que se cerraron NO costaron ni una medición nueva ni un `.deb`: las
+pruebas ya estaban en el disco.** Ésa es la parte que conviene no perder:
+
+1. **El tema del shell** — sin objeto por `D20`. Y con un segundo motivo medido
+   que la cerraría igual: **el tema del shell de Yaru no tiene variantes**.
+2. **El «límite de libadwaita»** — **el nombre era la premisa equivocada.**
+   libadwaita no tiene ningún límite aquí: el acento **sí** le llega. **El que lo
+   tiene es el shell.** Y la captura que lo prueba estaba tomada **desde el
+   2026-08-14** sin que la casilla se enterara: `../../design/capturas/acento/archivos-sage.png`
+   lleva las tres capas en el mismo fotograma —Archivos GTK4 en verde, la
+   terminal GTK3 en verde, la barra superior y el dock intactos—.
+3. **Plymouth** — cerrada por la segunda mitad de su «hecha cuando», que decía
+   *«o está escrito dónde no se ve y por qué»*. **No se ve, y es un límite del
+   banco y no del producto**: la pantalla del invitado está apagada todo el
+   arranque en UTM.
+4. **GDM** — su «hecha cuando» pedía *«y la captura de GDM ya no tiene naranja»*,
+   apostando a que el acento lo arreglaría solo. **La apuesta está perdida, y con
+   captura**: `../../design/capturas/despues/03-gdm.png`, tomada con el paquete
+   puesto y `Yaru-sage` aplicado, **sigue naranja**. Misma causa que la 2 — el
+   saludador es `gnome-shell` —, y arreglarlo exige reempaquetar
+   `gnome-shell-theme.gresource`, que choca con **R5**. Se entrega naranja, y va
+   escrito.
+5. **GRUB** — decidido que no aquí. En una máquina con un solo sistema el menú
+   está oculto y **nadie lo ve nunca**; donde sí se ve es en el arranque de la
+   ISO, y eso es [../marca-del-medio.md](../marca-del-medio.md).
+
+**La lección de las cinco, que es una sola:** dos «hechas cuando» estaban escritas
+sobre una hipótesis —que el acento alcanzaría GDM, y que el problema era de
+libadwaita— y **ninguna de las dos era cierta**. Una casilla cuyo criterio de
+cierre depende de que una hipótesis se confirme no se cierra nunca si la
+hipótesis es falsa: se queda abierta pareciendo trabajo pendiente cuando lo que
+hay es **un límite que nadie ha escrito**.
+
+**Lo que NO se cerró, y por qué**, para que no parezca que se ha barrido todo: el
+bloque [5-cierre.md](5-cierre.md) entero. Es el que refabrica la ISO y la instala
+desde cero, o sea el que **de verdad entrega**, y no se puede cerrar escribiendo.
+Su orden está en su cabecera: **las dos últimas casillas se pagan DESPUÉS de la
+marca del medio y una sola vez**, porque el precio es por vuelta y no por cambio.
+
+---
+
 **Qué compra este bloque:** que alguien que arranca Encina OS y mira la pantalla
 vea Encina OS, y no Ubuntu con otro fondo. Es el sistema **instalado**; el medio
 y el instalador son [../marca-del-medio.md](../marca-del-medio.md), y van
