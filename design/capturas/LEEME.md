@@ -15,6 +15,10 @@ guarda el último fotograma.
 ./scripts/capturar-aspecto.sh --comparar <dirA> <dirB>     # el control
 ```
 
+**`readme/` es la excepción y no es evidencia.** Ahí viven dos copias reducidas
+de `fondo-0.1.13/` para que el README no cargue 8,8 MB. Salen de un `sips`, no
+de una medición; qué original y qué huella, en [readme/LEEME.md](readme/LEEME.md).
+
 ## Lo que hay en `antes/`, medido el 2026-08-14 sobre `encina-95758c9e`
 
 La máquina del producto, con `encina-branding` 0.1.9, arrancada desde frío.

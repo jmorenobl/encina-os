@@ -30,6 +30,20 @@ arreglarlo a mano son cuatro cosas que hay que saber. En Encina OS viene hecho.
 Es Ubuntu 24.04 LTS con cuatro paquetes encima y un instalador que los pone
 solo. Nada más. Todo lo que hace está medido y escrito.
 
+<p align="center">
+  <img src="design/capturas/readme/escritorio-claro.jpg" width="49%" alt="El escritorio de Encina OS de día: una encina, un pueblo blanco y los molinos al fondo, con la marca abajo a la izquierda">
+  <img src="design/capturas/readme/escritorio-oscuro.jpg" width="49%" alt="El mismo paisaje de noche, con la luna y la Vía Láctea">
+</p>
+
+<p align="center">
+  <sub><b>El sistema ya instalado</b>, con <code>encina-branding</code> 0.1.13, en UTM arm64 el 2026-08-15.
+  El fondo oscuro no es el claro atenuado: es el mismo paisaje de noche.<br>
+  <b>El medio de instalación todavía no se ve así</b> —lleva marca de Ubuntu—, y en el dock siguen
+  la «A» del Centro de aplicaciones y el icono de ayuda, que son de Ubuntu.<br>
+  Los originales, en <a href="design/capturas/fondo-0.1.13/">design/capturas/fondo-0.1.13/</a>; aquí van reducidas.
+  La aprobación visual es <code>[OJOS]</code> y no la da un guion.</sub>
+</p>
+
 ## Cómo probarlo
 
 **Todavía no hay una imagen que descargar.** La ISO existe, se instala sola en
