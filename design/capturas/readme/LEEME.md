@@ -36,7 +36,15 @@ por algo que no se distingue.
 - Son del **sistema ya instalado**. El medio de instalación todavía lleva marca
   de Ubuntu — es la tarea que bloquea publicar la imagen.
 - En el dock salen la «A» naranja del Centro de aplicaciones y el icono de
-  ayuda, **que son de Ubuntu** y siguen siendo casilla abierta.
+  ayuda, **que son de Ubuntu**. ~~Siguen siendo casilla abierta.~~ **Ya no: la
+  «A» se sustituyó el 2026-08-15 en `encina-branding` 0.1.15** —`D21`, con la
+  sombra de su `.desktop` y un icono propio, visto en
+  [../despues/07-icono-tienda-aplicaciones.png](../despues/07-icono-tienda-aplicaciones.png)—
+  y **el «?» se queda como está a propósito**, porque lo que abre es
+  `ubuntu-docs`, titulado «Guía del escritorio de Ubuntu», y repintarlo no
+  cambiaría eso (§4.47g). **Estas dos capturas son de 0.1.13 y no se rehacen por
+  esto:** lo que enseñan es el fondo, y el fondo no ha cambiado. Cuando toque
+  rehacerlas, saldrá el icono nuevo.
 - La franja de arriba lleva **la pastilla de la ventana de UTM**, a la
   izquierda. No se recorta porque recortarla se llevaría por delante la barra de
   GNOME, que sí es el producto. Es el mismo criterio que el

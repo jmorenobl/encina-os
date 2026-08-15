@@ -38,8 +38,9 @@ solo. Nada más. Todo lo que hace está medido y escrito.
 <p align="center">
   <sub><b>El sistema ya instalado</b>, con <code>encina-branding</code> 0.1.13, en UTM arm64 el 2026-08-15.
   El fondo oscuro no es el claro atenuado: es el mismo paisaje de noche.<br>
-  <b>El medio de instalación todavía no se ve así</b> —lleva marca de Ubuntu—, y en el dock siguen
-  la «A» del Centro de aplicaciones y el icono de ayuda, que son de Ubuntu.<br>
+  <b>El medio de instalación todavía no se ve así</b> —lleva marca de Ubuntu—, y esa es la tarea que bloquea publicar.<br>
+  En el dock de estas dos capturas sale la «A» naranja del Centro de aplicaciones: <b>desde la 0.1.15 lleva icono propio</b>
+  (<a href="design/capturas/despues/07-icono-tienda-aplicaciones.png">se ve aquí</a>). El «?» de la ayuda se queda como está, a propósito.<br>
   Los originales, en <a href="design/capturas/fondo-0.1.13/">design/capturas/fondo-0.1.13/</a>; aquí van reducidas.
   La aprobación visual es <code>[OJOS]</code> y no la da un guion.</sub>
 </p>
@@ -74,7 +75,7 @@ Esto no son defectos: es dónde está el proyecto hoy. Lo que falta está en
 | | Hoy | Cuándo |
 |---|---|---|
 | **Arquitectura** | **Solo arm64.** Si tu equipo es Intel o AMD, todavía no hay nada para ti | Sin fecha. No es prioridad |
-| **Marca** | El medio lleva **la marca de Ubuntu**: el instalador dice Ubuntu, el fondo es de Ubuntu y la rejilla lleva el logo de Ubuntu | Es la prioridad siguiente, y es la que desbloquea publicar |
+| **Marca** | **El sistema instalado ya tiene cara propia** —fondos, GDM, arranque, la bellota en la rejilla y el Centro de aplicaciones con su icono—. **El medio no**: quien instala ve un instalador que dice Ubuntu | Es la prioridad siguiente, y es la que desbloquea publicar |
 | **Instalación** | **Exige red.** El núcleo no viaja en el medio y lo baja el instalador | Límite declarado. Comprarlo cuesta 1 089 MB y saca la ISO del DVD de una capa |
 | **Certificado** | Software, de la FNMT | DNIe con lector: incremento futuro |
 | **Navegador** | Firefox | Chrome y Chromium no se han medido; no los des por buenos |
@@ -93,6 +94,10 @@ Una instalación de Encina OS sale con esto, y **sin que nadie toque nada**:
 - **Escáner** (`simple-scan`) y **tienda de aplicaciones** (el Centro de
   aplicaciones), para que la máquina pueda crecer.
 - **Todo en español**: sistema, instalador y aplicaciones.
+- **Identidad propia en el sistema instalado**: fondos de día y de noche, tema de
+  arranque, logotipo en la pantalla de inicio de sesión, la bellota en el botón
+  de la rejilla y el Centro de aplicaciones con **icono de Encina** en vez de la
+  «A» naranja de Ubuntu.
 
 Lo que **no** trae, a propósito: ni suite ofimática ni cliente de correo. Se
 instalan desde la tienda en un par de clics, y está medido que se puede.
