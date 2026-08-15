@@ -1991,3 +1991,52 @@ está en el Python del sistema, así que la vía del `windowid` no sirve aquí.)
 Con esto se leyó la pantalla que estaba bloqueando la medición —*«Se produjo un
 problema · System program problem detected · sudo ubuntu-bug
 ubuntu-desktop-bootstrap»*— sin gastar una sola captura de las que se miran.
+
+---
+
+## Leer un medio sin arrancarlo: `imagen/inventario-marca.sh` (2026-08-15)
+
+**Se ejecuta en el Mac.** Inventaría **dónde aparece la marca de Ubuntu en una
+ISO** —el medio entero, el instalador vivo y la sesión viva— leyéndola: no la
+monta, no la arranca y no gasta VM. Es el instrumento de `MEDICIONES.md` §4.51, y
+existe porque §4.27 hizo esa lectura **a mano** y no dejó guion.
+
+```bash
+./imagen/inventario-marca.sh medios/encina-os-E4-es-0.2.1-1224b5b1.iso
+./imagen/inventario-marca.sh <iso> --trabajo <dir> --conservar   # reutiliza lo extraido
+./imagen/inventario-marca.sh <iso> --sin-capas                   # sin los squashfs: planos 2 y 3 [OMIT]
+```
+
+Necesita `xorriso`, `unsquashfs`, `zstd`, `bsdtar` y `python3`. **Cuesta ~3,2 GB de
+disco temporal**, porque las capas hay que sacarlas del medio; con `--trabajo` la
+segunda vuelta es barata.
+
+**NO APRUEBA NADA, y por eso su vocabulario está torcido a propósito:** cada
+aparición de la marca sale como **`[AVISO]`**, porque una aparición no es un fallo
+del medio, es trabajo del bloque 1. Los únicos `[OK]`/`[FALLO]` son **los cuatro
+controles**, y van los primeros: si el buscador no sabe decir «no lo hay», su
+lista de apariciones no vale nada. Sale distinto de 0 **sólo** si falla un
+control.
+
+**Las cuatro trampas que se comió al escribirlo, y las cuatro están en su
+cabecera:**
+
+1. **`unsquashfs -ll | awk '{print $NF}'` esconde el nombre de los enlaces
+   simbólicos**, porque en un enlace la línea acaba en el **destino**. Escondía
+   justo `view-app-grid-ubuntu-symbolic.svg`, el icono del botón de la rejilla.
+   Es **la misma familia que `find -type f`** de §4.45c. El nombre es el **campo
+   6**, y el control (d) del guion existe para vigilarlo.
+2. **`awk … | grep -q` con `pipefail` convierte el acierto en fallo:** `grep`
+   acierta, corta la tubería, `awk` muere de SIGPIPE y el estado es 141. Se
+   detectó porque el `[FALLO]` contradecía a sus propios números. La lista se
+   vuelca a un fichero **antes** de buscar en ella.
+3. **macOS no monta esta ISO** (*«sistemas de archivos que no pueden montarse»*),
+   así que `hdiutil` no sirve de atajo: las capas se sacan con `osirrox`.
+4. **El `cwd` se resetea entre órdenes**, y `unsquashfs` con rutas relativas
+   contesta **`rc=1` en 0,00 s**, que se lee igual que «esta capa no se puede
+   listar». Todo va con rutas absolutas.
+
+Y una quinta que no es del guion sino del medio: **`casper/initrd` son dos `cpio`
+pegados** —el primero sin comprimir, y a partir de su `TRAILER!!!` uno **zstd**—,
+así que `bsdtar` sobre el fichero entero lista sólo firmware y módulos y **no
+avisa de que se ha dejado la mitad**. El tema de arranque está en la segunda.

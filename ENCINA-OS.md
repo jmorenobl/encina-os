@@ -267,10 +267,38 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 
 > ### LA TAREA EN CURSO, 2026-08-15: **[tareas/marca-del-medio.md](tareas/marca-del-medio.md)**
 >
-> **Que el medio y el instalador dejen de decir Ubuntu.** Son **4 casillas** —eran
-> 5, y la del logotipo de la rejilla resultó ser una copia rancia de una que ya
-> estaba cerrada—, y es **lo que bloquea publicar** junto con los 3,46 GB del
-> alojamiento.
+> **Que el medio y el instalador dejen de decir Ubuntu.** Eran **4 casillas** —y
+> antes 5, porque la del logotipo de la rejilla resultó ser una copia rancia de
+> una que ya estaba cerrada—; **la primera está hecha el 2026-08-15 y quedan
+> 3**. Es **lo que bloquea publicar** junto con los 3,46 GB del alojamiento.
+>
+> **LA PRIMERA CASILLA, CERRADA HOY (`MEDICIONES.md` §4.51): el medio dice Ubuntu
+> en 39 sitios, y están todos con su fichero, su cadena y dónde se ve.** Leídos
+> sobre `1224b5b1…` **sin arrancarla y sin gastar VM**, con 6 controles delante y
+> 0 fallos, y con instrumento que se queda: `imagen/inventario-marca.sh`. Lo que
+> hay que saber antes de abrir la siguiente:
+>
+> - **El rótulo del icono del instalador no está escrito: se calcula desde
+>   `/.disk/info`** —`casper-bottom/25adduser`, medido con su control: un
+>   `.disk/info` de Encina da `Name=Install Encina OS`—. Son **60 bytes**.
+> - **La sesión viva no lleva NI UN fichero de Encina** (0, con el control de que
+>   el mismo recuento sobre `ubuntu` da 4 450). `encina-branding` se instala en el
+>   objetivo y **no llega al medio**: el fondo, el dock y el botón de la rejilla
+>   que rodean al instalador son Ubuntu de fábrica, y el fondo vive dentro de una
+>   capa de **1,69 GB**.
+> - **El instalador es un snap de 109 MB** —`ubuntu-desktop-bootstrap` 495— con
+>   las diapositivas, los logotipos y el título dentro. **Es la frontera real del
+>   reempaquetado**, y refuerza la decisión de fondo que la tarea ya planteaba
+>   (¿reempaquetado o E5?). Trae un **`whitelabel.yml`** que mapea cada página a
+>   su imagen, y que **nadie había nombrado en este repositorio**.
+> - **Y dos cosas sin medir, escritas a propósito:** cuál de las dos fuentes
+>   rellena `{{ DISTRO }}` —`/cdrom/.disk/info` o `/etc/os-release`, los dos
+>   literales están en el binario— y si el `whitelabel.yml` se puede apuntar desde
+>   fuera del snap.
+>
+> **Lo siguiente es la casilla 2: leer los términos de Canonical y escribir qué
+> obligan.** Le llega ya con el dato que necesitaba: `os-release` del medio dice
+> `NAME="Ubuntu"`, `ID=ubuntu`, `LOGO=ubuntu-logo` y cuatro URL de `ubuntu.com`.
 >
 > **Por qué le toca ahora:** `aspecto/` ha cumplido su turno. El 2026-08-15 Jorge
 > dio por bueno lo visual —*«como está, está bastante bien, y ya le da un toque

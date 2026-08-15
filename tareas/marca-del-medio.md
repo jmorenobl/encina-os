@@ -11,10 +11,34 @@ Ubuntu reempaquetada es una solución a medias, y el destino declarado del
 proyecto es **E5, la imagen propia**. Conviene decidir si este bloque se hace
 sobre el reempaquetado o si se hace ya construyendo la imagen.
 
-- [ ] **Inventariar dónde aparece la marca, midiendo y no suponiendo.** El medio
-      entero, el instalador vivo y la primera sesión.
-      *Hecha cuando:* hay una lista de ficheros y cadenas concretas, cada una con
-      dónde se ve.
+- [x] ~~**Inventariar dónde aparece la marca, midiendo y no suponiendo.** El medio
+      entero, el instalador vivo y la primera sesión.~~ **HECHA EL 2026-08-15
+      (`MEDICIONES.md` §4.51): 39 apariciones, cada una con su fichero, su cadena
+      y dónde se ve**, leídas sobre `encina-os-E4-es-0.2.1-1224b5b1.iso`
+      —huella comprobada antes de leer nada— **sin arrancarla y sin gastar VM**.
+      Deja instrumento, `imagen/inventario-marca.sh`, con **6 controles delante y
+      0 fallos**, porque §4.27 leyó un medio a mano y no dejó ninguno.
+      **Las cuatro cosas que cambian el trabajo que viene:**
+      *(1)* **el rótulo del icono del instalador NO está escrito: se calcula desde
+      `/.disk/info`** por `casper-bottom/25adduser`, y está medido con su control
+      —un `.disk/info` de Encina da `Name=Install Encina OS`—, así que son **60
+      bytes** y no un paquete;
+      *(2)* **la sesión viva no lleva ni un fichero de Encina** (0 de 182 893
+      entradas, con el control de que el mismo recuento sobre `ubuntu` da 4 450):
+      `encina-branding` se instala en el objetivo y **nunca llega al medio**, así
+      que el fondo, el dock y el botón de la rejilla que rodean al instalador son
+      Ubuntu de fábrica;
+      *(3)* **el instalador es un snap de 109 MB** (`ubuntu-desktop-bootstrap`
+      495) y ahí dentro están las diapositivas, los logotipos y el título —o sea
+      **la frontera real del reempaquetado**—, con un hallazgo que nadie había
+      nombrado: trae un **`whitelabel.yml`** que mapea cada página a su imagen;
+      *(4)* lo barato y lo caro quedan separados: el Volume id, el `grub.cfg`
+      —que **ya es fichero nuestro**— y el `.disk/info` se tocan sin rehacer nada,
+      y el fondo de la sesión viva exige **rehacer una capa de 1,69 GB**.
+      **Y OJO con lo que NO se midió, que va escrito:** cuál de las dos fuentes
+      rellena `{{ DISTRO }}` —`/cdrom/.disk/info` o `/etc/os-release`, los dos
+      literales están en el binario— y si el `whitelabel.yml` se puede apuntar
+      desde fuera del snap.
 - [ ] **Leer los términos de Canonical y escribir qué obligan**, en el mismo
       formato que las decisiones D: qué se puede decir («derivado de Ubuntu»), qué
       no se puede usar (nombre y logotipos como identidad del producto) y qué pasa

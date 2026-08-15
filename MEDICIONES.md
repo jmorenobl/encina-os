@@ -70,6 +70,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.27 | **E3: el agujero de red, leído antes de gastar la VM** | Sí, y **no marca ninguna casilla**: es el paso 1 de `ENCINA-OS.md` §7 hecho por lectura. Leído en el propio medio de la entrega (`02ab929d…`, sus manifiestos y su `pool/`), con el control de que el conjunto derivado reproduce la foto de §4.26g. **Corrige a §4.26e por lo alto:** sin red no falta el navegador, falta **todo Encina** —`autofirma` pide un JRE y `libnss3-tools`, `encina-meta` pide `hunspell-es`, y nada de eso viaja en el medio—, así que apt, que es todo o nada, no instala ni uno de los cuatro `.deb`. Trae **el sano y el roto escritos antes de medir** y el precio |
 | §4.28 | **¿B3 se arregla en AutoFirma en vez de en el navegador?** | Sí, y **cierra la pregunta: no se puede**, leído en las fuentes del fork (v1.9.1) sin gastar VM. No es el confinamiento: **el puerto lo elige la página al azar —tres de 16 384— y se lo dice a la aplicación por la URI `afirma://` que el Snap no entrega**, así que un AutoFirma residente es inalcanzable por construcción. Y encima habría que quitarle sus dos temporizadores y su `halt(0)` —bifurcación permanente, contra D14— y **saltarse la comprobación de `idsession`**. Consecuencia para E4: la condición de D16 —el Firefox que se puede abrir es el nativo— **no es cosmética, es la defensa entera** |
 | §4.32 | **E3: el núcleo leído hasta el final, y la ISO de E4 contestando las cinco pantallas** | Sí. **Contesta la pregunta del núcleo por el lado contrario del que se preguntaba:** el objetivo **ya tiene** el medio como fuente de apt cuando `curtin` instala el núcleo —lo enseña el registro sirviendo GRUB entero desde `file:/cdrom`—, así que lo que falta no es una fuente sino **el núcleo dentro del archivo indexado**, y eso lo cierra la **firma de Canonical**. La clave `apt:` del seed **no** vale: sin red `subiquity` borra todas las partes de `sources.list.d` a propósito. El tamaño **medido, no estimado: 1 089 MB**, no ~700. **Y cierra la ISO de E4:** `CIDATA -> <no encontrado>`, `REPO ELEGIDO -> /cdrom/encina-repo` y el `telemetry` nombra **exactamente las cinco pantallas**. Saca dos defectos del verificador y el instrumento que faltaba para pilotar sin ojos |
+| §4.51 | **Dónde dice Ubuntu el medio: el inventario de la marca** | Sí. **Es la primera casilla de `tareas/marca-del-medio.md`**, hecha leyendo `1224b5b1…` sin arrancarla y sin gastar VM: **39 apariciones, cada una con su fichero, su cadena y dónde se ve**, en los tres planos que pedía la casilla. Deja guion —`imagen/inventario-marca.sh`— porque §4.27 leyó a mano y no dejó ninguno. Lo que más cambia el trabajo que viene: **el rótulo del icono del instalador se calcula desde `/.disk/info`** (medido con su control), **la sesión viva no lleva ni un fichero de Encina** —o sea que todo lo que rodea al instalador es Ubuntu de fábrica—, y **el instalador es un snap de 109 MB con un `whitelabel.yml` dentro** que nadie había nombrado. Y saca dos defectos de su propio instrumento: `awk '{print $NF}'` esconde los nombres de los enlaces —§4.45c otra vez— y `grep -q` con `pipefail` convierte un acierto en `[FALLO]` |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -11353,6 +11354,8 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un nombre de fichero es una huella disfrazada** | Se actualizan las huellas del ritual y queda un sitio con el nombre del `.deb` viejo, que ni siquiera es una huella | Los nombres llevan **la versión dentro**, y viven duplicados en dos arrays `FICHEROS` —`fabricar-seed.sh` y `fabricar-iso.sh`—. `SCRIPTS.md` los nombra a los dos desde el 2026-08-12 y aun así lo que cierra la duda es `grep -rn 'encina-branding_0\.1\.' imagen/ scripts/`: la lista se comprueba, no se recita. Este sitio **no falla en silencio** —`fabricar-iso.sh` para con `no esta: …`— así que el riesgo es tiempo, no un medio equivocado (§4.48f) |
 | **Un SVG que se resuelve, se dibuja con librsvg y aun asi deja un HUECO en el dock** | El `.desktop` gana, `should_show()` da `True`, `Gtk.IconTheme` —en 3 y en 4— resuelve el nombre a nuestro SVG y `rsvg-convert` lo pinta. Y en la pantalla no hay icono: hay un hueco, y el Shell escribe *«Could not load a pixbuf from icon theme»* | **`gdk-pixbuf` reconoce el formato husmeando el principio del fichero: si el `<svg` no cae dentro de los primeros 256 BYTES, no lo reconoce.** El comentario de cabecera —que en este proyecto es método— lo empujaba al byte 2090. Umbral medido con búsqueda binaria (256 carga, 257 no) y con control en las dos direcciones: quitárselo al roto lo arregla y ponérselo al sano lo rompe. **El comentario va DENTRO de `<svg>`.** Afectaba también a `encina-logo.svg` desde 0.1.9, invisible seis versiones porque ese icono no se pinta en el dock (§4.49) |
 | **Un control que sale rojo dos veces y se lee como instrumento averiado** | La prueba de carga falla con el fichero nuevo **y** con el viejo, así que se descarta el lector y se busca por otro lado | Un control que falla en los dos casos puede ser **un hallazgo doble**, no un instrumento roto. Aquí los dos SVG estaban rotos de verdad y la conclusión «el lector no vale» costó buscar la causa por tres sitios equivocados. Lo que separa las dos lecturas es meter un ejemplar que **tenga** que salir bien —un PNG, u otro SVG que sí cargue— y mirar si el lector lo distingue (§4.49a) |
+| **Un listado que esconde el nombre de los enlaces simbólicos** | Se inventaría una capa del medio con `unsquashfs -ll \| awk '{print $NF}'` y el icono del botón de la rejilla **no aparece**, así que el inventario sale corto y nadie lo nota | En un enlace, la línea acaba en el **destino**, no en el nombre: `$NF` devuelve `../places/start-here-symbolic.svg` y el nombre `view-app-grid-ubuntu-symbolic.svg` desaparece del recuento. Es **§4.45c otra vez** —allí fue `find -type f`, que tampoco ve enlaces— y aquí escondía justo el fichero que decide el botón que §4.43 costó dos días. El nombre es el **campo 6**, y el guion lleva un control que lo vigila (§4.51a) |
+| **`grep -q` convierte un acierto en fallo cuando hay `pipefail`** | Un control que dice `[FALLO] no se pueden listar las capas` mientras las listas están delante, con 123 695 y 59 198 entradas | `awk … \| grep -q` con `set -o pipefail`: `grep` acierta y **sale antes de leerlo todo**, `awk` recibe SIGPIPE y muere con 141, y el estado de la tubería es 141 aunque la búsqueda haya salido bien. Se ve porque el mensaje contradice a sus propios números. Se saca la lista a un fichero **antes** de buscar en ella (§4.51a) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
@@ -11442,3 +11445,221 @@ Los dos defectos, los dos míos y los dos cazados ejecutando:
    ISOs siguen juntas en 7256576 clavados. **El primer criterio habría dicho que
    cuatro VMs comparten 40 GiB, que es falso y habría llevado a borrar la que no
    era.**
+
+---
+
+### 4.51 DÓNDE DICE UBUNTU EL MEDIO: 39 sitios, leídos sin arrancarlo — y el instalador trae un mecanismo de marca blanca que nadie había mirado (2026-08-15)
+
+**Es la primera casilla de `tareas/marca-del-medio.md`**, y se hace como manda su
+enunciado: **midiendo y no suponiendo**. Todo lo de aquí sale de leer
+`medios/encina-os-E4-es-0.2.1-1224b5b1.iso` —huella comprobada **antes** de leer
+nada— **sin arrancarla, sin montarla y sin gastar ninguna VM**.
+
+```
+1224b5b17b559007071dee8fcaa620ff28cc3d8361eb75fdbe4af1eb3401529f   3715366912 bytes
+```
+
+**Y la casilla llegaba con una suposición dentro**, que es exactamente lo que
+había que no heredar: su copia rancia decía que *«el botón de la rejilla lleva el
+logotipo de Ubuntu»*, y esa lectura estaba mal desde el principio —lo que se
+estaba mirando era `gnome-initial-setup` **ejecutándose** (enmienda del
+2026-08-15)—. Aquí no se ha copiado ni una línea de aquello: **cada renglón del
+inventario tiene su fichero y su cadena**.
+
+#### (a) EL INSTRUMENTO, y los dos defectos que sacó de sí mismo
+
+§4.27 leyó un medio sin arrancarlo y §4.39 lo fabricó cuatro veces, pero **ninguna
+de las dos dejó guion**: lo de §4.27 fue lectura a mano de manifiestos. Así que
+hay uno nuevo, y por eso se dice: **`imagen/inventario-marca.sh`**, que en el Mac
+saca el árbol con `xorriso`, las capas `squashfs` con `osirrox` y el `initrd`
+partiéndolo por su `TRAILER!!!`.
+
+**Los controles van los primeros, y no es adorno: un buscador que no sabe decir
+«no lo hay» dice «no he mirado», y se lee como «no hay marca».**
+
+```
+--- (a) el arbol del medio sabe decir SI y NO
+  [OK]    531 ficheros: encuentra /casper/minimal.squashfs y NO encuentra uno inventado
+--- (b) el calculo de RELEASE no esta clavado
+  [OK]    sobre un .disk/info inventado da «Encina OS», no «Ubuntu 24.04.4 LTS»
+--- (c) las capas squashfs se sacan del medio y se listan
+  [OK]    capa base 123695 entradas, capa viva 59198: encuentra /etc/os-release y no uno inventado
+--- (d) el listado ENSENA EL NOMBRE de los enlaces simbolicos (trampa 1)
+  [OK]    el nombre del enlace view-app-grid-ubuntu-symbolic.svg se ve en el campo 6
+```
+
+**Dos defectos del propio instrumento, y los dos habrían falseado el inventario:**
+
+1. **`unsquashfs -ll | awk '{print $NF}'` esconde el nombre de los enlaces
+   simbólicos**, porque en un enlace la línea acaba en el **destino**. Lo que
+   escondía era justo `view-app-grid-ubuntu-symbolic.svg` —el icono del botón de
+   la rejilla, el que costó §4.43 entera—, que salía como
+   `../places/start-here-symbolic.svg` y no se contaba. Es **§4.45c otra vez**
+   (allí fue `find -type f`). El nombre es el **campo 6**, y el control (d) existe
+   para vigilarlo.
+2. **`awk … | grep -q` con `pipefail` convierte el acierto en fallo.** El control
+   (c) salió `[FALLO] no se pueden listar las capas del medio` **enseñando al lado
+   sus 123 695 y 59 198 entradas**: `grep -q` acierta, sale antes de leerlo todo,
+   `awk` muere de SIGPIPE y la tubería devuelve 141. Se ve porque **el mensaje
+   contradice a sus propios números**. Se saca la lista a un fichero antes de
+   buscar.
+
+Y una tercera, del entorno y no del guion: **macOS no monta esta ISO**
+(*«sistemas de archivos que no pueden montarse»*), así que las capas hay que
+sacarlas a disco —**~3,2 GB**— y no se pueden leer en el sitio.
+
+#### (b) PLANO 1 — EL MEDIO ENTERO
+
+| Fichero | Cadena medida | Dónde se ve |
+|---|---|---|
+| el volumen ISO 9660 | `Ubuntu 24.04.4 LTS arm64` | **el nombre del disco al conectar el USB, en cualquier sistema operativo**. Es la última casilla de la tarea |
+| `/boot/grub/grub.cfg` | `menuentry "Try or Install Ubuntu"` | **la primerísima pantalla del arranque**. Y es **fichero nuestro**: lo reescribe `fabricar-iso.sh` para meter el `locale=` |
+| `/.disk/info` | `Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)` | no se ve tal cual, **pero de aquí sale el nombre del icono del instalador** (plano 2) |
+| `/.disk/release_notes_url` | `http://www.ubuntu.com/getubuntu/releasenotes?os=ubuntu&…` | el enlace de «notas de la versión» del instalador |
+| `/casper/install-sources.yaml` | `name: en: Ubuntu Desktop (minimized)` y `Ubuntu Desktop`; `id: ubuntu-desktop-minimal` | la pantalla de «tipo de instalación» — **que el seed de Encina NO enseña**: las cinco son `keyboard, network, storage, identity, timezone` (§4.32g) |
+| `/dists/noble/Release` | `Origin: Ubuntu`, `Label: Ubuntu`, `Description: Ubuntu Noble 24.04` | en `apt`. **Firmado por Canonical**: tocarlo rompe `Release.gpg` (D9, §4.32) |
+| `/preseed/ubuntu.seed` | el nombre, y dentro `tasksel/first multiselect ubuntu-desktop` | no lo lee `subiquity`; el fichero viaja igual |
+| `/pool/*.deb` | **155 de 185** nombres llevan `ubuntu` (versiones `-Nubuntu…`) | en `apt` y `dpkg` de la máquina instalada |
+| `/md5sum.txt` | esos mismos nombres | sólo quien lo abra |
+| `/efi/boot/{bootaa64,grubaa64,mmaa64}.efi` | **[OMIT]** | firmados: **no se tocan** (regla dura de E3, §4.21) |
+
+**Y una que sale a favor:** la tabla de particiones es **MBR y no lleva nombres**
+(dos entradas, `0xcd` y `0xef`), así que **lo único que un gestor de discos enseña
+es el Volume id**. Cambiarlo cambia lo que se ve en todas partes.
+
+**Lo único de Encina que viaja en el medio son los 29 ficheros de
+`/encina-repo/`**, y eso decide el plano 3.
+
+#### (c) PLANO 2 — EL INSTALADOR VIVO, que es un SNAP
+
+`/var/lib/snapd/seed/snaps/ubuntu-desktop-bootstrap_495.snap`, **109 600 768
+bytes**, y va **por duplicado** (también en `snaps/`). Dentro, **153 de 8 544**
+nombres llevan `ubuntu`.
+
+**EL NOMBRE DEL ICONO NO ESTÁ ESCRITO: SE CALCULA, Y SE CALCULA DESDE
+`.disk/info`.** El `.desktop` que viaja dice literalmente:
+
+```
+Name=Install RELEASE
+Icon=ubiquity
+```
+
+y quien sustituye `RELEASE` es `casper-bottom/25adduser`, **leído en el guion que
+viaja en este mismo medio** (líneas 80-88):
+
+```sh
+LTS="$(cut -d' ' -f3 /root/cdrom/.disk/info)"
+RELEASE="$(cut -d' ' -f1-2 /root/cdrom/.disk/info | sed 's/-/ /')"
+[ "$LTS" = "LTS" ] && RELEASE="$RELEASE LTS"
+sed -i "s/RELEASE/$RELEASE/" "/root$file"     # y lo copia al Escritorio del usuario vivo
+```
+
+Ejecutado sobre el `.disk/info` **de este medio**, y con su control delante:
+
+```
+.disk/info inventado (Encina OS 0.3 LTS …)  -> Name=Install Encina OS
+.disk/info de este medio                    -> Name=Install Ubuntu 24.04.4 LTS
+```
+
+O sea: **una línea de `.disk/info` cambia el rótulo del icono del escritorio y del
+dock.** Es la palanca más barata de todo el bloque 1.
+
+| Fichero | Cadena medida | Dónde se ve |
+|---|---|---|
+| `…/ubuntu-desktop-bootstrap_….desktop` | `Name=Install RELEASE` → `Install Ubuntu 24.04.4 LTS` | **el icono del Escritorio y el del dock** de la sesión viva |
+| el mismo | `Icon=ubiquity` → `Yaru/…/apps/ubiquity.png` | **el dibujo del icono: un disco duro con la chincheta naranja del logotipo de Ubuntu** — mirado, no supuesto |
+| `…/bin/lib/libapp.so` | `Try or install ` / `Probar o instalar ` (con espacio final) | **el título de la ventana del instalador**: es plantilla, se le pega el nombre del producto |
+| el mismo | `Installing Ubuntu`, `installUbuntu`, `tryUbuntu`, `_isUbuntuDerivative` | botones y páginas del instalador |
+| `…/assets/slides/9/slide_es_ES.html` | **«Ubuntu» literal ×7 en el texto visible** (×12 en el fichero): *«La documentación oficial de Ubuntu…», «Ask Ubuntu», «Ubuntu Discourse», «…con Ubuntu Pro»* + `ask-ubuntu-light.svg` | **la presentación que se ve mientras instala** |
+| `…/assets/slides/{2..8}/slide_es_ES.html` | `{{ DISTRO }}` ×1 en cada una | las otras siete diapositivas — **son plantilla, se rellenan en marcha** |
+| `…/ubuntu_provision/assets/images/` | `logo-light.svg`, `logo-dark.svg`, `mascot.svg`, `mascot_no_background.svg`, `ubuntu_pro.svg`, `ubuntu_certified.svg`, `ubuntu_storage_icon.svg` | los dibujos de cada página del instalador |
+
+**EL HALLAZGO QUE NO SE BUSCABA: el instalador trae un mecanismo de MARCA
+BLANCA.** Dentro del snap hay
+`…/packages/ubuntu_provision/assets/whitelabel.yml`, que mapea **cada página a su
+imagen** —`locale`, `try-or-install`, `keyboard`, `network`, `storage`,
+`identity`, `confirm`, `done`, `error`…—, y el binario lleva la cadena
+`whitelabel`. Es la única pieza del medio pensada **para que otro ponga su
+marca**, y hasta hoy no estaba nombrada en ningún documento de este repositorio.
+
+#### (d) PLANO 3 — LA PRIMERA SESIÓN, y lo primero decide todo lo demás
+
+```
+  [OK]    NI UN fichero de Encina en las capas del medio (0), y 4450 con «ubuntu»:
+          la sesion viva es Ubuntu entera
+```
+
+**Con su control**: el mismo recuento sobre `ubuntu` no es cero, así que el
+buscador sabe contar. Y tiene explicación, no es una sorpresa: `encina-branding`
+se instala **en el objetivo**, desde `/encina-repo`, y **nunca llega a la sesión
+viva**. Todo lo que rodea al instalador es Ubuntu de fábrica.
+
+| Fichero | Cadena medida | Dónde se ve |
+|---|---|---|
+| `10_ubuntu-settings.gschema.override` | `[org.gnome.desktop.background:ubuntu] picture-uri = 'file:///usr/share/backgrounds/warty-final-ubuntu.png'` | **el fondo que se ve detrás del instalador** (el fichero está, 5 871 771 bytes) |
+| el mismo | `favorite-apps` con `ubuntu-desktop-bootstrap`, `firefox_firefox`, `snap-store`, `yelp` | **los iconos del dock** de la sesión viva |
+| el mismo | `[org.gnome.login-screen] logo='/usr/share/plymouth/ubuntu-logo.png'` | el saludador GDM — **no sale en el medio**, que entra solo; el instalado lo cierra `encina-branding` |
+| `…/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg` | enlace → `../places/start-here-symbolic.svg` | **el botón de la rejilla del dock**. Es el nombre que §4.43 midió, y en la sesión viva **no hay tema de Encina que lo tape** |
+| `/etc/os-release` | `PRETTY_NAME="Ubuntu 24.04.4 LTS"`, `NAME="Ubuntu"`, `ID=ubuntu`, `LOGO=ubuntu-logo`, y cuatro URL de `ubuntu.com` | Configuración → Acerca de, en la sesión viva. **Es lo que la segunda casilla tiene que decidir** |
+| `/etc/lsb-release` | `DISTRIB_ID=Ubuntu`, `DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"` | lo lee software de terceros |
+| `/etc/issue`, `/etc/issue.net` | `Ubuntu 24.04.4 LTS \n \l` | una consola de texto (Ctrl+Alt+F3) |
+| `/usr/share/wayland-sessions/ubuntu.desktop` | `Name=Ubuntu`, `Comment=This session logs you into Ubuntu` | el selector de sesión del saludador |
+| `…/themes/ubuntu-text/ubuntu-text.plymouth` | `Name=Ubuntu Text`, `title=Ubuntu 24.04` | el arranque en modo texto |
+
+**EL ARRANQUE DEL MEDIO, que es lo PRIMERO que se ve, sale del `initrd` y no de
+ninguna capa.** `casper/initrd` son **dos `cpio` pegados** —el primero sin
+comprimir con firmware y módulos, y a partir del byte 60 952 064 uno **zstd** de
+24 227 401 bytes—, y dentro:
+
+```
+usr/share/plymouth/themes/default.plymouth -> /usr/share/plymouth/themes/bgrt/bgrt.plymouth
+usr/share/plymouth/themes/spinner/watermark.png       248x87   bfc97707…
+usr/share/plymouth/themes/spinner/bgrt-fallback.png   128x128  0d4f0416…
+```
+
+Las dos son **el logotipo de Ubuntu**, mirado y contado: en `watermark.png`, 6 576
+píxeles opacos —4 196 naranjas del cuadro con el *circle of friends* y **1 505 a
+la derecha del cuadro**, que son la palabra «ubuntu» en blanco—. El tema `bgrt`
+las dibuja al 96 % de la altura (`WatermarkVerticalAlignment=.96`).
+
+**[OJOS] — en pantalla no lo ha visto nadie**, y eso no cambia hoy: en UTM la
+pantalla del invitado está apagada todo el arranque (aviso 3 de `ENCINA-OS.md`
+§7). Es límite del banco, no resultado sobre el producto.
+
+#### (e) LO QUE NO SE HA MEDIDO, dicho con su nombre
+
+- **Quién gana rellenando `{{ DISTRO }}` y el título de la ventana.** En
+  `libapp.so` están **los dos** literales —`/cdrom/.disk/info` (junto a
+  `ubuntu_wizard/src/wizard_data.dart`) y
+  `/var/lib/snapd/hostfs/etc/os-release`, con `PRETTY_NAME`,
+  `_readProductName` y `_parseProductName`—. Que existan los dos no dice cuál
+  manda. **`[OMIT]`, y se decide leyendo la fuente de `ubuntu_provision` o
+  arrancando el medio con un `.disk/info` cambiado**, que es barato porque el
+  fichero pesa 60 bytes.
+- **Si el `whitelabel.yml` se puede apuntar desde fuera del snap.** El fichero
+  vive dentro de un `squashfs` de solo lectura que se sustituye entero en cada
+  autorrefresco (la misma trampa de §4.47a), y **no se ha encontrado ninguna ruta
+  de configuración externa** en el binario. `[OMIT]`.
+- **Nada de la máquina instalada.** Ese bloque está cerrado y no se ha vuelto a
+  medir aquí: lo que aparece de él —el logo de GDM, `os-release`— sale sólo
+  porque **viaja en el medio**.
+
+#### (f) LO QUE ESTO DEJA PARA LAS TRES CASILLAS QUE QUEDAN
+
+**39 apariciones, y no todas cuestan lo mismo.** Ordenadas por lo que se ve
+dividido por lo que cuesta:
+
+1. **El Volume id** — un campo, y se ve en cualquier ordenador antes de arrancar.
+2. **`/boot/grub/grub.cfg`** — «Try or Install Ubuntu», y **el fichero ya es
+   nuestro**: lo escribe `fabricar-iso.sh`, con el precio de `md5sum.txt` ya
+   pagado y medido (§4.21d, §4.25).
+3. **`/.disk/info`** — 60 bytes que cambian el rótulo del icono del instalador,
+   demostrado con su control.
+4. **El fondo de la sesión viva** — un `gschema.override` dentro de
+   `minimal.squashfs`, o sea **rehacer una capa de 1,69 GB**: aquí se acaba lo
+   barato.
+5. **El instalador por dentro** —diapositivas, `logo-*.svg`, el título— vive en un
+   snap firmado de 109 MB. **Es la frontera real del reempaquetado**, y es el
+   argumento que la tarea ya anticipaba: *«repintar una ISO de Ubuntu
+   reempaquetada es una solución a medias»*. La única puerta declarada es el
+   `whitelabel.yml`, y está sin medir.
