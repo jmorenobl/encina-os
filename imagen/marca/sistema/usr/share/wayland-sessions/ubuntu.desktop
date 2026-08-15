@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Encina OS
+Comment=Esta sesion te lleva a Encina OS
+Exec=env GNOME_SHELL_SESSION_MODE=ubuntu /usr/bin/gnome-session --session=ubuntu
+TryExec=/usr/bin/gnome-shell
+Type=Application
+DesktopNames=ubuntu;GNOME
+X-GDM-SessionRegisters=true
+X-GDM-CanRunHeadless=true

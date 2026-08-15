@@ -2,14 +2,16 @@
 # Encina OS - E3. Fabrica la ISO que se entrega, EN MACOS.
 #
 #     ./fabricar-iso.sh [--iso <oficial.iso>] --repo <dir> --salida <encina.iso>
+#                       [--capa <zz-encina.squashfs>]
 #
 # --iso vale por defecto medios/ubuntu-24.04.4-desktop-arm64.iso, que es donde
 # la deja imagen/traer-iso-oficial.sh. Ese directorio esta en .gitignore: la ISO
 # oficial son 3,3 GiB y no viaja en el clon, pero la ORDEN de traerla si.
 #
-# QUE HACE: coge la ISO oficial de Ubuntu, le ANADE lo de Encina y MODIFICA dos
-# ficheros, ni uno mas. Los cuatro sitios estan nombrados aqui porque la
-# definicion de terminado de E3 se comprueba contra esta lista.
+# QUE HACE: coge la ISO oficial de Ubuntu, le ANADE lo de Encina y MODIFICA TRES
+# ficheros, ni uno mas. Los sitios estan nombrados aqui uno a uno porque la
+# definicion de terminado de E3 se comprueba contra esta lista, y porque desde
+# el 2026-08-16 esta lista es tambien la de la marca del medio (D22).
 #
 # ANADE:
 #     /autoinstall.yaml   <- imagen/autoinstall.yaml, que es donde el
@@ -21,6 +23,16 @@
 #                            §4.27: el JRE de autofirma, libnss3-tools,
 #                            hunspell-es, el navegador de Mozilla y su idioma,
 #                            la tienda y el escaner) y su indice Packages
+#     /casper/zz-encina.squashfs <- LA CAPA DE MARCA, que la hace capa-marca.sh
+#                            y que es lo que hace que la SESION VIVA y el
+#                            INSTALADOR digan Encina (D22, casilla 3 de
+#                            tareas/marca-del-medio.md). El nombre empieza por
+#                            'zz-' porque casper monta todos los *.squashfs de
+#                            /casper en orden alfabetico y el ULTIMO es el que
+#                            manda: si se le cambia el nombre, la capa deja de
+#                            tapar y el medio vuelve a decir Ubuntu sin que
+#                            falle nada. Esta leido en el casper de este mismo
+#                            medio y medido en MEDICIONES.md §4.52b.
 #
 # MODIFICA, y hasta el 2026-08-10 no modificaba nada:
 #     /boot/grub/grub.cfg <- 'locale=es_ES.UTF-8' en la linea del nucleo, que es
@@ -35,20 +47,38 @@
 #                            y con 'locale=*' escribe LANG en el
 #                            /etc/default/locale de la SESION VIVA y corre
 #                            locale-gen dentro de ella.
+#                            Y DESDE EL 2026-08-16 el titulo del menu tambien:
+#                            'Try or Install Ubuntu' -> 'Probar o instalar
+#                            Encina OS'. Es la PRIMERISIMA pantalla del
+#                            arranque y es pila A de D22.
+#     /.disk/info         <- 60 bytes que valen tres cosas, y las tres estan
+#                            LEIDAS en el casper de este medio (§4.51c, §4.52a):
+#                            casper-bottom/25adduser saca de aqui el RELEASE que
+#                            sustituye en 'Name=Install RELEASE', o sea EL
+#                            ROTULO DEL ICONO DEL INSTALADOR; scripts/casper
+#                            saca de la primera palabra el FLAVOUR, que es el
+#                            usuario y el nombre de maquina de la sesion viva
+#                            (pasa de 'ubuntu' a 'encina'); y
+#                            casper-bottom/57pollinate saca de los parentesis
+#                            del final el numero de serie -- por eso el fichero
+#                            de Encina conserva esa forma.
 #     /md5sum.txt         <- EL PRECIO, y hay que pagarlo entero (§4.21d):
-#                            md5sum.txt CUBRE ./boot/grub/grub.cfg, asi que
-#                            editarlo y no rehacerlo deja una ISO que arranca
-#                            bien y FALLA la comprobacion de integridad de su
-#                            propio medio. Se reescribe UNA linea, la suya.
+#                            md5sum.txt CUBRE ./boot/grub/grub.cfg y
+#                            ./.disk/info, asi que editarlos y no rehacerlo deja
+#                            una ISO que arranca bien y FALLA la comprobacion de
+#                            integridad de su propio medio. Se reescriben esas
+#                            DOS lineas y se ANADE una tercera, la de la capa de
+#                            marca, para que el propio medio la verifique.
 #
 # CONSECUENCIA PARA LA DEFINICION DE TERMINADO: E3 ya no es «solo anadir
 # ficheros», y la casilla de integridad pasa a comprobar el md5sum.txt NUEVO en
 # vez del oficial. Por eso este guion no se cree a si mismo: al final compara la
 # ISO nueva contra la oficial FICHERO A FICHERO -- las 300 y pico entradas del
 # medio, no solo las 266 de md5sum.txt -- y se niega si cambio algo que no sean
-# esos dos, o si aparecio algo que no sea el seed y el contenido de --repo. La
-# lista de anadidos se DERIVA del directorio de origen, porque desde E4 ya no
-# son seis ficheros: son el seed, el indice y todos los .deb del repo offline.
+# LOS TRES DECLARADOS, o si aparecio algo que no sea el seed, el contenido de
+# --repo y la capa de marca. La lista de anadidos se DERIVA del directorio de
+# origen, porque desde E4 ya no son seis ficheros: son el seed, el indice y
+# todos los .deb del repo offline.
 #
 # LO QUE NO TOCA NUNCA, Y NO ES PRUDENCIA SINO UNA MEDICION: los tres binarios
 # firmados de la cadena de arranque -- bootaa64.efi (shim), grubaa64.efi y
@@ -68,9 +98,12 @@ AQUI=$(cd "$(dirname "$0")" && pwd)
 GUION="$AQUI/encina-seed.sh"
 YAML="$AQUI/autoinstall.yaml"
 
-ISO=""; REPO=""; SALIDA=""
+ISO=""; REPO=""; SALIDA=""; CAPA=""
 # la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
 H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
+# EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
+# pila A de D22: presenta el producto ante el usuario, en la primera pantalla.
+MENU_ENCINA="Probar o instalar Encina OS"
 # el idioma del producto, que NO se pregunta (AGENTS.md §6ter.0). Va en el seed
 # como 'locale:' para la maquina que sale, y aqui en el grub.cfg para que el
 # INSTALADOR se vea en el mismo idioma. Los dos sitios dicen lo mismo a proposito.
@@ -82,6 +115,7 @@ while [ $# -gt 0 ]; do
         --iso)    ISO="$2";    shift 2 ;;
         --repo)   REPO="$2";   shift 2 ;;
         --salida) SALIDA="$2"; shift 2 ;;
+        --capa)   CAPA="$2";   shift 2 ;;
         --yaml)   YAML="$2";   shift 2 ;;
         -h|--help) sed -n '1,40p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
@@ -174,11 +208,12 @@ for i in 0 1 2; do
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
 done
 
-# --- 5. los DOS ficheros que si se modifican, preparados y comprobados aqui ---
-echo "== 5. el grub.cfg en espanol, y el md5sum.txt que lo cubre"
+# --- 5. los TRES ficheros que si se modifican, y la capa de marca -----------
+echo "== 5. el grub.cfg, el .disk/info, la capa de marca y el md5sum.txt que los cubre"
 TMP=$(mktemp -d) || fallo "mktemp"
 trap 'rm -rf "$TMP"' EXIT
 
+# --- 5a. grub.cfg: el idioma del instalador y el titulo del menu ------------
 tar -xOf "$ISO" boot/grub/grub.cfg > "$TMP/grub.cfg.oficial" \
     || fallo "no pude leer boot/grub/grub.cfg de la ISO"
 # §4.21d: en todo el medio hay UN solo grub.cfg y una sola linea de nucleo. Si
@@ -187,36 +222,102 @@ n=$(grep -c '/casper/vmlinuz' "$TMP/grub.cfg.oficial")
 [ "$n" -eq 1 ] || fallo "esperaba UNA linea con /casper/vmlinuz y hay $n"
 grep -q 'locale=' "$TMP/grub.cfg.oficial" \
     && fallo "el grub.cfg oficial ya trae un locale=: parar y mirar por que"
+# el titulo del menu tambien es uno solo, y dice literalmente esto. Si algun dia
+# no lo dice, no se adivina: se para.
+n=$(grep -c '^menuentry "Try or Install Ubuntu" {$' "$TMP/grub.cfg.oficial")
+[ "$n" -eq 1 ] || fallo "esperaba UNA linea 'menuentry \"Try or Install Ubuntu\" {' y hay $n"
 # la palabra va ANTES del '---', que es la ranura de casper
-sed "s|/casper/vmlinuz|/casper/vmlinuz locale=$LOCALE|" \
+sed -e "s|/casper/vmlinuz|/casper/vmlinuz locale=$LOCALE|" \
+    -e "s|^menuentry \"Try or Install Ubuntu\" {\$|menuentry \"$MENU_ENCINA\" {|" \
     "$TMP/grub.cfg.oficial" > "$TMP/grub.cfg"
 grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE .*---" "$TMP/grub.cfg" \
     || fallo "la palabra no quedo en la linea del nucleo antes del ---"
+grep -q "^menuentry \"$MENU_ENCINA\" {\$" "$TMP/grub.cfg" \
+    || fallo "el titulo del menu no quedo puesto"
+grep -q "Ubuntu" "$TMP/grub.cfg" \
+    && fallo "el grub.cfg de Encina todavia dice Ubuntu en alguna linea"
 d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
-[ "$d" -eq 2 ] || fallo "grub.cfg cambia en $d lineas y tenia que cambiar en una"
-ok "grub.cfg: locale=$LOCALE en la linea del nucleo, y no cambia nada mas"
+[ "$d" -eq 4 ] || fallo "grub.cfg cambia en $d lineas y tenian que cambiar dos"
+ok "grub.cfg: locale=$LOCALE y menuentry «$MENU_ENCINA», y no cambia nada mas"
 
+# --- 5b. .disk/info: 60 bytes que rotulan el icono del instalador ------------
+tar -xOf "$ISO" .disk/info > "$TMP/info.oficial" \
+    || fallo "no pude leer .disk/info de la ISO"
+[ -s "$AQUI/marca/disk-info" ] || fallo "no esta imagen/marca/disk-info"
+cp "$AQUI/marca/disk-info" "$TMP/info" || fallo "cp .disk/info"
+# EL CONTROL, y es el calculo de casper-bottom/25adduser tal cual viaja en el
+# medio: no se comprueba que el fichero cambie, se comprueba QUE ROTULO SALE.
+release_de() {
+    local f="$1" lts rel
+    lts=$(cut -d' ' -f3 "$f" 2>/dev/null)
+    rel=$(cut -d' ' -f1-2 "$f" 2>/dev/null | sed 's/-/ /')
+    [ "$lts" = "LTS" ] && [ -n "$rel" ] && rel="$rel LTS"
+    echo "$rel"
+}
+R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info")
+[ "$R_NUESTRO" = "Encina OS" ] \
+    || fallo "el .disk/info de Encina daria «Install $R_NUESTRO» y tenia que dar «Install Encina OS»"
+[ "$R_OFICIAL" != "$R_NUESTRO" ] \
+    || fallo "CONTROL ROTO: el calculo da lo mismo con los dos .disk/info"
+# y la forma que necesitan los otros dos que lo leen: la primera palabra es el
+# usuario y el nombre de maquina de la sesion viva, y el parentesis del final es
+# el numero de serie de 57pollinate.
+grep -qE '^[A-Za-z]+ .*\([0-9]+\)$' "$TMP/info" \
+    || fallo "el .disk/info de Encina no conserva la forma «Palabra … (numero)»"
+ok ".disk/info: Name=Install $R_NUESTRO (el oficial daba: Install $R_OFICIAL), FLAVOUR=$(cut -d' ' -f1 "$TMP/info" | tr 'A-Z' 'a-z')"
+
+# --- 5c. la capa de marca ----------------------------------------------------
+if [ -z "$CAPA" ]; then
+    echo "   (no se dio --capa: se fabrica con capa-marca.sh, que lee la ISO oficial)"
+    "$AQUI/capa-marca.sh" "$ISO" --salida "$TMP/capa" --trabajo "$TMP/capa-trabajo" \
+        | sed 's/^/        /' || fallo "capa-marca.sh no paso"
+    CAPA="$TMP/capa/zz-encina.squashfs"
+fi
+[ -f "$CAPA" ] || fallo "no esta la capa de marca: $CAPA"
+CAPA_N=$(basename "$CAPA")
+# El nombre NO es decorativo: casper monta todos los *.squashfs de /casper en
+# orden alfabetico y el ultimo es el que manda. Un nombre que no vaya detras de
+# «minimal.*» deja la capa TAPADA, el medio vuelve a decir Ubuntu y no falla
+# nada -- que es la peor forma de fallar que hay.
+case "$CAPA_N" in
+    zz-*) : ;;
+    *) fallo "la capa se llama '$CAPA_N': tiene que ir detras de «minimal.*» o queda tapada" ;;
+esac
+tar -tf "$ISO" "casper/$CAPA_N" >/dev/null 2>&1 \
+    && fallo "la ISO oficial ya trae un casper/$CAPA_N: parar y mirar por que"
+ok "capa de marca: $CAPA_N, $(stat -f %z "$CAPA") bytes  $(shasum -a 256 "$CAPA" | cut -c1-16)…"
+
+# --- 5d. md5sum.txt: dos lineas rehechas y una anadida ----------------------
 tar -xOf "$ISO" md5sum.txt > "$TMP/md5sum.oficial" \
     || fallo "no pude leer md5sum.txt de la ISO"
-n=$(grep -c '  \./boot/grub/grub.cfg$' "$TMP/md5sum.oficial")
-[ "$n" -eq 1 ] || fallo "md5sum.txt tiene $n lineas de grub.cfg y esperaba una"
-VIEJO=$(grep '  \./boot/grub/grub.cfg$' "$TMP/md5sum.oficial" | cut -d' ' -f1)
-# CONTROL de que esa linea habla de ESTE fichero y no de otro (§4.21d, medido a
+cp "$TMP/md5sum.oficial" "$TMP/md5sum.txt"
+# CONTROL de que cada linea habla de ESE fichero y no de otro (§4.21d, medido a
 # mano entonces; aqui se vuelve a medir en cada construccion)
-[ "$(md5 -q "$TMP/grub.cfg.oficial")" = "$VIEJO" ] \
-    || fallo "la linea de md5sum.txt no describe el grub.cfg de esta ISO"
-NUEVO=$(md5 -q "$TMP/grub.cfg")
-[ "$NUEVO" != "$VIEJO" ] || fallo "el grub.cfg modificado tiene el mismo md5"
-sed "s|^$VIEJO  \./boot/grub/grub.cfg\$|$NUEVO  ./boot/grub/grub.cfg|" \
-    "$TMP/md5sum.oficial" > "$TMP/md5sum.txt"
+rehacer_md5() {   # ruta-en-el-medio  fichero-oficial  fichero-nuestro
+    local ruta="$1" ofi="$2" nue="$3" viejo nuevo n
+    n=$(grep -c "  \.$ruta\$" "$TMP/md5sum.txt")
+    [ "$n" -eq 1 ] || fallo "md5sum.txt tiene $n lineas de $ruta y esperaba una"
+    viejo=$(grep "  \.$ruta\$" "$TMP/md5sum.txt" | cut -d' ' -f1)
+    [ "$(md5 -q "$ofi")" = "$viejo" ] \
+        || fallo "la linea de md5sum.txt no describe el $ruta de esta ISO"
+    nuevo=$(md5 -q "$nue")
+    [ "$nuevo" != "$viejo" ] || fallo "el $ruta modificado tiene el mismo md5"
+    sed "s|^$viejo  \.$ruta\$|$nuevo  .$ruta|" "$TMP/md5sum.txt" > "$TMP/md5sum.paso"
+    mv "$TMP/md5sum.paso" "$TMP/md5sum.txt"
+}
+rehacer_md5 /boot/grub/grub.cfg "$TMP/grub.cfg.oficial" "$TMP/grub.cfg"
+rehacer_md5 /.disk/info         "$TMP/info.oficial"     "$TMP/info"
+# y la capa NUEVA se anade a la lista, para que la comprobacion de integridad
+# del propio medio la cubra en vez de ignorarla
+printf '%s  ./casper/%s\n' "$(md5 -q "$CAPA")" "$CAPA_N" >> "$TMP/md5sum.txt"
 d=$(diff "$TMP/md5sum.oficial" "$TMP/md5sum.txt" | grep -c '^[<>]')
-[ "$d" -eq 2 ] || fallo "md5sum.txt cambia en $d lineas y tenia que cambiar en una"
+[ "$d" -eq 5 ] || fallo "md5sum.txt cambia en $d lineas y tenian que cambiar dos y anadirse una"
 L=$(wc -l < "$TMP/md5sum.oficial" | tr -d ' ')
-[ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$L" ] || fallo "md5sum.txt cambia de tamano"
-ok "md5sum.txt: una linea rehecha (${VIEJO:0:8}… -> ${NUEVO:0:8}…), las otras $((L-1)) intactas"
+[ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$((L+1))" ] || fallo "md5sum.txt no crecio en una linea"
+ok "md5sum.txt: dos lineas rehechas, una anadida (casper/$CAPA_N), las otras $((L-2)) intactas"
 
 # --- 6. construir ------------------------------------------------------------
-echo "== 6. xorriso: anadir seis ficheros y reemplazar dos"
+echo "== 6. xorriso: anadir el seed, el repo y la capa de marca, y reemplazar tres"
 mkdir -p "$TMP/encina-repo"
 cp "$YAML" "$TMP/autoinstall.yaml" || fallo "cp seed"
 cp "$REPO"/*.deb "$REPO"/Packages "$TMP/encina-repo/" || fallo "cp repo"
@@ -239,19 +340,25 @@ cp "$REPO"/*.deb "$REPO"/Packages "$TMP/encina-repo/" || fallo "cp repo"
 # depender de un dato que no esta versionado.
 MODO_F=644
 MODO_D=755
+MODO_F=644
+MODO_D=755
+# la capa se copia a TMP antes de tocarle el modo: puede venir de --capa, o sea
+# de un directorio que no es nuestro.
+cp "$CAPA" "$TMP/$CAPA_N" || fallo "cp de la capa de marca"
 chmod "$MODO_D" "$TMP/encina-repo"                  || fallo "chmod dir repo"
 chmod "$MODO_F" "$TMP/encina-repo"/* "$TMP/autoinstall.yaml" \
-                "$TMP/grub.cfg" "$TMP/md5sum.txt"   || fallo "chmod ficheros"
+                "$TMP/grub.cfg" "$TMP/md5sum.txt" \
+                "$TMP/info" "$TMP/$CAPA_N"          || fallo "chmod ficheros"
 # Y SE COMPRUEBA QUE SE APLICO, que es la trampa 13: una mutacion se verifica
 # ANTES de leer su resultado. Sin esto, un chmod que fallara en silencio daria
 # exactamente la ISO que este bloque existe para evitar, y nadie lo notaria.
 n=$(find "$TMP/encina-repo" "$TMP/autoinstall.yaml" "$TMP/grub.cfg" \
-         "$TMP/md5sum.txt" -type f ! -perm "$MODO_F" | wc -l | tr -d ' ')
+         "$TMP/md5sum.txt" "$TMP/info" "$TMP/$CAPA_N" -type f ! -perm "$MODO_F" | wc -l | tr -d ' ')
 [ "$n" -eq 0 ] || fallo "$n ficheros no quedaron en $MODO_F pese al chmod"
 d=$(find "$TMP/encina-repo" -type d ! -perm "$MODO_D" | wc -l | tr -d ' ')
 [ "$d" -eq 0 ] || fallo "el directorio del repo no quedo en $MODO_D"
 t=$(find "$TMP/encina-repo" -type f | wc -l | tr -d ' ')
-ok "modo fijado: $((t+3)) ficheros en $MODO_F y el directorio del repo en $MODO_D"
+ok "modo fijado: $((t+5)) ficheros en $MODO_F y el directorio del repo en $MODO_D"
 
 rm -f "$SALIDA"
 # LA FECHA DE LO QUE SE ANADE, FIJADA A PROPOSITO: sin esto, la misma orden
@@ -269,10 +376,14 @@ xorriso -indev "$ISO" -outdev "$SALIDA" \
         -map "$TMP/encina-repo" /encina-repo \
         -map "$TMP/grub.cfg" /boot/grub/grub.cfg \
         -map "$TMP/md5sum.txt" /md5sum.txt \
+        -map "$TMP/info" /.disk/info \
+        -map "$TMP/$CAPA_N" "/casper/$CAPA_N" \
         -alter_date_r b "$FECHA" /autoinstall.yaml /encina-repo \
-                                 /boot/grub/grub.cfg /md5sum.txt -- \
+                                 /boot/grub/grub.cfg /md5sum.txt \
+                                 /.disk/info "/casper/$CAPA_N" -- \
         -alter_date_r c "$FECHA" /autoinstall.yaml /encina-repo \
-                                 /boot/grub/grub.cfg /md5sum.txt -- \
+                                 /boot/grub/grub.cfg /md5sum.txt \
+                                 /.disk/info "/casper/$CAPA_N" -- \
         -commit -end 2>&1 | grep -iE "^xorriso : (FAILURE|SORRY|WARNING)" | head -20
 [ -f "$SALIDA" ] || fallo "xorriso no produjo $SALIDA"
 ok "escrita: $(stat -f %z "$SALIDA") bytes"
@@ -296,6 +407,10 @@ for i in 0 1 2 3; do
     [ "$d" = "${HUELLAS[$i]}" ] || fallo "${FICHEROS[$i]} no sobrevivio a la ISO"
 done
 ok "los cuatro .deb sobreviven a la ISO, huella a huella"
+d=$(tar -xOf "$SALIDA" "casper/$CAPA_N" | shasum -a 256 | cut -d' ' -f1)
+[ "$d" = "$(shasum -a 256 "$CAPA" | cut -d' ' -f1)" ] \
+    || fallo "la capa de marca no sobrevivio a la ISO"
+ok "casper/$CAPA_N sobrevive a la ISO, huella a huella"
 # CONTROL: la ISO no puede contener algo que no se metio
 if tar -tf "$SALIDA" 2>/dev/null | grep -q "^encina-repo/fichero-que-no-existe"; then
     fallo "CONTROL ROTO: aparece un fichero que nadie metio"
@@ -405,6 +520,7 @@ awk '{print $2}' "$TMP/mapa.nuestra" | LC_ALL=C sort > "$TMP/rutas.nuestra"
 # directorio de origen. Lo que no cambia es la exigencia: ni uno mas, ni uno
 # menos, y ninguno perdido.
 { echo /autoinstall.yaml
+  echo "/casper/$CAPA_N"
   for f in "$REPO"/*; do echo "/encina-repo/$(basename "$f")"; done
 } | LC_ALL=C sort > "$TMP/anadidos.esperados"
 N_ESPERADOS=$(wc -l < "$TMP/anadidos.esperados" | tr -d ' ')
@@ -413,17 +529,17 @@ LC_ALL=C comm -23 "$TMP/rutas.oficial" "$TMP/rutas.nuestra" > "$TMP/quitados"
 [ ! -s "$TMP/quitados" ] || fallo "la ISO nuestra ha PERDIDO ficheros:
 $(cat "$TMP/quitados")"
 diff -q "$TMP/anadidos.esperados" "$TMP/anadidos" >/dev/null \
-    || fallo "los ficheros anadidos no son los seis esperados:
+    || fallo "los ficheros anadidos no son los esperados:
 $(diff "$TMP/anadidos.esperados" "$TMP/anadidos")"
 ok "$N_ESPERADOS ficheros anadidos, ni uno mas, y ninguno perdido"
 
 LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
     | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"
-printf '%s\n' /boot/grub/grub.cfg /md5sum.txt | LC_ALL=C sort > "$TMP/cambiados.esperados"
+printf '%s\n' /boot/grub/grub.cfg /md5sum.txt /.disk/info | LC_ALL=C sort > "$TMP/cambiados.esperados"
 diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
-    || fallo "los ficheros modificados no son los dos declarados:
+    || fallo "los ficheros modificados no son los tres declarados:
 $(diff "$TMP/cambiados.esperados" "$TMP/cambiados")"
-ok "modificados exactamente dos: /boot/grub/grub.cfg y /md5sum.txt"
+ok "modificados exactamente tres: /boot/grub/grub.cfg, /md5sum.txt y /.disk/info"
 # CONTROL de la comparacion entera: tiene que saber ver un cambio donde lo hay.
 # Se compara la oficial consigo misma cambiandole una huella a mano.
 awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \
@@ -439,13 +555,15 @@ c=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.declarado" "$TMP/mapa.nuestra" | wc -l | t
 [ "$c" -eq "$d" ] || fallo "solo se pudieron comparar $c de $d lineas de md5sum.txt"
 m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.declarado" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
 [ "$m" -eq 0 ] || fallo "$m de las $d lineas de md5sum.txt NO cuadran con el medio"
-ok "las $d lineas de md5sum.txt cuadran con la ISO construida, la del grub.cfg incluida"
-# CONTROL: con el md5sum.txt OFICIAL, la del grub.cfg tiene que fallar -- que es
-# exactamente la ISO que se entregaria si alguien se saltara el precio de §4.21d
+ok "las $d lineas de md5sum.txt cuadran con la ISO construida, la del grub.cfg, la del .disk/info y la de la capa incluidas"
+# CONTROL: con el md5sum.txt OFICIAL tienen que fallar DOS lineas -- la del
+# grub.cfg y la del .disk/info --, que es exactamente la ISO que se entregaria
+# si alguien se saltara el precio de §4.21d. La de la capa no cuenta: no esta en
+# el fichero oficial, asi que el 'join' ni la mira.
 sed 's|  \./|  /|' "$TMP/md5sum.oficial" | LC_ALL=C sort -k2 > "$TMP/md5.oficial.rutas"
 m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.oficial.rutas" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
-[ "$m" -eq 1 ] || fallo "CONTROL ROTO: con el md5sum.txt oficial esperaba 1 fallo y hay $m"
-ok "control: con el md5sum.txt OFICIAL falla exactamente una linea, la del grub.cfg"
+[ "$m" -eq 2 ] || fallo "CONTROL ROTO: con el md5sum.txt oficial esperaba 2 fallos y hay $m"
+ok "control: con el md5sum.txt OFICIAL fallan exactamente dos lineas, la del grub.cfg y la del .disk/info"
 
 echo
 echo "iso:    $SALIDA"

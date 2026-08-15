@@ -73,6 +73,57 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
+      **HECHA EL 2026-08-16 SALVO EL `[OJOS]`, QUE ES DE JORGE
+      (`MEDICIONES.md` §4.52).** Aquí sí se tocó el producto, y la pregunta de
+      fondo de arriba —reempaquetado o E5— **está contestada por escrito: es
+      `ENCINA-OS.md` D23**.
+      **Lo primero, porque decidía cuánto trabajo había: los dos `[OMIT]` que
+      §4.51 dejó a propósito**, contestados sobre el código del **commit exacto**
+      con el que se construyó este snap (`f329626`, que sale de su
+      `snapcraft.yaml`), no sobre `main`. *(1)* **`{{ DISTRO }}` no sale de
+      `/cdrom/.disk/info` ni de `/etc/os-release`: la pregunta estaba MAL
+      PLANTEADA.** Es `UbuntuFlavor.displayName`, **una constante compilada dentro
+      del binario**, y la única llave que la toca —`flavor` del whitelabel— sólo
+      admite uno de los **once** sabores de Ubuntu. O sea que las diapositivas
+      **se sustituyen enteras, no se parchean**. *(2)* **el `whitelabel.yml` SÍ se
+      apunta desde fuera del snap** —`/usr/share/desktop-provision/`, o
+      `$DESKTOP_PROVISION_PATH`—, y lo dice la propia documentación de Canonical:
+      *«Placing this `whitelabel.yaml` at
+      `/usr/share/desktop-provision/whitelabel.yaml` on your LiveCD is
+      sufficient…»*. Con esa puerta entran **el título de la ventana**
+      (`app-name`), **las diapositivas** y **los dibujos de cada página**, sin
+      tocar el snap firmado. **Con el control que separa esto de una lectura de
+      internet:** las cuatro cadenas están en el `libapp.so` de **este** medio y
+      una inventada no, y el snap es `confinement: classic`, que es lo que hace
+      que ese `/usr/share` sea el de la sesión viva.
+      **Y lo que abre la casilla entera:** §4.51 dijo que el fondo exigía *«rehacer
+      una capa de 1,69 GB»*, y **eso era verdad de la capa, no del medio**. El
+      medio **no lleva `layerfs-path=`** —buscado en el `grub.cfg`, en la ESP y en
+      el resto de la imagen: 0 apariciones—, así que casper monta **los 21
+      `*.squashfs`** de `/casper` y **el último por orden alfabético manda**. Una
+      capa propia, `zz-encina.squashfs`, **3 084 288 bytes contra 1 692 274 688**:
+      **549 veces menos**.
+      **Lo que se ha construido:** `imagen/capa-marca.sh` (**4 controles delante y
+      4 comprobaciones detrás, 0 fallos**), el árbol versionado `imagen/marca/`, y
+      `fabricar-iso.sh` pasa de modificar dos ficheros a **modificar tres**
+      —`grub.cfg` con su `menuentry`, `/.disk/info` y `md5sum.txt`— **y añadir la
+      capa**.
+      **El control que pedía la casilla, y dice CUÁLES:** el inventario pasa de
+      **31 a 24 apariciones** (0 fallos en los dos lados) y los **ocho** sitios que
+      dejan de decirlo están nombrados uno a uno en §4.52d — el `menuentry`, el
+      `.disk/info`, el rótulo del icono del instalador, `PRETTY_NAME`, `NAME` y
+      `LOGO`, `/etc/issue`, la sesión Wayland y el tema de texto de Plymouth.
+      **Baja siete y no ocho a propósito:** la línea de `os-release` sigue
+      contando porque dice `ID=ubuntu`, que D22 manda dejar.
+      **Y el instrumento sacó dos defectos suyos, los dos al usarlo:** contaba
+      **sitios y no valores**, así que **el número no podía bajar nunca**; y su
+      control **caducó justo al mejorar el producto**.
+      **LO QUE FALTA, y no se da por bueno:** el **splash del arranque**
+      —`watermark.png` y `bgrt-fallback.png` viven en el `initrd`, antes de que
+      exista ninguna capa—, `/.disk/release_notes_url`, los logotipos **dentro del
+      snap** (que dejan de verse pero siguen viajando) y **el `[OJOS]`: nadie ha
+      visto nada de esto en pantalla**. Se paga en la vuelta única, detrás de la
+      casilla 4.
 - [x] ~~**El logo de la rejilla.**~~ **CERRADA EL 2026-08-14 EN
       [aspecto/3-tema-e-iconos.md](aspecto/3-tema-e-iconos.md), Y AQUÍ QUEDÓ UNA
       COPIA RANCIA DICIENDO LO CONTRARIO DURANTE UN DÍA — corregida el

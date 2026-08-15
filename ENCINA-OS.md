@@ -99,6 +99,8 @@ redacción y la cuarta se enmienda.
 | D20 | **NO se forkea Yaru. El acento del producto es `Yaru-sage`, prestado. Decisión de Jorge, 2026-08-15.** Se queda lo que ya viaja desde `encina-branding` 0.1.10: `gtk-theme='Yaru-sage'` y el tema de iconos `Encina` heredando `Yaru-sage,Yaru,hicolor`. **Y se acepta por escrito lo que cuesta:** `sage` es `#657B69`, **no** el `#3A664E` de la marca, y está tan desaturado que **pasa por gris** — o sea que hoy el producto **no tiene su acento**, tiene uno prestado que casi no se lee como decisión. **Con ella caen dos casillas de `tareas/aspecto/0-decidir.md`**: la del tema base y la de dónde vive el fork, que se queda sin objeto | **El motivo es la agilidad, y se dice tal cual en vez de disfrazarlo de criterio técnico.** La alternativa medida era forkear Yaru para añadir una variante `encina` — que **no es un rediseño**: la lista de acentos es cerrada, `#3A664E` no está en ella, y añadir uno es una diferencia de datos en un SCSS (§2 de `2-golpes-baratos.md`). Pero un fork arrastra **repositorio aparte, construcción con meson y sassc, relación de rebase con aguas arriba, oferta de fuente propia y un anclaje para que un `apt upgrade` no lo pise en silencio** — las mismas cinco cosas que `encina-autofirma`, para cambiar un color. **Lo que se compra:** cero paquetes nuevos, cero filas en el manifiesto y cero mantenimiento; los diez acentos ya viajan dentro de `yaru-theme-gtk` y `yaru-theme-icon`. **Lo que se paga, y no se maquilla:** el verde de la identidad no está en pantalla, y `design/identidad.md` sigue diciendo que la cara del producto es propia. **Qué reabriría esta decisión, que es lo que la hace revisable y no un dogma:** que Ubuntu abra el acento a un valor libre —hoy no existe la clave `accent-color` (§2 de `2-golpes-baratos.md`)—, que el fork deje de costar un repositorio porque el tema del shell obligue a uno de todas formas, o que alguien mire la pantalla y diga que el gris no pasa. **Es una decisión de compromiso tomada a sabiendas, no un descuido** |
 | D22 | **LO QUE OBLIGAN LOS TÉRMINOS DE CANONICAL, leídos el 2026-08-15 y citados literalmente en §2.1.** El documento que manda es **uno solo**: la *IPRights Policy* de Canonical, **fechada el 15 de julio de 2015**. **(1) SE PUEDE nombrar a Ubuntu como hecho técnico y como atribución, nunca como identidad**, y la forma exacta —la única que este proyecto usa— tiene dos versiones. **Larga**, para el README, la página de la publicación y cualquier «Acerca de»: *«Encina OS está construido sobre Ubuntu 24.04 LTS. Ubuntu es una marca registrada de Canonical Ltd. Encina OS no está afiliado a Canonical Ltd. ni avalado por ella.»* **Corta**, donde no quepa: *«Derivado de Ubuntu; ni publicado ni avalado por Canonical Ltd.»* Va en **texto corrido**, y **nunca**: en el nombre del producto, en un título de ventana, en un icono, dentro de un logotipo, ni en el nombre de un volumen, de un fichero, de un paquete o de un dominio. **(2) NO SE PUEDE usar la marca ni los logotipos como identidad del producto**, y de ahí sale el criterio que reparte los 39 sitios de §4.51 en tres pilas, que es lo que esta decisión aporta de verdad: **marca no es cadena**. **Pila A —lo que presenta el producto ante el usuario— SALE, sin excepción:** el `Volume id`, el `menuentry` del GRUB, `/.disk/info` y con él el rótulo del icono del instalador, el título de su ventana, las diapositivas, `NAME`, `PRETTY_NAME` y `LOGO` de `os-release`, `DISTRIB_DESCRIPTION` de `lsb-release`, `/etc/issue`, el `Name=Ubuntu` de la sesión Wayland y el tema de texto de Plymouth. **Pila B —activos gráficos de Canonical— SE QUITAN O SE SUSTITUYEN aunque no lleguen a verse:** `watermark.png` y `bgrt-fallback.png` del `initrd`, `ubuntu-logo.png`, `warty-final-ubuntu.png`, `ubiquity.png`, y `logo-light.svg`, `logo-dark.svg`, `mascot*.svg`, `ubuntu_pro.svg` y `ubuntu_certified.svg` del snap. **Pila C —procedencia técnica— SE QUEDA, y quedarse es lo correcto:** `ID=ubuntu` (D6) y su gemelo `DISTRIB_ID` de `lsb-release`, los 155 nombres de `.deb` con `-Nubuntu`, `Origin: Ubuntu` del `Release` firmado y las fuentes de `apt` que apuntan a `archive.ubuntu.com`. **(3) `os-release`: LA POLÍTICA NO LO NOMBRA** —ni él ni ningún otro fichero, y eso va escrito porque es lo que se cuela—, así que la obligación se deriva de **qué hace cada campo**, y eso sí está escrito: la especificación del formato dice que `NAME` y `PRETTY_NAME` son *«suitable for presentation to the user»* y que `ID` es *«suitable for processing by scripts»*. **Cambian los de presentación y NO cambia `ID`: D6 sigue entera**, porque hablaba solo de `ID` y **nunca autorizó `NAME="Ubuntu"`**. `LOGO=ubuntu-logo` es pila B. **Las cuatro URL de `ubuntu.com` se van** —mandan al usuario al soporte de Canonical, que es lo más parecido a implicar aval que hay en el fichero, y la especificación las declara opcionales—; hasta que existan las propias, se quitan. **Y una corrección a D19 de paso: la atribución que aquella daba por hecha en `ID_LIKE` está en realidad en `ID`**, porque D6 mantiene `ID=ubuntu` y entonces `ID_LIKE` sigue siendo `debian` y no cambia. **Lo que esta decisión NO decide, a propósito: el mecanismo y el momento** —si ese fichero lo escribe un `dpkg-divert` desde un paquete o la construcción de la imagen—, que son de las casillas 3 y 4 | **Porque la casilla pedía una decisión y no una impresión, y el riesgo de esta casilla era exactamente ése: es la única del bloque 1 que no tiene un comando que la demuestre.** De ahí la forma: **cita literal con su URL, su fecha de consulta y la huella del texto en §2.1**, y todo lo interpretado marcado como lectura. **La frase que decide el caso es una sola:** *«Any redistribution of modified versions of Ubuntu must be approved, certified or provided by Canonical if you are going to associate it with the Trademarks. Otherwise you must remove and replace the Trademarks…»* — y Encina OS es exactamente eso, una redistribución modificada y sin aprobar. **Lo que la política NO dice, que es la mitad que se olvida:** no contiene la expresión «derived from Ubuntu» **ni ninguna fórmula autorizada** —la de arriba es **nuestra**, elegida para caber en lo que sí concede: *«you may reference Ubuntu, but must avoid: (i) any implication of endorsement»*—; no nombra ningún fichero; no da umbral de qué cuenta como *modification*; y **no existe ningún documento de Canonical para distribuciones derivadas**, comprobado contra el índice, que tiene 27 entradas y ninguna lo es. **Por qué hace falta «marca no es cadena»:** *remove and replace the Trademarks* no puede querer decir borrar las 39 apariciones, porque `Origin: Ubuntu` vive dentro de un `Release` **firmado por Canonical** que no se puede tocar (§4.32) y los nombres de los 155 `.deb` los pone el propio Ubuntu; leerlo así haría imposible **cualquier** derivada, incluida E5. **El precio, sin maquillar, y es el resultado que importa: con este criterio la ISO de hoy NO SE PUEDE PUBLICAR**, y lo que lo bloquea no son los 60 bytes de `.disk/info` sino la pila B **dentro del snap firmado de 109 MB** (§4.51) — o sea que **D22 no resuelve la decisión de fondo del bloque 1 —reempaquetar o E5—: la endurece**. **Y una incoherencia declarada, no un descuido:** con D6 el producto se identifica ante los scripts como `ubuntu` para siempre mientras la pantalla dice Encina; la política no dice nada de eso y D6 tiene su motivo técnico. **No confundir con las licencias de los paquetes**, que es la otra trampa: los paquetes se redistribuyen por su licencia libre —lo dice la propia política, *«This does not affect your rights under any open source licence»*— y lo que decide **cómo se llama el producto** es esta política y solo ella. **Qué reabriría D22:** que Canonical publique una IPRights Policy nueva —la vigente es de 2015 y en §2.1 queda la huella de lo citado—, que se pida y se obtenga el permiso escrito que el §4 admite, o que el producto deje de derivar de Ubuntu |
 
+| D23 | **HASTA DÓNDE LLEGA EL REEMPAQUETADO: hasta donde llegue el propio medio, y E5 NO se adelanta. Decisión del 2026-08-16, y contesta la pregunta que la tarea del bloque 1 arrastraba desde el principio y que D22 endureció en vez de resolver.** La marca del medio se pone **con los mecanismos que Ubuntu ya trae**, y son tres, los tres **leídos en el código que viaja en este mismo medio** (§4.52): *(1)* **`/boot/grub/grub.cfg`**, que ya es fichero nuestro —el `menuentry` pasa a *«Probar o instalar Encina OS»*—; *(2)* **`/.disk/info`**, 43 bytes que valen tres cosas a la vez: el rótulo del icono del instalador vía `casper-bottom/25adduser`, el usuario y el nombre de máquina de la sesión viva vía `scripts/casper`, y el número de serie de `57pollinate`; *(3)* **UNA CAPA `squashfs` PROPIA, `/casper/zz-encina.squashfs`**, que tapa a las de Ubuntu porque **el medio no lleva `layerfs-path=`** y entonces casper monta **todos** los `*.squashfs` del directorio y **el último por orden alfabético manda** — y dentro de esa capa entran los ficheros de presentación (`os-release`, `lsb-release`, `/etc/issue`, la sesión Wayland, el tema de texto de Plymouth), **los activos gráficos de Canonical sustituidos por bytes en su misma ruta** (el fondo, el logotipo de GDM, los doce tamaños del icono del instalador, el botón de la rejilla) y **`/usr/share/desktop-provision/`**, que es la puerta declarada por Canonical para ponerle marca al instalador **sin tocar su snap**: el título de la ventana (`app-name`), las diapositivas y los dibujos de cada página. **DÓNDE PARA, y para de verdad: en el snap firmado.** Los `logo-*.svg`, `mascot*.svg`, `ubuntu_pro.svg` y `ubuntu_certified.svg` **siguen viajando dentro** aunque dejen de verse; el snap **no se reempaqueta**. **Y lo que queda por hacer y no está: el splash del arranque** —`watermark.png` y `bgrt-fallback.png` viven en el `initrd`, antes de que exista ninguna capa, así que exigen reescribirlo—, **el `release_notes_url`** y el nombre del volumen, que es la casilla 4 | **Porque la pregunta se planteaba entre dos opciones que resultaron no ser las dos.** «Reempaquetar o E5» daba por hecho que el reempaquetado sólo podía repintar por fuera y que todo lo de dentro exigía rehacer capas de 1,69 GB — y §4.51 lo escribió así. **Medido, es falso, y por un margen que no admite discusión: la capa que tapa `minimal.squashfs` pesa 3 084 288 bytes contra 1 692 274 688, o sea 549 veces menos**, y el instalador trae **su propio mecanismo de marca blanca documentado por Canonical**, que nadie de este proyecto había mirado hasta §4.51. Con eso, el reempaquetado deja de ser «una solución a medias» para casi toda la pila A y buena parte de la pila B, y **E5 deja de ser lo que desbloquea publicar**. **Lo que bloquea publicar después de esto está nombrado y es corto:** el splash del `initrd` y los activos dentro del snap. **El precio, sin maquillar, y es una fragilidad real: la capa manda por su NOMBRE.** Si algún día el `grub.cfg` de Ubuntu llevara `layerfs-path=`, la capa dejaría de montarse **y no fallaría nada** — el medio volvería a decir Ubuntu en silencio, que es la peor forma de fallar que hay. Por eso el mecanismo está escrito en la cabecera de `capa-marca.sh`, en la de `fabricar-iso.sh` y en §4.52b, y por eso `inventario-marca.sh` sabe leer el fichero **efectivo** y no el de la capa de abajo. **Y una consecuencia que no se esconde: el medio y la máquina instalada NO dicen lo mismo.** El `os-release` del medio dice `NAME="Encina OS"` y el de la máquina instalada sigue diciendo `Ubuntu`, porque el mecanismo para el sistema instalado sigue fuera de alcance (§8) y ningún `.deb` puede tocar ese fichero sin chocar con R5. Es una deuda declarada, no un descuido. **Qué reabriría D23:** que Ubuntu ponga `layerfs-path=` en el `grub.cfg` de su ISO, que el instalador deje de leer `/usr/share/desktop-provision/`, o que aparezca una razón de producto —no de marca— para construir la imagen desde cero, que es lo que E5 es de verdad |
+
 ---
 
 ### 2.1 Los términos de Canonical, citados literalmente
@@ -320,7 +322,7 @@ también la receta de imagen**, no solo los paquetes.
 | R5 | No sobrescribir conffiles de otros paquetes: `/etc/default/grub` con `sed`; `os-release` con `dpkg-divert` |
 | R6 | Tema de Plymouth basado en `spinner`, nunca en `bgrt` (bgrt muestra el logo del fabricante) |
 | R7 | Tras instalar un tema de Plymouth, `update-initramfs -u`. El tema va dentro del initramfs |
-| R8 | Ningún activo de terceros: ni marca Canonical, ni tipografía San Francisco, ni iconos que imiten macOS |
+| R8 | Ningún activo de terceros: ni marca Canonical, ni tipografía San Francisco, ni iconos que imiten macOS. **PRECISADA el 2026-08-16 por D23, porque se quedaba corta y §2.1 ya lo dejó dicho:** se escribió pensando en **no añadirlos**, y §4.51 midió que **el medio los HEREDA**. La regla cubre las dos cosas: no añadir, **y quitar o tapar los que el medio traiga**, hasta donde el propio medio deje. Lo que no se alcanza no se da por bueno: se nombra (§4.52f) |
 | R9 | Idempotencia: cinco instalaciones seguidas dejan el sistema idéntico |
 | R10 | Sin dependencias circulares de repositorio: no declarar `Depends:` sobre paquetes de un repo que ese mismo paquete configura |
 
@@ -399,15 +401,50 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-15: **[tareas/marca-del-medio.md](tareas/marca-del-medio.md)**
+> ### LA TAREA EN CURSO, 2026-08-16: **[tareas/marca-del-medio.md](tareas/marca-del-medio.md)**
 >
 > **Que el medio y el instalador dejen de decir Ubuntu.** Eran **4 casillas** —y
 > antes 5, porque la del logotipo de la rejilla resultó ser una copia rancia de
-> una que ya estaba cerrada—; **las dos primeras están hechas el 2026-08-15 y
-> quedan 2**. Es **lo que bloquea publicar** junto con los 3,46 GB del
-> alojamiento.
+> una que ya estaba cerrada—; **las tres primeras están hechas y queda 1**, más
+> **un `[OJOS]` de Jorge que no cierra nadie más**. Es **lo que bloquea publicar**
+> junto con los 3,46 GB del alojamiento.
 >
-> **LA SEGUNDA CASILLA, CERRADA HOY: los términos de Canonical están leídos y lo
+> **LA TERCERA CASILLA, HECHA EL 2026-08-16 SALVO EL `[OJOS]`
+> (`MEDICIONES.md` §4.52): aquí sí se tocó el producto, y la pregunta de fondo
+> del bloque está contestada — es D23.**
+>
+> - **«Reempaquetar o E5» eran dos opciones que resultaron no ser las dos.** La
+>   marca del medio se pone **con los mecanismos que Ubuntu ya trae**, y la razón
+>   está medida y no admite discusión: **el medio no lleva `layerfs-path=`**, así
+>   que casper monta **todos** los `*.squashfs` de `/casper` y **el último por
+>   orden alfabético manda** — o sea que **una capa de 3 084 288 bytes tapa a una
+>   de 1 692 274 688**, 549 veces menos. **E5 deja de ser lo que desbloquea
+>   publicar.**
+> - **Los dos `[OMIT]` de §4.51, contestados sobre el código del commit exacto
+>   con el que se construyó el snap — y uno estaba MAL PLANTEADO.**
+>   `{{ DISTRO }}` **no sale de `.disk/info` ni de `os-release`: es una constante
+>   compilada en el binario**, y la única llave que existe (`flavor`) sólo admite
+>   uno de los once sabores de Ubuntu. Las diapositivas **se sustituyen, no se
+>   parchean**. El otro abre la puerta entera: **el `whitelabel.yml` se apunta
+>   desde fuera del snap** —`/usr/share/desktop-provision/`, documentado por la
+>   propia Canonical— y con él el **título de la ventana** (`app-name`), las
+>   diapositivas y los dibujos de cada página, **sin tocar el snap firmado**.
+> - **El inventario baja de 31 a 24 apariciones, con los OCHO sitios nombrados
+>   uno a uno** y 0 fallos en los dos lados. La cuenta no cuadra a propósito: la
+>   línea de `os-release` sigue contando porque **dice `ID=ubuntu`**, que D22
+>   manda dejar.
+> - **Y el instrumento sacó dos defectos suyos al usarlo:** contaba **sitios y no
+>   valores**, así que el número **no podía bajar nunca**; y su control **caducó
+>   justo al mejorar el producto**, dando un `[FALLO]` que se leía como
+>   instrumento roto.
+>
+> **LO QUE FALTA DE ESTA CASILLA, y no se da por bueno:** el **splash del
+> arranque** —`watermark.png` y `bgrt-fallback.png` viven en el `initrd`, antes de
+> que exista ninguna capa, así que exigen reescribirlo— y **el `[OJOS]`**: nadie
+> ha visto nada de esto en pantalla. Se paga en la vuelta única, detrás de la
+> casilla 4.
+>
+> **LA SEGUNDA CASILLA, CERRADA EL 2026-08-15: los términos de Canonical están leídos y lo
 > que obligan está escrito — es D22, con las citas literales en §2.1.** Es la
 > única casilla del bloque sin comando que la demuestre, así que lo que la hace
 > verificable es la forma: **fuente, fecha de consulta, redirección y huella del
@@ -459,13 +496,15 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >   literales están en el binario— y si el `whitelabel.yml` se puede apuntar desde
 >   fuera del snap.
 >
-> **Lo siguiente es la casilla 3: el arranque y el instalador, con identidad de
-> Encina** — y es la cara que se ve, así que la cierra un `[OJOS]`. Le llegan ya
-> **el inventario** (§4.51, con lo barato y lo caro separados) y **el criterio de
-> parada** (D22, las tres pilas): lo que falta por decidir ahí dentro es **hasta
-> dónde llega el reempaquetado**, con dos cosas todavía sin medir y nombradas en
-> §4.51 — cuál de las dos fuentes rellena `{{ DISTRO }}` y si el `whitelabel.yml`
-> se puede apuntar desde fuera del snap.
+> **Lo siguiente es la casilla 4: el nombre del volumen de la ISO**, que hoy dice
+> `Ubuntu 24.04.4 LTS arm64` y es lo que se ve al conectar el USB en cualquier
+> sistema operativo, antes de arrancar nada. **Es la última que queda**, y lo que
+> hay que comprobar no es que se pueda cambiar: es que **el medio siga
+> arrancando**, porque el instalador usa el nombre del volumen para encontrarse a
+> sí mismo. Y detrás de ella, y **una sola vez**, la vuelta: refabricar la ISO,
+> instalarla y mirarla — que es donde se cobran a la vez el `[OJOS]` de la
+> casilla 3 y las dos últimas casillas de
+> [tareas/aspecto/5-cierre.md](tareas/aspecto/5-cierre.md).
 >
 > **Por qué le toca ahora:** `aspecto/` ha cumplido su turno. El 2026-08-15 Jorge
 > dio por bueno lo visual —*«como está, está bastante bien, y ya le da un toque
@@ -1010,6 +1049,14 @@ Cuatro matices:
   `.deb` no llega a tocarlo** —`encina-branding` no llega al medio, medido: 0
   ficheros—. Elegir entre divertir desde un paquete y escribir el fichero en la
   construcción de la imagen es de las casillas 3 y 4 del bloque 1, no de aquí.
+  **ENMIENDA DEL 2026-08-16, D23: el mecanismo está decidido PARA EL MEDIO y
+  sigue fuera de alcance PARA LA MÁQUINA INSTALADA, y esas son dos cosas
+  distintas que conviene no confundir.** En el medio lo escribe **una capa
+  `squashfs` propia** que tapa a la de 1,69 GB sin rehacerla (§4.52b), así que
+  ahí `NAME="Encina OS"`. En la máquina instalada **sigue diciendo `Ubuntu`**,
+  porque ningún `.deb` puede tocar ese fichero sin chocar con **R5** y nadie ha
+  decidido todavía el `dpkg-divert`. **El medio y la máquina no dicen lo mismo, y
+  eso es una deuda declarada, no un descuido.**
 
 - **`encina-locale-es` y `encina-doctor` están aquí de forma permanente.** Los
   dos se midieron antes de abrirlos y los dos resultaron no existir. El resto de

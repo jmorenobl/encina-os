@@ -1,0 +1,47 @@
+# Encina OS - LOS ACTIVOS GRAFICOS DE CANONICAL QUE VIAJAN EN EL MEDIO, y con que
+# se sustituyen. Es la pila B de ENCINA-OS.md D22: «se quitan o se sustituyen
+# aunque no lleguen a verse».
+#
+# La sustitucion es POR BYTES Y EN SU MISMA RUTA: la capa de Encina va la ultima
+# en el orden de montaje de casper, asi que su fichero tapa al de la capa de
+# abajo. El NOMBRE del fichero sigue diciendo «ubuntu» y eso es correcto y
+# deliberado -- D22: marca no es cadena; lo que se quita es el DIBUJO, que es el
+# activo de Canonical, no la ruta, que no la ve nadie.
+#
+# Columnas, separadas por TABULADOR:
+#   1. destino  ruta dentro de la sesion viva del medio. Tiene que EXISTIR ya en
+#               alguna capa: si no existe, no estariamos tapando nada, y el
+#               guion se niega (control 4).  Con '+' delante = fichero NUEVO,
+#               que no tapa a nadie y por eso no se comprueba.
+#   2. origen   ruta relativa a debian-packages/encina-branding/src/
+#   3. como     copia | png:<lado>   (png: convierte y escala a <lado>x<lado>)
+#   4. porque   una linea, para que dentro de un ano se sepa que hacia ahi
+#
+# LO QUE NO ESTA AQUI, y va escrito porque no estar no es estar resuelto:
+#   - los seis /usr/share/icons/Humanity/apps/*/ubiquity.svg: Humanity no es el
+#     tema de la sesion (lo es Yaru), asi que no se ven; se quedan.
+#   - /usr/share/icons/Yaru/scalable/apps/ubiquity-symbolic.svg y
+#     .../actions/view-app-grid-ubiquity-symbolic.svg: no hay simbolico propio
+#     dibujado todavia.
+#   - los logotipos DENTRO del snap del instalador (logo-light.svg, mascot*.svg,
+#     ubuntu_pro.svg, ubuntu_certified.svg): el snap esta firmado y no se toca.
+#     Lo que se ve se cambia por whitelabel.yml; los ficheros siguen dentro.
+#   - watermark.png y bgrt-fallback.png del initrd: no son de la sesion viva,
+#     viven en el initrd y no hay capa que los tape. Van aparte.
+
+/usr/share/backgrounds/warty-final-ubuntu.png	usr/share/backgrounds/encina/encina.jpg	png:1920	EL FONDO QUE SE VE DETRAS DEL INSTALADOR. Lo nombra 10_ubuntu-settings.gschema.override, que esta COMPILADO en gschemas.compiled y no se puede reescribir desde aqui: por eso se cambia el fichero al que apunta y no el ajuste.
+/usr/share/plymouth/ubuntu-logo.png	usr/share/backgrounds/encina/logo.png	png:200	El logotipo del saludador GDM. En el medio no se llega a ver -- la sesion viva entra sola -- y se sustituye igual, que es lo que dice la pila B.
+/usr/share/icons/Yaru/16x16/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:16	El dibujo del icono del instalador, en el dock y en el Escritorio. El original es un disco duro con la chincheta naranja de Ubuntu.
+/usr/share/icons/Yaru/22x22/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:22	idem
+/usr/share/icons/Yaru/24x24/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:24	idem
+/usr/share/icons/Yaru/32x32/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:32	idem
+/usr/share/icons/Yaru/48x48/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:48	idem
+/usr/share/icons/Yaru/256x256/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:256	idem
+/usr/share/icons/Yaru/16x16@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:32	idem, pantalla de doble densidad
+/usr/share/icons/Yaru/22x22@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:44	idem
+/usr/share/icons/Yaru/24x24@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:48	idem
+/usr/share/icons/Yaru/32x32@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:64	idem
+/usr/share/icons/Yaru/48x48@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:96	idem
+/usr/share/icons/Yaru/256x256@2x/apps/ubiquity.png	usr/share/backgrounds/encina/logo.png	png:512	idem
+/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg	usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg	copia	EL BOTON DE LA REJILLA del dock. En la sesion viva no hay tema de Encina que lo tape (§4.51), asi que se tapa el fichero de Yaru. Es el nombre que midio §4.43, no view-app-grid-symbolic.
++/usr/share/icons/hicolor/scalable/apps/encina-logo.svg	usr/share/icons/hicolor/scalable/apps/encina-logo.svg	copia	FICHERO NUEVO: es el dibujo al que apunta LOGO=encina-logo del os-release de la capa. Sin el, LOGO no resuelve a nada.

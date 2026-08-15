@@ -67,8 +67,9 @@ done
 [ -n "$ISO" ] || uso
 [ -f "$ISO" ] || { echo "[FALLO] no existe la ISO: $ISO" >&2; exit 1; }
 
-N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0
+N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0; N_LIMPIO=0
 FALLOS=()
+CAPAS_MARCA=""
 titulo() { echo; echo "=== $* ==="; }
 paso()   { echo "--- $* "; }
 ok()     { N_OK=$((N_OK+1));  echo "  [OK]    $*"; }
@@ -78,7 +79,23 @@ ojos()   { echo "  [OJOS]  $*"; }
 fallo()  { N_MAL=$((N_MAL+1)); echo "  [FALLO] $1"; [ -n "${2:-}" ] && echo "$2" | sed 's/^/          | /'; FALLOS+=("$1"); }
 
 # marca "fichero" "cadena o valor" "donde se ve"
-marca() { aviso "$(printf '%-52s %s\n              -> %s' "$1" "$2" "$3")"; }
+#
+# EL SITIO SE INVENTARIA SIEMPRE; LO QUE DECIDE SI ES UNA APARICION ES EL VALOR.
+# Esto no estaba asi el 2026-08-15 y era un defecto que solo se vio al usar el
+# guion para lo que existe: comparar un medio antes y despues. Contando SITIOS,
+# un medio cuyo grub.cfg ya dice «Probar o instalar Encina OS» seguia sumando
+# una aparicion, y el numero no podia bajar nunca -- o sea que el instrumento no
+# sabia decir que el trabajo estaba hecho.
+limpio() { N_LIMPIO=$((N_LIMPIO+1)); echo "  [OK]    $*"; }
+marca() {
+    local linea
+    linea=$(printf '%-52s %s\n              -> %s' "$1" "$2" "$3")
+    if printf '%s' "$2" | /usr/bin/grep -qi ubuntu; then
+        aviso "$linea"
+    else
+        limpio "$linea"
+    fi
+}
 
 for h in xorriso osirrox shasum python3 zstd bsdtar; do
     command -v "$h" >/dev/null || { echo "[FALLO] falta la herramienta: $h" >&2; exit 1; }
@@ -143,7 +160,13 @@ fi
 
 paso "(b) el calculo de RELEASE no esta clavado"
 if [ -f "$T/medio/info" ]; then
-    printf 'Encina OS 0.3 LTS "Bellota" - Release arm64 (20260815)\n' > "$T/info-control"
+    # OJO con el fichero de control: tiene que dar un RELEASE que NO pueda salir
+    # de ningun medio real. El 2026-08-15 decia «Encina OS 0.3 LTS …», y el dia
+    # que el medio empezo a llevar de verdad un .disk/info de Encina el control
+    # empezo a dar FALLO: los dos daban «Encina OS» y el guion no podia
+    # distinguirlos. Un control que caduca cuando el trabajo avanza no es un
+    # control.
+    printf 'Bellota 9.9 LTS "Prueba" - Release arm64 (20260815)\n' > "$T/info-control"
     R_REAL=$(release_de "$T/medio/info")
     R_CTRL=$(release_de "$T/info-control")
     if [ "$R_REAL" != "$R_CTRL" ] && [ -n "$R_CTRL" ]; then
@@ -159,7 +182,14 @@ if [ "$SIN_CAPAS" -eq 1 ]; then
     omitido "(c) y (d): los controles de las capas no se han ejecutado (--sin-capas)"
 else
     paso "(c) las capas squashfs se sacan del medio y se listan"
-    for c in minimal.squashfs minimal.standard.live.squashfs; do
+    # LAS CAPAS DE MARCA, que son las que NO son de Ubuntu. Desde el 2026-08-16
+    # el medio de Encina lleva una encima de todas (zz-encina.squashfs), y si
+    # este guion no la leyera mediria EL FICHERO TAPADO: diria «NAME=Ubuntu»
+    # sobre un medio que en pantalla dice Encina. Un inventario que se cree la
+    # capa de abajo es peor que no tenerlo.
+    CAPAS_MARCA=$(/usr/bin/grep -E "^/casper/.*\.squashfs$" "$ARBOL" \
+                  | sed 's|.*/||' | /usr/bin/grep -v "^minimal\." || true)
+    for c in minimal.squashfs minimal.standard.live.squashfs $CAPAS_MARCA; do
         if [ ! -s "$T/capas/$c" ]; then
             xorriso -indev "$ISO" -osirrox on -cpx "/casper/$c" "$T/capas" -- >/dev/null 2>&1
         fi
@@ -176,6 +206,11 @@ else
     #    y corta la tuberia: el acierto se leia como fallo.
     awk '{print $6}' "$T/base.ll" > "$T/base.nombres"
     awk '{print $6}' "$T/viva.ll" > "$T/viva.nombres"
+    : > "$T/marca.ll"
+    for c in $CAPAS_MARCA; do
+        unsquashfs -ll "$T/capas/$c" 2>/dev/null >> "$T/marca.ll"
+    done
+    awk '{print $6}' "$T/marca.ll" > "$T/marca.nombres"
     if [ "$N_BASE" -gt 1000 ] && [ "$N_VIVA" -gt 1000 ] \
     && /usr/bin/grep -q "/etc/os-release$" "$T/base.nombres" \
     && ! /usr/bin/grep -q "/etc/bellota-release" "$T/base.nombres"; then
@@ -303,9 +338,27 @@ else
                 [ "$n" -gt 0 ] && marca "…/bin/lib/libapp.so" "cadena «$c»" \
                                         "el titulo de la ventana del instalador y sus botones"
             done
-            F1=$(/usr/bin/grep -c -a -F "/cdrom/.disk/info" "$LIB" || echo 0)
-            F2=$(/usr/bin/grep -c -a -F "/var/lib/snapd/hostfs/etc/os-release" "$LIB" || echo 0)
-            omitido "el nombre que rellena «{{ DISTRO }}» sale de /cdrom/.disk/info o de /etc/os-release (los DOS literales estan en libapp.so: $F1 y $F2). CUAL GANA no esta medido"
+            # §4.51 dejo esto [OMIT] con la pregunta mal planteada -- «cual de
+            # las dos fuentes gana» -- y §4.52c la contesto leyendo la fuente
+            # del commit exacto con el que se construyo este snap: NINGUNA.
+            # «{{ DISTRO }}» se sustituye por UbuntuFlavor.displayName, que es
+            # una CONSTANTE compilada aqui dentro, y la unica llave que la
+            # cambia -- 'flavor' del whitelabel -- solo admite uno de los once
+            # sabores de Ubuntu. Por eso las diapositivas se sustituyen enteras
+            # y no se parchean.
+            DP=$(/usr/bin/grep -c -a -F "/usr/share/desktop-provision/" "$LIB" || echo 0)
+            EV=$(/usr/bin/grep -c -a -F "DESKTOP_PROVISION_PATH" "$LIB" || echo 0)
+            AN=$(/usr/bin/grep -c -a -F "app-name" "$LIB" || echo 0)
+            marca "…/bin/lib/libapp.so" "«{{ DISTRO }}» NO sale de ningun fichero: es constante del binario (§4.52c)" \
+                  "el texto de las diapositivas. Solo cambia sustituyendolas"
+            if [ "$DP" -ge 1 ] && [ "$EV" -ge 1 ] && [ "$AN" -ge 1 ]; then
+                limpio "$(printf '%-52s %s' "…/bin/lib/libapp.so" "lleva el mecanismo de marca blanca: /usr/share/desktop-provision/, DESKTOP_PROVISION_PATH y app-name")"
+            else
+                omitido "este snap NO trae el mecanismo de marca blanca (desktop-provision=$DP env=$EV app-name=$AN): la marca del instalador habria que hacerla de otra forma"
+            fi
+            if /usr/bin/grep -q "desktop-provision/slides" "$T/marca.nombres" 2>/dev/null; then
+                limpio "$(printf '%-52s %s' "(las diapositivas de arriba)" "NO son las que se ven: el medio lleva diapositivas propias en /usr/share/desktop-provision/slides/, y el instalador solo usa las suyas si no encuentra ninguna")"
+            fi
         fi
     fi
 fi
@@ -321,18 +374,37 @@ else
     # su destino y contaria dos veces lo mismo.
     N_ENC=$(( $(/usr/bin/grep -ic encina "$T/base.nombres") + $(/usr/bin/grep -ic encina "$T/viva.nombres") ))
     N_UBU=$(( $(/usr/bin/grep -ic ubuntu "$T/base.nombres") + $(/usr/bin/grep -ic ubuntu "$T/viva.nombres") ))
+    N_MARCA=$(/usr/bin/grep -c . "$T/marca.nombres" 2>/dev/null || echo 0)
     if [ "$N_ENC" -eq 0 ] && [ "$N_UBU" -gt 0 ]; then
-        ok "NI UN fichero de Encina en las capas del medio ($N_ENC), y $N_UBU con «ubuntu»: la sesion viva es Ubuntu entera"
+        ok "en las capas DE UBUNTU no hay ni un fichero de Encina ($N_ENC) y hay $N_UBU con «ubuntu»: el recuento sabe contar"
     else
-        fallo "el recuento de Encina en las capas no cuadra" "encina=$N_ENC ubuntu=$N_UBU"
+        fallo "el recuento de Encina en las capas de Ubuntu no cuadra" "encina=$N_ENC ubuntu=$N_UBU"
+    fi
+    # OJO: esto NO es una aparicion de la marca de Ubuntu, asi que no cuenta como
+    # [AVISO] -- si contara, el numero de apariciones no se podria comparar con
+    # el del medio anterior, que es justo para lo que sirve este guion.
+    if [ -z "${CAPAS_MARCA:-}" ]; then
+        echo "          capas de marca: NINGUNA. La sesion viva es Ubuntu entera"
+    else
+        echo "          capas de marca: $(echo $CAPAS_MARCA | tr '\n' ' ')($N_MARCA entradas, encima de las de Ubuntu)"
     fi
 
-    if [ ! -s "$T/sel/etc/os-release" ]; then
-        unsquashfs -d "$T/sel" -f "$T/capas/minimal.squashfs" \
-            /etc/os-release /usr/lib/os-release /etc/lsb-release /etc/issue \
-            /usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override \
-            /usr/share/wayland-sessions/ubuntu.desktop \
-            /usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth >/dev/null 2>&1
+    # LO QUE SE LEE ABAJO ES EL FICHERO EFECTIVO, NO EL DE LA CAPA DE ABAJO.
+    # Primero se saca el de Ubuntu y despues, ENCIMA, el de las capas de marca:
+    # es el mismo orden con el que casper monta el overlay, asi que lo que queda
+    # en $T/sel es lo que veria la sesion viva. Sin esto, un medio con marca
+    # daria «NAME=Ubuntu» y el inventario mentiria en la direccion mas peligrosa,
+    # que es la de decir que queda trabajo hecho.
+    ARCHIVOS_PLANO3="/etc/os-release /usr/lib/os-release /etc/lsb-release /etc/issue
+        /usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override
+        /usr/share/wayland-sessions/ubuntu.desktop
+        /usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth
+        /usr/share/desktop-provision/whitelabel.yml"
+    if [ ! -s "$T/sel/etc/lsb-release" ]; then
+        unsquashfs -d "$T/sel" -f "$T/capas/minimal.squashfs" $ARCHIVOS_PLANO3 >/dev/null 2>&1
+        for c in $CAPAS_MARCA; do
+            unsquashfs -d "$T/sel" -f "$T/capas/$c" $ARCHIVOS_PLANO3 >/dev/null 2>&1
+        done
     fi
     OSR="$T/sel/usr/lib/os-release"; [ -f "$OSR" ] || OSR="$T/sel/etc/os-release"
     if [ -f "$OSR" ]; then
@@ -364,6 +436,12 @@ else
     [ -f "$PLY" ] && marca "…/themes/ubuntu-text/ubuntu-text.plymouth" \
         "$(/usr/bin/grep -E '^(Name|title)=' "$PLY" | tr '\n' ' ')" \
         "el arranque en modo texto"
+    WL="$T/sel/usr/share/desktop-provision/whitelabel.yml"
+    if [ -f "$WL" ]; then
+        limpio "$(printf '%-52s %s' "/usr/share/desktop-provision/whitelabel.yml" "app-name: $(/usr/bin/grep '^app-name:' "$WL" | sed 's/^app-name: *//') — el titulo de la ventana del instalador, puesto desde FUERA del snap")"
+    else
+        omitido "no hay /usr/share/desktop-provision/whitelabel.yml: el instalador se presenta con lo que trae su snap"
+    fi
 
     paso "el arranque del medio: el initrd, que es lo PRIMERO que se ve"
     if [ ! -s "$T/capas/initrd" ]; then
@@ -402,7 +480,8 @@ fi
 # --------------------------------------------------------------------------
 echo
 echo "=== RESUMEN ==="
-echo "  apariciones de la marca: $N_AVI"
+echo "  apariciones de la marca de Ubuntu: $N_AVI"
+echo "  sitios inventariados que YA NO la dicen: $N_LIMPIO"
 echo "  controles correctos: $N_OK   fallos: $N_MAL   omitidas: $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then
     echo

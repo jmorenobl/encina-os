@@ -55,6 +55,8 @@ Imagen (`imagen/`), desde el Mac:
                            --autofirma <dir con autofirma_*.deb> \
                            --salida medios/encina-os.iso
 ./imagen/comprobar-propios.sh <paquete> [--manifiesto X]   # huella del .deb contra repo-manifiesto.tsv
+./imagen/inventario-marca.sh <iso> [--trabajo D]    # dónde dice Ubuntu un medio, leyéndolo (no lo arranca)
+./imagen/capa-marca.sh <iso> --salida <dir>         # fabrica zz-encina.squashfs, la marca del medio (D23)
 sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27   # DENTRO de la máquina instalada, como root
 ```
 

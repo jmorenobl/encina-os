@@ -1,0 +1,11 @@
+[Plymouth Theme]
+Name=Encina OS Text
+Description=Text mode theme
+ModuleName=ubuntu-text
+
+[ubuntu-text]
+title=Encina OS 24.04
+black=0x2F4033
+white=0xffffff
+brown=0x3A664E
+blue=0xD6BFA0

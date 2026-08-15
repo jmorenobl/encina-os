@@ -71,6 +71,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.28 | **¿B3 se arregla en AutoFirma en vez de en el navegador?** | Sí, y **cierra la pregunta: no se puede**, leído en las fuentes del fork (v1.9.1) sin gastar VM. No es el confinamiento: **el puerto lo elige la página al azar —tres de 16 384— y se lo dice a la aplicación por la URI `afirma://` que el Snap no entrega**, así que un AutoFirma residente es inalcanzable por construcción. Y encima habría que quitarle sus dos temporizadores y su `halt(0)` —bifurcación permanente, contra D14— y **saltarse la comprobación de `idsession`**. Consecuencia para E4: la condición de D16 —el Firefox que se puede abrir es el nativo— **no es cosmética, es la defensa entera** |
 | §4.32 | **E3: el núcleo leído hasta el final, y la ISO de E4 contestando las cinco pantallas** | Sí. **Contesta la pregunta del núcleo por el lado contrario del que se preguntaba:** el objetivo **ya tiene** el medio como fuente de apt cuando `curtin` instala el núcleo —lo enseña el registro sirviendo GRUB entero desde `file:/cdrom`—, así que lo que falta no es una fuente sino **el núcleo dentro del archivo indexado**, y eso lo cierra la **firma de Canonical**. La clave `apt:` del seed **no** vale: sin red `subiquity` borra todas las partes de `sources.list.d` a propósito. El tamaño **medido, no estimado: 1 089 MB**, no ~700. **Y cierra la ISO de E4:** `CIDATA -> <no encontrado>`, `REPO ELEGIDO -> /cdrom/encina-repo` y el `telemetry` nombra **exactamente las cinco pantallas**. Saca dos defectos del verificador y el instrumento que faltaba para pilotar sin ojos |
 | §4.51 | **Dónde dice Ubuntu el medio: el inventario de la marca** | Sí. **Es la primera casilla de `tareas/marca-del-medio.md`**, hecha leyendo `1224b5b1…` sin arrancarla y sin gastar VM: **39 apariciones, cada una con su fichero, su cadena y dónde se ve**, en los tres planos que pedía la casilla. Deja guion —`imagen/inventario-marca.sh`— porque §4.27 leyó a mano y no dejó ninguno. Lo que más cambia el trabajo que viene: **el rótulo del icono del instalador se calcula desde `/.disk/info`** (medido con su control), **la sesión viva no lleva ni un fichero de Encina** —o sea que todo lo que rodea al instalador es Ubuntu de fábrica—, y **el instalador es un snap de 109 MB con un `whitelabel.yml` dentro** que nadie había nombrado. Y saca dos defectos de su propio instrumento: `awk '{print $NF}'` esconde los nombres de los enlaces —§4.45c otra vez— y `grep -q` con `pipefail` convierte un acierto en `[FALLO]` |
+| §4.52 | **La marca entra en el medio sin rehacer 1,69 GB: una capa de 2,9 MiB** | Sí. **Es la tercera casilla de `tareas/marca-del-medio.md`**, hecha leyendo el mismo `1224b5b1…` sin arrancarlo. Contesta los dos `[OMIT]` de §4.51 **sobre el código del commit exacto con el que se construyó el snap** —y uno estaba **mal planteado**: `{{ DISTRO }}` no sale de `.disk/info` ni de `os-release`, es **una constante del binario**, así que las diapositivas se sustituyen, no se parchean—. Y el otro abre la puerta entera: **el `whitelabel.yml` se apunta desde fuera del snap**, `/usr/share/desktop-provision/`, y con él el **título de la ventana** (`app-name`), las diapositivas y los dibujos de cada página. Lo que hace posible la casilla es que **el medio no lleva `layerfs-path=`**, así que casper monta **todos** los `*.squashfs` de `/casper` y **el último alfabéticamente manda**: una capa de **3 084 288 bytes** tapa a la de **1 692 274 688**. Deja `imagen/capa-marca.sh` (4 controles + 4 comprobaciones) y el inventario pasa de **31 a 24 apariciones**, con **los ocho sitios nombrados uno a uno**. Y saca **dos defectos del propio instrumento**: contaba sitios en vez de valores —el número no podía bajar nunca— y un control que **caducó al mejorar el producto** |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -11356,6 +11357,10 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un control que sale rojo dos veces y se lee como instrumento averiado** | La prueba de carga falla con el fichero nuevo **y** con el viejo, así que se descarta el lector y se busca por otro lado | Un control que falla en los dos casos puede ser **un hallazgo doble**, no un instrumento roto. Aquí los dos SVG estaban rotos de verdad y la conclusión «el lector no vale» costó buscar la causa por tres sitios equivocados. Lo que separa las dos lecturas es meter un ejemplar que **tenga** que salir bien —un PNG, u otro SVG que sí cargue— y mirar si el lector lo distingue (§4.49a) |
 | **Un listado que esconde el nombre de los enlaces simbólicos** | Se inventaría una capa del medio con `unsquashfs -ll \| awk '{print $NF}'` y el icono del botón de la rejilla **no aparece**, así que el inventario sale corto y nadie lo nota | En un enlace, la línea acaba en el **destino**, no en el nombre: `$NF` devuelve `../places/start-here-symbolic.svg` y el nombre `view-app-grid-ubuntu-symbolic.svg` desaparece del recuento. Es **§4.45c otra vez** —allí fue `find -type f`, que tampoco ve enlaces— y aquí escondía justo el fichero que decide el botón que §4.43 costó dos días. El nombre es el **campo 6**, y el guion lleva un control que lo vigila (§4.51a) |
 | **`grep -q` convierte un acierto en fallo cuando hay `pipefail`** | Un control que dice `[FALLO] no se pueden listar las capas` mientras las listas están delante, con 123 695 y 59 198 entradas | `awk … \| grep -q` con `set -o pipefail`: `grep` acierta y **sale antes de leerlo todo**, `awk` recibe SIGPIPE y muere con 141, y el estado de la tubería es 141 aunque la búsqueda haya salido bien. Se ve porque el mensaje contradice a sus propios números. Se saca la lista a un fichero **antes** de buscar en ella (§4.51a) |
+| **Un inventario que cuenta SITIOS y no VALORES** | Se cambia el medio, se vuelve a pasar el inventario y **sale el mismo número**: 39 antes y 39 después, con el `grub.cfg` diciendo ya «Probar o instalar Encina OS» delante | El guion emitía `[AVISO]` por cada **sitio** inventariado, dijera lo que dijera. Un inventario así sirve para la primera pasada —enumerar dónde mirar— y **no sabe decir que el trabajo está hecho**, que es justo para lo que se le pide después. Lo que decide tiene que ser **el valor medido**, y hacen falta dos contadores: los que todavía la dicen y los que ya no (§4.52e) |
+| **Un control que caduca cuando el producto mejora** | `[FALLO] el calculo de RELEASE da lo mismo con cualquier .disk/info`, sobre un guion que no se ha tocado y que ayer salía verde | El fichero de prueba del control decía `Encina OS 0.3 LTS …`, y el día que el medio empezó a llevar de verdad un `.disk/info` de Encina **los dos daban lo mismo**. Un control cuyo caso de prueba se parece al producto deja de discriminar en cuanto el producto avanza — y el rojo se lee como «instrumento roto» cuando lo que dice es «tu control ya no separa nada». El caso de prueba tiene que ser algo que **no pueda salir de ningún medio real** (§4.52e) |
+| **Un `squashfs` recién hecho no es reproducible** | La capa se fabrica dos veces seguidas, sin tocar nada, y da dos huellas distintas — y el `[FALLO]` no sale ahí sino tres pasos más abajo, en la huella de la ISO, donde parece un problema de `xorriso` | `mksquashfs` guarda **la hora de creación del sistema de ficheros y la de cada inodo**, y las de los inodos las pone `cp` al copiar los ficheros al árbol de trabajo. Se fija la misma fecha que ya usa `fabricar-iso.sh` para lo que añade, con `-mkfs-time`, `-inode-time` y `-root-time`, **y el control se mete dentro del guion**: fabricarla dos veces y comparar. Es la misma familia que la fecha de `xorriso` de §4.36k (§4.52e) |
+| **Un fichero que se lee de la capa de abajo mientras el medio enseña el de arriba** | El inventario dice `NAME="Ubuntu"` de un medio que en pantalla dice Encina | Con capas apiladas (`overlay`), leer una sola capa **no** es leer el medio. `unsquashfs` de `minimal.squashfs` devuelve el fichero **tapado**. Hay que extraer en el mismo orden en que casper monta —primero las de Ubuntu, **encima** las de marca— o el instrumento miente en la dirección más peligrosa, que es la de decir que queda trabajo por hacer donde ya está hecho, y a la inversa (§4.52e) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
@@ -11488,7 +11493,7 @@ partiéndolo por su `TRAILER!!!`.
   [OK]    el nombre del enlace view-app-grid-ubuntu-symbolic.svg se ve en el campo 6
 ```
 
-**Dos defectos del propio instrumento, y los dos habrían falseado el inventario:**
+XXPLACEHOLDERXX el inventario:**
 
 1. **`unsquashfs -ll | awk '{print $NF}'` esconde el nombre de los enlaces
    simbólicos**, porque en un enlace la línea acaba en el **destino**. Lo que
@@ -11663,3 +11668,336 @@ dividido por lo que cuesta:
    argumento que la tarea ya anticipaba: *«repintar una ISO de Ubuntu
    reempaquetada es una solución a medias»*. La única puerta declarada es el
    `whitelabel.yml`, y está sin medir.
+
+---
+
+### 4.52 LA MARCA ENTRA EN EL MEDIO SIN REHACER 1,69 GB: una capa de 2,9 MiB — y las dos preguntas de §4.51 se contestan, una de ellas estaba mal planteada (2026-08-16)
+
+**Es la tercera casilla de `tareas/marca-del-medio.md`**, y llega con lo que
+dejaron las dos primeras: el inventario (§4.51) y el criterio de parada
+(`ENCINA-OS.md` D22, las tres pilas). Lo que faltaba por decidir era **hasta
+dónde llega el reempaquetado**, y eso no se podía decidir sin contestar antes lo
+que §4.51 dejó `[OMIT]` a propósito. Se contesta entero **sin arrancar nada y
+sin gastar VM**.
+
+**La ISO que se lee sigue siendo la misma, y por huella:**
+
+```
+1224b5b17b559007071dee8fcaa620ff28cc3d8361eb75fdbe4af1eb3401529f   3715366912 bytes
+```
+
+#### (a) LOS DOS `[OMIT]` DE §4.51, CONTESTADOS — y el primero estaba MAL PLANTEADO
+
+**El snap se identifica, y por eso las respuestas son sobre ESTE binario y no
+sobre «el instalador de Ubuntu» en general.** `meta/snap.yaml` de
+`ubuntu-desktop-bootstrap_495.snap` dice `version: 0+git.4bc1f4077`; ese commit
+(`4bc1f4077ec85b42e222a7f10a5c99c11fbe9a4f`, **2026-02-05**) es de la rama de
+empaquetado, y su `snap/snapcraft.yaml` declara con qué fuente se compiló:
+`source-commit: f32962636fbf4bb445c8e221c718dbee3c57edf1`. Todo lo de abajo está
+leído **ahí**, no en `main`.
+
+**1. «¿Quién rellena `{{ DISTRO }}`, `/cdrom/.disk/info` o `/etc/os-release`?»
+— NINGUNO DE LOS DOS. La pregunta estaba mal hecha.** En
+`packages/ubuntu_bootstrap/lib/slides/slides_provider.dart` de ese commit:
+
+```dart
+final slidesProvider = Provider(
+  (ref) => SlidesModel(flavorName: ref.watch(flavorProvider).displayName),
+);
+…
+final flavorSpecificContent = content.replaceAll('{{ DISTRO }}', flavorName);
+```
+
+y `displayName` es **una constante compilada dentro del binario**:
+`enum UbuntuFlavor { …, ubuntu('Ubuntu'), … }`. Quién elige el sabor es
+`FlavorService._loadFlavor()`, que mira la clave `flavor` del whitelabel y, si no
+nombra uno de los **once** sabores de Ubuntu, devuelve `UbuntuFlavor.ubuntu`. O
+sea que **`{{ DISTRO }}` no puede decir «Encina OS» de ninguna manera**: no hay
+fichero del medio que lo rellene, y la única llave que existe es una lista
+cerrada de sabores de Ubuntu. **Consecuencia práctica: las diapositivas no se
+parchean, se sustituyen enteras.**
+
+**Y de paso se corrige a §4.51e, que había leído mal el binario:** allí se
+apuntaron `_readProductName` y `_parseProductName` como pistas de que el nombre
+salía de `os-release`. Leído el código, `_readProductName` está en
+`identity_model.dart` y **lee el DMI de la máquina**
+(`/sys/class/dmi/id/product_name`) para proponer un nombre de equipo. No tiene
+nada que ver con el nombre del sistema. Era una deducción por el nombre de una
+función, que es exactamente lo que este proyecto dice que no vale.
+
+**2. «¿El `whitelabel.yml` se puede apuntar desde fuera del snap?» — SÍ, y es la
+puerta que decide toda la casilla.**
+`packages/ubuntu_provision/lib/src/services/config_service.dart`, en ese mismo
+commit:
+
+```dart
+static const _extensions = ['yaml', 'yml'];
+static const _filename = 'whitelabel';
+static const whiteLabelDirectory = '/usr/share/desktop-provision/';
+…
+static String? lookupPath(FileSystem fs) {
+  for (final ext in _extensions) {
+    final path = join(
+      Platform.environment['DESKTOP_PROVISION_PATH'] ?? whiteLabelDirectory,
+      '$_filename.$ext',
+    );
+    if (fs.file(path).existsSync()) return path;
+  }
+  return null;
+}
+```
+
+Lo que se lee del disco **se mezcla en profundidad sobre lo del snap**
+(`mergeConfig`), así que basta con nombrar las claves que cambian. Y **no es una
+lectura nuestra del código: es lo que Canonical documenta**, en
+`docs/oem-provisioning-24_04_1.md` del mismo repositorio — *«Placing this
+`whitelabel.yaml` at `/usr/share/desktop-provision/whitelabel.yaml` on your
+LiveCD is sufficient…»*.
+
+**Tres cosas más salieron de leer eso, y las tres son producto:**
+
+- **el título de la ventana del instalador es una clave del whitelabel.** En
+  `installer.dart`: `final windowTitle = await configService.get<String>('app-name');`
+  y `onGenerateTitle` devuelve ese valor **si no es nulo**; sólo si lo es cae en
+  `windowTitle(flavor.displayName)`, que es *«Install Ubuntu»*. O sea que
+  `app-name: Encina OS` cambia el título **sin tocar el snap**.
+- **las diapositivas se pueden sustituir desde fuera:** `preCache()` cuenta
+  directorios en `/usr/share/desktop-provision/slides/N` y **sólo si no
+  encuentra ninguno** usa las suyas (*«No custom slides found, using default
+  slides.»*).
+- **los dibujos de cada página también:** en `page_images.dart`, una ruta que
+  **no** empieza por `assets/` se busca en `/usr/share/desktop-provision/images/`.
+  Y la mezcla es por clave, así que hay que nombrar `image` **y** `image-dark` de
+  cada página: cambiar sólo la primera deja el dibujo de Canonical en modo
+  oscuro.
+
+**EL CONTROL, y es lo que separa esto de una lectura de internet: las cadenas
+están en el binario que viaja en ESTE medio.** Sobre
+`bin/lib/libapp.so` sacado del snap del propio `1224b5b1…`:
+
+```
+/usr/share/desktop-provision/      1
+DESKTOP_PROVISION_PATH             1
+whitelabel                         1
+app-name                           1
+mode                               1
+```
+
+y una inventada, `/usr/share/bellota-provision/`, **0**. Además
+`meta/snap.yaml` dice `confinement: classic`, que es lo que hace que ese
+`/usr/share` sea **el de la sesión viva de verdad** y no uno privado del snap.
+
+#### (b) POR DÓNDE ENTRA LA MARCA SIN REHACER `minimal.squashfs`
+
+§4.51 dejó escrito que el fondo de la sesión viva exige *«rehacer una capa de
+1,69 GB»*. **Eso era verdad de la capa, no del medio.** Leyendo
+`scripts/casper` del initrd de este mismo medio:
+
+- **el medio NO lleva `layerfs-path=` en la línea del núcleo.** Buscado en los
+  tres sitios donde podría estar: el `grub.cfg` del árbol ISO —que es el único
+  `.cfg` del medio—, la **ESP** (particion `0xef`, 14 144 sectores, FAT12, y
+  dentro sólo `EFI/`) y el resto de la imagen. **0 apariciones.**
+- sin `LAYERFS_PATH`, `setup_unionfs` entra por su rama de «no multi-capa» y
+  **monta TODOS los `*.squashfs` del directorio** —aquí **21**—, en orden de
+  glob y **poniendo cada uno DELANTE** del anterior:
+
+```sh
+rofslist="${croot}${imagename} ${rofslist}"
+…
+for mount in $rofslist; do mounts="$mounts:$mount"; done
+mount -t overlay -o "upperdir=/cow/upper,lowerdir=$mounts,workdir=/cow/work" …
+```
+
+  y en `overlayfs` **el primero de `lowerdir` es el que manda**. O sea: **el
+  último por orden alfabético gana**. De ahí el nombre de la capa,
+  `zz-encina.squashfs`, que no es tipográfico: es la única razón por la que tapa
+  en vez de quedar tapada.
+
+**El control de esa lectura, porque una lectura de código no es una medición:**
+si el orden alfabético mandara de verdad, `minimal.standard.squashfs` estaría por
+encima de `minimal.standard.live.squashfs` (`l` < `s`), que es al revés de lo que
+parecería sensato — así que había que ver si eso rompe algo. **No rompe nada
+porque las capas son disjuntas:** de **46 978** ficheros regulares en
+`minimal.standard` y **48 367** en `minimal.standard.live`, sólo **51** están en
+las dos, y son todos cachés (`ld.so.cache`, `gschemas.compiled`,
+`var/lib/dpkg/status`, perfiles de AppArmor de snaps). Y hay una comprobación de
+producto que apunta al mismo sitio: **la sesión viva del medio se ve en español**,
+lo que exige que `minimal.es.squashfs` esté montada, y con `layerfs-path=` no lo
+estaría.
+
+**Lo que esto compra, en números:** los nueve ficheros de presentación y los
+quince dibujos que hay que cambiar viven **todos** en `/casper/minimal.squashfs`,
+**1 692 274 688 bytes**. La capa que los tapa pesa **3 084 288 bytes**. Es
+**549 veces menos**.
+
+**Y lo que NO compra, dicho antes de que alguien lo descubra tarde:** si algún
+día el `grub.cfg` llevara `layerfs-path=`, la capa dejaría de montarse **y no
+fallaría nada**: el medio volvería a decir Ubuntu en silencio. Es la peor forma
+de fallar que hay, y por eso el nombre y el mecanismo están escritos en la
+cabecera de los dos guiones y aquí.
+
+#### (c) LO QUE SE HA CONSTRUIDO
+
+**`imagen/capa-marca.sh`**, que fabrica `zz-encina.squashfs` en el Mac, con **4
+controles delante y 4 comprobaciones detrás**, todos con sus dos respuestas:
+
+```
+--- (a) el orden de montaje de casper deja la capa de Encina la primera
+  [OK]    sobre las 21 capas del medio: 'zz-' queda la primera de lowerdir y 'aa-' NO (queda /minimal.zh.squashfs)
+--- (b) el .disk/info de Encina da «Install Encina OS» y el del medio no
+  [OK]    Name=Install Encina OS  (el del medio da: Install Ubuntu 24.04.4 LTS)
+--- (c) el instalador de ESTE medio lleva dentro el mecanismo de marca blanca
+  [OK]    ubuntu-desktop-bootstrap_495.snap: estan las cuatro cadenas, una inventada NO esta, y es 'confinement: classic'
+--- (d) cada sustitucion tapa un fichero que EXISTE en las capas del medio
+  [OK]    las 15 sustituciones tapan ficheros que estan entre las 182625 rutas del medio, y una ruta inventada no aparece
+…
+  zz-encina.squashfs: 3084288 bytes  sha256 ef15c522b0899f6d…
+--- los mismos ficheros, y los mismos bytes
+  [OK]    30 ficheros, ni uno mas ni uno menos, y las 30 huellas cuadran
+  [OK]    quitando una linea, la comparacion lo dice
+  [OK]    ni un fichero con dueno distinto de 0/0
+  [OK]    ef15c522b0899f6d… las dos veces
+  [OK]    zz-encina.squashfs: va detras de los «minimal.*» del medio
+```
+
+**El control (d) es el que más vale y no estaba previsto:** una sustitución que
+no tapa nada es un fichero de más en el medio y un «hecho» que no ha pasado. Se
+comprueba contra las **182 625** rutas reales de las capas del medio.
+
+**Dentro de la capa, 30 ficheros:** el `os-release`, el `lsb-release`, `/etc/issue`,
+`/etc/issue.net`, el `.desktop` de la sesión Wayland y el tema de texto de
+Plymouth; `/usr/share/desktop-provision/` con `whitelabel.yml`, **tres
+diapositivas propias** en `es_ES` y `en_US` y su dibujo; y **quince activos
+gráficos de Canonical sustituidos por bytes en su misma ruta** —el fondo
+`warty-final-ubuntu.png`, el `ubuntu-logo.png` de GDM, los doce tamaños de
+`ubiquity.png` de Yaru y el `view-app-grid-ubuntu-symbolic.svg` del botón de la
+rejilla—, más el `encina-logo.svg` que hace falta para que `LOGO=encina-logo`
+resuelva a algo.
+
+**El fondo se cambia por el FICHERO y no por el ajuste, y eso no es pereza:** el
+`10_ubuntu-settings.gschema.override` que lo nombra está **compilado** dentro de
+`gschemas.compiled`, así que reescribirlo no sirve de nada sin volver a compilar
+los esquemas, y eso exige un Linux. Tapar el fichero al que apunta hace lo mismo
+y cuesta cero.
+
+**`fabricar-iso.sh` pasa de modificar dos ficheros a modificar tres**
+—`/boot/grub/grub.cfg` (ahora también el `menuentry`), `/.disk/info` y
+`/md5sum.txt`— y a añadir la capa. Comprobado contra la ISO oficial, pieza a
+pieza, sin fabricar la entrega:
+
+```
+grub.cfg:  lineas cambiadas 4 (dos lineas), y «Ubuntu» aparece 0 veces
+md5sum.txt: dos lineas rehechas (57150973… -> e7e098ae… y 606dfb43… -> 5b4ffae2…)
+            y una anadida; 266 -> 267 lineas, diff = 5
+```
+
+**El `.disk/info` de Encina son 43 bytes y valen TRES cosas, no una**, y las tres
+están leídas en el casper de este medio:
+
+```
+Encina OS 0.2.1 - Release arm64 (20260210)
+   -> 25adduser:  RELEASE=«Encina OS»  ->  Name=Install Encina OS
+   -> casper:     FLAVOUR=«encina»     ->  usuario y nombre de maquina de la sesion viva
+   -> 57pollinate: SERIAL=«20260210»   ->  por eso se conserva el parentesis del final
+```
+
+#### (d) EL CONTROL DE VERDAD: EL INVENTARIO, ANTES Y DESPUÉS
+
+Se fabricó **un medio de control** —la ISO oficial con los tres ficheros
+cambiados y la capa dentro, **sin** `/encina-repo`, en el borrador y borrado
+después— sólo para poder medir el después sin gastar la vuelta de la entrega, que
+se paga una sola vez y va detrás de la casilla 4.
+
+```
+                                    ANTES (1224b5b1)   DESPUES (medio de control)
+apariciones de la marca de Ubuntu         31                    24
+sitios que YA NO la dicen                 10                    19
+controles correctos / fallos             6 / 0                 6 / 0
+```
+
+**Y los OCHO sitios que dejan de decirlo, nombrados uno a uno**, que es lo que
+pedía la casilla:
+
+| Sitio | Antes | Después |
+|---|---|---|
+| `/boot/grub/grub.cfg` | `menuentry "Try or Install Ubuntu"` | `menuentry "Probar o instalar Encina OS"` |
+| `/.disk/info` | `Ubuntu 24.04.4 LTS "Noble Numbat" …` | `Encina OS 0.2.1 - Release arm64 (20260210)` |
+| el `.desktop` del instalador | `Name=Install Ubuntu 24.04.4 LTS` | `Name=Install Encina OS` |
+| `os-release` `PRETTY_NAME` | `"Ubuntu 24.04.4 LTS"` | `"Encina OS 24.04 LTS"` |
+| `os-release` `NAME`/`LOGO` | `NAME="Ubuntu" LOGO=ubuntu-logo` | `NAME="Encina OS" LOGO=encina-logo` |
+| `/etc/issue` | `Ubuntu 24.04.4 LTS \n \l` | `Encina OS 24.04 LTS \n \l` |
+| la sesión Wayland | `Name=Ubuntu` | `Name=Encina OS` |
+| el tema de texto de Plymouth | `Name=Ubuntu Text  title=Ubuntu 24.04` | `Name=Encina OS Text  title=Encina OS 24.04` |
+
+**Son ocho y el número baja siete, y la diferencia no es un error: es pila C
+funcionando.** La línea de `os-release` sigue contándose como aparición porque
+**dice `ID=ubuntu`**, que D22 manda dejar. Un inventario que no la contara
+estaría escondiendo justo la incoherencia que D22 declaró a propósito.
+
+**Y dos ruidos del medio de control, dichos para que no se lean como resultado:**
+la línea de `/encina-repo/` pasa de «29 ficheros» a «0» porque el medio de
+control no lleva el repositorio —no es un cambio de marca—; y ese medio se
+fabricó con la capa **antes** de fijarle la fecha, o sea con la huella
+`a4947f30…` en vez de `ef15c522…`. **El contenido es el mismo fichero a fichero**
+—lo único que cambia son las marcas de tiempo de los inodos—, así que el
+inventario mide lo mismo; pero la huella de aquel medio no es la que saldrá.
+
+#### (e) CUATRO DEFECTOS DE LOS INSTRUMENTOS, y todos salieron de USARLOS
+
+Los dos primeros los sacó la primera pasada del después, y los dos habrían
+dejado la casilla con un verde falso o un rojo falso:
+
+1. **El inventario contaba SITIOS y no VALORES, así que el número no podía bajar
+   nunca.** `marca()` emitía `[AVISO]` por cada sitio inventariado, dijera lo que
+   dijera: un medio cuyo `grub.cfg` ya pone «Probar o instalar Encina OS» seguía
+   sumando una aparición. **El instrumento no sabía decir que el trabajo estaba
+   hecho** — que es exactamente para lo que existe, comparar un medio antes y
+   después. Ahora lo que decide es el valor medido, y hay dos contadores.
+2. **El control (b) caducó justo al avanzar el trabajo.** Su `.disk/info`
+   inventado decía `Encina OS 0.3 LTS …`; el día que el medio empezó a llevar de
+   verdad un `.disk/info` de Encina, los dos daban «Encina OS» y el control salió
+   **`[FALLO] el calculo de RELEASE da lo mismo con cualquier .disk/info`**. Un
+   control que se rompe cuando el producto mejora no es un control: el fichero de
+   prueba pasa a decir `Bellota 9.9 LTS`, que no puede salir de ningún medio real.
+
+**Y un tercero, del guion NUEVO, que habría reventado la definición de terminado
+de la ISO entera sin decir de dónde venía:** la capa **no era reproducible**. Dos
+pasadas seguidas, sin tocar nada, daban `a4947f302efab6a1…` y
+`63218c57e35c38cb…`. `mksquashfs` guarda **la hora de creación del sistema de
+ficheros y la de cada inodo**, y las de los inodos las pone `cp` al copiarlos. Se
+fija la misma fecha que ya usa `fabricar-iso.sh` para lo que añade —la de
+modificación de la ISO oficial, `1770687951`— con `-mkfs-time`, `-inode-time` y
+`-root-time`, y **el control se mete dentro del guion**: fabrica la capa dos
+veces y compara. Ahora da `ef15c522b0899f6d…` las dos. Si esto se hubiera colado,
+el `[FALLO]` habría salido tres pasos más abajo, en la huella de la ISO, y habría
+parecido un problema de `xorriso`.
+
+**Y una cuarta, que es del inventario y se arregló con las dos primeras:** leía
+`/usr/lib/os-release` de `minimal.squashfs` y punto. Sobre un medio con capa de
+marca eso es **el fichero tapado**: habría dicho `NAME="Ubuntu"` de un medio que
+en pantalla dice Encina. Ahora extrae primero la capa de Ubuntu y **encima** las
+de marca, que es el mismo orden con el que casper monta el overlay.
+
+#### (f) LO QUE SIGUE SIN HACERSE, CON SU NOMBRE
+
+- **El splash del arranque.** `watermark.png` (248×87, `bfc97707…`) y
+  `bgrt-fallback.png` (128×128, `0d4f0416…`) siguen siendo el logotipo de Ubuntu.
+  Viven **en el initrd**, o sea antes de que exista ninguna capa, así que la vía
+  de esta casilla no los alcanza: hay que reescribir el `initrd`. Es pila A **y**
+  pila B, y es **lo primero que se ve**.
+- **Los logotipos dentro del snap** —`logo-light.svg`, `logo-dark.svg`,
+  `mascot*.svg`, `ubuntu_pro.svg`, `ubuntu_certified.svg`— siguen dentro. Lo que
+  se ve se cambia por `whitelabel.yml`; los ficheros **viajan igual**, y eso es lo
+  que la pila B de D22 dice que no debería.
+- **`/.disk/release_notes_url`** sigue apuntando a `ubuntu.com`. No se ha
+  inventado una URL propia porque no existe: se deja dicho, no resuelto.
+- **Los seis `ubiquity.svg` de Humanity** y los dos simbólicos de Yaru
+  (`ubiquity-symbolic.svg`, `view-app-grid-ubiquity-symbolic.svg`) no se tapan:
+  Humanity no es el tema de la sesión y no hay simbólico propio dibujado.
+- **El nombre del volumen** es la casilla 4 y sigue diciendo `Ubuntu 24.04.4 LTS
+  arm64`.
+- **`[OJOS]` — nadie ha visto nada de esto en pantalla.** Todo lo de arriba está
+  leído y medido en ficheros. Que la sesión viva se vea con el fondo de Encina,
+  que el icono ponga «Instalar Encina OS» y que el instalador titule «Encina OS»
+  sólo lo dice arrancar la ISO, y eso es de Jorge y va en la vuelta única, detrás
+  de la casilla 4.

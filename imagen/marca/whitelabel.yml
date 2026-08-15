@@ -1,0 +1,65 @@
+# Encina OS - la marca del INSTALADOR, puesta desde FUERA del snap.
+#
+# Este fichero acaba en /usr/share/desktop-provision/whitelabel.yml de la SESION
+# VIVA del medio, y lo lee el instalador -- que es un snap de 109 MB, firmado, y
+# que NO se toca --.
+#
+# POR QUE FUNCIONA, y esta LEIDO en el codigo del snap que viaja en el medio, no
+# supuesto (MEDICIONES.md §4.52):
+#   - ConfigService.whiteLabelDirectory = '/usr/share/desktop-provision/'
+#     y lookupPath() prueba whitelabel.yaml y whitelabel.yml, en ese orden, bajo
+#     $DESKTOP_PROVISION_PATH si esta puesta y bajo ese directorio si no.
+#   - lo que se lee del disco se MEZCLA sobre lo del snap (mergeConfig, en
+#     profundidad), asi que aqui solo van las claves que cambian.
+#   - el snap es 'confinement: classic', asi que ese /usr/share es el de la
+#     sesion viva de verdad y no uno privado del snap.
+#   - las tres cadenas estan en el binario de ESTE medio: /usr/share/desktop-
+#     provision/, DESKTOP_PROVISION_PATH y app-name (control de §4.52c).
+#
+# LO QUE NO SE PUEDE HACER DESDE AQUI, y va escrito porque es lo que se cuela:
+# «{{ DISTRO }}» NO se rellena desde este fichero ni desde /cdrom/.disk/info ni
+# desde /etc/os-release. Se rellena con UbuntuFlavor.displayName, que es una
+# constante compilada dentro del binario, y la clave 'flavor' de aqui solo
+# admite uno de los once sabores de Ubuntu. Por eso las diapositivas NO se
+# parchean: se SUSTITUYEN (slides/ de al lado).
+
+# El titulo de la ventana del instalador. Sin esta linea el instalador llama
+# a windowTitle(flavor.displayName) y la ventana dice «Install Ubuntu».
+app-name: Encina OS
+
+# Las paginas cuyo dibujo es una marca de Canonical -- el logotipo, la mascota,
+# Ubuntu Pro y el icono de almacenamiento --. Las demas paginas (teclado, red,
+# disco, cifrado...) son dibujos genericos y se quedan como estan.
+#
+# OJO: una ruta que NO empieza por 'assets/' se busca en
+# /usr/share/desktop-provision/images/, y una que si empieza asi se busca DENTRO
+# del snap. Por eso aqui van sin ese prefijo.
+#
+# Y OJO otra vez: hay que nombrar 'image' Y 'image-dark' de cada pagina. La
+# mezcla es por clave, asi que si solo se cambia 'image', el modo oscuro se
+# queda con el dibujo de Canonical.
+pages:
+  locale:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  try-or-install:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  refresh:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  done:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  ubuntu-pro-onboarding:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  ubuntu-pro:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  ubuntu-pro-success:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"
+  storage-icon:
+    image: "encina-logo.svg"
+    image-dark: "encina-logo.svg"

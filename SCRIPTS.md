@@ -2013,10 +2013,28 @@ segunda vuelta es barata.
 
 **NO APRUEBA NADA, y por eso su vocabulario está torcido a propósito:** cada
 aparición de la marca sale como **`[AVISO]`**, porque una aparición no es un fallo
-del medio, es trabajo del bloque 1. Los únicos `[OK]`/`[FALLO]` son **los cuatro
+del medio, es trabajo del bloque 1. Los `[FALLO]` son **sólo de los cuatro
 controles**, y van los primeros: si el buscador no sabe decir «no lo hay», su
 lista de apariciones no vale nada. Sale distinto de 0 **sólo** si falla un
 control.
+
+**CAMBIÓ EL 2026-08-16, y el cambio es la diferencia entre un inventario y un
+instrumento de comparación (§4.52e):**
+
+1. **Lo que decide si un sitio es una aparición es EL VALOR, no el sitio.** Antes
+   emitía `[AVISO]` por cada sitio inventariado dijera lo que dijera, así que un
+   medio cuyo `grub.cfg` ya pone «Probar o instalar Encina OS» **seguía sumando
+   una aparición y el número no podía bajar nunca**. Ahora el sitio que ya no dice
+   Ubuntu sale como `[OK]`, y el resumen da **dos números**: apariciones y sitios
+   que ya no la dicen.
+2. **Lee el fichero EFECTIVO, no el de la capa de abajo.** Si el medio lleva capas
+   que no son `minimal.*` —la de marca de Encina—, las saca y las extrae **encima**
+   de las de Ubuntu, que es el mismo orden con el que casper monta el overlay. Sin
+   esto diría `NAME="Ubuntu"` de un medio que en pantalla dice Encina.
+3. **Su control (b) tiene un `.disk/info` de prueba que no puede salir de ningún
+   medio real** (`Bellota 9.9 LTS…`). El anterior decía `Encina OS 0.3 LTS…` y
+   **caducó el día que el medio empezó a llevar de verdad un `.disk/info` de
+   Encina**: los dos daban lo mismo y el control salía `[FALLO]`.
 
 **Las cuatro trampas que se comió al escribirlo, y las cuatro están en su
 cabecera:**
@@ -2040,3 +2058,76 @@ Y una quinta que no es del guion sino del medio: **`casper/initrd` son dos `cpio
 pegados** —el primero sin comprimir, y a partir de su `TRAILER!!!` uno **zstd**—,
 así que `bsdtar` sobre el fichero entero lista sólo firmware y módulos y **no
 avisa de que se ha dejado la mitad**. El tema de arranque está en la segunda.
+
+---
+
+## Poner la marca del medio: `imagen/capa-marca.sh` (2026-08-16)
+
+**Se ejecuta en el Mac.** Fabrica **un solo fichero**, `zz-encina.squashfs`, que
+es **toda la marca de la sesión viva y del instalador** del medio. Lo mete
+después `fabricar-iso.sh` en `/casper/`. Es el instrumento de `MEDICIONES.md`
+§4.52 y la forma de `ENCINA-OS.md` **D23**.
+
+```bash
+./imagen/capa-marca.sh <iso> --salida <dir> [--trabajo DIR] [--conservar]
+```
+
+Necesita `xorriso`, `osirrox`, `unsquashfs`, `mksquashfs`, `sips` y `python3`.
+**Cuesta ~3,2 GB de disco temporal** —sus controles leen las capas del medio de
+verdad— y **~14 s** con `--trabajo` ya poblado. El directorio de `--trabajo` es
+**el mismo que usa `inventario-marca.sh`**, a propósito.
+
+**Lo que hay que entender antes de tocarlo, y es UNA cosa: la capa manda por su
+NOMBRE.** El medio **no lleva `layerfs-path=`** en la línea del núcleo, así que
+`casper` monta **todos** los `*.squashfs` de `/casper` —21— y los va poniendo
+delante uno a uno, con lo que **el último por orden alfabético acaba el primero
+de `lowerdir=` y es el que manda**. `zz-encina` va detrás de los `minimal.*`.
+**Si alguien la renombra, la capa deja de tapar y no falla nada:** el medio
+vuelve a decir Ubuntu en silencio. El control (a) del guion reproduce ese bucle
+tal cual está en `casper` y sabe decir que **no** con un nombre que empiece por
+`aa-`.
+
+**La fuente está versionada en [imagen/marca/](imagen/marca/)** y no dentro del
+guion:
+
+| Fichero | Qué es |
+|---|---|
+| `disk-info` | los 43 bytes de `/.disk/info`. **Valen tres cosas**: el rótulo del icono del instalador (`25adduser`), el usuario y el nombre de máquina de la sesión viva (`casper`, primera palabra) y el número de serie (`57pollinate`, el paréntesis del final) |
+| `whitelabel.yml` | la marca del **instalador**, puesta desde fuera de su snap: `app-name` es el título de la ventana, y `pages:` cambia los dibujos de las páginas con marca de Canonical |
+| `slides/{1,2,3}/slide_{es_ES,en_US}.html` | las diapositivas propias. **Se sustituyen enteras y no se parchean**, porque `{{ DISTRO }}` es una constante del binario y no sale de ningún fichero |
+| `sistema/…` | los seis ficheros de presentación: `os-release`, `lsb-release`, `issue`, `issue.net`, la sesión Wayland y el tema de texto de Plymouth |
+| `sustituciones.tsv` | los activos gráficos de Canonical que se tapan **por bytes en su misma ruta**, con su origen en `encina-branding` y por qué. Lo que **no** está ahí, está escrito ahí también |
+
+**El fondo se cambia por el FICHERO, no por el ajuste**, y no es pereza: el
+`10_ubuntu-settings.gschema.override` que lo nombra está **compilado** dentro de
+`gschemas.compiled`, así que reescribirlo no sirve de nada sin volver a compilar
+los esquemas — y eso exige un Linux.
+
+**Los cuatro controles van delante, y el cuarto es el que más vale:** cada
+sustitución tiene que tapar un fichero que **existe** en las capas del medio
+(182 625 rutas), porque *una sustitución que no tapa nada es un fichero de más en
+el medio y un «hecho» que no ha pasado*. Detrás, la capa recién hecha **se
+desempaqueta y se compara fichero a fichero y huella a huella** con lo que se le
+metió (trampa 13), con el control de que la comparación sabe ver una lista a la
+que le falta una línea.
+
+**Y una comprobación que no es cosmética: la capa se fabrica DOS VECES y se
+compara.** Sin fijar la fecha, `mksquashfs` guarda la hora de creación del
+sistema de ficheros y la de cada inodo —y las de los inodos las pone `cp`—, así
+que **dos pasadas daban dos huellas distintas** (medido: `a4947f30…` y
+`63218c57…`). Una capa no reproducible **se lleva por delante la definición de
+terminado de la ISO entera**, y el `[FALLO]` habría salido tres pasos más abajo,
+donde parece un problema de `xorriso`. Se fija con `-mkfs-time`, `-inode-time` y
+`-root-time` a `1770687951`, que es **la misma fecha que ya usa
+`fabricar-iso.sh`** para lo que añade.
+
+**Cuatro cosas del entorno que están resueltas dentro y conviene no deshacer:**
+`-all-root` (en el Mac los ficheros son de `jorge` y dentro de la sesión viva
+tienen que ser de `root`), `-no-xattrs` (macOS cuelga atributos extendidos de
+todo lo que toca), `-noappend` (sin él, una segunda pasada **añade** al fichero
+anterior en vez de rehacerlo, y la capa crecería sin que nadie lo viera) y las
+tres opciones de fecha de arriba. Y `unsquashfs -lln` y no `-ll` para comprobar
+el dueño: en macOS el gid 0 se llama `wheel` y `root/wheel` sería un rojo falso.
+
+**Lo que este guion NO puede decir: que en pantalla se vea.** Eso lo dice
+arrancar la ISO, y es `[OJOS]` de Jorge.

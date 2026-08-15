@@ -1416,7 +1416,12 @@ justamente para no llegar al reempaquetado con tres candidatos.
   `select_autoinstall` (`server.py:889-924`), la ruta es literal
   (`server.py:73-75`) y `/cdrom` es el medio, medido en el casper de esta misma
   ISO. **E3 NO usa `CIDATA`.**
-- **No se toca `boot/grub/grub.cfg`, y por tanto tampoco `md5sum.txt`**
+- ~~**No se toca `boot/grub/grub.cfg`, y por tanto tampoco `md5sum.txt`**~~
+  **DEJÓ DE SER VERDAD DOS VECES, y las dos están escritas: el 2026-08-10 entró
+  `locale=es_ES.UTF-8` y el 2026-08-16 el `menuentry` de Encina (D23), y con él
+  `/.disk/info` y la capa de marca. Lo de abajo se conserva porque su MEDICIÓN
+  sigue valiendo —dónde va la palabra, cuál es el único `grub.cfg` y qué cubre
+  `md5sum.txt`—, no su conclusión.**
   (§6ter.0): sin instalación desatendida no hace falta la palabra. **Se deja
   escrito lo que costó medirlo, por si alguna vez vuelve a hacer falta:** la
   palabra iría **suelta** en la línea `linux /casper/vmlinuz` de ese fichero, que
@@ -1529,7 +1534,11 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       entradas, no solo las 266 de `md5sum.txt`— es exactamente ésta: **seis
       ficheros añadidos** (`/autoinstall.yaml` y los cinco de `/encina-repo/`),
       **dos modificados y nombrados** (`/boot/grub/grub.cfg` y `/md5sum.txt`),
-      **ninguno perdido**. *Roto:* cualquier binario firmado con huella distinta
+      **ninguno perdido**. **ACTUALIZADA EL 2026-08-16 por D23, y otra vez hacia
+      arriba:** los modificados pasan a ser **TRES** —entra `/.disk/info`— y los
+      añadidos incluyen además **`/casper/zz-encina.squashfs`**, la capa de marca.
+      La exigencia no cambia de forma: ni uno más, ni uno menos, y todos
+      nombrados. *Roto:* cualquier binario firmado con huella distinta
       —y ojo, que **este banco no lo detectaría al arrancar**, así que la huella
       es la única señal—, o **un solo fichero cambiado que no sea uno de esos
       dos**. **Con su control:** la comparación tiene que señalar una huella
@@ -1542,6 +1551,11 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       sea autocomplaciente:** con el `md5sum.txt` **oficial** tiene que fallar
       **exactamente una** línea, la de `./boot/grub/grub.cfg` — que es la ISO que
       se entregaría si alguien editara el `grub.cfg` y no pagara el precio.
+      **ACTUALIZADA EL 2026-08-16 por D23:** son **267** líneas y no 266 —la de
+      más es la de la capa de marca, añadida a propósito para que la comprobación
+      del propio medio la cubra en vez de ignorarla—, y el control pasa a exigir
+      **exactamente dos** fallos con el `md5sum.txt` oficial: `grub.cfg` y
+      `.disk/info`.
 - [x] **La máquina que sale es la de E2.** *Sano:* `imagen/verificar-instalacion.sh` como
       root, **35 correctas, 0 fallos, 0 avisos, 0 omitidas**, igual que §4.20c,
       **con el usuario que haya elegido quien instaló**, no con uno fijo. *Roto:*
