@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
 <!--
   Logotipo de Encina OS. Activo propio (R8): ninguna marca de terceros.
 
@@ -21,8 +22,19 @@
   cuando la malla interior ya no se distingue.
 
   Verde encina #3A664E y arcilla #D6BFA0, de la paleta de la identidad.
+
+  POR QUE ESTE COMENTARIO VA DENTRO DE <svg> Y NO ENCIMA, que es lo natural:
+  gdk-pixbuf reconoce el formato husmeando el PRINCIPIO del fichero, y si el
+  '<svg' no cae dentro de los primeros 256 BYTES contesta «Couldn't recognize
+  the image file format». Medido el 2026-08-15 con su umbral exacto -256 carga,
+  257 no- y en las dos direcciones: quitarle el comentario a este fichero lo
+  arregla, y ponerselo a uno que cargaba lo rompe.
+
+  Lo traicionero es que librsvg SI lo dibuja -'rsvg-convert' saca el PNG tan
+  ricamente- y GTK SI resuelve el nombre al fichero. Lo que no puede es
+  PINTARLO: GNOME Shell escribe «Could not load a pixbuf from icon theme» y
+  deja un HUECO en el dock. Lo caza un [OJOS], no un guion.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
 
   <!-- Copa: racimo de circulos solapados = una sola silueta -->
   <g fill="#3A664E">

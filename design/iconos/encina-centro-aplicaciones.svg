@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
 <!--
   Icono del Centro de aplicaciones. Activo propio (R8): ninguna marca de
   terceros, y en particular ninguna de Canonical.
@@ -34,8 +35,19 @@
   -[OJOS] de Jorge, 2026-08-15-, asi que el bloque se subio 2.8 unidades. Se
   probaron dos tamanos con el mismo desplazamiento, 6.9 y 7.4; se eligio el de
   7.4, que es el que se lee a 48 px.
+
+  POR QUE ESTE COMENTARIO VA DENTRO DE <svg> Y NO ENCIMA, que es lo natural:
+  gdk-pixbuf reconoce el formato husmeando el PRINCIPIO del fichero, y si el
+  '<svg' no cae dentro de los primeros 256 BYTES contesta «Couldn't recognize
+  the image file format». Medido el 2026-08-15 con su umbral exacto -256 carga,
+  257 no- y en las dos direcciones: quitarle el comentario a este fichero lo
+  arregla, y ponerselo a uno que cargaba lo rompe.
+
+  Lo traicionero es que librsvg SI lo dibuja -'rsvg-convert' saca el PNG tan
+  ricamente- y GTK SI resuelve el nombre al fichero. Lo que no puede es
+  PINTARLO: GNOME Shell escribe «Could not load a pixbuf from icon theme» y
+  deja un HUECO en el dock. Lo caza un [OJOS], no un guion.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
   <defs>
     <linearGradient id="placa" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#3A664E"/>

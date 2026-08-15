@@ -85,6 +85,32 @@ Si el bueno es el del paquete, cópialo tú a design/ y averigua quién lo tocó
 cotejar_maestro "logotipo" "$SVG_MAESTRO" "$SVG_PKG"
 cotejar_maestro "Centro de aplicaciones" "$TIENDA_MAESTRO" "$TIENDA_PKG"
 
+# EL '<svg' TIENE QUE CAER DENTRO DE LOS PRIMEROS 256 BYTES, y no es una manía
+# de estilo: gdk-pixbuf reconoce el formato husmeando el principio del fichero,
+# y más allá de ese byte contesta «Couldn't recognize the image file format».
+# Medido el 2026-08-15 con su umbral exacto -256 carga, 257 no- y en las dos
+# direcciones (§4.49). Lo caro es que NO se nota: librsvg dibuja el fichero, GTK
+# resuelve el nombre, y lo único que pasa es que GNOME Shell deja un HUECO en el
+# dock. Por eso los comentarios de estos SVG van DENTRO de <svg>.
+#
+# Esto se comprueba aquí y no en el Mac con gdk-pixbuf porque en el Mac no hay
+# gdk-pixbuf: lo que se mide es la causa -la posición-, no el síntoma.
+paso "El '<svg' dentro de los primeros 256 bytes (si no, GNOME Shell no lo pinta)"
+LIMITE=256
+for svg in "$SVG_MAESTRO" "$TIENDA_MAESTRO" "$DISENO/iconos/view-app-grid-symbolic.svg"; do
+    [[ -f "$svg" ]] || continue
+    off=$(LC_ALL=C awk 'BEGIN{RS="\x04"} {print index($0,"<svg")-1; exit}' "$svg")
+    if [[ "$off" -ge 0 && "$off" -le "$LIMITE" ]]; then
+        ok "$(basename "$svg"): '<svg' en el byte $off"
+    else
+        fallo "$(basename "$svg"): '<svg' en el byte $off, y el límite es $LIMITE" \
+"gdk-pixbuf no reconocera el fichero y GNOME Shell dejara un hueco donde va el
+icono. librsvg SI lo dibuja, asi que rsvg-convert no lo caza y GTK resuelve el
+nombre igual: el sintoma solo se ve mirando la pantalla.
+Mueve el comentario de cabecera DENTRO de <svg>, como en los otros dos."
+    fi
+done
+
 # --------------------------------------------------------- paleta y copias --
 # Un hex escrito en dos sitios es un hex que algún día dirá dos cosas. Esto
 # comprueba que las copias siguen cuadrando con paleta.tsv.

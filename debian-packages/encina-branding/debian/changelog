@@ -1,3 +1,33 @@
+encina-branding (0.1.15) noble; urgency=medium
+
+  * EL ICONO DE 0.1.14 NO SE PINTABA, y lo que se veia en el dock era un
+    HUECO. Lo cazo un [OJOS] de Jorge, no un guion, y ahi esta lo
+    importante: las cuatro comprobaciones que se hicieron para darlo por
+    bueno pasaban TODAS. Gio decia que ganaba nuestro .desktop,
+    should_show daba True, Gtk.IconTheme -en 3 y en 4- resolvia el
+    nombre a nuestro SVG y librsvg lo dibujaba sin rechistar. Resolver
+    un nombre a un fichero no es poder PINTARLO.
+  * LA CAUSA: gdk-pixbuf reconoce el formato husmeando el PRINCIPIO del
+    fichero, y si el <svg no cae dentro de los primeros 256 BYTES
+    contesta que no reconoce el formato. El comentario de cabecera de
+    este proyecto -que es metodo, no adorno- empujaba el <svg al byte
+    2090. Umbral medido exacto: en 256 carga y en 257 no; y con su
+    control en las dos direcciones, porque quitarle el comentario al
+    nuestro lo arregla y ponerselo a uno que cargaba lo rompe.
+  * Y NO ERA SOLO EL ICONO NUEVO: encina-logo.svg esta igual desde
+    0.1.9, con el <svg en el byte 799. Nadie lo habia notado porque ese
+    icono no se pinta en el dock. Un defecto latente de seis versiones
+    que salio a la luz al lado del otro.
+  * EL ARREGLO son los comentarios DENTRO de <svg>, con el motivo
+    escrito dentro de los dos ficheros. El dibujo no cambia: rsvg-
+    convert saca el mismo PNG byte a byte antes y despues de mover el
+    comentario.
+  * Y design/generar.sh lo comprueba ya, con su rojo probado. Mide la
+    CAUSA -la posicion del <svg- y no el sintoma, porque en el Mac no
+    hay gdk-pixbuf; el sintoma solo se ve mirando una pantalla.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 15 Aug 2026 12:52:53 +0200
+
 encina-branding (0.1.14) noble; urgency=medium
 
   * EL CENTRO DE APLICACIONES DEJA DE SER LA A NARANJA DE UBUNTU, y no
