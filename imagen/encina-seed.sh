@@ -97,8 +97,17 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # LA LECCION, que no es la huella sino el procedimiento: una huella que se
 # apunte aqui tiene que salir de 'git archive HEAD', nunca de haber lanzado
 # 03-construir.sh sobre el repositorio donde se estaba trabajando.
+#
+# ENMIENDA DEL 2026-08-15 (la de la tarde): H_BRANDING pasa a 0.1.14 -D21, el
+# icono del Centro de aplicaciones- y esta vez la huella se saco siguiendo esa
+# leccion, no despues de saltarsela. Salio de 'git archive HEAD' sobre un
+# directorio nuevo de encina-dev, y con dos controles al lado: el data.tar
+# lleva UNA sola fecha dentro -si llevara varias, vendria del arbol de
+# trabajo- y dos pasadas desde dos commits distintos dan la misma huella
+# 131c464e…, que es lo que hay que exigirle. El aviso escrito no evito nada
+# las dos veces anteriores; lo que sirve es la comprobacion.
 H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-H_BRANDING=4df508cd1dc9da51252dbc61d6588e17ddefa55ea7756dc1d9d044e4e1377635
+H_BRANDING=131c464e4eba2ad472b5a85b0dc79181ff101761873e55737bd870078f9a7afd
 H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
 H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 
@@ -258,7 +267,7 @@ run sh -c "ls /target/srv/encina-repo/ | wc -l"
 run sh -c "du -sh /target/srv/encina-repo"
 say "-- las cuatro huellas de Encina, comparadas una a una:"
 huella /target/srv/encina-repo/autofirma_1.9.1+encina4_all.deb      "$H_AUTOFIRMA"
-huella /target/srv/encina-repo/encina-branding_0.1.13_all.deb       "$H_BRANDING"
+huella /target/srv/encina-repo/encina-branding_0.1.14_all.deb       "$H_BRANDING"
 huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
 huella /target/srv/encina-repo/encina-meta_0.2.1_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"
