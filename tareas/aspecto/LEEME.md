@@ -128,11 +128,29 @@ separados:
 
 | Qué | Dónde está escrito | Estado |
 |---|---|---|
-| El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **Espera exactamente esto**: se revirtió a propósito para no cambiar la huella suelta |
-| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **DECIDIDA el 2026-08-15.** Seis líneas, con `TryExec=`. **Falta el icono, que no existe** |
-| El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | Medido que no hace nada: **se quita o se documenta** |
+| El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **HECHO en 0.1.14** |
+| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **HECHA en 0.1.14, con su icono dibujado.** La casilla sigue abierta: le falta el `[OJOS]` |
+| El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | **QUITADO en 0.1.14**, con lo medido y lo que NO se sabe escrito al lado |
 | El `banner-message-text='Encina OS'`, que no aparece | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (b) | Igual que el anterior |
-| Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Aprobados pero **PROPUESTO**, no VIGENTE: no se han aplicado a ningún paquete |
+| Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Siguen **PROPUESTO**, y **la vuelta descubrió que no bloqueaban nada** |
+
+**LA VUELTA ESTÁ DADA, el 2026-08-15** (`MEDICIONES.md` §4.48): `encina-branding`
+**0.1.14**, `131c464e…`, 59 comprobaciones y 0 fallos, y el ritual de los seis
+sitios pagado entero — los dos `autoinstall*.yaml` ya no llevan dentro la huella
+vieja, que era el fleco que §4.46 dejó abierto.
+
+**Y una de las dos cosas que había que decidir antes se cayó al mirarla:** la
+condición *«dibujar el icono depende de que la paleta pase a VIGENTE»* **era
+falsa**. Un icono usa `acento`, `acento-profundo`, `arcilla` y `tierra`, los
+cuatro VIGENTE; los ocho PROPUESTO son colores de **mensajes de estado** —«la
+firma salió», «el certificado caduca»— y no intervienen en un dibujo. Estaba
+escrita, no medida.
+
+**Lo que la vuelta NO hace, y conviene no darlo por hecho:** no refabrica la ISO
+—`95758c9e…` deja de ser la que produce este repositorio en cuanto se rehaga, y
+eso lo avisa [5-cierre.md](5-cierre.md)—, no marca la casilla de los iconos —su
+condición es **ver el icono en pantalla**, no que el paquete lo lleve dentro— y
+no explica **por qué** los dos ajustes de GDM no hacían nada.
 
 **Y dos que hay que releer antes, porque `D20` pudo dejarlas sin objeto:** el
 tema del shell de [3-tema-e-iconos.md](3-tema-e-iconos.md) —que pedía la

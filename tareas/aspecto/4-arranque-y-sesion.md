@@ -45,10 +45,22 @@ segundos.
       2026-08-14 en `design/capturas/antes/03-gdm.png`, y hay tres cosas, no una:**
       **(a)** el fondo del saludador **no es `encina-dark.jpg`**: es un negro
       liso. El `org/gnome/desktop/background` del perfil de GDM parece, en
-      efecto, **un no-op**. Se quita o se documenta.
+      efecto, **un no-op**. ~~Se quita o se documenta.~~ **QUITADO en 0.1.14.**
       **(b)** el `banner-message-text='Encina OS'` **no aparece por ningún
       sitio**, con `banner-message-enable` a `true`. Segundo ajuste que se puso y
-      no hace nada.
+      no hace nada. **QUITADO en 0.1.14.**
+      *Las dos, decididas el 2026-08-15, y lo que las decidió fue un control que
+      ya estaba en esta casilla sin que nadie lo nombrara:* `logo` vive en la
+      **misma sección** `[org/gnome/login-screen]` del **mismo fichero** y **sí
+      funciona** —el logotipo se lee en la captura—, así que la fontanería está
+      descartada entera: el perfil se lee, la base se compila y `dconf update`
+      corre. **Lo que sigue SIN medirse es por qué no hacen nada**, ni (a) ni
+      (b): se quitan porque no producen efecto, no porque se sepa la causa, y eso
+      va escrito en el propio `99-encina` con lo que decían al lado. Se quitan y
+      no se dejan comentadas dentro de la sección porque una clave puesta que no
+      surte efecto es de la familia del `[OK]` que describe lo que se pidió y no
+      lo que pasó: hace creer que la pantalla de inicio de sesión dice «Encina
+      OS» cuando no lo dice.
       **(c)** y lo que de verdad se mira: **el recuadro de selección del usuario
       es naranja Yaru**, en mitad de la pantalla. El logotipo de la encina está
       abajo y se lee bien, pero el color que domina la primera pantalla en la que

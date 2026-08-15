@@ -10983,6 +10983,178 @@ Ubuntu.
 
 ---
 
+### 4.48 LA VUELTA DE `encina-branding` 0.1.14: D21 dentro, dos ajustes de GDM fuera, y el ritual de los seis sitios pagado entero (2026-08-15)
+
+**Una vuelta y no cinco, que era el argumento de `tareas/aspecto/LEEME.md`:** el
+precio de tocar este paquete no es el `.deb`, es el ritual —y esta vez se pagó
+entero, incluidos los dos `autoinstall*.yaml` que llevaban la huella vieja desde
+§4.46.
+
+**Lo que entró, cinco cosas:** la sombra del `.desktop` del Centro de
+aplicaciones con su icono propio (`D21`), los dos ajustes de GDM medidos como
+no-op —fuera—, el comentario del logotipo que apuntaba a un directorio que ya no
+existe, y el cotejo del icono nuevo en `design/generar.sh`.
+
+#### (a) LAS DOS DECISIONES QUE HABÍA QUE TOMAR ANTES DE ESCRIBIR UNA LÍNEA
+
+**La primera se cayó al mirarla, y ese es el dato:** la casilla decía que
+dibujar el icono *«depende de que la paleta pase de PROPUESTO a VIGENTE»*. No
+depende. Un icono usa `acento` `#3A664E`, `acento-profundo` `#2F4033`, `arcilla`
+`#D6BFA0` y `tierra` `#A78B75`, **los cuatro VIGENTE**; lo que está en
+PROPUESTO son `papel`, los dos de texto y los seis semánticos, que son colores
+de **mensajes de estado** —«la firma salió», «el certificado caduca»— y no
+intervienen en un dibujo. La dependencia estaba escrita, no medida.
+
+**La segunda tenía un control que ya estaba en la casilla sin que nadie lo
+nombrara.** Los dos ajustes de GDM se quitan, y lo que lo decide es que `logo`
+vive en la **misma sección** `[org/gnome/login-screen]` del **mismo fichero** y
+**sí funciona** —el logotipo se lee en `design/capturas/antes/03-gdm.png`—. Eso
+descarta la fontanería entera: el perfil de dconf se lee, la base se compila y
+`dconf update` corre. **Lo que sigue sin medirse es POR QUÉ no hacen nada**, ni
+el fondo ni el rótulo, y se dice al lado en vez de callarse: se quitan porque no
+producen efecto, no porque se sepa la causa.
+
+#### (b) EL ICONO: tres tandas, y el motivo del descarte no se deduce del resultado
+
+Las tres primeras variantes ponían la copa de la encina dentro de una bolsa de
+asa estrecha y alta. **A 48 px —el tamaño del dock, `dash-max-icon-size 48`— las
+tres se leen como un CANDADO.** No es una impresión: es lo que se ve en
+`design/iconos-borrador/lamina.png`, y por eso ese directorio se versiona. El
+asa se ensanchó y se bajó, el contenido pasó a ser una rejilla de cuatro
+aplicaciones, y **la bellota no se usa a propósito**: es la del botón de la
+rejilla y los dos iconos viven en el mismo dock.
+
+**Y una corrección de `[OJOS]` que no habría salido de ningún guion:** en el
+primer J la fila de abajo tocaba la base de la bolsa. Se subió el bloque y se
+probaron dos tamaños; entró el de 7.4.
+
+**El icono va en `hicolor/scalable/apps`, no en el tema `Encina`**, y el motivo
+corrige por dónde se iba a atacar: §4.47(c) midió que para **ganarle** a un
+icono del padre hace falta declararlo en el tema con su directorio de `apps`,
+pero aquí **no hay a quién ganarle** —el nombre `encina-centro-aplicaciones` no
+lo declara ningún otro tema—. `hicolor` es el último de la cadena y por eso
+mismo el respaldo de **todos** los temas: el icono sobrevive a que alguien
+cambie el tema de iconos, y no hay que tocar el `index.theme`.
+
+#### (c) LA MEDICIÓN QUE IMPORTA, con su control tomado ANTES de instalar
+
+En `encina-dev`, mismo lector para las dos pasadas, con `XDG_DATA_DIRS` de una
+sesión de escritorio —sin él `Gio` no encuentra **ningún** `.desktop` de snap—:
+
+```
+CON 0.1.13 (control negativo, tomado antes de instalar):
+snap-store_snap-store.desktop  -> File    /snap/snap-store/current/bin/data/flutter_assets/assets/app-center.png
+                                  fichero: /var/lib/snapd/desktop/applications/snap-store_snap-store.desktop
+  tema=Encina     -> /snap/snap-store/current/.../app-center.png
+  tema=Yaru-sage  -> /snap/snap-store/current/.../app-center.png
+
+CON 0.1.14:
+snap-store_snap-store.desktop  -> Themed  encina-centro-aplicaciones,encina-centro-aplicaciones-symbolic
+                                  fichero: /usr/share/applications/snap-store_snap-store.desktop
+                                  Name=  : Centro de aplicaciones
+  tema=Encina     -> /usr/share/icons/hicolor/scalable/apps/encina-centro-aplicaciones.svg
+  tema=Yaru-sage  -> /usr/share/icons/hicolor/scalable/apps/encina-centro-aplicaciones.svg   <- hicolor es el respaldo de los DOS
+
+CONTROLES, en la misma pasada:
+firefox_firefox.desktop        -> File    /snap/firefox/current/default256.png   <- sigue habiendo un FileIcon
+org.gnome.Nautilus.desktop     -> Themed  ... -> /usr/share/icons/Yaru-sage/48x48/apps/org.gnome.Nautilus.png  <- del padre, intacto
+yelp.desktop                   -> Themed  ... -> /usr/share/icons/Yaru/48x48/apps/org.gnome.Yelp.png           <- del padre, intacto
+no-existe-jamas.desktop        -> None                                                       <- CONTROL
+tipos distintos vistos: ['File', 'Themed']
+```
+
+**Dos defectos del instrumento, dichos porque cuestan mediciones:**
+*(1)* `Gio.DesktopAppInfo.new` **no devuelve `None`** cuando el id no existe:
+**lanza `TypeError`**, así que el control murió dentro del propio control y se
+llevó por delante la mitad de la pasada. *(2)* Al instalar 0.1.14 la lista se
+quedó con **un solo tipo** —ya no había ningún `FileIcon`—, con lo que el lector
+dejaba de demostrar que sabe distinguirlos: se añadió `firefox_firefox.desktop`,
+que en `encina-dev` es el Snap, para que la medición vuelva a valerse sola.
+
+#### (d) EL PAQUETE, 59 comprobaciones y 0 fallos
+
+`03-construir.sh` 35 · `04-instalar.sh` 10 · `05-verificar.sh` 14 —usuario nuevo,
+cinco reinstalaciones, purga y reinstalación—, todas sobre el árbol de
+`git archive HEAD`. Las dos comprobaciones que faltaban y se añadieron: que el
+`.deb` incluya **la sombra y el icono**, que son las dos mitades de `D21` y
+**ninguna de las dos se nota hasta mirar el dock** —una sombra sin icono deja un
+lanzador con el icono roto; un icono sin sombra no lo pide nadie—.
+
+**Lo que sigue siendo `[OJOS]` y no se cuenta como aprobado:** que GNOME Shell
+**pinte** ese icono en el dock. Todo lo de arriba es resolución de iconos y
+lectura de ficheros, que es lo mismo que avisaba §4.47(h) y lo que §4.43f dejó
+como recordatorio de la vez que esas dos cosas se separaron.
+
+#### (e) LA HUELLA, POR FIN SACADA COMO MANDA §4.46 — y sus dos controles
+
+```
+encina-branding_0.1.14_all.deb
+  131c464e4eba2ad472b5a85b0dc79181ff101761873e55737bd870078f9a7afd   6 947 742 bytes
+  fechas distintas dentro de data.tar: 1   (2026-08-15)
+  dos pasadas, desde DOS commits distintos (f1d12b5 y 6e6621e): la misma huella
+```
+
+**Una sola fecha dentro** es el control de que salió de `git archive HEAD` y no
+del árbol de trabajo —con 22 fechas distintas fue como mordió §4.46—. Y la
+segunda pasada demuestra de paso que tocar `scripts/` no cambia el `.deb`.
+
+#### (f) LOS SEIS SITIOS, y la lista de `SCRIPTS.md` acertó en los seis
+
+| Sitio | Qué llevaba |
+|---|---|
+| `imagen/repo-manifiesto.tsv` | versión, fichero, tamaño y `sha256` |
+| `imagen/encina-seed.sh` | `H_BRANDING` **y** el nombre del `.deb`, que lleva la versión dentro |
+| `imagen/fabricar-seed.sh` | el nombre en el array `FICHEROS` |
+| `imagen/fabricar-iso.sh` | el mismo array, duplicado del anterior |
+| `imagen/autoinstall.yaml` | el seed empotrado en base64 |
+| `imagen/autoinstall-unattended.yaml` | ídem |
+
+**Y rehacer los dos YAML costó más que ejecutar una orden**, porque
+`fabricar-seed.sh --actualizar-yaml` exige un `--repo` con los 28 `.deb` y su
+`Packages`. Los bytes salieron de la ISO de E4 —`tar -xf` sobre el `.iso`, 168
+MB, que es mucho menos de lo que parecía— y **la lista siguió saliendo del
+manifiesto, no del medio**, que es lo único que cerraría la circularidad. El
+cotejo dio esto, y el control no hubo que inventarlo:
+
+```
+26 de 28 cuadran. Los 2 que no:
+  encina-firefox-native_0.2.1_all.deb   real 972ec932…  (esperada 640f508e…)
+  encina-meta_0.2.1_all.deb             real 86da3cc9…  (esperada 204081f0…)
+sobra en el repo: encina-branding_0.1.8_all.deb
+```
+
+**Esas dos huellas son las de §4.37**, citadas por su nombre en el comentario de
+`encina-seed.sh` como «las anteriores»: la ISO de E4 lleva dentro los `.deb`
+construidos sobre un árbol de trabajo, **fosilizados**. Reconstruidos desde el
+clon en `encina-dev` dan **exactamente** `640f508e…` y `204081f0…`, las del
+manifiesto. Con los tres propios al día: **28 de 28 y ninguno sobrando**, y el
+`Packages` regenerado con `dpkg-scanpackages` en la VM —no existe en macOS—.
+
+**El fleco de §4.46, cerrado y comprobado por dentro**, que era el que dejaba el
+ritual a medias:
+
+```
+encina-seed.sh en disco: 31070 bytes
+autoinstall.yaml            31070 bytes empotrados, identicos al de disco
+                            H_BRANDING=131c464e dentro; ninguna vieja; .deb 0.1.14
+autoinstall-unattended.yaml igual
+CONTROL: un guion con la huella cambiada, comparado con el de disco -> distinto
+```
+
+#### (g) LO QUE ESTA VUELTA NO HACE
+
+- **No refabrica la ISO.** Cambiar los `.deb` cambia su huella, y `95758c9e…`
+  deja de ser la que produce este repositorio en cuanto se rehaga. Está avisado
+  en `tareas/aspecto/5-cierre.md` y no se toca aquí.
+- **No marca la casilla de los iconos.** Su condición no es que el paquete lleve
+  la sombra dentro: es que **el icono esté dibujado y visto en pantalla**, y lo
+  segundo no está.
+- **No mide por qué los dos ajustes de GDM no hacían nada.** Se quitan medidos,
+  no explicados.
+
+---
+
+
 ## 9. Trampas conocidas
 
 Registro para no redescubrirlas. Todas verificadas en la investigación previa.
@@ -11035,6 +11207,10 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Comparar un `.deb` contra los `.md5sums` de dpkg no puede cuadrar** | Dos paquetes «no cuadran» por 3 y 2 ficheros, el tercero cuadra, y los cinco que faltan existen y están bien | **dpkg no mete los conffiles en `.md5sums`**: los registra aparte, en `/var/lib/dpkg/status`. Los cinco eran exactamente los ficheros bajo `/etc/`, uno a uno, y el paquete que cuadró es el único que no instala nada ahí. Es la familia de la 5 escrita por uno mismo: **una comprobación que busca el dato donde el dato no puede estar**. Para atar un `.deb` instalado sirve `dpkg -V` —con el control de que sepa señalar algo en el sistema— y los conffiles hay que ir a buscarlos a `status` (§4.40d) |
 | **Un sabotaje que sí cambia el fichero y aun así no es un control** | `cmp` confirma que el fichero cambió, y la herramienta sigue dando verde | Cambiar el fichero no basta: hay que cambiarlo **por donde la herramienta mira**. Meter `$SINCOMILLAS` en un guion cambia dos líneas y `shellcheck -S warning` lo ignora, porque no es un defecto de ese nivel. Es la 24 de `SCRIPTS.md` un paso más allá: el sabotaje tiene que sabotear **la comprobación**, no sólo los bytes (§4.39k) |
 | **Un icono que ningún tema de iconos puede cambiar** | Se pone el tema propio, se comprueba que gana para lo suyo, y el icono de esa aplicación sigue exactamente igual — y con el tema de Ubuntu también, o sea que no es «que el nuestro no gane» | Su `.desktop` no declara un **nombre** sino una **ruta absoluta**: `Gio` devuelve un `GFileIcon` y no un `GThemedIcon`, y el tema **no interviene**. Es lo que hacen los snaps —`Icon=${SNAP}/…` escrito en su propio `meta/gui`—, así que el fichero vive además en un squashfs de solo lectura que se sustituye entero en cada autorrefresco. Se distingue antes de gastar nada preguntando el **tipo** del icono, no su ruta (§4.47a y b). La única vía que queda es sombrear el `.desktop`, como §4.19 con Firefox |
+| **El control muere dentro del propio control** | Un lector de `.desktop` con su control por delante —un id inventado tiene que dar `None`— revienta con `TypeError` en esa línea y se lleva media medición | `Gio.DesktopAppInfo.new` **no devuelve `None`** cuando el id no existe: **lanza `TypeError`**. El control se escribió esperando `None`, que es la forma más tonta de perder una pasada. Se envuelve en `try/except` (§4.48c) |
+| **Una medición que dejó de valerse sola justo al arreglar la cosa** | La lista de iconos enseñaba los dos tipos —`File` y `Themed`— antes del cambio, y después del cambio sólo enseña `Themed`, así que el lector ya no demuestra que sabe distinguirlos | Lo que separaba los dos casos era **el ejemplar de la clase que se arregló**. Al arreglarlo desaparece de la lista y el instrumento se queda ciego sin avisar. Se mete a propósito otro del tipo que se va —aquí `firefox_firefox.desktop`, que en `encina-dev` es Snap— para que la pasada siga probando su propio poder de resolución (§4.48c) |
+| **Un repositorio sacado de un medio anterior trae `.deb` fosilizados** | Se extrae `/encina-repo` de la ISO buena para rehacer los YAML y 2 de los 28 no cuadran con el manifiesto, con el contenido correcto | Aquel medio se fabricó **antes** de §4.37, así que lleva dentro los `.deb` construidos sobre un árbol de trabajo —`972ec932…` y `86da3cc9…`, las huellas que el comentario del seed llama «las anteriores»—. Un medio conserva el estado del día que se fabricó, incluidos sus defectos. Se reconstruyen desde el clon y dan las del manifiesto (§4.48f) |
+| **Un nombre de fichero es una huella disfrazada** | Se actualizan las huellas del ritual y queda un sitio con el nombre del `.deb` viejo, que ni siquiera es una huella | Los nombres llevan **la versión dentro**, y viven duplicados en dos arrays `FICHEROS` —`fabricar-seed.sh` y `fabricar-iso.sh`—. `SCRIPTS.md` los nombra a los dos desde el 2026-08-12 y aun así lo que cierra la duda es `grep -rn 'encina-branding_0\.1\.' imagen/ scripts/`: la lista se comprueba, no se recita. Este sitio **no falla en silencio** —`fabricar-iso.sh` para con `no esta: …`— así que el riesgo es tiempo, no un medio equivocado (§4.48f) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |

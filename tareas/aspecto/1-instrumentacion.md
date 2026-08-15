@@ -121,7 +121,14 @@ encadenarlos.
       derivados **borrado** los deja con las huellas del manifiesto cuadrando una
       a una. Y con su rojo: una orden cambiada da otra huella y el guion lo dice.
 
-- [ ] **El comentario del logotipo apunta a una ruta que ya no existe.**
+- [x] ~~**El comentario del logotipo apunta a una ruta que ya no existe.**~~
+      **HECHA el 2026-08-15 en `encina-branding` 0.1.14**, montada en la vuelta
+      que ya pagaba el ritual, que es exactamente lo que su «hecha cuando» pedía:
+      la huella nueva es `131c464e…` y está en el manifiesto, en `H_BRANDING`, en
+      los dos arrays `FICHEROS` y dentro de los dos `autoinstall*.yaml`. Se
+      corrigió **en el maestro** `design/logotipo/encina.svg` y de ahí al
+      paquete, que es el sentido que manda (`design/LEEME.md`): lo que viaja no
+      se edita a mano. *Lo que decía:*
       `encina-logo.svg` dice «coincide con la identidad visual del banner
       (`assets/identidad.png`)», y ese fichero está ahora en
       `design/identidad.png`. **Se intentó arreglar el 2026-08-14 y se revirtió a

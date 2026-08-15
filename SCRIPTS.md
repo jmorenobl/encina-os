@@ -790,6 +790,26 @@ salieron solo los **bytes**, que el manifiesto valida. Los `.deb` de
 `encina-firefox-native` y `encina-meta` que hay sueltos en `debian-packages/`
 llevan la versión buena y **otros bytes** —§4.13 otra vez—, así que no valen.
 
+**AMPLIACIÓN DEL 2026-08-15 (la de la tarde), subiendo `encina-branding` a
+0.1.14** (`MEDICIONES.md` §4.48f). Se repitió esa vía y **hay dos cosas más que
+saber antes de la próxima**:
+
+- **De la ISO de E4 salen 26 de 28, no 28.** Los otros dos son
+  `encina-firefox-native` y `encina-meta` con los bytes **anteriores a §4.37**
+  —`972ec932…` y `86da3cc9…`, las que el comentario de `encina-seed.sh` llama
+  «las anteriores»—: aquel medio se fabricó antes de la corrección y **los lleva
+  fosilizados dentro**. Se arregla reconstruyéndolos desde el clon con
+  `07-firefox-construir.sh` y `10-meta-construir.sh`, que dan **exactamente** las
+  del manifiesto. Y sobra uno, `encina-branding_0.1.8_all.deb`, que era el de
+  aquella ISO.
+- **El bulto no es el problema:** `/encina-repo` pesa **168 MB**, no un gigabyte,
+  así que extraerlo y mandarlo a la VM para el `dpkg-scanpackages` cuesta
+  segundos.
+
+*Y el control salió gratis, que es lo mejor que le puede pasar a uno:* no hizo
+falta sabotear nada para probar que el cotejo sabe decir que no — señaló los dos
+malos y el que sobraba él solo.
+
 1. **`imagen/encina-seed.sh`**: la huella (`H_FFNATIVE=…`) **y** el nombre del
    fichero, que lleva la versión dentro.
 2. **`imagen/fabricar-seed.sh`**: el nombre en el array `FICHEROS`.

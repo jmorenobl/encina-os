@@ -109,8 +109,31 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       **falta `TryExec=/snap/bin/snap-store`** o quitar la tienda deja un lanzador
       roto en la rejilla. Límite a declarar: quien cambie el idioma del sistema
       verá ese nombre en español.
-      *Y una condición previa que no es de empaquetado:* **el icono no existe**, y
-      dibujarlo con la paleta en PROPUESTO es trabajo que puede haber que rehacer.
+      *Y una condición previa que no es de empaquetado:* ~~**el icono no existe**, y
+      dibujarlo con la paleta en PROPUESTO es trabajo que puede haber que rehacer.~~
+      **EL ICONO YA EXISTE, y esa condición previa era falsa** (2026-08-15,
+      §4.48a). Un icono usa `acento`, `acento-profundo`, `arcilla` y `tierra`,
+      **los cuatro VIGENTE**; lo que está en PROPUESTO son `papel`, los dos de
+      texto y los seis semánticos, que son colores de **mensajes de estado** y no
+      intervienen en un dibujo. La dependencia estaba escrita, no medida.
+      **LO QUE ESTÁ HECHO, en `encina-branding` 0.1.14** (`131c464e…`): la sombra
+      de seis líneas con `TryExec=` —y con `Name=App Center` más
+      `Name[es]=Centro de aplicaciones`, que **rebaja el precio**: quien use otro
+      idioma ve el nombre real en inglés en vez de uno en español que no eligió—,
+      el `MimeType` copiado a propósito para no dejar los `.deb` sin manejador, y
+      el icono `encina-centro-aplicaciones` **en `hicolor/scalable/apps`, no en el
+      tema `Encina`**: ese nombre no lo declara ningún otro tema, así que no hay a
+      quien ganarle y `hicolor` es el respaldo de todos —el icono sobrevive a que
+      alguien cambie el tema de iconos, y no hay que tocar el `index.theme`—.
+      *Medido en `encina-dev` con el control tomado ANTES de instalar:* con
+      0.1.13 el `.desktop` que gana es el de snapd, `FileIcon`, ruta del snap con
+      los dos temas; con 0.1.14 gana el nuestro, el icono pasa a `ThemedIcon` y
+      resuelve a nuestro SVG **con `Encina` y con `Yaru-sage`**, mientras
+      `Nautilus` y `yelp` siguen saliendo del padre, intactos.
+      **Y LA CASILLA SIGUE SIN MARCARSE, que es lo que dice su propia condición:**
+      falta **verlo en pantalla**. Todo lo medido es resolución de iconos, no
+      píxeles pintados por GNOME Shell, y §4.43f es el recordatorio de la vez que
+      esas dos cosas se separaron. `[OJOS]`.
 
 - [x] ~~**El logotipo de la rejilla, que sigue abierta desde el bloque 1.**~~
       **CERRADA el 2026-08-14, y estaba mal leída desde el principio: el botón
