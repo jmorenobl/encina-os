@@ -2,30 +2,31 @@
 
 Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
 
-- [ ] **La licencia de las seis fotografías. ES LA CASILLA QUE BLOQUEA
-      PUBLICAR, y estaba sin nombrar.** Seis fotos viajan hoy dentro de la ISO y
-      **no hay escrito de dónde salieron ni con qué permiso**
-      (`design/fondos/manifiesto.tsv`, columna `licencia`: `SIN DETERMINAR` en
-      las seis filas). Este proyecto publica la oferta de fuente de AutoFirma con
-      cuatro repositorios y sus etiquetas; con ese listón, esto es un agujero de
-      la misma familia. Las salidas son tres: que sean de Jorge y se declare bajo
-      qué licencia se ceden, que sean de un banco con licencia libre y se cite, o
-      que se sustituyan.
-      *Hecha cuando:* las seis filas tienen `licencia` y `origen`, y lo que diga
-      la columna está también en `debian/copyright` de `encina-branding`.
-      *Enmienda del 2026-08-15, y son DOS cosas distintas:* **(a)** las dos filas
-      del fondo por defecto salen de la casilla —maestro propio de Jorge,
-      `EUPL-1.2` en el manifiesto y en `debian/copyright`, que es la primera de
-      las tres salidas—, así que quedan **cuatro**. **(b)** De las cuatro que
-      quedan resulta que **la premisa de esta casilla era falsa desde el
-      principio**: no es verdad que no haya escrito de dónde salieron.
-      `debian/copyright` las declara **desde el 2026-08-08** —Amanda Anusane,
-      Unsplash License, con su párrafo DEP-5 y su advertencia de que la Unsplash
-      License no cumple las DFSG— y `DIARIO.md` lo cuenta ese mismo día. Lo que
-      hay no es un agujero de licencia: es **el manifiesto desactualizado
-      respecto de lo que viaja dentro del `.deb`**. No se ha tocado aquí porque
-      la casilla es de Jorge y conviene mirar cuál de los dos manda antes de
-      copiar nada de uno a otro.
+- [x] **La licencia de las seis fotografías** — cerrada el 2026-08-15, y no como
+      se esperaba. *Lo que decía esta casilla:* que seis fotos viajaban dentro de
+      la ISO sin que estuviera escrito de dónde salieron ni con qué permiso, y
+      que era la casilla que bloquea publicar. **La premisa era falsa.**
+      `debian/copyright` de `encina-branding` las declara **desde el
+      2026-08-08** —Amanda Anusane, Unsplash License, párrafo DEP-5 propio con
+      el texto de la licencia transcrito— y `DIARIO.md` lo cuenta ese mismo día.
+      Lo que había no era un agujero de licencia sino
+      `design/fondos/manifiesto.tsv` **desactualizado respecto de lo que viaja
+      dentro del `.deb`**, diciendo `SIN DETERMINAR` durante seis días.
+      *Cómo se cierra:* Jorge decide el 2026-08-15 que **manda
+      `debian/copyright`** —es lo que viaja y lo que lee quien recibe el
+      paquete; el manifiesto es una copia de trabajo— y el manifiesto se cuadra
+      con él. Las seis filas tienen ya `licencia` y `origen`: `EUPL-1.2` para
+      los dos fondos propios de Jorge, Unsplash License para las cuatro fotos.
+      *Y lo que esto NO resuelve, dicho aquí para que no se pierda al ver la
+      casilla marcada:* la Unsplash License es permisiva pero **no es una
+      licencia libre al uso ni cumple las DFSG**, y prohíbe vender las imágenes
+      sin modificación significativa y compilar imágenes de Unsplash para
+      replicar un servicio similar. El razonamiento de por qué distribuirlas
+      como fondos de un sistema operativo no es ninguna de las dos está en
+      `debian/copyright`. Quien reutilice el paquete tiene que leerlo.
+      *Y el fleco que abre:* ninguna herramienta cuadra hoy el manifiesto contra
+      `debian/copyright`. Si vuelven a separarse, nadie se entera —que es
+      exactamente lo que pasó—. `design/generar.sh` lo dice en su cierre.
 
 - [ ] **La identidad, como decisión D en `ENCINA-OS.md`.** El texto ya está
       escrito en `design/identidad.md` y `design/paleta.md`; lo que falta es que

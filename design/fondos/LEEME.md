@@ -121,21 +121,36 @@ decisión de Jorge el mismo día: prefiere arreglar el maestro y no pagar franja
 en ninguna pantalla. Si algún día vuelve a hacer falta, está medido y es una
 palabra en el `gschema.override` y en `encina.xml`.
 
-## La licencia, que es el hueco que de verdad pesa
+## La licencia: manda `debian/copyright`
 
-**Las seis imágenes viajan dentro de la ISO sin que esté escrito con qué permiso
-se ceden.** Desde el 2026-08-15 hay una diferencia que conviene no confundir con
-tenerlo resuelto: del maestro nuevo **sí se sabe el origen** —lo aportó Jorge—,
-así que su columna `origen` ya no dice `SIN DETERMINAR`. La de `licencia` sí,
-y es la que bloquea: saber de quién es no es lo mismo que haber escrito bajo qué
-licencia se cede. **Es una línea, y la tiene que decir Jorge.**
+**Decidido por Jorge el 2026-08-15**, y es la regla que hay que recordar cuando
+esto se vuelva a mirar: la autoridad es
+[`debian/copyright`](../../debian-packages/encina-branding/debian/copyright), no
+este directorio. Es lo que **viaja** con el paquete y lo que lee quien lo recibe;
+`manifiesto.tsv` es una copia para trabajar. Si algún día dicen cosas distintas,
+el equivocado es el manifiesto.
 
-Este proyecto publica la oferta de fuente de AutoFirma con cuatro repositorios y
-sus etiquetas, y advierte de que el `.deb` no es el oficial. Aplicando ese mismo
-listón, seis fotografías sin licencia declarada son un agujero de la misma
-familia — y, a diferencia del de la orden, **este bloquea publicar**.
+Con esa regla, la columna `licencia` ya no tiene ningún `SIN DETERMINAR`:
 
-Está como primera casilla de
-[../../tareas/aspecto/0-decidir.md](../../tareas/aspecto/0-decidir.md). Las
-salidas son tres: que sean de Jorge y se declare bajo qué licencia se ceden, que
-sean de un banco con licencia libre y se cite, o que se sustituyan.
+| Fondos | Licencia | Origen |
+|---|---|---|
+| `encina.jpg`, `encina-dark.jpg` | `EUPL-1.2` | Jorge MB, 2026-08-15 |
+| `amapolas`, `farallon`, `olivar`, `sierra` | Unsplash License | Amanda Anusane, unsplash.com |
+
+**Y lo que este documento decía y era falso, dejado al lado en vez de borrado:**
+decía que «seis fotografías viajan dentro de la ISO sin que esté escrito de dónde
+salieron ni con qué permiso», y lo llamaba la casilla que bloquea publicar. No lo
+era. `debian/copyright` las declara **desde el 2026-08-08** —párrafo DEP-5 propio,
+con el texto de la Unsplash License transcrito y la fecha— y `DIARIO.md` lo cuenta
+ese mismo día. Lo que había no era un agujero de licencia: era **este fichero
+desactualizado respecto de lo que viaja dentro del `.deb`**. Se descubrió el
+2026-08-15 al separar los dos fondos propios del párrafo de Unsplash, y estuvo
+escrito aquí seis días diciendo lo contrario de lo que el paquete declaraba.
+
+*Lo que sigue siendo verdad y no conviene perder al rellenar una columna:* la
+Unsplash License **es permisiva pero no es una licencia libre al uso** ni cumple
+las DFSG. Prohíbe dos cosas —vender las imágenes sin modificación significativa, y
+compilar imágenes de Unsplash para replicar un servicio similar—, y el
+razonamiento de por qué distribuirlas como fondos de un sistema operativo no es
+ninguna de las dos está en `debian/copyright`, que es donde tiene que estar. Quien
+reutilice este paquete tiene que leerlo.

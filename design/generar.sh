@@ -163,9 +163,9 @@ fi
 paso "Lo que este guion NO ha comprobado"
 echo "  - Que los fondos se puedan REHACER. Cuatro no tienen orden escrita, y las"
 echo "    dos que sí la tienen este guion no las ejecuta: comprueba huellas."
-echo "  - La licencia de las cuatro fotografías de Unsplash: SIN DETERMINAR en el"
-echo "    manifiesto -aunque debian/copyright sí las declara: mirar cuál manda-,"
-echo "    y es casilla de bloqueo para publicar."
+echo "  - La licencia. Ya no hay ningún SIN DETERMINAR, pero este guion NO cuadra"
+echo "    el manifiesto contra debian/copyright, que es quien manda desde el"
+echo "    2026-08-15. Si se separan otra vez, aquí no se vería."
 echo "  - Nada de lo que se ve en pantalla. Eso son las capturas."
 
 resumen

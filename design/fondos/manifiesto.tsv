@@ -44,28 +44,31 @@
 # imagen -es otra escala-: ffmpeg mide el PNG en rango limitado y el JPEG en rango
 # completo. Comparar un PNG con un JPEG por este numero da un susto falso.
 #
-# ATENCION - EL HUECO QUE MAS PESA NO ES TECNICO:
-# la columna 'licencia' esta SIN DETERMINAR en las cuatro filas de Unsplash. Para
-# un proyecto que publica la oferta de fuente de AutoFirma con cuatro repositorios
-# y sus tags, esto es el mismo tipo de agujero. Es casilla de bloqueo para
-# publicar, no un fleco: ver tareas/aspecto/0-decidir.md
+# LA COLUMNA 'licencia' YA NO TIENE NINGUN 'SIN DETERMINAR', y no es que se haya
+# investigado hoy: es que MANDA debian/copyright, decidido por Jorge el 2026-08-15.
 #
-# Y OJO CON UNA CONTRADICCION QUE ESTE FICHERO ARRASTRA, vista el 2026-08-15 y NO
-# corregida aqui a proposito, porque la decision es de Jorge: debian/copyright del
-# paquete SI declara esas cuatro -Amanda Anusane, Unsplash License, con su parrafo
-# DEP-5 propio desde el 2026-08-08, y DIARIO.md lo cuenta-. O sea que 'SIN
-# DETERMINAR' en estas cuatro filas y lo que viaja dentro del .deb no dicen lo
-# mismo. Una de las dos esta desactualizada, y lo probable es que sea esta.
+# Este fichero decia 'SIN DETERMINAR' en seis filas y lo presentaba como la casilla
+# que bloquea publicar. Era falso desde el principio, y se vio al tocar los fondos:
+# debian/copyright del paquete DECLARA las cuatro de Unsplash desde el 2026-08-08
+# -Amanda Anusane, Unsplash License, con su parrafo DEP-5 propio- y DIARIO.md lo
+# cuenta ese mismo dia. O sea que no habia un agujero de licencia: habia un
+# manifiesto desactualizado respecto de lo que viaja dentro del .deb.
 #
-# Las dos filas del maestro propio si estan cuadradas con debian/copyright: EUPL-1.2
-# como el resto del paquete, que es la licencia de lo que hace Jorge. Puesta el
-# 2026-08-15 al separar esos dos ficheros del parrafo de Unsplash; si Jorge quiere
-# otra para las imagenes, se cambia aqui y en debian/copyright, que son dos sitios.
+# QUIEN MANDA, para que esto no se vuelva a separar: debian/copyright. Es lo que
+# VIAJA con el paquete y lo que lee quien lo recibe; este fichero es una copia para
+# trabajar. Si algun dia dicen cosas distintas, el equivocado es este.
+#
+# Y LO QUE LA UNSPLASH LICENSE NO ES, que va aqui porque es facil de olvidar al
+# leer solo esta columna: es permisiva pero NO es una licencia libre al uso ni
+# cumple las DFSG. Prohibe vender las imagenes sin modificacion significativa y
+# compilar imagenes de Unsplash para replicar un servicio similar. El razonamiento
+# de por que distribuirlas como fondos de un sistema operativo no es ninguna de las
+# dos esta escrito en debian/copyright, que es donde tiene que estar.
 #
 maestro	derivado	licencia	origen	sha256-maestro	sha256-derivado	orden
 encina-os-splash-light-4k.png	encina.jpg	EUPL-1.2	Jorge MB, 2026-08-15	1c71e048e25d4fb08b21853fc464d3a23ceebb9a3e1567e224f1561106f52504	ccd0be3973952d22c70e2fdc268230646ad9af44956f7b936733ecc145eb8e5c	ffmpeg -y -i maestros/encina-os-splash-light-4k.png -q:v 2 encina.jpg
 encina-os-splash-dark-4k.png	encina-dark.jpg	EUPL-1.2	Jorge MB, 2026-08-15	df04a275cb38c1b13d647a51e44a96d5508714ed2bd9d250e100e760436df1f0	494ff897edfe8db55aef55f7cf35b1d9b1355520eef67f5462d00e099bd817dd	ffmpeg -y -i maestros/encina-os-splash-dark-4k.png -q:v 2 encina-dark.jpg
-amapolas.jpg	amapolas.jpg	SIN DETERMINAR	SIN DETERMINAR	7245e2da1d0caf7f9f814cf2b352a478ff88c3f8222aa0c0be57c2daa4ab32bc	977346b421f680495846a3443497dbadfa016cbf99d1f7c7cd82dedfcceaa401	-
-farallon.jpg	farallon.jpg	SIN DETERMINAR	SIN DETERMINAR	be810ca789aae5c2b5708bb7fd1ce61438a5fef95da1097e4bef53bf8b38c5fa	4b89f2a05eed905fc7d565dc98a2f8e0b61f28c1fbf19e3b2629e3df46a582cc	-
-olivar.jpg	olivar.jpg	SIN DETERMINAR	SIN DETERMINAR	3c6998e14fc19f3c17b1775f8e1fa8dc73a0f9ed1ec15e4adb8868362a610fea	be6495737c0425120bcffbd608b246a9b0c4a170867709478a4f3383070ab4ca	-
-sierra.jpg	sierra.jpg	SIN DETERMINAR	SIN DETERMINAR	86eefebd291cafd412024af0df7cc8d77c572161e34e352436a68e3a8a016b43	13bb2da99052424d2470ddbc0c23ed953d891a520138f8ef5cde2a3d7a7bfd7d	-
+amapolas.jpg	amapolas.jpg	Unsplash License	Amanda Anusane, unsplash.com	7245e2da1d0caf7f9f814cf2b352a478ff88c3f8222aa0c0be57c2daa4ab32bc	977346b421f680495846a3443497dbadfa016cbf99d1f7c7cd82dedfcceaa401	-
+farallon.jpg	farallon.jpg	Unsplash License	Amanda Anusane, unsplash.com	be810ca789aae5c2b5708bb7fd1ce61438a5fef95da1097e4bef53bf8b38c5fa	4b89f2a05eed905fc7d565dc98a2f8e0b61f28c1fbf19e3b2629e3df46a582cc	-
+olivar.jpg	olivar.jpg	Unsplash License	Amanda Anusane, unsplash.com	3c6998e14fc19f3c17b1775f8e1fa8dc73a0f9ed1ec15e4adb8868362a610fea	be6495737c0425120bcffbd608b246a9b0c4a170867709478a4f3383070ab4ca	-
+sierra.jpg	sierra.jpg	Unsplash License	Amanda Anusane, unsplash.com	86eefebd291cafd412024af0df7cc8d77c572161e34e352436a68e3a8a016b43	13bb2da99052424d2470ddbc0c23ed953d891a520138f8ef5cde2a3d7a7bfd7d	-
