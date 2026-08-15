@@ -1,0 +1,74 @@
+# Este fichero existe para que el icono del Centro de aplicaciones deje de ser
+# la «A» naranja de Ubuntu. Es D21, decidida el 2026-08-15, y la medicion que
+# la sostiene es MEDICIONES.md 4.47.
+#
+# POR QUE NO SE ARREGLA DESDE EL TEMA DE ICONOS, que es lo que se intento
+# primero y es la via barata. Porque a este icono el tema NO LLEGA:
+#
+#     .desktop del snap  ->  Icon=/snap/snap-store/current/bin/data/…/app-center.png
+#
+# Eso no es un NOMBRE, es una RUTA ABSOLUTA. Gio devuelve un GFileIcon y no un
+# GThemedIcon, y el tema no interviene: medido con lookup_by_gicon a 48 px -el
+# tamano del dock- con el tema Encina y con Yaru-sage, y los dos dan el mismo
+# fichero del snap. No es que el nuestro no gane: es que no juega nadie.
+#
+# Y la ruta no la inventa snapd al generar el .desktop: la escribe el propio
+# snap en su meta/gui, identica en la revision 1271 -la de la maquina del
+# producto- y en la 1391. El fichero vive ademas en un squashfs de solo
+# lectura que se sustituye entero en cada autorrefresco, asi que tocarlo es
+# imposible incluso queriendo: 'touch' contesta «Sistema de archivos de solo
+# lectura», con el control de que el mismo touch en /tmp si se pudo.
+#
+# EL CRITERIO GENERAL QUE DEJA ESCRITO D21, y vale para el siguiente caso:
+# cuando el icono de una aplicacion ajena no es alcanzable desde el tema, se
+# sombrea su .desktop y NUNCA se toca el fichero ajeno.
+#
+# COMO SE ARREGLA. Este fichero tiene el mismo identificador que el del snap,
+# snap-store_snap-store.desktop, y vive en un directorio que va ANTES en
+# XDG_DATA_DIRS de la sesion:
+#
+#     /usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+#      ...                                                  ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+#      este                                                  gana        pierde
+#
+# Asi que sustituye al del snap sin tocarlo. Es exactamente el mecanismo de
+# encina-firefox-native con firefox_firefox.desktop (4.19), y R5 se respeta:
+# no se sobrescribe ningun fichero de ningun otro paquete.
+#
+# ---------------------------------------------------------------------------
+# EL PRECIO, DICHO ENTERO. El .desktop del snap trae 49 traducciones de Name=
+# y esta copia las congela: el dia que Canonical las cambie, no nos enteramos.
+# Se paga solo en parte, y por eso hay dos lineas de Name y no una:
+#
+#   - Name=App Center           es el nombre REAL del snap, en ingles. Quien
+#                               use el sistema en otro idioma ve el original,
+#                               no un nombre en espanol que no eligio.
+#   - Name[es]=Centro de …      la ISO fija locale=es_ES.UTF-8 (ENCINA-OS 7.7),
+#                               asi que este es el que se ve en el producto.
+#
+# Lo que se pierde son las otras 48 traducciones. Limite declarado, no defecto.
+#
+# TryExec hace que la entrada se ignore si la tienda no esta instalada: sin el,
+# quitar el snap dejaria un lanzador roto en la rejilla. Y el MimeType se copia
+# tal cual A PROPOSITO: el Centro de aplicaciones es el manejador de los .deb y
+# del esquema snap:, y una sombra sin esas dos lineas los dejaria sin manejador
+# sin que nadie lo notara hasta hacer doble clic en un .deb.
+#
+# El icono es encina-centro-aplicaciones y vive en hicolor/scalable/apps, no en
+# el tema Encina: ese nombre no lo declara ningun otro tema, asi que no hay a
+# quien ganarle, hicolor es el respaldo de todos los temas y el icono sobrevive
+# si alguien cambia el tema de iconos.
+[Desktop Entry]
+X-SnapInstanceName=snap-store
+Type=Application
+Version=1.0
+X-SnapAppName=snap-store
+Exec=/snap/bin/snap-store %U
+TryExec=/snap/bin/snap-store
+Icon=encina-centro-aplicaciones
+Terminal=false
+Categories=System;Utility;PackageManager;SoftwareManagement;Network;Settings;
+Keywords=Ubuntu;Applications;Apps;Store;Software;Snaps;
+MimeType=x-scheme-handler/snap;application/vnd.debian.binary-package;
+Name=App Center
+Name[es]=Centro de aplicaciones

@@ -6,8 +6,14 @@
   la red de confianza que hace posible una firma electronica.
 
   Reescrito el 2026-08-08 para que coincida con la identidad visual del banner
-  (assets/identidad.png). La version anterior era una hoja suelta y no se
+  (design/identidad.png). La version anterior era una hoja suelta y no se
   parecia a nada de lo demas.
+
+  La ruta decia 'assets/identidad.png' y ese directorio ya no existe. Se
+  corrige en 0.1.14 y no antes: tocar un solo byte de src/ cambia la huella
+  del .deb, y la huella esta anclada en imagen/repo-manifiesto.tsv, en el
+  H_BRANDING de encina-seed.sh y dentro de los dos autoinstall*.yaml. Por eso
+  el arreglo viaja montado en una vuelta que ya paga ese ritual, y no suelto.
 
   La copa es un racimo de circulos del MISMO color y sin borde: al solaparse se
   leen como una sola silueta lobulada, sin necesidad de un path complicado ni

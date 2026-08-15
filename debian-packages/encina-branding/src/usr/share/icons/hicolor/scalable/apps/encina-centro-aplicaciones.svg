@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Icono del Centro de aplicaciones. Activo propio (R8): ninguna marca de
+  terceros, y en particular ninguna de Canonical.
+
+  Lo pide la sombra de snap-store_snap-store.desktop que instala este mismo
+  paquete (D21). Alli esta escrito por que ese icono no se puede cambiar desde
+  el tema y hay que sombrear el .desktop.
+
+  POR QUE VIVE EN hicolor Y NO EN EL TEMA Encina. 4.47(c) midio que para
+  GANARLE a un icono del padre hace falta declararlo en el tema, con su
+  directorio de apps en el index.theme. Aqui no hay a quien ganarle: el nombre
+  'encina-centro-aplicaciones' no lo declara ningun otro tema. hicolor es el
+  ultimo de la cadena y por eso mismo es el respaldo de TODOS los temas, asi
+  que el icono sigue saliendo aunque alguien cambie el tema de iconos. Es
+  donde ya vive encina-logo.svg, y no hay que tocar el index.theme.
+
+  EL DIBUJO, y lo que se descarto por medirlo mirandolo. La primera tanda
+  ponia la copa de la encina dentro de una bolsa de asa estrecha y alta: a 48
+  px -el tamano del dock, dash-max-icon-size 48- las tres variantes se leian
+  como un CANDADO, no como una tienda. El asa se ensancho y se bajo, y el
+  contenido pasó a ser una rejilla de cuatro aplicaciones, que es lo que dice
+  «aqui se instalan cosas» sin necesidad de reconocer nada.
+  La bellota NO se usa aqui a proposito: es lo que lleva el boton de la
+  rejilla desde 0.1.9 y los dos iconos estan en el mismo dock.
+
+  Colores de design/paleta.tsv, los tres VIGENTE: la placa es un degradado de
+  acento #3A664E a acento-profundo #2F4033, y el cuerpo de la bolsa arcilla
+  #D6BFA0. Ninguno de los ocho colores en PROPUESTO interviene: son colores de
+  mensajes de estado y un icono no los usa.
+
+  Los cuatro cuadrados NO van centrados en el cuerpo: van subidos. En el
+  primer dibujo la fila de abajo llegaba a la base de la bolsa y la tocaba
+  -[OJOS] de Jorge, 2026-08-15-, asi que el bloque se subio 2.8 unidades. Se
+  probaron dos tamanos con el mismo desplazamiento, 6.9 y 7.4; se eligio el de
+  7.4, que es el que se lee a 48 px.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="placa" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A664E"/>
+      <stop offset="1" stop-color="#2F4033"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="44" height="44" rx="11" fill="url(#placa)"/>
+
+  <!-- Asa: ancha y baja. Estrecha y alta se lee como un candado. -->
+  <path d="M14 20v-1.5a10 10 0 0 1 20 0V20" fill="none" stroke="#D6BFA0"
+        stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Cuerpo de la bolsa -->
+  <path d="M9 20h30l1.1 17.5a2.5 2.5 0 0 1-2.5 2.7H10.4a2.5 2.5 0 0 1-2.5-2.7Z"
+        fill="#D6BFA0"/>
+
+  <!-- Cuatro aplicaciones dentro -->
+  <g fill="#2F4033">
+    <rect x="16.0" y="22.6" width="7.4" height="7.4" rx="2"/>
+    <rect x="24.6" y="22.6" width="7.4" height="7.4" rx="2"/>
+    <rect x="16.0" y="31.2" width="7.4" height="7.4" rx="2"/>
+    <rect x="24.6" y="31.2" width="7.4" height="7.4" rx="2"/>
+  </g>
+</svg>

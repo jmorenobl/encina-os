@@ -9,13 +9,39 @@
 #
 # A diferencia del campo LOGO de os-release, que espera un NOMBRE de icono,
 # aqui 'logo' si acepta una ruta absoluta.
+#
+# ---------------------------------------------------------------------------
+# LO QUE ESTE FICHERO TENIA HASTA 0.1.13 Y SE QUITO EN 0.1.14, medido y no
+# supuesto (design/capturas/antes/03-gdm.png, 2026-08-14):
+#
+#     banner-message-enable=true
+#     banner-message-text='Encina OS'
+#
+#     [org/gnome/desktop/background]
+#     picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
+#     picture-options='zoom'
+#
+# Ninguna de las dos cosas hacia NADA. El fondo del saludador es un negro liso
+# -no encina-dark.jpg- y el rotulo 'Encina OS' no sale por ningun sitio.
+#
+# Y NO ES QUE LA FONTANERIA FALLE, que es lo primero que se sospecha: 'logo'
+# vive en ESTA MISMA seccion, en este mismo fichero, y SI funciona -el
+# logotipo de la encina se lee abajo en esa captura-. O sea que el perfil se
+# lee, la base de datos se compila y 'dconf update' corre. Ese es el control.
+#
+# LO QUE SIGUE SIN MEDIRSE, y se dice en vez de callarse: POR QUE no hacen
+# nada, ni en un caso ni en el otro. Se quitan porque no producen efecto, no
+# porque se sepa la causa. La sospecha razonable para el fondo es que el
+# aspecto del saludador lo pinta el tema del shell desde
+# gnome-shell-theme.gresource, que es propiedad de gnome-shell y no se toca
+# (R5); para el rotulo no hay ni sospecha medida.
+#
+# Se quitan y no se dejan comentadas dentro de la seccion porque una clave
+# puesta que no surte efecto es de la familia del [OK] que describe lo que se
+# pidio y no lo que paso: hace creer que la pantalla de inicio de sesion dice
+# 'Encina OS' cuando no lo dice.
+# ---------------------------------------------------------------------------
 
 [org/gnome/login-screen]
 logo='/usr/share/backgrounds/encina/logo.png'
-banner-message-enable=true
-banner-message-text='Encina OS'
 disable-user-list=false
-
-[org/gnome/desktop/background]
-picture-uri='file:///usr/share/backgrounds/encina/encina-dark.jpg'
-picture-options='zoom'

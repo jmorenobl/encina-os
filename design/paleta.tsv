@@ -25,11 +25,11 @@
 # aviso en su fila, y lo resuelve 'correcto-oscuro' cuando el papel es semantico.
 #
 papel	nombre	hex	estado	contraste_claro	contraste_oscuro	donde se usa hoy
-acento	verde encina	#3A664E	VIGENTE	6.11	1.68	logotipo (copa, tronco), README (insignia de licencia) -- NO se lee sobre acento-profundo
-acento-profundo	verde profundo	#2F4033	VIGENTE	-	-	primary-color y secondary-color de los fondos, gschema.override
+acento	verde encina	#3A664E	VIGENTE	6.11	1.68	logotipo (copa, tronco), icono del Centro de aplicaciones (placa), README (insignia de licencia) -- NO se lee sobre acento-profundo
+acento-profundo	verde profundo	#2F4033	VIGENTE	-	-	primary-color y secondary-color de los fondos, gschema.override, icono del Centro de aplicaciones (placa y las cuatro aplicaciones)
 acento-claro	verde hoja	#5B7553	VIGENTE	4.74	2.16	extremo claro del degradado de 02-activos.sh
 tierra	tierra ibera	#A78B75	VIGENTE	2.96	3.47	README (insignias de base y arquitectura)
-arcilla	arcilla	#D6BFA0	VIGENTE	1.65	6.21	logotipo (malla y nodos), README (insignia de imagen)
+arcilla	arcilla	#D6BFA0	VIGENTE	1.65	6.21	logotipo (malla y nodos), icono del Centro de aplicaciones (cuerpo de la bolsa), README (insignia de imagen)
 neutro	gris pizarra	#E6E8E6	VIGENTE	1.14	8.96	identidad.png, sin uso en el sistema
 papel	blanco roto	#F5F7F4	PROPUESTO	1.00	10.25	el fondo de una ventana clara -- 1.14 contra el neutro, no 1.23 como el blanco puro
 texto-claro	tinta encina	#1C231E	PROPUESTO	14.90	-	texto oscuro sobre papel claro

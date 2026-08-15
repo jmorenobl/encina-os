@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3A664E"/><stop offset="1" stop-color="#2F4033"/></linearGradient></defs>
+  <rect x="2" y="2" width="44" height="44" rx="11" fill="url(#f)"/>
+  <!-- Dos asas de bolsa de papel: dos huecos pequenos, no uno central -->
+  <g fill="none" stroke="#D6BFA0" stroke-width="2.2" stroke-linecap="round">
+    <path d="M16.4 17.5v-1.6a3.4 3.4 0 0 1 6.8 0v1.6"/>
+    <path d="M24.8 17.5v-1.6a3.4 3.4 0 0 1 6.8 0v1.6"/>
+  </g>
+  <path d="M8.5 17.5h31l1.3 19.6a2.6 2.6 0 0 1-2.6 2.8H9.8a2.6 2.6 0 0 1-2.6-2.8Z" fill="#D6BFA0"/>
+  <path d="M8.5 17.5h31l.25 3.6H8.25Z" fill="#A78B75"/>
+  <g fill="#2F4033">
+    <rect x="14.2" y="24.6" width="7.6" height="7.6" rx="2"/>
+    <rect x="24.6" y="24.6" width="7.6" height="7.6" rx="2"/>
+    <rect x="14.2" y="33.6" width="7.6" height="7.6" rx="2"/>
+    <rect x="24.6" y="33.6" width="7.6" height="7.6" rx="2"/>
+  </g>
+</svg>

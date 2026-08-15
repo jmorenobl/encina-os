@@ -40,6 +40,10 @@ PKG="$(PKG_DIR)"
 FONDOS_PKG="$PKG/src/usr/share/backgrounds/encina"
 SVG_PKG="$PKG/src/usr/share/icons/hicolor/scalable/apps/encina-logo.svg"
 SVG_MAESTRO="$DISENO/logotipo/encina.svg"
+# El icono del Centro de aplicaciones (D21, 0.1.14). Mismo trato que el
+# logotipo: el maestro manda y lo que viaja es una copia idéntica.
+TIENDA_PKG="$PKG/src/usr/share/icons/hicolor/scalable/apps/encina-centro-aplicaciones.svg"
+TIENDA_MAESTRO="$DISENO/iconos/encina-centro-aplicaciones.svg"
 MANIFIESTO="$DISENO/fondos/manifiesto.tsv"
 PALETA="$DISENO/paleta.tsv"
 
@@ -56,23 +60,30 @@ titulo "Diseño: comprobación de lo que viaja"
 # --------------------------------------------------------------- logotipo ---
 paso "Logotipo"
 
-comprobar_fichero "el maestro existe: design/logotipo/encina.svg" "$SVG_MAESTRO"
-comprobar_fichero "el derivado existe en el paquete" "$SVG_PKG"
-
-if [[ -f "$SVG_MAESTRO" && -f "$SVG_PKG" ]]; then
-    if cmp -s "$SVG_MAESTRO" "$SVG_PKG"; then
-        ok "el SVG del paquete es idéntico al maestro"
+# Un maestro de design/ y su copia en el paquete. Lo que viaja NO se edita a
+# mano (design/LEEME.md): si los dos difieren, o falta un --escribir o alguien
+# tocó el derivado, y las dos cosas se dicen distinto.
+cotejar_maestro() {
+    local que="$1" maestro="$2" copia="$3"
+    comprobar_fichero "el maestro existe: ${maestro#$RAIZ/}" "$maestro"
+    comprobar_fichero "el derivado de $que existe en el paquete" "$copia"
+    [[ -f "$maestro" && -f "$copia" ]] || return 0
+    if cmp -s "$maestro" "$copia"; then
+        ok "$que: el SVG del paquete es idéntico al maestro"
     elif (( ESCRIBIR == 1 )); then
-        cp "$SVG_MAESTRO" "$SVG_PKG"
-        ok "SVG copiado al paquete desde el maestro"
+        cp "$maestro" "$copia"
+        ok "$que: SVG copiado al paquete desde el maestro"
     else
-        fallo "el SVG del paquete NO es el maestro" \
-"maestro:  $(huella "$SVG_MAESTRO")
-paquete:  $(huella "$SVG_PKG")
+        fallo "$que: el SVG del paquete NO es el maestro" \
+"maestro:  $(huella "$maestro")
+paquete:  $(huella "$copia")
 Si el bueno es el maestro:  ./design/generar.sh --escribir
 Si el bueno es el del paquete, cópialo tú a design/ y averigua quién lo tocó."
     fi
-fi
+}
+
+cotejar_maestro "logotipo" "$SVG_MAESTRO" "$SVG_PKG"
+cotejar_maestro "Centro de aplicaciones" "$TIENDA_MAESTRO" "$TIENDA_PKG"
 
 # --------------------------------------------------------- paleta y copias --
 # Un hex escrito en dos sitios es un hex que algún día dirá dos cosas. Esto
@@ -90,6 +101,17 @@ comprobar_salida "la arcilla $ARCILLA está en el logotipo" "$ARCILLA" \
     grep -io "$ARCILLA" "$SVG_MAESTRO"
 comprobar_salida "el verde profundo $PROFUNDO está en el gschema.override" "$PROFUNDO" \
     grep -io "$PROFUNDO" "$GSCHEMA"
+
+# El icono del Centro de aplicaciones usa TRES papeles, y los tres están en
+# VIGENTE: la placa va de acento a acento-profundo y el cuerpo es arcilla.
+# Ninguno de los ocho colores en PROPUESTO interviene: son de mensajes de
+# estado, y un icono no los usa.
+comprobar_salida "el acento $ACENTO está en el icono del Centro de aplicaciones" "$ACENTO" \
+    grep -io "$ACENTO" "$TIENDA_MAESTRO"
+comprobar_salida "el verde profundo $PROFUNDO está en el icono del Centro de aplicaciones" "$PROFUNDO" \
+    grep -io "$PROFUNDO" "$TIENDA_MAESTRO"
+comprobar_salida "la arcilla $ARCILLA está en el icono del Centro de aplicaciones" "$ARCILLA" \
+    grep -io "$ARCILLA" "$TIENDA_MAESTRO"
 
 # ----------------------------------------------------------------- fondos ---
 paso "Fondos, contra design/fondos/manifiesto.tsv"

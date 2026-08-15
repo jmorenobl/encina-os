@@ -1,3 +1,48 @@
+encina-branding (0.1.14) noble; urgency=medium
+
+  * EL CENTRO DE APLICACIONES DEJA DE SER LA A NARANJA DE UBUNTU, y no
+    por el tema de iconos sino sombreando su .desktop: es D21. A ese
+    icono el tema NO LLEGA -su .desktop declara una RUTA ABSOLUTA dentro
+    del snap y no un nombre, asi que Gio devuelve un GFileIcon y no
+    interviene ningun tema, ni el nuestro ni el de Ubuntu, medido a 48
+    px con los dos-. Este paquete instala snap-store_snap-store.desktop
+    en /usr/share/applications, que gana por precedencia de
+    XDG_DATA_DIRS sin tocar el fichero ajeno: el mismo mecanismo que
+    encina-firefox-native con Firefox, y R5 intacta.
+  * El icono es propio (R8) y vive en hicolor/scalable/apps, no en el
+    tema Encina: ese nombre no lo declara ningun otro tema, asi que no
+    hay a quien ganarle, hicolor es el respaldo de todos los temas y el
+    icono sobrevive si alguien cambia el tema de iconos.
+  * Del dibujo, lo que solo se sabe mirandolo: las tres primeras
+    variantes ponian la copa de la encina en una bolsa de asa estrecha y
+    alta, y a 48 px -el tamano del dock- se leian como un CANDADO. El
+    asa se ensancho y se bajo, y dentro va una rejilla de cuatro
+    aplicaciones. La bellota no se usa aqui a proposito: es la del boton
+    de la rejilla y los dos iconos viven en el mismo dock.
+  * La sombra congela las 49 traducciones del Name= del snap, y ese
+    precio se paga solo a medias: van dos lineas, Name=App Center -el
+    nombre real, para quien use otro idioma- y Name[es]=Centro de
+    aplicaciones, que es el que se ve porque la ISO fija
+    locale=es_ES.UTF-8. El MimeType se copia tal cual a proposito: sin
+    el, los .deb y el esquema snap: se quedarian sin manejador sin que
+    nadie lo notara.
+  * GDM PIERDE DOS AJUSTES QUE NO HACIAN NADA, medidos el 2026-08-14: el
+    fondo del saludador -que es un negro liso y no encina-dark.jpg- y
+    banner-message-text=Encina OS, que no aparece por ningun sitio. Y no
+    es que la fontaneria falle: logo vive en la MISMA seccion del MISMO
+    fichero y SI funciona, o sea que el perfil se lee y dconf update
+    corre. Ese es el control. Por que no hacen nada sigue sin medirse, y
+    se dice al lado en vez de callarse.
+  * El comentario de encina-logo.svg apuntaba a assets/identidad.png, un
+    directorio que ya no existe. Se corrige aqui y no antes porque tocar
+    un byte de src/ cambia la huella del .deb, y esa huella esta anclada
+    en tres sitios mas.
+  * Y design/generar.sh coteja ya el icono nuevo contra su maestro y sus
+    tres colores contra paleta.tsv, con su rojo probado: una copia
+    tocada y un hex cambiado dan FALLO.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 15 Aug 2026 12:23:54 +0200
+
 encina-branding (0.1.13) noble; urgency=medium
 
   * LA MARCA DEL FONDO, DENTRO DE LA ZONA SEGURA. Con picture-options en
