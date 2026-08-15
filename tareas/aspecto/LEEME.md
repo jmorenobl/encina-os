@@ -112,6 +112,36 @@ se movió al 1, que es donde nace el instrumento que lo prueba.
 | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) | Plymouth, GDM, GRUB |
 | [5-cierre.md](5-cierre.md) | Que el verificador lo mire, y que la ISO siga saliendo igual |
 
+## La vuelta de `encina-branding`, y por qué se da UNA y no cinco
+
+**Escrito el 2026-08-15, al contestar la pregunta de los iconos (§4.47).** Tocar
+`encina-branding` no cuesta un `.deb`: cuesta el **ritual de las siete cosas** de
+`SCRIPTS.md` —huella nueva, `imagen/repo-manifiesto.tsv`, el `H_BRANDING` de
+`encina-seed.sh` y los **dos** `autoinstall*.yaml`, que no se tocan a mano—. Ese
+precio es **por vuelta y no por cambio**, que es el mismo argumento con el que
+ENCINA-OS §7 metió todo E4 en una sola vuelta. Y hay una razón de hoy: **el
+ritual está a medias** — los dos YAML siguen con la huella vieja (§4.46), así que
+la vuelta que se dé los arregla de paso.
+
+Lo que esa vuelta tendría que llevar dentro, con lo decidido y lo no decidido
+separados:
+
+| Qué | Dónde está escrito | Estado |
+|---|---|---|
+| El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **Espera exactamente esto**: se revirtió a propósito para no cambiar la huella suelta |
+| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md) | **PROPUESTO, sin decidir.** Seis líneas, con `TryExec=` |
+| El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | Medido que no hace nada: **se quita o se documenta** |
+| El `banner-message-text='Encina OS'`, que no aparece | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (b) | Igual que el anterior |
+| Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Aprobados pero **PROPUESTO**, no VIGENTE: no se han aplicado a ningún paquete |
+
+**Y dos que hay que releer antes, porque `D20` pudo dejarlas sin objeto:** el
+tema del shell de [3-tema-e-iconos.md](3-tema-e-iconos.md) —que pedía la
+extensión `user-theme` por dconf para un tema propio que ya no va a existir— y
+el «?» de la Ayuda, **decidido el 2026-08-15: se queda como está**.
+
+**Lo que NO va en esa vuelta**, aunque lo parezca: el límite de libadwaita y la
+decisión de GRUB, que se cierran **escribiendo** y no empaquetando.
+
 ## Lo que este bloque NO hace
 
 - **El medio y el instalador.** Es [../marca-del-medio.md](../marca-del-medio.md).

@@ -59,6 +59,51 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       *Y ahí hay una pregunta que hay que contestar antes de tocar nada, porque
       decide si esto es barato o roza R5:* sustituir el icono de una aplicación
       ajena desde el tema `Encina` **¿es declarar lo nuestro o pisar lo suyo?**
+      **CONTESTADA MIDIENDO EL 2026-08-15 (§4.47), y era DOS preguntas: los dos
+      iconos que quedaban no son el mismo caso.**
+      *(1) El «?» de la Ayuda: es declarar lo nuestro, y no de milagro.* Su
+      `.desktop` pide un **nombre** (`org.gnome.Yelp`), un tema que lo sirve no
+      toca ningún fichero ajeno —R5 va de sobrescribir, y aquí no se sobrescribe
+      nada—, y **no es una excepción que nos inventemos: el propio Ubuntu lo hace
+      62 veces de 71**. Medido además que un tema hijo con un directorio de `apps`
+      gana **a 48 px** para lo que declara y deja intacto todo lo demás, lo cual
+      cierra de paso el hueco de §4.43h —aquello se había preguntado a 16 px—.
+      *(2) La «A» naranja del Centro de aplicaciones: ni una cosa ni la otra,
+      porque no hay por dónde.* Su `.desktop` **no pide un nombre: pide una ruta
+      absoluta dentro del snap**, escrita por el propio snap en su `meta/gui` e
+      idéntica en la revisión del producto (1271) y en la del banco (1391). El
+      tema **no interviene** —ni el nuestro ni el de Ubuntu, con el control de que
+      la misma función da el mismo fichero con los dos—, y el fichero vive en un
+      squashfs de solo lectura que se sustituye entero en cada autorrefresco.
+      *La única vía que existe para ésa, medida:* **sombrear el `.desktop`** en
+      `/usr/share/applications`, que es lo que ya hace `encina-firefox-native`
+      (§4.19). Y su precio, entero: congela las **55 traducciones** del `Name=` y
+      las acciones del snap.
+      *Y un dato que decide si el «?» compra algo:* lo que abre es `ubuntu-docs`,
+      titulado **«Guía del escritorio de Ubuntu»**. Repintar el icono deja un
+      icono de Encina delante de un documento que sigue diciendo Ubuntu.
+      **LO QUE QUEDA DE ESTA CASILLA YA NO ES MEDIR: ES DECIDIR**, y es de Jorge.
+      *El «?»: DECIDIDO EL 2026-08-15 — se queda como está.* El «?» azul de Yaru
+      no lleva marca de Ubuntu; lo que dice Ubuntu está **detrás** del icono, y
+      repintarlo compra casi nada. Si algún día se reabre, lo que hace falta está
+      medido: un SVG en `scalable/apps` con el nombre `org.gnome.Yelp` y un
+      directorio nuevo en el `index.theme`.
+      *La «A»: PROPUESTO el 2026-08-15, SIN DECIDIR.* La propuesta es **sombrear
+      el `.desktop`, pero montado en la siguiente versión de `encina-branding`
+      que otra casilla ya tenga que pagar** —no en una suya—, porque el precio de
+      tocar ese paquete no es el `.deb`: es el ritual de las siete cosas de
+      `SCRIPTS.md`, que se paga **por vuelta y no por cambio** (el argumento de
+      ENCINA-OS §7 para E4) y que **ahora mismo está a medias**: los dos
+      `autoinstall*.yaml` siguen con la huella vieja.
+      *Y dos correcciones al precio que se escribió arriba, medidas y no
+      supuestas:* **las 55 traducciones no hay que copiarlas** —la ISO fija
+      `locale=es_ES.UTF-8` (ENCINA-OS §7.7), así que basta `Name=Centro de
+      aplicaciones` y la sombra se queda en seis líneas, como la de Firefox—, y
+      **falta `TryExec=/snap/bin/snap-store`** o quitar la tienda deja un lanzador
+      roto en la rejilla. Límite a declarar: quien cambie el idioma del sistema
+      verá ese nombre en español.
+      *Y una condición previa que no es de empaquetado:* **el icono no existe**, y
+      dibujarlo con la paleta en PROPUESTO es trabajo que puede haber que rehacer.
 
 - [x] ~~**El logotipo de la rejilla, que sigue abierta desde el bloque 1.**~~
       **CERRADA el 2026-08-14, y estaba mal leída desde el principio: el botón
