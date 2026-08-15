@@ -1,23 +1,37 @@
 # 3 — El tema y los iconos
 
-**No se abre hasta que [2-golpes-baratos.md](2-golpes-baratos.md) haya contestado
+~~**No se abre hasta que [2-golpes-baratos.md](2-golpes-baratos.md) haya contestado
 cuánto queda por cambiar.** Si la respuesta es «poco», de este fichero sólo se
-hacen los iconos y el límite declarado.
+hacen los iconos y el límite declarado.~~
 
-- [ ] **El tema base, empaquetado como `encina-theme`** desde fuente anclada por
-      commit y `sha256`, con su `debian/copyright`. No entra por una vía distinta
-      a la de los otros 28: entra como paquete, con manifiesto y con huella.
-      *Hecha cuando:* se construye desde el clon, `lintian` no dice una línea, y
-      **dos pasadas dan la misma huella**. Es el estándar que ya rige, no uno
-      nuevo — y ojo con lo que costó descubrirlo: `dpkg-deb` deja pasar los mtimes
-      **anteriores** a `SOURCE_DATE_EPOCH`, así que la fecha que un fichero tenga
-      en el disco viaja dentro del `.deb` y no está en git.
+**ABIERTO EL 2026-08-15, Y LA RESPUESTA FUE «POCO».** El hito de
+[2-golpes-baratos.md](2-golpes-baratos.md) está escrito: de todo lo que sigue
+siendo de Ubuntu, **lo único que arreglaría un tema es el acento** — y `D20`
+decidió no forkear, así que **este fichero se queda en los iconos, el tema del
+shell y el límite declarado**, tal como la condición de arriba anticipaba.
 
-- [ ] **Aplicado por `gschema.override`, con su sección `:ubuntu`.** La trampa
-      está explicada en [2-golpes-baratos.md](2-golpes-baratos.md) y dentro del
-      propio fichero de overrides.
-      *Hecha cuando:* medido con `XDG_CURRENT_DESKTOP=ubuntu:GNOME` **y** visto en
-      pantalla. Lo primero solo no demuestra nada.
+- [x] ~~**El tema base, empaquetado como `encina-theme`**~~ **CERRADA SIN OBJETO
+      el 2026-08-15: `D20` dice que no se forkea Yaru y no hay tema base propio**,
+      así que no hay nada que empaquetar, ni fuente que anclar, ni huella que
+      medir. Se cierra porque su condición desapareció, **no porque se haya
+      construido nada** — si `D20` se reabre, esta casilla vuelve entera.
+      *Lo que decía, y su aviso sigue valiendo para cualquier paquete futuro:*
+      entraba «desde fuente anclada por commit y `sha256`, con su
+      `debian/copyright`», no por una vía distinta a la de los otros 28. Y el
+      aviso: `dpkg-deb` deja pasar los mtimes **anteriores** a
+      `SOURCE_DATE_EPOCH`, así que la fecha que un fichero tenga en el disco viaja
+      dentro del `.deb` y no está en git — que es exactamente lo que volvió a
+      morder el 2026-08-15 con 0.1.13 (§4.46).
+
+- [x] ~~**Aplicado por `gschema.override`, con su sección `:ubuntu`.**~~ **HECHA
+      el 2026-08-14 en `encina-branding` 0.1.10**, aunque para el tema prestado y
+      no para uno propio: `gtk-theme='Yaru-sage'` con su sección `:ubuntu`, y el
+      tema de iconos `Encina` heredando `Yaru-sage,Yaru,hicolor`.
+      *Su «hecha cuando» pedía las dos cosas y las dos están:* medido con
+      `XDG_CURRENT_DESKTOP` —la trampa de la variante `:ubuntu` se conocía de
+      antemano y por eso se escribió la sección— **y visto en pantalla**, en
+      `../../design/capturas/acento/archivos-sage.png` contra
+      `../../design/capturas/antes/06-archivos-gtk4.png`.
 
 - [ ] **El tema del shell**, que no se aplica con un `gsettings` a secas: hace
       falta la extensión `user-theme` **habilitada por dconf** — nunca por
@@ -27,12 +41,24 @@ hacen los iconos y el límite declarado.
       usuario **creado después de instalar** la ve igual. Ese segundo control es
       el que distingue un override de un `/etc/skel` disfrazado.
 
-- [ ] **Los iconos.** El tema `Encina` ya existe, hereda de Yaru y no pisa nada
-      (R5). Aquí cambia de padre si el tema base trae iconos, y añade lo propio:
-      **las carpetas** —que es lo que más se ve— y la rejilla.
+- [ ] **Los iconos. ES LA CASILLA VIVA DE ESTE FICHERO desde el 2026-08-15.** El
+      tema `Encina` ya existe, hereda de Yaru y no pisa nada (R5). Aquí cambia de
+      padre si el tema base trae iconos, y añade lo propio: **las carpetas** —que
+      es lo que más se ve— y la rejilla.
       *Hecha cuando:* `folder` resuelve al nuestro **y otro icono cualquiera sigue
       saliendo del padre** — el control que ya se usó en §4.43d, y que es lo único
       que demuestra que se sustituye lo declarado y nada más.
+      **Enmienda del 2026-08-15, y recorta la casilla a la mitad:** *las carpetas
+      ya salen verdes y no hay que enviar ni un icono* — las trae `Yaru-sage` por
+      herencia, medido en `../../design/capturas/acento/archivos-sage.png`, y la
+      rejilla lleva la bellota desde 0.1.9 (casilla de abajo, cerrada el 14). Así
+      que lo que queda **no son las carpetas: son los iconos de aplicación del
+      dock** —la «A» naranja del Centro de aplicaciones y el «?» de ayuda—, que
+      es lo más visible que sigue diciendo Ubuntu en el escritorio y que **ningún
+      tema de iconos hereda**, porque son iconos que trae cada aplicación.
+      *Y ahí hay una pregunta que hay que contestar antes de tocar nada, porque
+      decide si esto es barato o roza R5:* sustituir el icono de una aplicación
+      ajena desde el tema `Encina` **¿es declarar lo nuestro o pisar lo suyo?**
 
 - [x] ~~**El logotipo de la rejilla, que sigue abierta desde el bloque 1.**~~
       **CERRADA el 2026-08-14, y estaba mal leída desde el principio: el botón
@@ -62,6 +88,14 @@ hacen los iconos y el límite declarado.
       cambiaría el color de esas carpetas es **el acento**. Es un argumento más
       para no comprar tema hasta medir
       [2-golpes-baratos.md](2-golpes-baratos.md).
+      *Segundo dato, del 2026-08-14, y corrige la premisa de esta casilla:* **el
+      acento SÍ alcanza libadwaita.** Cada variante `Yaru-<acento>` trae su propia
+      `gtk-4.0/gtk.css`, y con `Yaru-sage` puesto **el botón «Siguiente» de la
+      bienvenida deja de ser naranja** —y esa ventana es GTK4/libadwaita—. O sea
+      que el límite no es «libadwaita ignora el tema», sino el más estrecho
+      **«libadwaita ignora el tema GTK3, pero no el acento»**. La casilla sigue
+      abierta porque lo que falta es **escribirlo con la forma de D9**, no
+      medirlo.
       *Hecha cuando:* la captura 6 —GTK4 y GTK3 lado a lado— está tomada con el
       tema puesto, y está escrito **qué no cambia y por qué**. No es un defecto:
       es un límite, y en este proyecto los límites se escriben con la forma de D9,

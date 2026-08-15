@@ -16,7 +16,7 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 | Bloque | Qué | Abiertas |
 |---|---|---|
-| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **23** — y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) cerrado entero, 5 de 5, con su hito escrito |
+| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **18** — con [0-decidir.md](tareas/aspecto/0-decidir.md) y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) **cerrados enteros, 5 de 5 cada uno**. Lo vivo es [3-tema-e-iconos.md](tareas/aspecto/3-tema-e-iconos.md), y dentro de él **los iconos del dock** |
 | [marca-del-medio.md](tareas/marca-del-medio.md) | Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar | 5 |
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |

@@ -42,7 +42,13 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       están `PROPUESTO`, y que el acento **no se lee** sobre el fondo oscuro de la
       propia marca (1,68). Las tres siguen aquí abajo.
 
-- [ ] **Los colores que faltan: error, aviso, correcto y el texto.** Cinco
+- [x] ~~**Los colores que faltan: error, aviso, correcto y el texto.**~~
+      **CERRADA el 2026-08-15: Jorge aprueba los ocho.** Siguen en
+      `design/paleta.tsv` como **`PROPUESTO` y no `VIGENTE`**, y eso no es una
+      reserva: `VIGENTE` significa «medido en el producto», y estos no se han
+      aplicado a ningún paquete todavía. Se vuelven `VIGENTE` cuando entren en
+      una versión de `encina-branding` y se vean en pantalla.
+      *El texto original de la casilla, que es contra lo que se cerró:* Cinco
       colores de marca sirven para un banner; un sistema operativo necesita más.
       El de **error** es el que más falta hace y el que ninguna paleta de marca
       trae, porque en un banner no hay errores y en este producto sí: un
@@ -73,7 +79,14 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       **no se había medido nunca**. Dónde el papel sea identidad —el logotipo
       sobre fondo oscuro— hay que decidir qué se hace, y está **sin decidir**.
 
-- [ ] **El tema base, elegido, anclado y con la licencia leída.** WhiteSur está
+- [x] ~~**El tema base, elegido, anclado y con la licencia leída.**~~ **CERRADA
+      el 2026-08-15: no hay tema base propio y no se forkea Yaru — es `D20`.** El
+      «qué tema, anclado a qué versión, con qué licencia y por qué no los otros»
+      que pedía se contesta así: **ninguno**; se usa `Yaru-sage`, que ya viaja en
+      Ubuntu dentro de `yaru-theme-gtk` y `yaru-theme-icon`, así que no hay
+      versión que anclar ni licencia nueva que leer. El razonamiento completo
+      está abajo, en el bloque que empieza «DESBLOQUEADA EL 2026-08-15».
+      *El texto original, que es contra lo que se cerró:* WhiteSur está
       descartado por R8 y el motivo está en [LEEME.md](LEEME.md).
       **Y desde el 2026-08-14 el candidato no es ninguno de los de fuera: es
       FORKEAR YARU**, preguntado por Jorge y contestado con la medición del mismo
@@ -114,7 +127,29 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       que se ve más pero tampoco es el de la marca. **Ya no es una decisión a
       ciegas, que era lo que el aplazamiento protegía.**
 
-- [ ] **Si hay fork de Yaru: dónde vive, y cómo no lo pisa un `apt upgrade`.**
+      **TOMADA: (b), `sage`. Decisión de Jorge, 2026-08-15, y el motivo es la
+      agilidad**, dicho tal cual y no disfrazado de criterio técnico. Queda como
+      **`D20`** en `ENCINA-OS.md` §2, con lo que cuesta escrito —hoy el producto
+      **no tiene su acento**, tiene uno prestado que pasa por gris— y con **qué
+      la reabriría**: que Ubuntu abra el acento a un valor libre, que el tema del
+      shell obligue a un repositorio aparte de todas formas, o que alguien mire
+      la pantalla y diga que el gris no pasa.
+      *Y lo que se compró:* cero paquetes nuevos, cero filas en el manifiesto,
+      cero mantenimiento de un fork —repositorio aparte, meson y sassc, rebase
+      con aguas arriba, oferta de fuente y un anclaje contra `apt upgrade`, las
+      mismas cinco cosas que `encina-autofirma`, para cambiar un color—.
+
+- [x] ~~**Si hay fork de Yaru: dónde vive, y cómo no lo pisa un `apt upgrade`.**~~
+      **CERRADA SIN OBJETO el 2026-08-15: `D20` dice que no hay fork**, así que
+      no hay dónde alojarlo ni nada que un `apt upgrade` pueda pisar. Se cierra
+      sin ejecutar su definición de terminado —que exigía un `apt upgrade`
+      simulado— **porque la condición que la abría desapareció, no porque se haya
+      comprobado nada**. La diferencia importa: si algún día se reabre `D20`,
+      esta casilla vuelve entera y con su control sin hacer.
+      *Y su contenido se conserva porque el análisis sigue valiendo el día que se
+      forkee algo:* las cinco cosas que arrastra un fork son justamente lo que
+      hizo elegir `sage`.
+      *El texto original:*
       Dos decisiones, y la segunda es la que se paga cara si se descubre tarde.
       **(a) Repo aparte, por las mismas cuatro razones que `encina-autofirma`:**
       es un fork de un proyecto ajeno con su propia licencia (GPL-3.0 /
