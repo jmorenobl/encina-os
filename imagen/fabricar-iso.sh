@@ -112,7 +112,7 @@ echo "== 2. los cuatro .deb, por huella (§4.13: misma version != mismos bytes)"
 huella_de() { grep -E "^$1=" "$GUION" | head -1 | cut -d= -f2; }
 declare -a FICHEROS HUELLAS
 FICHEROS=(autofirma_1.9.1+encina4_all.deb
-          encina-branding_0.1.12_all.deb
+          encina-branding_0.1.13_all.deb
           encina-firefox-native_0.2.1_all.deb
           encina-meta_0.2.1_all.deb)
 HUELLAS=("$(huella_de H_AUTOFIRMA)" "$(huella_de H_BRANDING)"

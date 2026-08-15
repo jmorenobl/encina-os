@@ -5,6 +5,11 @@ Los maestros están en `maestros/` y **no viajan en el clon**: son cinco JPEG de
 mismo paisaje de día y de noche—. Lo que viaja es
 [manifiesto.tsv](manifiesto.tsv).
 
+*Y hay un tercer par en `maestros/`, el de la 0.1.12* —`encina-os-splash-4k-*`,
+sin `light`/`dark` en el nombre—. **No se borra a propósito:** es el control de
+`scripts/zona-segura.py`, el par cuya marca se salía. Sin él, esa comprobación no
+puede demostrar que sabe dar su rojo.
+
 Lo que se envía son seis ficheros a 3840×2160 dentro de
 `debian-packages/encina-branding/src/usr/share/backgrounds/encina/`.
 
@@ -12,8 +17,8 @@ Lo que se envía son seis ficheros a 3840×2160 dentro de
 
 | Se envía como | Sale de | Cómo se supo |
 |---|---|---|
-| `encina.jpg` | `encina-os-splash-4k-3840x2160.png` | **Se hizo el 2026-08-15**, con la orden escrita en el manifiesto |
-| `encina-dark.jpg` | `encina-os-splash-dark-4k-3840x2160.png` | **Maestro propio de noche**, misma sesión: ya no se deriva del claro |
+| `encina.jpg` | `encina-os-splash-light-4k.png` | **0.1.13**, con la marca ya dentro de la zona segura |
+| `encina-dark.jpg` | `encina-os-splash-dark-4k.png` | Lo mismo de noche: no se deriva del claro, es una imagen propia |
 | `amapolas.jpg` | `amapolas.jpg` | Mismo nombre |
 | `farallon.jpg` | `farallon.jpg` | Mismo nombre |
 | `olivar.jpg` | `olivar.jpg` | Mismo nombre |
@@ -49,8 +54,8 @@ elegido por medida —igualaba el `YAVG` 53,8 del `encina-dark.jpg` anterior—.
 orden ya no está en el manifiesto. La sustituyó una conversión limpia del maestro
 propio.
 
-*El número, para quien compare:* el oscuro nuevo da `YAVG` **46,4** sobre el JPEG
-que viaja, frente a 53,8 del anterior. Es **algo más oscuro**, y es una decisión
+*El número, para quien compare:* el oscuro da `YAVG` **47,0** sobre el JPEG que
+viaja en la 0.1.13 —46,4 en la 0.1.12—, frente a 53,8 del de Unsplash. Es **algo más oscuro**, y es una decisión
 de Jorge. **Cuidado al medirlo:** ese mismo `ffmpeg signalstats` sobre el PNG
 maestro devuelve 55,8, y no es otra imagen — es otra escala, porque el PNG se mide
 en rango limitado y el JPEG en rango completo. Comparar un PNG con un JPEG por
@@ -84,12 +89,27 @@ y:  257 .. 1903      (1646 px de alto)
 ```
 
 Está dibujada en [zona-segura.png](zona-segura.png), en verde, con las bandas de
-recorte de cada proporción y —en blanco— la caja donde está hoy la marca:
-`x 136..1076, y 1784..2060`. Se ve de un vistazo que **la marca actual está casi
-entera fuera**: empieza a 136 px del borde, el 3,5 % del ancho.
+recorte de cada proporción y —en blanco— la caja de la marca. Regenerada el
+2026-08-15 con el maestro de la 0.1.13, donde la marca ya cae dentro:
+`x 508..1556, y 1536..1884`. En la 0.1.12 esa caja era `x 136..1076,
+y 1784..2060` y se salía por la izquierda y por abajo.
 
 **Todo lo que tenga que leerse siempre —logotipo, palabra, versión— va dentro del
 recuadro verde.** El paisaje puede salirse: para eso está el recorte.
+
+### Y se comprueba, que era la otra mitad
+
+`./scripts/zona-segura.py <claro> <oscuro>` lo mide. **Localiza la marca
+comparando las dos imágenes**, porque es lo único igual en ambas —el paisaje es
+de día en una y de noche en la otra—; buscar «lo blanco» o «lo brillante» no
+sirve, y no es una suposición: los dos primeros intentos devolvían el ancho
+entero porque cogían las nubes doradas, las casas del pueblo y el campo
+iluminado. El control lo dijo antes que nadie.
+
+Con los maestros de la 0.1.13: `[OK]`, con **28 px de margen a la izquierda y 19
+por abajo**, que es poco pero está medido y la resolución de la medida son 4 px.
+Con los de la 0.1.12: `[FALLO]`, la marca a 136 px del borde. Sabe dar sus dos
+respuestas.
 
 *Y la alternativa que se descartó, con su medida, porque volverá a proponerse:*
 `picture-options='scaled'` no recorta nunca y pone franjas del color de relleno

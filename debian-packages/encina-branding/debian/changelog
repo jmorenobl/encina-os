@@ -1,3 +1,23 @@
+encina-branding (0.1.13) noble; urgency=medium
+
+  * LA MARCA DEL FONDO, DENTRO DE LA ZONA SEGURA. Con picture-options en
+    zoom GNOME rellena y RECORTA, asi que una imagen 16:9 solo se ve
+    entera en una pantalla 16:9 exactamente. En 0.1.12 la bellota del
+    logotipo empezaba a 136 px del borde y se cortaba en cuanto la
+    pantalla no era 16:9, medido en una captura de encina-dev. Jorge ha
+    rehecho los dos maestros con la marca dentro del recuadro que
+    sobrevive al 4:3 Y al 21:9: x 480..3360, y 257..1903.
+  * Y AHORA ESO SE MIDE, que era el otro fallo: scripts/zona-segura.py
+    localiza la marca comparando el maestro de dia con el de noche -es
+    lo unico igual en las dos imagenes- y dice si cabe. Con los maestros
+    de 0.1.13 da OK, con 28 px de margen a la izquierda y 19 por abajo;
+    con los de 0.1.12 da FALLO. Sabe dar sus dos respuestas.
+  * Y dos cosas del dibujo que solo se ven mirando: Version lleva ya su
+    tilde -sin ella viajo dentro del JPEG de la 0.1.12- y lanzamiento La
+    Mancha pasa a Edicion La Mancha.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sat, 15 Aug 2026 02:28:22 +0200
+
 encina-branding (0.1.12) noble; urgency=medium
 
   * EL FONDO POR DEFECTO ES PROPIO. Hasta la 0.1.11 el escritorio, el

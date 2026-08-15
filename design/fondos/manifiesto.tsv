@@ -31,6 +31,12 @@
 # ordenes de hoy se conocen porque se ejecutaron hoy, y son REPRODUCIBLES -dos
 # pasadas dan la misma sha256, comprobado antes de escribir estas filas-.
 #
+# SEGUNDA ENMIENDA, 0.1.13 DEL MISMO DIA: los dos maestros se han SUSTITUIDO por
+# otros con la marca dentro de la zona segura -encina-os-splash-light-4k.png y
+# encina-os-splash-dark-4k.png-. Los de la manana siguen en maestros/ a proposito:
+# son el CONTROL de scripts/zona-segura.py, el par cuya marca se salia. Sus filas
+# ya no estan aqui; sus huellas, en el historial de git.
+#
 # Y UN NUMERO QUE CONVIENE NO CONFUNDIR AL COMPARARLO: medida sobre los JPEG que
 # viajan, la luminancia media del oscuro nuevo es YAVG 46.4, frente al 53.8 del
 # encina-dark.jpg anterior. Es algo mas oscuro, y es una decision de Jorge, no una
@@ -57,8 +63,8 @@
 # otra para las imagenes, se cambia aqui y en debian/copyright, que son dos sitios.
 #
 maestro	derivado	licencia	origen	sha256-maestro	sha256-derivado	orden
-encina-os-splash-4k-3840x2160.png	encina.jpg	EUPL-1.2	Jorge MB, 2026-08-15	2a82746338de6a93521d1899608bf1d9dea2a6ccf0b07d86bc98d1572087af40	153629e44914e4ff343e33455a59f20dce085e08bbd07e3c80816b39032f685d	ffmpeg -y -i maestros/encina-os-splash-4k-3840x2160.png -q:v 2 encina.jpg
-encina-os-splash-dark-4k-3840x2160.png	encina-dark.jpg	EUPL-1.2	Jorge MB, 2026-08-15	dc0f0285811638c39f19cd196d33c55d0ade9050f3e82eeb33e3dd2055f18447	b34f3ac066b7e9224f57e1df37e1128205890e59b52a00e47cad138ac9807bd9	ffmpeg -y -i maestros/encina-os-splash-dark-4k-3840x2160.png -q:v 2 encina-dark.jpg
+encina-os-splash-light-4k.png	encina.jpg	EUPL-1.2	Jorge MB, 2026-08-15	1c71e048e25d4fb08b21853fc464d3a23ceebb9a3e1567e224f1561106f52504	ccd0be3973952d22c70e2fdc268230646ad9af44956f7b936733ecc145eb8e5c	ffmpeg -y -i maestros/encina-os-splash-light-4k.png -q:v 2 encina.jpg
+encina-os-splash-dark-4k.png	encina-dark.jpg	EUPL-1.2	Jorge MB, 2026-08-15	df04a275cb38c1b13d647a51e44a96d5508714ed2bd9d250e100e760436df1f0	494ff897edfe8db55aef55f7cf35b1d9b1355520eef67f5462d00e099bd817dd	ffmpeg -y -i maestros/encina-os-splash-dark-4k.png -q:v 2 encina-dark.jpg
 amapolas.jpg	amapolas.jpg	SIN DETERMINAR	SIN DETERMINAR	7245e2da1d0caf7f9f814cf2b352a478ff88c3f8222aa0c0be57c2daa4ab32bc	977346b421f680495846a3443497dbadfa016cbf99d1f7c7cd82dedfcceaa401	-
 farallon.jpg	farallon.jpg	SIN DETERMINAR	SIN DETERMINAR	be810ca789aae5c2b5708bb7fd1ce61438a5fef95da1097e4bef53bf8b38c5fa	4b89f2a05eed905fc7d565dc98a2f8e0b61f28c1fbf19e3b2629e3df46a582cc	-
 olivar.jpg	olivar.jpg	SIN DETERMINAR	SIN DETERMINAR	3c6998e14fc19f3c17b1775f8e1fa8dc73a0f9ed1ec15e4adb8868362a610fea	be6495737c0425120bcffbd608b246a9b0c4a170867709478a4f3383070ab4ca	-
