@@ -41,7 +41,17 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       usuario **creado después de instalar** la ve igual. Ese segundo control es
       el que distingue un override de un `/etc/skel` disfrazado.
 
-- [ ] **Los iconos. ES LA CASILLA VIVA DE ESTE FICHERO desde el 2026-08-15.** El
+- [x] ~~**Los iconos.**~~ **HECHA el 2026-08-15, y la condición se cumplió
+      ENTERA: el icono está dibujado y VISTO EN PANTALLA** —`[OJOS]` de Jorge,
+      en el dock de `encina-dev` con `encina-branding` **0.1.15** puesto: donde
+      estaba la «A» naranja del Centro de aplicaciones hay ahora la bolsa verde,
+      entre Archivos y el «?»—. *Dónde se vio, que importa:* en el banco, no en
+      la máquina del producto, que todavía no lleva 0.1.15.
+      *Y el `[OJOS]` no fue un trámite:* con **0.1.14** el icono **no se
+      pintaba** —había un hueco— y las cinco comprobaciones automáticas estaban
+      en verde (§4.49). Lo que faltaba medir era si `gdk-pixbuf` puede **cargar**
+      el fichero, no si el tema lo resuelve.
+      *Lo que decía esta casilla mientras estuvo viva:* El
       tema `Encina` ya existe, hereda de Yaru y no pisa nada (R5). Aquí cambia de
       padre si el tema base trae iconos, y añade lo propio: **las carpetas** —que
       es lo que más se ve— y la rejilla.

@@ -16,7 +16,7 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 | Bloque | Qué | Abiertas |
 |---|---|---|
-| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **17** — con [0-decidir.md](tareas/aspecto/0-decidir.md) y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) **cerrados enteros, 5 de 5 cada uno**. **La vuelta de `encina-branding` 0.1.14 está dada** (§4.48) y con ella `D21`, los dos no-op de GDM y el comentario del logotipo; **lo que queda del dock es mirarlo**, que es `[OJOS]` |
+| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **16** — con [0-decidir.md](tareas/aspecto/0-decidir.md) y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) **cerrados enteros, 5 de 5 cada uno**. **La vuelta de `encina-branding` está dada** —0.1.14 y, tres cuartos de hora después, 0.1.15 (§4.48 y §4.49)—: `D21` con **el icono visto en el dock**, los dos no-op de GDM fuera y el comentario del logotipo corregido |
 | [marca-del-medio.md](tareas/marca-del-medio.md) | Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar | 5 |
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |

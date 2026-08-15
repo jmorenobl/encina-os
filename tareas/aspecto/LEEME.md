@@ -129,7 +129,7 @@ separados:
 | Qué | Dónde está escrito | Estado |
 |---|---|---|
 | El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **HECHO en 0.1.14, y viaja en 0.1.15** |
-| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **HECHA en 0.1.14 y ARREGLADA en 0.1.15, que es la que se pinta.** La casilla sigue abierta: le falta el `[OJOS]` |
+| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **HECHA en 0.1.14, ARREGLADA en 0.1.15 y VISTA en pantalla.** La casilla queda marcada |
 | El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | **QUITADO en 0.1.14**, con lo medido y lo que NO se sabe escrito al lado |
 | El `banner-message-text='Encina OS'`, que no aparece | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (b) | Igual que el anterior |
 | Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Siguen **PROPUESTO**, y **la vuelta descubrió que no bloqueaban nada** |
@@ -156,6 +156,11 @@ falsa**. Un icono usa `acento`, `acento-profundo`, `arcilla` y `tierra`, los
 cuatro VIGENTE; los ocho PROPUESTO son colores de **mensajes de estado** —«la
 firma salió», «el certificado caduca»— y no intervienen en un dibujo. Estaba
 escrita, no medida.
+
+**Y EL `[OJOS]` ESTÁ DADO, el 2026-08-15**: el icono se ve en el dock de
+`encina-dev` con 0.1.15 —la bolsa verde donde estaba la «A» naranja—, así que la
+casilla de los iconos **queda marcada**. Es en el banco, no en la máquina del
+producto, que todavía no lleva 0.1.15.
 
 **Lo que la vuelta NO hace, y conviene no darlo por hecho:** no refabrica la ISO
 —`95758c9e…` deja de ser la que produce este repositorio en cuanto se rehaga, y

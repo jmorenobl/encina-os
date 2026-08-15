@@ -11265,6 +11265,19 @@ Y con 0.1.15 instalada, la pregunta que faltaba ya contesta que sí:
 [OK]    org.gnome.Nautilus.png             48x48
 ```
 
+#### (e bis) Y EL `[OJOS]`, DADO: el icono se ve
+
+**2026-08-15, `encina-dev` con 0.1.15 puesto y sesión reiniciada.** En el dock,
+donde estaba la «A» naranja del Centro de aplicaciones, está la bolsa verde —
+entre Archivos y el «?», que es su posición en `favorite-apps`. **Lo vio Jorge; el
+agente no ha visto ninguna pantalla en todo esto.** Con eso la casilla de los
+iconos de `tareas/aspecto/3-tema-e-iconos.md` queda marcada, y es la primera vez
+en el bloque que se cumple entera: *dibujado* **y** *visto*.
+
+*Dónde se vio, que hay que decirlo:* en el **banco**, no en la máquina del
+producto —`encina-95758c9e` sigue con 0.1.13—. Lo que esto demuestra es que el
+paquete pinta el icono en un GNOME 46 con el snap presente, que es el caso.
+
 #### (f) EL PRECIO, sin maquillar
 
 **0.1.14 duró tres cuartos de hora.** El ritual de los seis sitios se pagó dos
