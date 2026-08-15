@@ -11671,7 +11671,7 @@ dividido por lo que cuesta:
 
 ---
 
-### 4.52 LA MARCA ENTRA EN EL MEDIO SIN REHACER 1,69 GB: una capa de 2,9 MiB — y las dos preguntas de §4.51 se contestan, una de ellas estaba mal planteada (2026-08-16)
+### 4.52 LA MARCA ENTRA EN EL MEDIO SIN REHACER 1,69 GB: una capa de 2,9 MiB — y las dos preguntas de §4.51 se contestan, una de ellas estaba mal planteada (2026-08-15)
 
 **Es la tercera casilla de `tareas/marca-del-medio.md`**, y llega con lo que
 dejaron las dos primeras: el inventario (§4.51) y el criterio de parada

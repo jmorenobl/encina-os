@@ -1418,7 +1418,7 @@ justamente para no llegar al reempaquetado con tres candidatos.
   ISO. **E3 NO usa `CIDATA`.**
 - ~~**No se toca `boot/grub/grub.cfg`, y por tanto tampoco `md5sum.txt`**~~
   **DEJÓ DE SER VERDAD DOS VECES, y las dos están escritas: el 2026-08-10 entró
-  `locale=es_ES.UTF-8` y el 2026-08-16 el `menuentry` de Encina (D23), y con él
+  `locale=es_ES.UTF-8` y el 2026-08-15 el `menuentry` de Encina (D23), y con él
   `/.disk/info` y la capa de marca. Lo de abajo se conserva porque su MEDICIÓN
   sigue valiendo —dónde va la palabra, cuál es el único `grub.cfg` y qué cubre
   `md5sum.txt`—, no su conclusión.**
@@ -1534,7 +1534,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       entradas, no solo las 266 de `md5sum.txt`— es exactamente ésta: **seis
       ficheros añadidos** (`/autoinstall.yaml` y los cinco de `/encina-repo/`),
       **dos modificados y nombrados** (`/boot/grub/grub.cfg` y `/md5sum.txt`),
-      **ninguno perdido**. **ACTUALIZADA EL 2026-08-16 por D23, y otra vez hacia
+      **ninguno perdido**. **ACTUALIZADA EL 2026-08-15 por D23, y otra vez hacia
       arriba:** los modificados pasan a ser **TRES** —entra `/.disk/info`— y los
       añadidos incluyen además **`/casper/zz-encina.squashfs`**, la capa de marca.
       La exigencia no cambia de forma: ni uno más, ni uno menos, y todos
@@ -1551,7 +1551,7 @@ novena. Aflojar esto sería marcar como probada una ISO que nadie ha arrancado.
       sea autocomplaciente:** con el `md5sum.txt` **oficial** tiene que fallar
       **exactamente una** línea, la de `./boot/grub/grub.cfg` — que es la ISO que
       se entregaría si alguien editara el `grub.cfg` y no pagara el precio.
-      **ACTUALIZADA EL 2026-08-16 por D23:** son **267** líneas y no 266 —la de
+      **ACTUALIZADA EL 2026-08-15 por D23:** son **267** líneas y no 266 —la de
       más es la de la capa de marca, añadida a propósito para que la comprobación
       del propio medio la cubra en vez de ignorarla—, y el control pasa a exigir
       **exactamente dos** fallos con el `md5sum.txt` oficial: `grub.cfg` y

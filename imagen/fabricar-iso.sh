@@ -11,7 +11,7 @@
 # QUE HACE: coge la ISO oficial de Ubuntu, le ANADE lo de Encina y MODIFICA TRES
 # ficheros, ni uno mas. Los sitios estan nombrados aqui uno a uno porque la
 # definicion de terminado de E3 se comprueba contra esta lista, y porque desde
-# el 2026-08-16 esta lista es tambien la de la marca del medio (D22).
+# hoy esta lista es tambien la de la marca del medio (D22 y D23).
 #
 # ANADE:
 #     /autoinstall.yaml   <- imagen/autoinstall.yaml, que es donde el
@@ -25,7 +25,7 @@
 #                            la tienda y el escaner) y su indice Packages
 #     /casper/zz-encina.squashfs <- LA CAPA DE MARCA, que la hace capa-marca.sh
 #                            y que es lo que hace que la SESION VIVA y el
-#                            INSTALADOR digan Encina (D22, casilla 3 de
+#                            INSTALADOR digan Encina (D23, casilla 3 de
 #                            tareas/marca-del-medio.md). El nombre empieza por
 #                            'zz-' porque casper monta todos los *.squashfs de
 #                            /casper en orden alfabetico y el ULTIMO es el que
@@ -47,11 +47,13 @@
 #                            y con 'locale=*' escribe LANG en el
 #                            /etc/default/locale de la SESION VIVA y corre
 #                            locale-gen dentro de ella.
-#                            Y DESDE EL 2026-08-16 el titulo del menu tambien:
+#                            Y DESDE EL 2026-08-15 el titulo del menu tambien:
 #                            'Try or Install Ubuntu' -> 'Probar o instalar
 #                            Encina OS'. Es la PRIMERISIMA pantalla del
 #                            arranque y es pila A de D22.
-#     /.disk/info         <- 60 bytes que valen tres cosas, y las tres estan
+#     /.disk/info         <- el fichero mas barato del medio -- 60 bytes el de
+#                            Ubuntu, 43 el de Encina -- y vale TRES cosas, las
+#                            tres
 #                            LEIDAS en el casper de este medio (§4.51c, §4.52a):
 #                            casper-bottom/25adduser saca de aqui el RELEASE que
 #                            sustituye en 'Name=Install RELEASE', o sea EL

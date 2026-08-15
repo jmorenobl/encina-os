@@ -182,7 +182,7 @@ if [ "$SIN_CAPAS" -eq 1 ]; then
     omitido "(c) y (d): los controles de las capas no se han ejecutado (--sin-capas)"
 else
     paso "(c) las capas squashfs se sacan del medio y se listan"
-    # LAS CAPAS DE MARCA, que son las que NO son de Ubuntu. Desde el 2026-08-16
+    # LAS CAPAS DE MARCA, que son las que NO son de Ubuntu. Desde el 2026-08-15
     # el medio de Encina lleva una encima de todas (zz-encina.squashfs), y si
     # este guion no la leyera mediria EL FICHERO TAPADO: diria «NAME=Ubuntu»
     # sobre un medio que en pantalla dice Encina. Un inventario que se cree la

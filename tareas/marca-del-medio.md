@@ -73,7 +73,7 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
-      **HECHA EL 2026-08-16 SALVO EL `[OJOS]`, QUE ES DE JORGE
+      **HECHA EL 2026-08-15 SALVO EL `[OJOS]`, QUE ES DE JORGE
       (`MEDICIONES.md` §4.52).** Aquí sí se tocó el producto, y la pregunta de
       fondo de arriba —reempaquetado o E5— **está contestada por escrito: es
       `ENCINA-OS.md` D23**.

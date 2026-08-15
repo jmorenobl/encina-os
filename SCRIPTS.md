@@ -2018,7 +2018,7 @@ controles**, y van los primeros: si el buscador no sabe decir «no lo hay», su
 lista de apariciones no vale nada. Sale distinto de 0 **sólo** si falla un
 control.
 
-**CAMBIÓ EL 2026-08-16, y el cambio es la diferencia entre un inventario y un
+**CAMBIÓ EL 2026-08-15, y el cambio es la diferencia entre un inventario y un
 instrumento de comparación (§4.52e):**
 
 1. **Lo que decide si un sitio es una aparición es EL VALOR, no el sitio.** Antes
@@ -2061,7 +2061,7 @@ avisa de que se ha dejado la mitad**. El tema de arranque está en la segunda.
 
 ---
 
-## Poner la marca del medio: `imagen/capa-marca.sh` (2026-08-16)
+## Poner la marca del medio: `imagen/capa-marca.sh` (2026-08-15)
 
 **Se ejecuta en el Mac.** Fabrica **un solo fichero**, `zz-encina.squashfs`, que
 es **toda la marca de la sesión viva y del instalador** del medio. Lo mete
