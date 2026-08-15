@@ -106,8 +106,16 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # trabajo- y dos pasadas desde dos commits distintos dan la misma huella
 # 131c464e…, que es lo que hay que exigirle. El aviso escrito no evito nada
 # las dos veces anteriores; lo que sirve es la comprobacion.
+#
+# SEGUNDA ENMIENDA DEL MISMO DIA: 0.1.14 duro tres cuartos de hora. Su icono
+# NO SE PINTABA -en el dock habia un hueco- y el ritual hubo que pagarlo otra
+# vez con 0.1.15, 6d9fcd64…, que es la que esta arriba. La causa no era el
+# .deb ni la huella: gdk-pixbuf no reconoce un SVG cuyo '<svg' caiga mas alla
+# del byte 256, y el comentario de cabecera lo empujaba al 2090 (§4.49).
+# Se apunta aqui porque es el mismo sitio donde se apunta lo otro que cuesta
+# una vuelta entera.
 H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-H_BRANDING=131c464e4eba2ad472b5a85b0dc79181ff101761873e55737bd870078f9a7afd
+H_BRANDING=6d9fcd64aa409f6601dd165c6eb09df7154764c5335d830bb40ae92cf79dfee8
 H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
 H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 
@@ -267,7 +275,7 @@ run sh -c "ls /target/srv/encina-repo/ | wc -l"
 run sh -c "du -sh /target/srv/encina-repo"
 say "-- las cuatro huellas de Encina, comparadas una a una:"
 huella /target/srv/encina-repo/autofirma_1.9.1+encina4_all.deb      "$H_AUTOFIRMA"
-huella /target/srv/encina-repo/encina-branding_0.1.14_all.deb       "$H_BRANDING"
+huella /target/srv/encina-repo/encina-branding_0.1.15_all.deb       "$H_BRANDING"
 huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
 huella /target/srv/encina-repo/encina-meta_0.2.1_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"

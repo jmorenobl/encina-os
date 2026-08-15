@@ -10985,6 +10985,13 @@ Ubuntu.
 
 ### 4.48 LA VUELTA DE `encina-branding` 0.1.14: D21 dentro, dos ajustes de GDM fuera, y el ritual de los seis sitios pagado entero (2026-08-15)
 
+**ENMIENDA DEL MISMO DÍA, y hay que leerla antes que nada de lo que sigue:
+0.1.14 duró tres cuartos de hora.** Su icono **no se pintaba** —en el dock había
+un hueco— y la vuelta hubo que darla otra vez con **0.1.15** (`6d9fcd64…`). Todo
+lo que esta sección mide sigue siendo verdad; lo que no es verdad es la
+conclusión de que con eso bastaba. **La causa y las cinco comprobaciones que
+pasaron sin ver el fallo están en §4.49**, y la huella buena es la de allí.
+
 **Una vuelta y no cinco, que era el argumento de `tareas/aspecto/LEEME.md`:** el
 precio de tocar este paquete no es el `.deb`, es el ritual —y esta vez se pagó
 entero, incluidos los dos `autoinstall*.yaml` que llevaban la huella vieja desde
@@ -11155,6 +11162,125 @@ CONTROL: un guion con la huella cambiada, comparado con el de disco -> distinto
 ---
 
 
+### 4.49 EL ICONO DE 0.1.14 NO SE PINTABA: gdk-pixbuf sólo husmea 256 bytes, y el comentario de cabecera empujaba el `<svg>` al 2090 (2026-08-15)
+
+**Lo cazó un `[OJOS]`, y ninguna de las cuatro comprobaciones que lo dieron por
+bueno.** Jorge miró el dock de `encina-dev` con 0.1.14 puesto y dijo: *«No
+aparece el icono. Hay un hueco donde debería estar»*. **Y era literal: un
+hueco** — la entrada ocupaba su sitio entre Archivos y el «?», que es
+exactamente su posición en `favorite-apps`, y no dibujaba nada.
+
+**Lo que hace grave este fallo no es el fallo: es que §4.48 estaba en verde.**
+
+| Lo que se midió en §4.48 | Contestaba |
+|---|---|
+| ¿Qué `.desktop` gana? | el nuestro, `/usr/share/applications/…` |
+| ¿De qué tipo es el icono? | `ThemedIcon encina-centro-aplicaciones` |
+| ¿A qué fichero resuelve, a 48 px, con dos temas? | a nuestro SVG, con `Encina` y con `Yaru-sage` |
+| ¿Se muestra la entrada? (añadido al mirar el fallo) | `should_show() == True`, `NoDisplay=False` |
+| ¿Lo dibuja librsvg? | sí, `rsvg-convert` saca el PNG |
+
+**Las cinco eran verdad y el icono no se veía.** Faltaba una pregunta que no es
+ninguna de ésas: **¿puede `gdk-pixbuf` cargar el fichero?** Porque resolver un
+nombre a un fichero **no es lo mismo que poder pintarlo**, y quien pinta en el
+dock es GNOME Shell a través de `gdk-pixbuf`, no `librsvg` a secas.
+
+#### (a) LA PISTA ESTABA EN EL REGISTRO, Y YO LA HABÍA DESCARTADO
+
+```
+ago 15 12:44:58 encina-dev gnome-shell[99227]: Could not load a pixbuf from icon theme.
+   This may indicate that pixbuf loaders or the mime database could not be found.
+```
+
+**Y antes de encontrarla ya había tenido la respuesta delante y la tiré**: una
+prueba con `GdkPixbuf.new_from_file_at_size` falló para nuestro SVG **y también
+para `encina-logo.svg`**, y **decidí que el instrumento estaba roto porque
+fallaban los dos**. Era justo al revés: el control decía la verdad —los dos
+están rotos— y yo leí «los dos fallan, luego el lector no vale». *Un control que
+sale rojo dos veces no es un control averiado: puede ser un hallazgo doble.*
+
+#### (b) LA MEDICIÓN QUE SEPARA LOS CASOS, con su control dentro
+
+```
+formatos que conoce gdk-pixbuf: [... 'svg' ...]      <- el cargador ESTA
+[FALLO] encina-centro-aplicaciones.svg   Couldn't recognize the image file format
+[FALLO] encina-logo.svg                  Couldn't recognize the image file format
+[OK]    view-app-grid-ubuntu-symbolic.svg  48x48     <- CONTROL: otro SVG nuestro que SI carga
+[OK]    org.gnome.Nautilus.png             48x48     <- CONTROL: el lector funciona
+```
+
+La bellota es SVG y carga; los dos de `hicolor` no. **Lo único en que se
+diferencian es dónde empieza el `<svg>`**, porque los dos llevan delante el
+comentario largo que en este proyecto es método y no adorno.
+
+#### (c) LA CAUSA, y el umbral exacto por búsqueda binaria
+
+`gdk-pixbuf` reconoce el formato **husmeando el principio del fichero**. Si el
+`<svg` no cae dentro de los primeros bytes, no reconoce nada:
+
+```
+'<svg' en el byte   256 -> CARGA
+'<svg' en el byte   257 -> NO RECONOCE
+```
+
+**Doscientos cincuenta y seis bytes.** Y con el control **en las dos
+direcciones**, que es lo que lo convierte en causa y no en correlación:
+
+```
+nuestro, tal cual                   -> NO RECONOCE   '<svg' en el byte 2090
+nuestro, sin el comentario          -> CARGA         '<svg' en el byte   39
+nuestro, comentario DENTRO de <svg> -> CARGA         '<svg' en el byte   39
+la bellota, tal cual                -> CARGA         '<svg' en el byte    0
+la bellota + comentario delante     -> NO RECONOCE   '<svg' en el byte 1510
+```
+
+**Quitarle el comentario al roto lo arregla, y ponérselo al sano lo rompe.**
+
+#### (d) Y NO ERA SOLO EL ICONO NUEVO: `encina-logo.svg` lleva así desde 0.1.9
+
+Con el `<svg>` en el byte **799** —medido también en el `.deb` anterior, así que
+no lo introdujo la vuelta de hoy—. **Seis versiones con el defecto dentro**, y
+nadie lo notó porque ese icono no se pinta en el dock. Barrido de los SVG del
+árbol: **dos rotos de cuatro**, los dos de `hicolor`, y los dos del tema `Encina`
+bien porque empiezan por `<svg`.
+
+#### (e) EL ARREGLO, y lo que se comprueba a partir de ahora
+
+Los comentarios pasan **dentro** del `<svg>`, con el porqué escrito en los
+propios ficheros. **El dibujo no cambia**, y eso se comprueba en vez de
+suponerse: `rsvg-convert` saca el **mismo PNG byte a byte** antes y después de
+mover el comentario.
+
+`design/generar.sh` mide ahora **la causa y no el síntoma** —la posición del
+`<svg>`, no si `gdk-pixbuf` carga—, porque en el Mac no hay `gdk-pixbuf` y el
+síntoma solo se ve en una pantalla. Con su rojo probado: un maestro con el
+comentario fuera da `[FALLO] '<svg' en el byte 2087, y el límite es 256`.
+
+Y con 0.1.15 instalada, la pregunta que faltaba ya contesta que sí:
+
+```
+[OK]    encina-centro-aplicaciones.svg     48x48
+[OK]    encina-logo.svg                    48x48
+[OK]    view-app-grid-ubuntu-symbolic.svg  48x48
+[OK]    org.gnome.Nautilus.png             48x48
+```
+
+#### (f) EL PRECIO, sin maquillar
+
+**0.1.14 duró tres cuartos de hora.** El ritual de los seis sitios se pagó dos
+veces el mismo día —huella `131c464e…` y luego `6d9fcd64…`—, y esta vez el
+argumento de «una vuelta y no cinco» no protegía de nada: **el defecto no estaba
+en la lista de lo que había que hacer, sino en cómo estaba escrito un fichero
+que llevaba seis versiones igual**.
+
+**Lo que esto enseña, y es lo caro:** las cinco comprobaciones de §4.48 eran
+correctas y ninguna medía lo que el usuario ve. La cadena tiene un eslabón más
+de los que se habían mirado —*existe → gana → resuelve → **carga** → se pinta*—
+y sólo el `[OJOS]` cubre el último.
+
+---
+
+
 ## 9. Trampas conocidas
 
 Registro para no redescubrirlas. Todas verificadas en la investigación previa.
@@ -11211,6 +11337,8 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Una medición que dejó de valerse sola justo al arreglar la cosa** | La lista de iconos enseñaba los dos tipos —`File` y `Themed`— antes del cambio, y después del cambio sólo enseña `Themed`, así que el lector ya no demuestra que sabe distinguirlos | Lo que separaba los dos casos era **el ejemplar de la clase que se arregló**. Al arreglarlo desaparece de la lista y el instrumento se queda ciego sin avisar. Se mete a propósito otro del tipo que se va —aquí `firefox_firefox.desktop`, que en `encina-dev` es Snap— para que la pasada siga probando su propio poder de resolución (§4.48c) |
 | **Un repositorio sacado de un medio anterior trae `.deb` fosilizados** | Se extrae `/encina-repo` de la ISO buena para rehacer los YAML y 2 de los 28 no cuadran con el manifiesto, con el contenido correcto | Aquel medio se fabricó **antes** de §4.37, así que lleva dentro los `.deb` construidos sobre un árbol de trabajo —`972ec932…` y `86da3cc9…`, las huellas que el comentario del seed llama «las anteriores»—. Un medio conserva el estado del día que se fabricó, incluidos sus defectos. Se reconstruyen desde el clon y dan las del manifiesto (§4.48f) |
 | **Un nombre de fichero es una huella disfrazada** | Se actualizan las huellas del ritual y queda un sitio con el nombre del `.deb` viejo, que ni siquiera es una huella | Los nombres llevan **la versión dentro**, y viven duplicados en dos arrays `FICHEROS` —`fabricar-seed.sh` y `fabricar-iso.sh`—. `SCRIPTS.md` los nombra a los dos desde el 2026-08-12 y aun así lo que cierra la duda es `grep -rn 'encina-branding_0\.1\.' imagen/ scripts/`: la lista se comprueba, no se recita. Este sitio **no falla en silencio** —`fabricar-iso.sh` para con `no esta: …`— así que el riesgo es tiempo, no un medio equivocado (§4.48f) |
+| **Un SVG que se resuelve, se dibuja con librsvg y aun asi deja un HUECO en el dock** | El `.desktop` gana, `should_show()` da `True`, `Gtk.IconTheme` —en 3 y en 4— resuelve el nombre a nuestro SVG y `rsvg-convert` lo pinta. Y en la pantalla no hay icono: hay un hueco, y el Shell escribe *«Could not load a pixbuf from icon theme»* | **`gdk-pixbuf` reconoce el formato husmeando el principio del fichero: si el `<svg` no cae dentro de los primeros 256 BYTES, no lo reconoce.** El comentario de cabecera —que en este proyecto es método— lo empujaba al byte 2090. Umbral medido con búsqueda binaria (256 carga, 257 no) y con control en las dos direcciones: quitárselo al roto lo arregla y ponérselo al sano lo rompe. **El comentario va DENTRO de `<svg>`.** Afectaba también a `encina-logo.svg` desde 0.1.9, invisible seis versiones porque ese icono no se pinta en el dock (§4.49) |
+| **Un control que sale rojo dos veces y se lee como instrumento averiado** | La prueba de carga falla con el fichero nuevo **y** con el viejo, así que se descarta el lector y se busca por otro lado | Un control que falla en los dos casos puede ser **un hallazgo doble**, no un instrumento roto. Aquí los dos SVG estaban rotos de verdad y la conclusión «el lector no vale» costó buscar la causa por tres sitios equivocados. Lo que separa las dos lecturas es meter un ejemplar que **tenga** que salir bien —un PNG, u otro SVG que sí cargue— y mirar si el lector lo distingue (§4.49a) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |

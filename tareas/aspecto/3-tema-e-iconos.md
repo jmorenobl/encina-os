@@ -134,6 +134,13 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       falta **verlo en pantalla**. Todo lo medido es resolución de iconos, no
       píxeles pintados por GNOME Shell, y §4.43f es el recordatorio de la vez que
       esas dos cosas se separaron. `[OJOS]`.
+      **Y ESO NO ERA UNA FORMALIDAD: el `[OJOS]` del 2026-08-15 encontró que el
+      icono NO SE PINTABA** —un hueco en el dock— **con las cinco comprobaciones
+      en verde** (§4.49). `gdk-pixbuf` no reconoce un SVG cuyo `<svg` caiga más
+      allá del **byte 256**, y el comentario de cabecera lo empujaba al 2090; el
+      arreglo es `0.1.15` (`6d9fcd64…`), con el comentario **dentro** del `<svg>`
+      y `design/generar.sh` midiendo esa posición con su rojo probado. *La
+      casilla vuelve a estar donde estaba: falta mirarla otra vez.*
 
 - [x] ~~**El logotipo de la rejilla, que sigue abierta desde el bloque 1.**~~
       **CERRADA el 2026-08-14, y estaba mal leída desde el principio: el botón

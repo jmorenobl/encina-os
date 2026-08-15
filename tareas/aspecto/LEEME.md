@@ -128,16 +128,27 @@ separados:
 
 | Qué | Dónde está escrito | Estado |
 |---|---|---|
-| El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **HECHO en 0.1.14** |
-| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **HECHA en 0.1.14, con su icono dibujado.** La casilla sigue abierta: le falta el `[OJOS]` |
+| El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **HECHO en 0.1.14, y viaja en 0.1.15** |
+| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **HECHA en 0.1.14 y ARREGLADA en 0.1.15, que es la que se pinta.** La casilla sigue abierta: le falta el `[OJOS]` |
 | El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | **QUITADO en 0.1.14**, con lo medido y lo que NO se sabe escrito al lado |
 | El `banner-message-text='Encina OS'`, que no aparece | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (b) | Igual que el anterior |
 | Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Siguen **PROPUESTO**, y **la vuelta descubrió que no bloqueaban nada** |
 
-**LA VUELTA ESTÁ DADA, el 2026-08-15** (`MEDICIONES.md` §4.48): `encina-branding`
-**0.1.14**, `131c464e…`, 59 comprobaciones y 0 fallos, y el ritual de los seis
-sitios pagado entero — los dos `autoinstall*.yaml` ya no llevan dentro la huella
-vieja, que era el fleco que §4.46 dejó abierto.
+**LA VUELTA ESTÁ DADA, el 2026-08-15** (`MEDICIONES.md` §4.48), y el ritual de
+los seis sitios se pagó entero — los dos `autoinstall*.yaml` ya no llevan dentro
+la huella vieja, que era el fleco que §4.46 dejó abierto.
+
+**Y SE PAGÓ DOS VECES EL MISMO DÍA** (§4.49): `0.1.14` (`131c464e…`) duró tres
+cuartos de hora porque **su icono no se pintaba** —en el dock había un hueco—.
+La versión buena es **`0.1.15`, `6d9fcd64…`**. La causa no estaba en la lista de
+lo que había que hacer: `gdk-pixbuf` no reconoce un SVG cuyo `<svg` caiga más
+allá del **byte 256**, y el comentario de cabecera —que aquí es método— lo
+empujaba al 2090. **Afectaba también a `encina-logo.svg` desde 0.1.9.**
+
+*Y lo que enseña, que es más caro que la vuelta:* las cinco comprobaciones que
+dieron 0.1.14 por buena eran **todas correctas** y ninguna medía lo que el
+usuario ve. La cadena tiene un eslabón más de los que se miraban —*existe → gana
+→ resuelve → **carga** → se pinta*— y el último sólo lo cubre un `[OJOS]`.
 
 **Y una de las dos cosas que había que decidir antes se cayó al mirarla:** la
 condición *«dibujar el icono depende de que la paleta pase a VIGENTE»* **era
