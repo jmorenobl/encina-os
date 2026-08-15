@@ -45,9 +45,39 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       Encina. La pantalla propia que cuente el producto sigue **abierta como
       decisión** en [0-decidir.md](0-decidir.md), no descartada.
 
-- [ ] **El acento, que resultó no ser un color sino un NOMBRE DE TEMA.** Medido
-      el 2026-08-14 en `encina-dev` por `ssh`, y las tres preguntas que traía esta
-      casilla están contestadas:
+- [x] ~~**El acento, que resultó no ser un color sino un NOMBRE DE TEMA.**~~
+      **CERRADA el 2026-08-15 con la evidencia delante**, que estaba tomada
+      desde el 2026-08-14 y sin marcar. Las tres preguntas de abajo siguen
+      contestadas tal cual; lo que faltaba era enseñarlo.
+      *Las capturas, y su control:* `../../design/capturas/acento/archivos-sage.png`
+      —carpetas verdes— contra `../../design/capturas/antes/06-archivos-gtk4.png`
+      —carpetas berenjena—, **la misma ventana, la misma carpeta y la misma
+      máquina** (`encina-95758c9e`, 13:52 y 15:36 del mismo día). Y con la
+      variante `viridian` al lado, `archivos-viridian.png`, que es lo que
+      permitió elegir.
+      *La precondición, cumplida y no supuesta:* las dos órdenes `gsettings` se
+      lanzaron **sobre `encina-95758c9e`**, no sobre el constructor, y
+      funcionaron en caliente sin reiniciar la sesión — o sea que las diez
+      variantes ya viajan en la máquina del producto.
+      *El control que salió gratis, y vale doble:* al resetear, `gtk-theme`
+      vuelve a `'Yaru'` pero `icon-theme` vuelve a **`'Encina'`**, no a `Yaru`.
+      El `gschema.override` del paquete está vivo y gana cuando el usuario no
+      tiene valor propio (`reseteado-y-control.png`).
+      *Y LO QUE ESTA CASILLA NO ENSEÑA, dicho aquí y no en letra pequeña:* pedía
+      **también la captura del escritorio con su control**, y ese par **no
+      existe**. Hay escritorio en verde —`../../design/capturas/fondo-0.1.13/3-escritorio-claro.png`,
+      con la «Carpeta personal» en el verde del acento— pero **no hay ningún
+      escritorio con `Yaru` por defecto** con el que contrastarlo: en `antes/` no
+      se tomó, y todo lo de `despues/` y `fondo-0.1.1x/` es ya posterior a la
+      0.1.10, que es donde entró `sage`. Lo que iba a ser esa captura,
+      `despues/04-escritorio-dock-abajo.png`, es la ventana de bienvenida
+      tapando el escritorio entero. **Se cierra igual porque el par que decide es
+      el de Archivos** —en un escritorio desnudo el acento sólo toca el icono de
+      la carpeta—, pero el hueco queda escrito: si algún día se quiere el par
+      completo, cuesta arrancar la máquina, dos `gsettings` y una captura.
+
+      *Y lo que se midió el 2026-08-14 en `encina-dev` por `ssh`, que es lo que
+      esta casilla traía como tres preguntas y quedan contestadas:*
       **(a) NO existe la clave `accent-color`** en Ubuntu 24.04 —`gsettings list-keys
       org.gnome.desktop.interface` no la tiene, y pedirla da «No existe la clave»—.
       La hipótesis de esta casilla era falsa. Lo que hace el selector de Ajustes es
@@ -66,10 +96,11 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
       `icon-theme` a un verde de los que **ya viajan en la máquina** —los diez
       vienen dentro de `yaru-theme-gtk` y `yaru-theme-icon`, no hay paquete nuevo,
       ni `.deb`, ni fila en el manifiesto—.
-      *Hecha cuando:* la captura del escritorio y la de Archivos salen verdes, **y
-      el control es la misma captura con `Yaru` por defecto**. Dos capturas, no
-      una. Y antes, comprobar que las variantes están en `encina-95758c9e` y no
-      sólo en el constructor.
+      *Lo que esta casilla pedía para darse por hecha, y se conserva porque es
+      contra lo que se ha comprobado:* «la captura del escritorio y la de
+      Archivos salen verdes, **y el control es la misma captura con `Yaru` por
+      defecto**. Dos capturas, no una. Y antes, comprobar que las variantes están
+      en `encina-95758c9e` y no sólo en el constructor».
 
 - [x] ~~**Elegir el verde, ahora con las capturas delante.**~~ **ELEGIDO `sage`
       el 2026-08-14, decisión de Jorge —«el otro es muy llamativo»— y APLICADO en
@@ -131,3 +162,45 @@ delante se contesta la pregunta que hoy es una hipótesis:
 Si la respuesta es «poco», [3-tema-e-iconos.md](3-tema-e-iconos.md) se reduce a
 los iconos y el tema base no se empaqueta. **Esa respuesta se escribe aquí**, con
 las capturas al lado, antes de abrir el fichero siguiente.
+
+---
+
+## LA RESPUESTA, escrita el 2026-08-15 con las capturas delante
+
+**Las cinco casillas están hechas.** Y no son «seis capturas contra seis»: el
+«antes» son 7 —una de ellas, `reconocimiento-firmware-…`, de otra pasada— y el
+«después» llegó en tres tandas, `despues/` (5), `acento/` (3) y
+`fondo-0.1.13/` (5). Se dice así y no se cuadra el número, porque las tandas
+responden a preguntas distintas y forzarlas a una tabla de seis filas sería
+maquillaje.
+
+**La respuesta corta: queda poco, y casi nada de lo que queda lo arregla un tema
+GTK.** Desglosado, que es lo que sirve:
+
+| Lo que sigue siendo de Ubuntu | ¿Lo arregla un tema GTK? |
+|---|---|
+| **El acento no es el de Encina.** `#3A664E` no está en la lista cerrada de diez, y `sage` es un verde prestado que «pasa por gris» | **Sí, y es lo único.** Pero no es un tema nuevo: es **una variante más** dentro de Yaru, que es la escala a la que Yaru ya está construido |
+| **La barra superior y el resumen** siguen igual | **No.** Es el tema del **shell**, y hay uno solo, `/usr/share/gnome-shell/theme/Yaru/`, sin variantes de acento. Otro artefacto, otra tarea |
+| **El dock**: la «A» naranja del Centro de aplicaciones, el «?» de ayuda, el logo de Ubuntu de la rejilla | **No.** Son **iconos de aplicación**, no acento. Se ven en `fondo-0.1.13/3-escritorio-claro.png`, publicada ya en el README |
+| **GDM**: el recuadro de selección naranja de Yaru, y el fondo que no llega | **No.** Es el perfil de GDM y su `dconf`; sospecha vieja, ahora con captura (`fondo-0.1.13/0-gdm.png`) |
+| **El firmware dice «Ubuntu» dos veces** y no hay menú de GRUB | **No.** Es la NVRAM y la ruta del `shim`: ni tema ni `GRUB_DISTRIBUTOR` |
+| **Plymouth no se ha visto NUNCA** —del segundo 9 al 20 la pantalla está apagada— | **No**, y además no es un problema de aspecto sino de si el tema llega a verse |
+
+**Lo que esto decide, que era el objeto del hito:**
+
+1. **Un tema GTK de terceros no se empaqueta.** Ya estaba descartado por R8 y
+   ahora además está medido que no compraría casi nada: lo que un tema GTK toca
+   —ventanas, carpetas, botones, GTK4— **ya está verde** desde la 0.1.10, con
+   dos líneas de `gschema.override` y sin un solo `.deb` nuevo.
+2. **[3-tema-e-iconos.md](3-tema-e-iconos.md) se reduce**, que es lo que la
+   hipótesis apostaba: **iconos de aplicación** —lo más visible que queda— y, si
+   se quiere el verde propio, **una variante de acento**. El tema del shell y GDM
+   son bloque aparte y van en [4-arranque-y-sesion.md](4-arranque-y-sesion.md).
+3. **La decisión del fork de Yaru queda desbloqueada y madura**, que era su
+   condición en [0-decidir.md](0-decidir.md): la medición del acento tenía que
+   «decidir su tamaño», y lo ha decidido — **es añadir una variante, no
+   rediseñar**. Sigue siendo decisión de Jorge si se paga; lo que ya no es, es
+   una decisión a ciegas.
+
+**Y lo que esta respuesta NO dice:** ninguna de estas capturas es una aprobación.
+El `[OJOS]` de las de `fondo-0.1.13/` sigue sin dar, y el README ya las publica.
