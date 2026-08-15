@@ -16,7 +16,7 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 
 | Bloque | Qué | Abiertas |
 |---|---|---|
-| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **26** |
+| **[aspecto/](tareas/aspecto/)** | **Que el sistema instalado tenga cara propia.** Es lo que se está haciendo | **23** — y [2-golpes-baratos.md](tareas/aspecto/2-golpes-baratos.md) cerrado entero, 5 de 5, con su hito escrito |
 | [marca-del-medio.md](tareas/marca-del-medio.md) | Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar | 5 |
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |
@@ -31,10 +31,14 @@ propia. La marca del medio y del instalador es justo la parte que se tira si E5
 se hace, y esa decisión sigue sin tomar. Uno no se paga dos veces; el otro puede.
 
 Después van alojamiento y publicar, que no dependen de lo visual salvo en una
-cosa: **la licencia de las seis fotografías que viajan en la ISO está sin
+cosa: ~~**la licencia de las seis fotografías que viajan en la ISO está sin
 determinar**, y eso bloquea publicar igual que lo bloqueaba la oferta de fuente.
 Es la primera casilla de
-[aspecto/0-decidir.md](tareas/aspecto/0-decidir.md).
+[aspecto/0-decidir.md](tareas/aspecto/0-decidir.md).~~ **Cerrada el 2026-08-15, y
+la premisa era falsa:** `debian/copyright` las declaraba desde el 2026-08-08; lo
+que estaba desactualizado era `design/fondos/manifiesto.tsv`. **Ya no queda nada
+de lo visual bloqueando publicar** — lo que bloquea es la marca del medio y los
+3,46 GB.
 
 ## Cerrado
 

@@ -28,12 +28,19 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       `debian/copyright`. Si vuelven a separarse, nadie se entera —que es
       exactamente lo que pasó—. `design/generar.sh` lo dice en su cierre.
 
-- [ ] **La identidad, como decisión D en `ENCINA-OS.md`.** El texto ya está
-      escrito en `design/identidad.md` y `design/paleta.md`; lo que falta es que
-      sea una decisión con su motivo, en el sitio donde este proyecto guarda las
-      decisiones, para que no se vuelva a discutir sin motivo nuevo.
-      *Hecha cuando:* es una fila D que dice para quién es, qué transmite y **qué
-      no debe parecer** — con los tres nombres: Ubuntu, macOS y la Administración.
+- [x] ~~**La identidad, como decisión D en `ENCINA-OS.md`.**~~ **HECHA el
+      2026-08-15: es `D19`**, en §2 «Decisiones cerradas», y cumple las tres
+      cosas que esta casilla exigía — para quién es (no un usuario de Linux:
+      alguien con un plazo y consecuencias legales), qué transmite («esto es
+      serio y no me va a fallar»), y **qué no debe parecer con los tres nombres**:
+      Ubuntu, macOS/Windows y la Administración.
+      *Por qué era una casilla y no una obviedad:* el texto llevaba escrito desde
+      el 2026-08-14 en `design/identidad.md`, pero **un documento de diseño se
+      rediscute y una decisión con su motivo no**.
+      *Y D19 no tapa lo que queda abierto:* que el acento propio no existe en la
+      lista de Ubuntu y hoy viaja un verde prestado, que los colores semánticos
+      están `PROPUESTO`, y que el acento **no se lee** sobre el fondo oscuro de la
+      propia marca (1,68). Las tres siguen aquí abajo.
 
 - [ ] **Los colores que faltan: error, aviso, correcto y el texto.** Cinco
       colores de marca sirven para un banner; un sistema operativo necesita más.
@@ -45,6 +52,26 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       *Hecha cuando:* `design/paleta.tsv` no tiene ninguna fila `SIN DECIDIR`, y
       el contraste del texto sobre el fondo está **comprobado con un número**, no
       mirado.
+
+      **ESTADO 2026-08-15: la parte medible está hecha; falta el sí de Jorge.**
+      `design/paleta.tsv` tiene **cero filas `SIN DECIDIR`** y dos columnas de
+      contraste **calculadas desde el hex**, no tecleadas —un comprobador las
+      recalcula y la primera pasada cazó **siete** números puestos a ojo—. La
+      incoherencia del blanco roto queda resuelta: **manda el nombre**, y el hex
+      pasa a `#F5F7F4`, que contra el neutro da 1,14 en vez del 1,23 del blanco
+      puro. Pero **los ocho hexes nuevos están `PROPUESTO`, no `VIGENTE`**: son
+      una propuesta, y elegir un rojo es de Jorge. **La casilla se marca cuando
+      él diga que sí**, no antes.
+      *El hallazgo que obligó a partir cada papel en dos, y no estaba previsto:*
+      **ningún hex único sirve para los dos modos.** `#9E2F26` da 6,75 sobre el
+      papel claro y **1,52** sobre el oscuro. Un solo color de error habría
+      pasado la revisión en claro y habría dejado el modo oscuro sin poder contar
+      que una firma ha fallado.
+      *Y un fallo en lo que YA estaba `VIGENTE`:* el acento `#3A664E` sobre
+      `acento-profundo #2F4033` da **1,68**. **El acento no se lee sobre el fondo
+      oscuro de la propia marca.** No es un color mal elegido: es que ese par
+      **no se había medido nunca**. Dónde el papel sea identidad —el logotipo
+      sobre fondo oscuro— hay que decidir qué se hace, y está **sin decidir**.
 
 - [ ] **El tema base, elegido, anclado y con la licencia leída.** WhiteSur está
       descartado por R8 y el motivo está en [LEEME.md](LEEME.md).
@@ -68,6 +95,24 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       `gschema.override`. Si es una lista cerrada de diez, o se elige el verde más
       cercano de los suyos o se forkea **sólo para añadir un acento más**, que es
       una diferencia de datos en un SCSS y no un rediseño.
+
+      **DESBLOQUEADA EL 2026-08-15: el aplazamiento ya no se sostiene.**
+      [2-golpes-baratos.md](2-golpes-baratos.md) está **5 de 5** y su hito está
+      escrito. La medición del acento tenía que «decidir el tamaño» del fork, y lo
+      ha decidido: la lista es **cerrada, de diez**, `#3A664E` **no está** en ella,
+      y el mecanismo alcanza GTK3, GTK4/libadwaita, iconos y carpetas. **O sea que
+      el fork es añadir una variante, no rediseñar.**
+      *Lo que hay hoy, y por qué no basta:* viaja `Yaru-sage`, elegido el
+      2026-08-14 y aplicado en 0.1.10. Es **un verde prestado**: `#657B69` está
+      tan desaturado que **pasa por gris**, así que casi no se lee que se haya
+      decidido nada. El otro candidato, `viridian #03875B`, sí cambia la cara pero
+      es esmeralda —«más de aplicación que de dehesa»—.
+      **La decisión, servida, es de Jorge y son tres opciones:** (a) forkear Yaru
+      para añadir la variante `encina` con `#3A664E`, que es lo único que da el
+      verde propio y abre la casilla de abajo; (b) quedarse con `sage` y aceptar
+      por escrito que el acento no es el de la marca; (c) cambiar a `viridian`,
+      que se ve más pero tampoco es el de la marca. **Ya no es una decisión a
+      ciegas, que era lo que el aplazamiento protegía.**
 
 - [ ] **Si hay fork de Yaru: dónde vive, y cómo no lo pisa un `apt upgrade`.**
       Dos decisiones, y la segunda es la que se paga cara si se descubre tarde.

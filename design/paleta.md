@@ -17,36 +17,65 @@ guion. Aquí está el porqué de cada uno y lo que falta.
 **Un color, un papel.** El acento es `#3A664E` y no hay un segundo acento: en
 cuanto hay dos, la pantalla deja de tener un sitio donde mira el ojo.
 
-## Lo que falta, y no es un detalle
+## Lo que faltaba, propuesto el 2026-08-15 con los números delante
 
 Cinco colores de marca sirven para un banner. **Un sistema operativo necesita
-más**, y hasta que estén elegidos, el tema pondrá los suyos:
+más.** Ya no hay ninguna fila `SIN DECIDIR` en el TSV, pero **todo lo de abajo
+está `PROPUESTO` y no `VIGENTE`**: son colores escritos, no aplicados, y elegir
+un rojo es de Jorge.
 
-- **Un color de error.** Es el que más falta hace y el que ninguna paleta de
-  marca trae, porque en un banner no hay errores. En este producto sí: un
-  certificado caducado, una firma que no sale.
-- **Un color de aviso** y **uno de correcto**. El de correcto es probablemente el
-  propio acento, pero eso hay que decidirlo, no darlo por hecho.
-- **El texto**, claro y oscuro, con su contraste comprobado y no supuesto.
+| Papel | Claro | sobre papel | Oscuro | sobre fondo oscuro |
+|---|---|---|---|---|
+| **texto** | `#1C231E` tinta encina | **14,90** AAA | `#E8ECE7` tiza | **9,24** AAA |
+| **correcto** | `#2F5741` verde sello | **7,61** AAA | `#7FB394` verde brote | **4,62** AA |
+| **aviso** | `#8A5A12` ocre | **5,49** AA | `#E0A94A` ocre claro | **5,23** AA |
+| **error** | `#9E2F26` almagre | **6,75** AA | `#F0897C` almagre claro | **4,51** AA |
 
-## Una incoherencia que hay que resolver
+Los números son razones de contraste WCAG 2.1 contra `papel #F5F7F4` y contra
+`acento-profundo #2F4033`. **Están calculados, no tecleados**: se generan desde
+el hex, y un comprobador vuelve a calcularlos y avisa si alguno no cuadra —la
+primera pasada cazó **siete** números puestos a ojo—.
 
-`identidad.png` declara **«BLANCO ROTO — #FFFFFF»**. `#FFFFFF` es blanco puro:
-un blanco roto es otra cosa. O el nombre está mal o el hex está mal, y hasta que
-se decida cuál, la fila está como `SIN DECIDIR` en el TSV.
+**El error y el aviso salen de la tierra, no de un rojo de semáforo.** Almagre y
+ocre son los pigmentos del paisaje que ya está en la paleta; un rojo puro al lado
+del verde encina se lee como una alerta de navegador, no como este producto.
 
-No es cosmético: si el papel de ese color es «el fondo de una ventana clara»,
-`#FFFFFF` contra `#E6E8E6` da un escritorio que parece dos escritorios.
+## POR QUÉ CADA PAPEL SEMÁNTICO SON DOS COLORES Y NO UNO
 
-## Y el acento tiene una vía barata que hay que medir antes de nada
+Porque **ningún hex único sirve para los dos modos**, y esto se midió, no se
+supuso. `#9E2F26` da **6,75** sobre el papel claro y **1,52** sobre el oscuro:
+ilegible. Un solo color de error habría pasado la revisión en claro y habría
+dejado el modo oscuro sin poder contar que una firma ha fallado.
 
-Ubuntu 24.04 trae selector de color de acento, y su implementación **alcanza a
-las aplicaciones GTK4/libadwaita**, que son las que un tema GTK3 no toca. Si eso
-se confirma, media identidad se aplica con una línea de `gschema.override` y sin
-rozar R5.
+**Y de paso salió un fallo en lo que ya estaba VIGENTE:** el acento `#3A664E`
+sobre `acento-profundo #2F4033` da **1,68**. **El acento no se lee sobre el fondo
+oscuro de la propia marca.** No es que el color esté mal elegido: es que ese par
+no se había medido nunca. Donde el papel sea semántico lo resuelve
+`correcto-oscuro`; donde sea identidad —el logotipo sobre un fondo oscuro— hay
+que decidir qué se hace, y **está sin decidir**.
 
-**Está sin medir.** Es la primera casilla de
-[../tareas/aspecto/2-golpes-baratos.md](../tareas/aspecto/2-golpes-baratos.md), y
-lo que hay que averiguar es si el acento admite un valor propio o solo una lista
-cerrada — porque si es cerrada, `#3A664E` no está en ella y hay que elegir el más
-cercano o descartar la vía.
+## La incoherencia del «blanco roto», resuelta
+
+`identidad.png` declaraba **«BLANCO ROTO — #FFFFFF»**, y `#FFFFFF` es blanco
+puro. **Manda el nombre, no el hex**: el papel de ese color es «el fondo de una
+ventana clara», y para eso un blanco roto es lo correcto. Queda `#F5F7F4`, un
+blanco con el mismo sesgo verde que el `neutro`.
+
+Y el motivo que daba este documento ahora tiene número: `#FFFFFF` contra
+`#E6E8E6` da **1,23**, y `#F5F7F4` contra `#E6E8E6` da **1,14**. Más cerca del
+neutro, o sea menos «dos escritorios». *`identidad.png` sigue diciendo `#FFFFFF`
+y es una copia que hay que cuadrar —el TSV manda—.*
+
+## Y el acento tuvo su vía barata, medida
+
+~~Está sin medir.~~ **Medida el 2026-08-14** y contestada entera en
+[../tareas/aspecto/2-golpes-baratos.md](../tareas/aspecto/2-golpes-baratos.md):
+Ubuntu **no** tiene clave `accent-color`; lo que hay es una **lista cerrada de
+diez temas** `Yaru-<acento>`, y **sí alcanza a GTK4/libadwaita**, que era la
+duda. `#3A664E` **no está en la lista**, así que se puso `Yaru-sage` como verde
+prestado en `encina-branding` 0.1.10 — y `sage #657B69` está tan desaturado que
+pasa por gris.
+
+Tener el verde propio exige **forkear Yaru para añadir una variante**, que es una
+decisión abierta en
+[../tareas/aspecto/0-decidir.md](../tareas/aspecto/0-decidir.md).

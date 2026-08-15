@@ -9,15 +9,34 @@
 # se llama. Si algun dia el acento deja de ser #3A664E, el papel 'acento' sigue
 # siendo el mismo y lo que hay que cambiar es una fila.
 #
-papel	nombre	hex	estado	donde se usa hoy
-acento	verde encina	#3A664E	VIGENTE	logotipo (copa, tronco), README (insignia de licencia)
-acento-profundo	verde profundo	#2F4033	VIGENTE	primary-color y secondary-color de los fondos, gschema.override
-acento-claro	verde hoja	#5B7553	VIGENTE	extremo claro del degradado de 02-activos.sh
-tierra	tierra ibera	#A78B75	VIGENTE	README (insignias de base y arquitectura)
-arcilla	arcilla	#D6BFA0	VIGENTE	logotipo (malla y nodos), README (insignia de imagen)
-neutro	gris pizarra	#E6E8E6	VIGENTE	identidad.png, sin uso en el sistema
-papel	blanco roto	-	SIN DECIDIR	identidad.png dice #FFFFFF, que NO es un blanco roto
-texto	-	-	SIN DECIDIR	hoy lo pone el tema, no la paleta
-correcto	-	-	SIN DECIDIR	candidato natural: el propio acento
-aviso	-	-	SIN DECIDIR	no hay ninguno elegido
-error	-	-	SIN DECIDIR	no hay ninguno elegido, y es el que mas falta hace
+# LAS DOS COLUMNAS DE CONTRASTE, anadidas el 2026-08-15, y por que hacen falta:
+# la razon WCAG 2.1 de ese color contra el papel claro (#F5F7F4) y contra el
+# oscuro (#2F4033). AA pide 4.50 para texto normal y 3.00 para texto grande y
+# piezas de interfaz; AAA pide 7.00. Un guion '-' es que ese par no se usa.
+#
+# Y EL HALLAZGO QUE OBLIGO A PARTIR CADA PAPEL SEMANTICO EN DOS: ningun hex
+# unico sirve para los dos modos. Medido: #9E2F26 da 6.75 sobre el papel claro y
+# 1.52 sobre el oscuro, que es ilegible. Por eso 'error', 'aviso', 'correcto' y
+# 'texto' tienen fila -claro y fila -oscuro, y no una sola.
+#
+# Y UNO QUE YA ESTABA VIGENTE Y NO PASA: el acento #3A664E sobre acento-profundo
+# #2F4033 da 1.68. El acento NO se lee sobre el fondo oscuro de la propia marca.
+# No es un color mal elegido: es que nunca se habia medido ese par. Queda como
+# aviso en su fila, y lo resuelve 'correcto-oscuro' cuando el papel es semantico.
+#
+papel	nombre	hex	estado	contraste_claro	contraste_oscuro	donde se usa hoy
+acento	verde encina	#3A664E	VIGENTE	6.11	1.68	logotipo (copa, tronco), README (insignia de licencia) -- NO se lee sobre acento-profundo
+acento-profundo	verde profundo	#2F4033	VIGENTE	-	-	primary-color y secondary-color de los fondos, gschema.override
+acento-claro	verde hoja	#5B7553	VIGENTE	4.74	2.16	extremo claro del degradado de 02-activos.sh
+tierra	tierra ibera	#A78B75	VIGENTE	2.96	3.47	README (insignias de base y arquitectura)
+arcilla	arcilla	#D6BFA0	VIGENTE	1.65	6.21	logotipo (malla y nodos), README (insignia de imagen)
+neutro	gris pizarra	#E6E8E6	VIGENTE	1.14	8.96	identidad.png, sin uso en el sistema
+papel	blanco roto	#F5F7F4	PROPUESTO	1.00	10.25	el fondo de una ventana clara -- 1.14 contra el neutro, no 1.23 como el blanco puro
+texto-claro	tinta encina	#1C231E	PROPUESTO	14.90	-	texto oscuro sobre papel claro
+texto-oscuro	tiza	#E8ECE7	PROPUESTO	-	9.24	texto claro sobre fondo oscuro
+correcto-claro	verde sello	#2F5741	PROPUESTO	7.61	-	la firma salio, el certificado vale
+correcto-oscuro	verde brote	#7FB394	PROPUESTO	-	4.62	lo mismo, en modo oscuro
+aviso-claro	ocre	#8A5A12	PROPUESTO	5.49	-	el certificado caduca pronto, falta algo y se puede seguir
+aviso-oscuro	ocre claro	#E0A94A	PROPUESTO	-	5.23	lo mismo, en modo oscuro
+error-claro	almagre	#9E2F26	PROPUESTO	6.75	-	la firma no sale, el certificado caduco
+error-oscuro	almagre claro	#F0897C	PROPUESTO	-	4.51	lo mismo, en modo oscuro
