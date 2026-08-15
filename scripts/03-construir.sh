@@ -286,6 +286,11 @@ else
     ok "Todas las rutas cuelgan de /usr y /etc"
 fi
 
+# Las dos ultimas son las DOS MITADES de D21 y por eso se comprueban las dos:
+# la sombra sin el icono deja un lanzador con un icono roto -su Icon= apunta a
+# un nombre que nadie sirve- y el icono sin la sombra no lo pide nadie, que es
+# el fallo silencioso de siempre. Ninguna de las dos se nota hasta mirar el
+# dock, y para entonces el .deb ya viaja.
 for esperado in \
     "usr/share/backgrounds/encina/encina.jpg" \
     "usr/share/backgrounds/encina/encina-dark.jpg" \
@@ -295,7 +300,9 @@ for esperado in \
     "usr/share/icons/Encina/index.theme" \
     "usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg" \
     "usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg" \
-    "etc/systemd/user/gnome-initial-setup-first-login.service"
+    "etc/systemd/user/gnome-initial-setup-first-login.service" \
+    "usr/share/applications/snap-store_snap-store.desktop" \
+    "usr/share/icons/hicolor/scalable/apps/encina-centro-aplicaciones.svg"
 do
     if echo "$CONTENIDO" | grep -q "$esperado"; then
         ok "Incluye $esperado"
