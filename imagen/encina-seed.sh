@@ -83,8 +83,22 @@ run() { say "\$ $*"; "$@" >>"$L" 2>&1; RC=$?; say "  rc=$RC"; }
 # dato no esta en git y no se puede reproducir desde un clon. Medido: mismo
 # contenido huella a huella, mismos modos, duenos, tamanos y rutas; lo unico
 # que cambia son las fechas, y por eso los tres .deb son ahora MAS PEQUENOS.
+#
+# Y LA MISMA TRAMPA VOLVIO A MORDER EL 2026-08-15, con encina-branding 0.1.13.
+# La huella que se apunto aqui y en el manifiesto -bf821ee6…, 6943792 bytes- era
+# otra vez de una construccion sobre el arbol de trabajo de encina-dev, y la CI
+# lo canto: cinco ejecuciones en rojo desde 932bc5c. Medido: contenido identico
+# -md5sums byte a byte igual, 'diff -r' del data.tar extraido en verde- y 22
+# fechas distintas dentro del .deb de encina-dev contra UNA sola en el del
+# runner. Reconstruido desde 'git archive HEAD' en encina-dev sale 4df508cd…,
+# que es EXACTAMENTE la del runner amd64: la construccion si es reproducible
+# entre arquitecturas; lo que no lo es es el arbol de trabajo.
+#
+# LA LECCION, que no es la huella sino el procedimiento: una huella que se
+# apunte aqui tiene que salir de 'git archive HEAD', nunca de haber lanzado
+# 03-construir.sh sobre el repositorio donde se estaba trabajando.
 H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
-H_BRANDING=bf821ee664ef332b9d5445eddd8dc2f1c9bfb3e00a360c6ec34c119e838578b4
+H_BRANDING=4df508cd1dc9da51252dbc61d6588e17ddefa55ea7756dc1d9d044e4e1377635
 H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
 H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 

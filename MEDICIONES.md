@@ -10713,12 +10713,96 @@ el único motivo nuevo que reabriría esta discusión.
 
 ---
 
+### 4.46 LA MISMA TRAMPA DE §4.37, OTRA VEZ: la huella de 0.1.13 era del árbol de trabajo, y la CI la cazó (2026-08-15)
+
+**La CI llevaba cinco ejecuciones en rojo** —desde `932bc5c`, que es donde entró
+0.1.12— y **solo fallaba `encina-branding`**: `encina-firefox-native` y
+`encina-meta` pasaban. El paso que fallaba era la medición de §4.38, no el
+control, que decía `[OK]` antes.
+
+```
+[HALLAZGO] encina-branding_0.1.13_all.deb NO es el del manifiesto
+        manifiesto  bf821ee664ef332b9d5445eddd8dc2f1c9bfb3e00a360c6ec34c119e838578b4  6943792 bytes
+        construido  4df508cd1dc9da51252dbc61d6588e17ddefa55ea7756dc1d9d044e4e1377635  6943670 bytes
+```
+
+**122 bytes de diferencia, y el contenido era el mismo.** Bajado el artefacto
+del runner y desglosado contra el `.deb` arm64 que había en `debian-packages/`:
+
+| miembro | arm64 (= manifiesto) | amd64 (runner) |
+|---|---|---|
+| `debian-binary` | `d526eb4e878a23ef` | igual |
+| `control.tar.zst` | `a4b7ad35aa0dabb1` | igual |
+| `control.tar` | `f9cf4833445a4e60` | igual |
+| `data.tar.zst` | `45347c810e87b43a`, 6 940 891 b | `4310bd3ee1426e73`, 6 940 769 b |
+| `data.tar` | `17a4f9256526120f`, 7 055 360 b | `ad427db8c49a9792`, **7 055 360 b** |
+
+`control.tar` **idéntico** significa que `md5sums` es idéntico, y `md5sums` es la
+huella de los 23 ficheros: el contenido no podía cambiar. Confirmado por partida
+doble —`md5sums` extraído da `62264aef40f2bf61` en los dos, y un `diff -r` de los
+dos `data.tar` extraídos sale limpio—. `data.tar` con **el mismo tamaño** y otra
+huella solo deja una posibilidad: metadatos.
+
+**Y eran las fechas, que es exactamente §4.37:**
+
+```
+amd64 (runner):   52 entradas, UNA sola fecha:  2026-08-15 00:28:22 UTC
+arm64 (manifiesto): 22 fechas distintas: Aug 6 18:48, Aug 8 00:45, Aug 12 00:37,
+                    Aug 14 09:42, Aug 14 13:49, Aug 14 23:10, Aug 15 00:23...
+```
+
+`00:28:22 UTC` es el `SOURCE_DATE_EPOCH` que impone el changelog. `dpkg-deb`
+**recorta los mtimes posteriores y deja pasar los anteriores**: en el runner todo
+viene de un `checkout` recién hecho —todo posterior, todo recortado—; en
+`encina-dev` se construyó sobre el árbol de trabajo, cuyos ficheros son de hace
+días, más antiguos, y se colaron dentro del `.deb`.
+
+**El que no era reproducible era el del manifiesto, no el del runner.** Y no es
+opinión: reconstruido en `encina-dev` desde `git archive HEAD` sobre un
+directorio nuevo,
+
+```
+4df508cd1dc9da51252dbc61d6588e17ddefa55ea7756dc1d9d044e4e1377635  6943670 bytes
+fechas distintas en data.tar: 1  (2026-08-15 02:28 = SOURCE_DATE_EPOCH)
+```
+
+**la misma huella que el runner amd64, byte a byte, y los cinco miembros
+también.** Con las mismas versiones de herramientas en las dos máquinas —dpkg
+1.22.6ubuntu6.6, libzstd1 1.5.5+dfsg2-2build1.1, tar 1.35+dfsg-3ubuntu0.4—, así
+que nada más podía explicarlo. **§4.38 sigue en pie: la reproducibilidad entre
+arquitecturas es real.** Lo que no es reproducible es el árbol de trabajo.
+
+**Corregido en los dos sitios donde vivía la huella**, con su control por
+delante en las dos máquinas (manifiesto saboteado → `[HALLAZGO]`; manifiesto
+bueno → `[OK]`):
+
+| Sitio | Estado |
+|---|---|
+| `imagen/repo-manifiesto.tsv` línea 32 | corregido y verificado en arm64 y en el Mac |
+| `imagen/encina-seed.sh` `H_BRANDING` | corregido, con la enmienda fechada al lado del aviso de §4.37 |
+
+**Lo que queda abierto, y no se da por hecho:** `imagen/autoinstall.yaml` y
+`imagen/autoinstall-unattended.yaml` llevan `encina-seed.sh` **empotrado en
+base64**, así que los dos siguen con `H_BRANDING=bf821ee6…` dentro. Medido
+decodificando el base64: los 29 563 bytes empotrados coinciden con
+`HEAD:encina-seed.sh` —el control— y **no** con el corregido. Rehacerlos es
+`fabricar-seed.sh --actualizar-yaml`, que exige `--repo` con los 28 `.deb` y su
+`Packages`; no se tocan a mano. **No bloquea la CI**, que solo lee el manifiesto.
+
+**Lo que esto enseña, y no es la huella:** el aviso de §4.37 estaba escrito
+dentro de `encina-seed.sh` desde el 2026-08-13 y aun así volvió a pasar dos
+veces seguidas —0.1.12 y 0.1.13—. Un aviso en un comentario no es una barrera.
+La barrera fue la CI, que lo cazó a la primera; el aviso no lo evitó.
+
+---
+
 ## 9. Trampas conocidas
 
 Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 
 | Trampa | Síntoma | Causa |
 |---|---|---|
+| **Una huella de `.deb` que ninguna otra máquina puede reproducir** | La CI dice `[HALLAZGO] NO es el del manifiesto` con unos cientos de bytes de diferencia, y el contenido es idéntico —`md5sums` byte a byte igual— | Se apuntó la huella de un `.deb` construido **sobre el árbol de trabajo**. `dpkg-deb` recorta los mtimes posteriores a `SOURCE_DATE_EPOCH` y **deja pasar los anteriores**, así que las fechas que los ficheros tenían en ese disco se cuelan dentro del paquete, y ese dato no está en git. **Toda huella que se apunte sale de `git archive HEAD` sobre un directorio nuevo.** Mordió el 2026-08-13 (§4.37) y **otras dos veces** el 2026-08-15, con 0.1.12 y 0.1.13 (§4.46), teniendo el aviso escrito en el propio fichero: lo cazó la CI, no el aviso |
 | Tema de Plymouth no aparece | Arranque idéntico tras instalar | El tema va dentro del initramfs; falta `update-initramfs -u` |
 | Logotipo propio nunca se ve | Aparece el del fabricante | El tema hereda de `bgrt` en lugar de `spinner` |
 | Arranque en negro en disco cifrado | No pide frase LUKS | Falta el callback `SetDisplayPasswordFunction` en el script |
