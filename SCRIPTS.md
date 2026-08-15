@@ -363,6 +363,30 @@ imprime `[OMIT]` en esa línea a propósito.
 dentro del bundle (`lsof`), la VM está arrancada o suspendida y se avisa. Esa no
 se toca.
 
+**La sección «FICHEROS GORDOS REPETIDOS» se añadió el mismo día, después de que
+la trampa mordiera de verdad (§4.50).** Se borró `medios/…-95758c9e.iso` —3,5 GB
+según `du`— y **`df` devolvió CERO**: no había instantáneas de APFS, lo que había
+era una copia con **la misma huella** dentro de `encina-95758c9e.utm`, clonada,
+compartiendo todos los bloques. **Borrar una de dos copias clonadas no libera
+nada; solo la última paga.** La sección agrupa los ficheros de ≥1 GiB con los
+mismos bloques asignados y los señala. **No demuestra el clonado** —macOS no da
+los bloques únicos de un fichero—: es un indicio que se confirma con `shasum`, y
+ese paso **no se salta**, porque `ac0a5721…` y `1224b5b1…` tienen el mismo tamaño
+exacto y distinto contenido (§4.45).
+
+**Dos defectos que costó escribirla, los dos cazados ejecutando:**
+
+- **`find -size +1g` no vale en macOS**, que quiere `G` **mayúscula**. No dio un
+  error legible: salió distinto de 0, `set -e` mató el guion **en mitad de la
+  sección** y la salida terminó justo tras el título. Un guion que se muere en
+  silencio es peor que uno que falla — y es de la familia del `[OK]` que describe
+  lo que se pidió y no lo que pasó.
+- **Agrupar por tamaño lógico (`%z`) daba un falso positivo gordo:** los cuatro
+  `disco.img` de UTM son **dispersos** y los cuatro declaran 42 949 672 960 bytes
+  exactos ocupando entre 10 y 12 GiB distintos. Habría dicho que cuatro VMs
+  comparten 40 GiB. Se agrupa por **bloques asignados (`%b`)**, que los separa
+  solos y deja juntas las ISOs que sí coinciden.
+
 *Por qué existe este guion, que es la parte que conviene no perder:* el
 2026-08-15 se escribió en tres documentos que la ISO `95758c9e…` llevaba
 `encina-branding` 0.1.11, **porque había una VM llamada `encina-95758c9e`**. Era

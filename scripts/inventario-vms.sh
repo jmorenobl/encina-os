@@ -193,6 +193,52 @@ printf '  %-24s %8s\n' "TOTAL ($n_vms VMs)" "$(( total_kb / 1024 / 1024 )) GiB"
 aviso "ese total es la suma de 'du', o sea la COTA SUPERIOR del control 2"
 
 # ---------------------------------------------------------------------------
+# LOS FICHEROS GORDOS QUE APARECEN MÁS DE UNA VEZ
+#
+# Añadido el 2026-08-15 después de que la trampa mordiera de verdad (§4.50):
+# se borró medios/…-95758c9e.iso, 3,5 GB según `du`, y `df` devolvió CERO.
+# La causa no era una instantánea de APFS —no había ninguna—: dentro de
+# encina-95758c9e.utm vivía una copia con la MISMA huella, clonada, compartiendo
+# todos los bloques. Borrar una de las dos no libera nada. Solo la última paga.
+#
+# Esto NO es una comprobación de clonado —macOS no da los bloques únicos de un
+# fichero—, es un INDICIO barato: mismo tamaño exacto y ≥1 GiB. Se confirma con
+# `shasum`, que el guion imprime pero no ejecuta: son minutos sobre ficheros así.
+# ---------------------------------------------------------------------------
+titulo "FICHEROS GORDOS REPETIDOS — el hueco que no se recupera"
+
+# OJO con el sufijo: el find de macOS quiere 'G' MAYÚSCULA. Con '+1g' no avisa
+# de nada útil, sale distinto de 0 y con 'set -e' el guion se muere en silencio
+# justo aquí. Pasó al escribir esta sección, el 2026-08-15.
+#
+# Y se agrupa por BLOQUES ASIGNADOS (%b), no por tamaño lógico (%z), que fue el
+# primer intento y daba un falso positivo gordo: los `disco.img` de UTM son
+# DISPERSOS y los cuatro declaran 42 949 672 960 bytes exactos aunque ocupen
+# entre 10 y 12 GiB distintos. Con %b se separan solos (24320864, 22141472,
+# 21780928, 25570784) y las tres ISOs siguen juntas en 7256576 clavados.
+sospechosos=$(
+    find "$VMS_DIR" "$DOCS_DIR/medios" -type f -size +1G 2>/dev/null \
+    | while read -r f; do printf '%s\t%s\n' "$(stat -f '%b' "$f")" "$f"; done \
+    | sort -n || true
+)
+
+repetidos=$(echo "$sospechosos" | awk -F'\t' 'NF{c[$1]++} END{for(t in c) if(c[t]>1) print t}')
+
+if [[ -z "$repetidos" ]]; then
+    ok "ningún fichero de ≥1 GiB aparece con el mismo tamaño en dos sitios"
+else
+    for t in $repetidos; do
+        n=$(echo "$sospechosos" | awk -F'\t' -v t="$t" '$1==t{print $2}' | wc -l | tr -d ' ')
+        aviso "$(( t * 512 / 1024 / 1024 / 1024 )) GiB × ${n} sitios, MISMOS bloques asignados — CANDIDATOS a clones:"
+        echo "$sospechosos" | awk -F'\t' -v t="$t" '$1==t{print "            "$2}'
+        echo "            confírmalo con:  shasum -a 256 <los dos>  — Y NO TE SALTES ESE PASO:"
+        echo "            dos ISOs de este proyecto tienen el MISMO tamaño exacto y distinto"
+        echo "            contenido (§4.45), así que igual de bloques NO es igual de contenido."
+        echo "            Si las huellas coinciden: borrar UNO no devuelve nada. Solo el último paga."
+    done
+fi
+
+# ---------------------------------------------------------------------------
 # LO QUE HAY QUE MIRAR, que no es lo mismo que lo que hay que borrar
 # ---------------------------------------------------------------------------
 titulo "PARA DECIDIR"

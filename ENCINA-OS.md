@@ -295,7 +295,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >    | Fichero | Huella | Qué es |
 >    |---|---|---|
 >    | `encina-os-E4-es-0.2.1.iso` | `ac0a5721…` | **La entregada de E4**, y la única de las tres que alguien ha arrancado e instalado (§4.35) |
->    | `encina-os-E4-es-0.2.1-95758c9e.iso` | `95758c9e…` | La primera que salió **reproducible** de este repositorio (§4.39). Nunca arrancada |
+>    | ~~`encina-os-E4-es-0.2.1-95758c9e.iso`~~ | `95758c9e…` | La primera que salió **reproducible** de este repositorio (§4.39). Nunca arrancada. **BORRADA el 2026-08-15 con permiso de Jorge — y `df` devolvió CERO, porque era un clon de la copia que vive dentro de `encina-95758c9e.utm` (§4.50). Sigue en disco ahí, y reproducible desde `git`** |
 >    | `encina-os-E4-es-0.2.1-1224b5b1.iso` | `1224b5b1…` | **La última que produce este repositorio**, con `encina-branding` **0.1.11** dentro (§4.45). Nunca arrancada |
 >
 >    O sea que **`1224b5b1…` es la que ha caducado hoy**: lleva 0.1.11 y la buena
