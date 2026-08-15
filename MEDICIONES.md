@@ -11270,7 +11270,8 @@ Y con 0.1.15 instalada, la pregunta que faltaba ya contesta que sí:
 **2026-08-15, `encina-dev` con 0.1.15 puesto y sesión reiniciada.** En el dock,
 donde estaba la «A» naranja del Centro de aplicaciones, está la bolsa verde —
 entre Archivos y el «?», que es su posición en `favorite-apps`. **Lo vio Jorge; el
-agente no ha visto ninguna pantalla en todo esto.** Con eso la casilla de los
+agente no ha visto ninguna pantalla en todo esto.** La captura está guardada:
+`design/capturas/despues/07-icono-tienda-aplicaciones.png`. Con eso la casilla de los
 iconos de `tareas/aspecto/3-tema-e-iconos.md` queda marcada, y es la primera vez
 en el bloque que se cumple entera: *dibujado* **y** *visto*.
 

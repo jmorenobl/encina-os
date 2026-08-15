@@ -45,7 +45,8 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       ENTERA: el icono está dibujado y VISTO EN PANTALLA** —`[OJOS]` de Jorge,
       en el dock de `encina-dev` con `encina-branding` **0.1.15** puesto: donde
       estaba la «A» naranja del Centro de aplicaciones hay ahora la bolsa verde,
-      entre Archivos y el «?»—. *Dónde se vio, que importa:* en el banco, no en
+      entre Archivos y el «?»—, y la prueba está guardada en
+      `../../design/capturas/despues/07-icono-tienda-aplicaciones.png`. *Dónde se vio, que importa:* en el banco, no en
       la máquina del producto, que todavía no lleva 0.1.15.
       *Y el `[OJOS]` no fue un trámite:* con **0.1.14** el icono **no se
       pintaba** —había un hueco— y las cinco comprobaciones automáticas estaban

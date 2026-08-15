@@ -1,4 +1,4 @@
-# El después: `encina-branding` 0.1.10 y 0.1.11
+# El después: `encina-branding` 0.1.10, 0.1.11 y 0.1.15
 
 **2026-08-14, sobre `encina-95758c9e`, arrancada desde frío con el paquete
 instalado.** Tres decisiones de Jorge, aplicadas por el paquete y no a mano.
@@ -11,6 +11,7 @@ instalado.** Tres decisiones de Jorge, aplicadas por el paquete y no a mano.
 | `05-rejilla-bellota.png` | La rejilla abierta, **con la bellota iluminada** |
 | `06-control-la-bienvenida-vuelve.png` | **EL CONTROL, y se tomó primero:** sesión recién abierta con 0.1.10, y la bienvenida de Ubuntu vuelve a salir entera |
 | `06-primera-sesion-sin-bienvenida.png` | La misma máquina con 0.1.11 y reiniciada: **la sesión entra directa al escritorio** |
+| `07-icono-tienda-aplicaciones.png` | **2026-08-15, `encina-dev` con 0.1.15**: el Centro de aplicaciones con **el icono de Encina** en el dock, donde estaba la «A» naranja |
 
 ## Lo que cambió
 
@@ -54,7 +55,21 @@ Mecanismo y controles en `MEDICIONES.md` §4.44.
 en mitad del dock **ha desaparecido con la ventana**, porque era ella
 ejecutándose y no ningún botón.
 
+## El Centro de aplicaciones ya no dice Ubuntu (0.1.15, 2026-08-15)
+
+`07-icono-tienda-aplicaciones.png` es el `[OJOS]` que cierra `D21`: en el dock,
+entre Archivos y el «?», está **la bolsa verde de Encina** donde estaba la «A»
+naranja. Es el banco —`encina-dev`—, **no** la máquina del producto, que sigue
+con 0.1.13.
+
+**Y esta captura tiene una historia que conviene no perder** (`MEDICIONES.md`
+§4.49): con **0.1.14** ahí había un **hueco**, con las cinco comprobaciones
+automáticas en verde. `gdk-pixbuf` no reconoce un SVG cuyo `<svg` caiga más allá
+del **byte 256**, y el comentario de cabecera lo empujaba al 2090. *Sin mirar la
+pantalla, aquel paquete se habría dado por bueno.*
+
 ## Lo que sigue igual, y ya se sabía
-- **El Centro de aplicaciones sigue con su «A» naranja** y el icono de ayuda es
-  el azul de Ubuntu: son iconos de aplicación, no acento.
+- **El icono de ayuda es el azul de Ubuntu**, y se queda así a propósito: lo que
+  abre es `ubuntu-docs`, titulado «Guía del escritorio de Ubuntu», así que
+  repintarlo compra casi nada (§4.47g).
 - **La barra superior no cambia**: el tema del shell no tiene variantes.
