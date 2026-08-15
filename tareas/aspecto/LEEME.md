@@ -129,7 +129,7 @@ separados:
 | Qué | Dónde está escrito | Estado |
 |---|---|---|
 | El comentario de `encina-logo.svg`, que apunta a una ruta que ya no existe | [1-instrumentacion.md](1-instrumentacion.md) | **Espera exactamente esto**: se revirtió a propósito para no cambiar la huella suelta |
-| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md) | **PROPUESTO, sin decidir.** Seis líneas, con `TryExec=` |
+| La sombra del `.desktop` del Centro de aplicaciones | [3-tema-e-iconos.md](3-tema-e-iconos.md), y es `D21` | **DECIDIDA el 2026-08-15.** Seis líneas, con `TryExec=`. **Falta el icono, que no existe** |
 | El fondo del perfil de GDM, que parece un no-op | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (a) | Medido que no hace nada: **se quita o se documenta** |
 | El `banner-message-text='Encina OS'`, que no aparece | [4-arranque-y-sesion.md](4-arranque-y-sesion.md) (b) | Igual que el anterior |
 | Los ocho colores semánticos de `design/paleta.tsv` | `0-decidir.md` | Aprobados pero **PROPUESTO**, no VIGENTE: no se han aplicado a ningún paquete |

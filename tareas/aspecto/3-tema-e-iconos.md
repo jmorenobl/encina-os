@@ -82,14 +82,21 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       *Y un dato que decide si el «?» compra algo:* lo que abre es `ubuntu-docs`,
       titulado **«Guía del escritorio de Ubuntu»**. Repintar el icono deja un
       icono de Encina delante de un documento que sigue diciendo Ubuntu.
-      **LO QUE QUEDA DE ESTA CASILLA YA NO ES MEDIR: ES DECIDIR**, y es de Jorge.
+      **LO QUE QUEDABA DE ESTA CASILLA YA NO ERA MEDIR SINO DECIDIR, Y ESTÁ
+      DECIDIDO EL MISMO 2026-08-15, las dos mitades.** Lo que queda ahora es
+      **dibujar un icono** y **verlo en pantalla**, que es otra clase de trabajo.
       *El «?»: DECIDIDO EL 2026-08-15 — se queda como está.* El «?» azul de Yaru
       no lleva marca de Ubuntu; lo que dice Ubuntu está **detrás** del icono, y
       repintarlo compra casi nada. Si algún día se reabre, lo que hace falta está
       medido: un SVG en `scalable/apps` con el nombre `org.gnome.Yelp` y un
       directorio nuevo en el `index.theme`.
-      *La «A»: PROPUESTO el 2026-08-15, SIN DECIDIR.* La propuesta es **sombrear
-      el `.desktop`, pero montado en la siguiente versión de `encina-branding`
+      *La «A»: DECIDIDA EL 2026-08-15 por Jorge, y es `D21`: **se sombrea el
+      `.desktop`**.* Con ella queda escrito el criterio general —cuando el icono
+      de una aplicación ajena no es alcanzable desde el tema, se sombrea su
+      `.desktop` y **nunca** se toca el fichero ajeno—, y su precio. **Esta
+      casilla no se marca cuando el paquete lleve la sombra dentro: se marca
+      cuando el icono esté dibujado y visto en pantalla**, que es `[OJOS]`.
+      *Y va **montada en la siguiente versión de `encina-branding`
       que otra casilla ya tenga que pagar** —no en una suya—, porque el precio de
       tocar ese paquete no es el `.deb`: es el ritual de las siete cosas de
       `SCRIPTS.md`, que se paga **por vuelta y no por cambio** (el argumento de
