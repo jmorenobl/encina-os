@@ -73,8 +73,28 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
+      > **REABIERTA EL 2026-08-17 AL ARRANCARLA POR PRIMERA VEZ
+      > (`MEDICIONES.md` §4.54): LA CAPA NO SE MONTA NUNCA, y con ella no llega
+      > NADA de lo de abajo.** Medido dentro de la sesión viva:
+      > `grep zz-encina /proc/mounts` **no devuelve ni una línea**,
+      > `/usr/share/desktop-provision/` **no existe** y `/etc/os-release` dice
+      > `NAME="Ubuntu"`. **La premisa era falsa:** `casper` sólo recorre los
+      > `*.squashfs` del directorio **si `$LAYERFS_PATH` está vacío**, y aquí no lo
+      > está — vale `minimal.standard.live.squashfs`, puesto en
+      > `/conf/conf.d/default-layer.conf` **dentro del `initrd`**. La lista de
+      > capas se construye **quitando puntos del nombre**, no leyendo el
+      > directorio, y el `lowerdir` del invitado lo enseña: **tres** capas y ni una
+      > más. Buscar `layerfs-path` (la grafía de la línea de órdenes) daba 0 y era
+      > cierto; la variable de dentro se llama `LAYERFS_PATH` y vive en un cpio
+      > comprimido. **El `zz-` del nombre no sirve de nada.**
+      > **Lo que SÍ funciona y queda en pie:** `.disk/info` —`whoami` da `encina`—
+      > y el `grub.cfg`. **Lo que hay que decidir antes de reintentar:** por dónde
+      > entra la marca de la sesión viva si no es por una capa nueva —el candidato
+      > medido es **`layerfs-path=` en la línea del núcleo del `grub.cfg`**, que es
+      > fichero nuestro, encadenando `minimal.standard.live.encina`—, y **no se
+      > toca nada hasta gastar el control de `ac0a5721…`** (§4.54f).
       **HECHA EL 2026-08-15 SALVO EL `[OJOS]`, QUE ES DE JORGE
-      (`MEDICIONES.md` §4.52).** Aquí sí se tocó el producto, y la pregunta de
+      (`MEDICIONES.md` §4.52) — Y ESO ERA LO QUE SE CREÍA.** Aquí sí se tocó el producto, y la pregunta de
       fondo de arriba —reempaquetado o E5— **está contestada por escrito: es
       `ENCINA-OS.md` D23**.
       **Lo primero, porque decidía cuánto trabajo había: los dos `[OMIT]` que

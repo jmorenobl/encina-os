@@ -2192,3 +2192,42 @@ etiqueta** —`casper` va por contenido y UUID, el GRUB firmado hace
 `search --file /.disk/info`, `apt-cdrom` lee `.disk/info` y `subiquity` va por la
 ruta `/cdrom`— y que la cadena de arranque sale **byte a byte idéntica**.
 Arrancarlo es `[OJOS]` de Jorge.
+
+## Y cuatro más, todas del 2026-08-17 al dar la vuelta única
+
+**28. `utmctl start` devuelve 0 cuando falla.** Escribe
+`Error from event: The operation couldn't be completed. (OSStatus error -1712.)`
+por **stderr** y sale con **código 0**, así que cualquier `utmctl start … || fallo`
+es código muerto. `construir-todo.sh` lo tenía, la VM no arrancó, el guion imprimió
+`[OK] VMs encendidas: 0` **justo después de decir que encendía una**, y acabó
+diciendo `[FALLO] el constructor no contesta por ssh` — que manda a mirar al sitio
+equivocado. **No te creas el código de salida: espera al ESTADO** (`utmctl status`
+hasta `started`, con tope). Arreglado en el guion.
+
+**La causa de fondo, por si vuelve:** UTM vivo pero con **la conexión interna
+caída** — contesta a lecturas (`utmctl list`, `get name of every virtual machine`)
+y falla al arrancar con `-1712` por `utmctl` y **`-609 La conexión no es válida`**
+por AppleScript. **Se arregla reiniciando UTM.** Antes de hacerlo, respalda
+`com.utmapp.UTM.plist` y comprueba las dos mitades después (trampa 18).
+
+**29. Un mismo ajuste tiene DOS nombres, y buscar uno no dice nada del otro.**
+La marca de la sesión viva se apoyaba en que *«el medio no lleva `layerfs-path`»*,
+buscado en el `grub.cfg`, la ESP y el resto de la imagen: **0 apariciones, y era
+verdad**. Pero `casper` lo lee de la variable **`LAYERFS_PATH`** —con subrayado—,
+que vive en `/conf/conf.d/default-layer.conf` **dentro del `initrd`**, o sea en un
+cpio comprimido donde ningún `grep` sobre la imagen llega. Coste: una capa entera
+que **no se monta nunca** (`MEDICIONES.md` §4.54e). **Regla: cuando concluyas «no
+está», di en qué grafía lo buscaste y dónde NO miraste.**
+
+**30. Un `[OK]` sobre un fichero del medio no dice que el sistema lo use.**
+`inventario-marca.sh` lee los ficheros de la capa dentro de la ISO y los cuenta
+como «sitios que ya no dicen Ubuntu». En marcha, `/etc/os-release` decía
+`NAME="Ubuntu"` mientras el inventario declaraba `PRETTY_NAME="Encina OS 24.04
+LTS"`. **No es un fallo de lectura: es que «está en el medio» y «se monta» son dos
+cosas, y el instrumento sólo mide la primera.**
+
+**31. Dos caracteres más que no llegan al invitado con `teclear-vm.sh`: `|` y
+`&`.** Se suman a `=` y `@`. `ls /cdrom/casper/ | tail -n 4` llegó sin la tubería
+y ejecutó otra cosa. **Los subrayados sí llegan** (`ubuntu_bootstrap.log`, medido).
+Escribe las órdenes **sin tuberías y una por línea**, y mira la pantalla antes de
+Intro.

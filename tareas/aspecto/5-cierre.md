@@ -80,7 +80,14 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       *Hecha cuando:* la tabla del README describe todo lo que viaja y no una
       parte. Es obligación, no cortesía.
 
-- [ ] **Reconstruir la ISO y comprobar que sigue saliendo igual.** Todo este
+- [x] ~~**Reconstruir la ISO y comprobar que sigue saliendo igual.**~~ **HECHA EL
+      2026-08-17 (`MEDICIONES.md` §4.54b): `ac175f648b6406bd…`, 3 721 265 152
+      bytes, DOS PASADAS LA MISMA HUELLA** desde `b9b0de09`, 66 `[OK]` cada una y
+      los tres binarios firmados intactos, con el control de que la comparación
+      sabe decir «distintas» contra `1224b5b1…`. La huella que este repositorio
+      produce **ya no es `95758c9e…`**, y eso es lo que tenía que pasar al cambiar
+      los `.deb`.
+      **Reconstruir la ISO y comprobar que sigue saliendo igual.** Todo este
       bloque entra en los `.deb`, así que el Bloque 0 tiene que seguir de pie
       después: `construir-todo.sh` sobre un árbol limpio, y dos pasadas con la
       misma huella.
@@ -96,3 +103,15 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       probado en la máquina donde se hizo.
       *Hecha cuando:* una instalación limpia enseña las seis pantallas con la
       identidad puesta, mirado por una persona, y el verificador da 0 fallos.
+      **INTENTADA EL 2026-08-17 Y NO SE PUDO: NO HAY INSTALACIÓN**
+      (`MEDICIONES.md` §4.54d/f). La ISO `ac175f64…` arranca hasta la sesión viva
+      —usuario `encina`, escritorio en español— y ahí **el instalador se cae**:
+      «Se produjo un problema». Así que esta casilla **no ha empezado**, y no por
+      el aspecto. **Y aunque arrancara, no enseñaría la identidad:** la capa de
+      marca no se monta, así que el fondo, el título de la ventana, las
+      diapositivas y `os-release` siguen siendo los de Ubuntu.
+      *Lo que se aprendió y sirve para cuando se retome:* la VM se fabrica desde
+      cero sin tocar la interfaz, la sesión viva se pilota con
+      `scripts/teclear-vm.sh` y se lee con `scripts/leer-pantalla.m` —con el
+      control de mirar la captura con los ojos—, y **dos caracteres más que no
+      llegan al invitado: `|` y `&`**, que se suman a `=` y `@`.

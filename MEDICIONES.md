@@ -12308,3 +12308,168 @@ queda, y es lo que se podría necesitar, son **sus salidas literales, arriba**.
   **no decidido**. Hoy juega a favor —un nombre menos que cambiar— pero significa
   que un Windows que abra la ISO no ve los nombres largos de Joliet, sino los de
   ISO 9660. Nadie lo ha mirado y no se da por bueno.
+
+---
+
+### 4.54 LA VUELTA ÚNICA: la ISO sale reproducible a la primera — y al ARRANCARLA se cae la premisa de la casilla 3: LA CAPA NO SE MONTA NUNCA (2026-08-17)
+
+**La ISO se refabricó y se arrancó, que es lo que ninguna de las tres casillas
+anteriores podía hacer.** Los pasos 1 y 2 salieron limpios y a la primera. El
+paso 3 —arrancarla y mirarla— **tumba la casilla 3 entera**: los 31 ficheros de
+`zz-encina.squashfs` **no llegan al sistema en marcha**, y no por un descuido de
+montaje sino porque **`casper` de este medio no mira los `*.squashfs` de
+`/casper`**. Lo que sigue está medido dentro del invitado, no deducido.
+
+#### (a) PASO 1 — `encina-branding` 0.1.15, CONSTRUIDO Y COTEJADO POR HUELLA
+
+No hizo falta paso aparte: `construir-todo.sh` lo construye en su paso 3, desde
+`git archive HEAD`, y lo coteja contra `repo-manifiesto.tsv` **por huella y por
+tamaño** antes de gastar la cosecha y la ISO.
+
+```
+        03-construir.sh            35 comprobaciones, 0 fallos
+        07-firefox-construir.sh    39 comprobaciones, 0 fallos
+        10-meta-construir.sh       14 comprobaciones, 0 fallos
+        [OK]  encina-branding_0.1.15_all.deb       6d9fcd64aa40…  6948796 bytes
+        [OK]  encina-firefox-native_0.2.1_all.deb  640f508e3802…    10876 bytes
+        [OK]  encina-meta_0.2.1_all.deb            204081f0ff3c…     6904 bytes
+```
+
+#### (b) PASO 2 — DOS PASADAS, LA MISMA HUELLA, CON SU CONTROL
+
+```
+ac175f648b6406bd324268e09552fdfea1eefc23845be80afda055c4e87a968b  pasada 1
+ac175f648b6406bd324268e09552fdfea1eefc23845be80afda055c4e87a968b  pasada 2
+3 721 265 152 bytes las dos · 66 [OK] cada una · commit b9b0de09
+CONTROL: contra 1224b5b1… la misma comparación dice DISTINTAS
+```
+
+Los dos `[FALLO]` de cada registro son **el control anunciado** de
+`cosechar-repo.sh`: la primera orden sale con 27 de 28 a propósito porque aún no
+está AutoFirma. **Y los bloques 5e y 11, que nunca habían corrido dentro del
+guion entero, pasaron en su sitio:**
+
+```
+== 5e.  [OK] Volume id: «Ubuntu 24.04.4 LTS arm64» -> «Encina OS 0.2.1 arm64» (21 bytes de 32)
+== 11.  [OK] control: el lector encuentra 4 descriptores en la ISO oficial (2 primarios) y los 4 dicen Ubuntu
+        [OK] los 4 descriptores primarios dicen «Encina OS 0.2.1 arm64», y ninguno de los 4 dice Ubuntu
+```
+
+El nombre se **predijo antes de mirarlo** derivándolo a mano de `marca/disk-info`
+y salió el mismo. Los avisos de `xorriso` fueron **cuatro líneas, dos de cada
+tipo**, o sea la misma infracción que hereda del nombre oficial y **ni una más**.
+
+#### (c) LOS CUATRO MECANISMOS DE D23, LEÍDOS EN EL MEDIO FINAL POR CUENTA PROPIA
+
+| Mecanismo | Lo que dice el medio |
+|---|---|
+| `grub.cfg` | `menuentry "Probar o instalar Encina OS"` + `locale=es_ES.UTF-8` |
+| `/.disk/info` | 43 bytes: `Encina OS 0.2.1 - Release arm64 (20260210)` |
+| capa | `/casper/zz-encina.squashfs`, 3 084 288 bytes |
+| `Volume id` | `Encina OS 0.2.1 arm64` |
+
+Con el control de que el mismo lector saca `Ubuntu 24.04.4 LTS "Noble Numbat" -
+Release arm64 (20260210)` de la ISO oficial. **Y el inventario, mismo instrumento
+sobre los dos medios reales:** `1224b5b1…` da **31** apariciones y 10 sitios
+limpios; `ac175f64…` da **23** y **20**. 6 controles correctos y 0 fallos en los
+dos lados.
+
+#### (d) PASO 3 — Y AQUÍ SE CAE TODO: LA CAPA NO SE MONTA
+
+VM `encina-marca-ac175f64`, creada desde cero con el `config.plist` escrito a
+mano, la ISO por **enlace duro** (inodo 90226780, **2 enlaces**, 0 bytes) y
+**ningún `CIDATA`**. Control de la trampa 16 recogido **en el momento**, porque
+`debug.log` es un volátil:
+
+```
+-append 0 · media=disk 1 · media=cdrom 1 · CIDATA 0 · -kernel 0 · -initrd 0
+CONTROL: 'edk2' en el mismo fichero -> 1   (el grep no está mudo)
+```
+
+O sea que **nada se le inyecta**: lo que arranque sale de dentro de la ISO. Y lo
+que contesta la orden que la tarea nombraba, tecleada dentro de la sesión viva:
+
+```
+encina@encina:~$ grep zz-encina /proc/mounts
+encina@encina:~$ ls -l /usr/share/desktop-provision/
+ls: no se puede acceder a '/usr/share/desktop-provision/': No existe el archivo o el directorio
+encina@encina:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+LOGO=ubuntu-logo
+encina@encina:~$ whoami
+encina
+```
+
+**Ni una línea.** El directorio de la marca blanca **no existe**, y `os-release`
+en marcha dice **Ubuntu** — cuando el inventario, leyendo el fichero de la capa
+dentro de la ISO, decía `[OK] PRETTY_NAME="Encina OS 24.04 LTS"`.
+
+#### (e) LA CAUSA, LEÍDA EN EL `casper` DE ESTE MISMO MEDIO
+
+`casper` tiene **dos ramas** para montar las imágenes, y la de abajo —la del glob
+`"${image_directory}"/*."${image_type}"`, que es la que §4.52b describía— **sólo
+corre si `$LAYERFS_PATH` está vacío**. Con `$LAYERFS_PATH` puesto corre la de
+arriba, que **no mira el directorio**: construye la lista **quitando puntos del
+nombre**.
+
+```
+lowerdir=/minimal.standard.live.squashfs:/minimal.standard.squashfs:/minimal.squashfs
+    ^ leído en /proc/mounts del invitado: TRES capas, y son exactamente la cadena
+      minimal -> minimal.standard -> minimal.standard.live
+```
+
+**Y `LAYERFS_PATH` no viene de donde se buscó:**
+
+```
+initrd:/conf/conf.d/default-layer.conf:1:LAYERFS_PATH=minimal.standard.live.squashfs
+```
+
+§4.52 buscó la cadena **`layerfs-path`** —la grafía de la línea de órdenes— en el
+`grub.cfg`, en la ESP y en el resto de la imagen, y sacó **0 apariciones**. Y era
+**verdad**: en la línea de órdenes no está, y el `/proc/cmdline` del invitado lo
+confirma (`BOOT_IMAGE=/casper/vmlinuz locale=es_ES.UTF-8 --- quiet splash
+console=tty0`). Lo que la búsqueda no podía ver es que **la variable se escribe
+`LAYERFS_PATH`, con subrayado, en otro fichero, y vive DENTRO de un cpio
+comprimido**. La conclusión que se sacó de aquel cero —*«casper monta los 21
+squashfs y el último por orden alfabético manda»*— **es falsa**, y con ella el
+`zz-` del nombre, que no sirve de nada.
+
+**La trampa, con su nombre: buscar la grafía de la línea de órdenes y concluir
+sobre la variable.** Un mismo ajuste tiene dos nombres —`layerfs-path=` fuera,
+`LAYERFS_PATH` dentro— y sólo uno de los dos se buscó.
+
+#### (f) Y UN SEGUNDO HALLAZGO, SIN CAUSA: EL INSTALADOR SE CAE
+
+Entre los 60 s y los 120 s el instalador muestra **«Se produjo un problema»**,
+mirado en pantalla y leído por OCR con el control de mirar la captura con los
+ojos. **No es la capa**, y eso queda excluido por construcción: la capa nunca se
+montó. El servidor de `subiquity` **está sano** —sigue emitiendo eventos de red
+una hora después— y su registro **no tiene ni un `Traceback`**; el registro de la
+interfaz termina limpio en `Inhibiting Gnome session`. **La causa está SIN
+DETERMINAR y no se adivina.** Lo nuevo en este medio respecto a `ac0a5721…`, que
+es la única que alguien instaló, son `.disk/info`, el `Volume id`, el título del
+menú y los `.deb`; de ésos, el único que la sesión viva lee antes de instalar es
+`.disk/info`, **y eso es un candidato, no un resultado**.
+
+**El control que lo separaría no está hecho:** se arrancó `1224b5b1…` en un
+bundle idéntico y **su pantalla siguió negra a los 15 minutos** con QEMU vivo, así
+que no dice nada. `[OMIT]`. **El control bueno es `ac0a5721…`**, que es la única
+conocida-buena, y hay que gastarlo antes de tocar nada.
+
+#### (g) UN DEFECTO DEL BANCO Y UNO DEL GUION, LOS DOS DE HOY
+
+1. **`utmctl start` devuelve 0 cuando falla.** Escribe
+   `Error from event: … (OSStatus error -1712.)` por stderr y sale con **código
+   0**, así que el `|| fallo` de `construir-todo.sh` **no puede dispararse**; y la
+   línea siguiente imprimió `[OK] VMs encendidas: 0` justo después de decir que
+   encendía una. El guion acabó culpando a `ssh` —`[FALLO] el constructor no
+   contesta`— que manda a mirar al sitio equivocado. **La causa real era UTM con
+   la conexión interna caída** (`-609` por AppleScript), y se arregló
+   reiniciándolo; el registro quedó consistente por las dos mitades antes y
+   después.
+2. **El inventario da VERDES FALSOS para todo lo que aporta la capa.** No es un
+   defecto de lectura —lee bien el fichero que hay en la ISO— sino de lo que su
+   `[OK]` significa: dice «este sitio ya no dice Ubuntu» de ficheros que **el
+   sistema en marcha no ve**. Diez y pico de sus 20 «sitios limpios» son de la
+   capa. Mientras la capa no se monte, **ese número no describe el producto**.

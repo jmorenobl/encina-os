@@ -401,7 +401,63 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-17: **LA VUELTA ÚNICA** — refabricar la ISO, instalarla y mirarla
+> ### LA TAREA EN CURSO, 2026-08-17 (tarde): **LA CAPA NO SE MONTA** — la vuelta única se dio, y tumbó la casilla 3
+>
+> **LA VUELTA ESTÁ DADA Y LOS PASOS 1 Y 2 SALIERON LIMPIOS A LA PRIMERA**
+> (`MEDICIONES.md` §4.54): `encina-branding` 0.1.15 construido y cotejado por
+> huella (`6d9fcd64…`, 88 comprobaciones y 0 fallos entre los tres guiones), y la
+> ISO **reproducible**, `ac175f64…`, 3 721 265 152 bytes, **dos pasadas la misma
+> huella** con el control de que la comparación sabe decir «distintas». Los
+> bloques 5e y 11 pasaron **en su sitio**, y el `Volume id` se predijo antes de
+> mirarlo y salió el mismo: `Encina OS 0.2.1 arm64`.
+>
+> **PERO EL PASO 3 —arrancarla— TUMBA LA CASILLA 3 ENTERA: la capa de marca NO SE
+> MONTA NUNCA.** Medido dentro de la sesión viva, no deducido:
+>
+> ```
+> encina@encina:~$ grep zz-encina /proc/mounts          <- ni una línea
+> encina@encina:~$ ls /usr/share/desktop-provision/     <- no existe
+> encina@encina:~$ cat /etc/os-release                  <- NAME="Ubuntu"
+> ```
+>
+> **La causa, leída en el `casper` de este mismo medio:** hay **dos ramas**, y la
+> del glob `*.squashfs` —la que §4.52 describía— **sólo corre si `$LAYERFS_PATH`
+> está vacío**. No lo está: vale `minimal.standard.live.squashfs`, puesto en
+> `/conf/conf.d/default-layer.conf` **dentro del `initrd`**. La lista de capas se
+> construye **quitando puntos del nombre**, y el `lowerdir` del invitado lo
+> enseña: `minimal.standard.live` → `minimal.standard` → `minimal`, **tres y ni
+> una más**. §4.52 buscó `layerfs-path` —la grafía de la línea de órdenes—, sacó
+> 0, **y era verdad**; la variable de dentro se llama `LAYERFS_PATH` y vive en un
+> cpio comprimido. **El `zz-` del nombre no sirve de nada.**
+>
+> **LO QUE SIGUE EN PIE, y no es poco:** `.disk/info` funciona —`whoami` da
+> `encina`— y el `grub.cfg` también. Los otros tres mecanismos de D23 están
+> verificados en el medio.
+>
+> **Y UN SEGUNDO HALLAZGO, SIN CAUSA Y SIN ADIVINAR: el instalador se cae** —«Se
+> produjo un problema», mirado en pantalla—. **No es la capa**, que nunca se
+> montó; el servidor de `subiquity` está sano y sin `Traceback`. **El control que
+> lo separaría no está hecho:** `1224b5b1…` arrancada en un bundle idéntico se
+> quedó **negra a los 20 minutos**, así que no dice nada.
+>
+> **LO SIGUIENTE, EN ESTE ORDEN:**
+>
+> 1. **Gastar el control de `ac0a5721…`**, que es la única ISO que alguien
+>    instaló: si su instalador arranca en el mismo bundle, la caída es **nuestra**
+>    y está entre esas dos; si no, es del banco. **Sin esto no se toca nada.**
+> 2. **Decidir por dónde entra la marca de la sesión viva**, ahora que la capa
+>    suelta no vale. El candidato medido es **`layerfs-path=` en la línea del
+>    núcleo del `grub.cfg`** —fichero nuestro, que ya reescribimos— encadenando
+>    `minimal.standard.live.encina.squashfs`. No está probado.
+> 3. **El inventario da verdes falsos** para todo lo que aporta la capa: dice «ya
+>    no dice Ubuntu» de ficheros que el sistema en marcha no ve. Hay que enseñarle
+>    la diferencia entre *está en el medio* y *se monta*.
+>
+> ---
+>
+> **LO QUE SIGUE DEBAJO ES EL ESTADO DE ESTA MAÑANA, y se deja porque explica por
+> qué se llegó hasta aquí** — pero **su afirmación de que la casilla 3 estaba
+> hecha es la que se acaba de caer**.
 >
 > **[tareas/marca-del-medio.md](tareas/marca-del-medio.md) está HECHA en lo que
 > se puede hacer sin arrancar: las 4 casillas, 4 de 4** (eran 5, y la del

@@ -127,7 +127,24 @@ if command -v utmctl >/dev/null; then
 $(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM ")"
         if ! printf '%s\n' "$ENCENDIDAS" | grep -q "^$VM "; then
             echo "        encendiendo $VM"
-            utmctl start "$VM" >/dev/null || fallo "no pude encender $VM"
+            # OJO: 'utmctl start' DEVUELVE 0 AUNQUE FALLE. Escribe
+            # «Error from event: ... (OSStatus error -1712.)» por stderr y sale
+            # con codigo 0, asi que un '|| fallo' aqui NO SE DISPARA NUNCA. Paso
+            # el 2026-08-17 (MEDICIONES.md §4.54g): la VM no arranco, este bloque
+            # imprimio «[OK] VMs encendidas: 0» justo despues de decir que
+            # encendia una, y el guion acabo culpando a ssh -- que manda a mirar
+            # al sitio equivocado. La causa real era UTM con la conexion interna
+            # caida (-609 por AppleScript), y se arregla reiniciando UTM.
+            # Asi que NO se cree el codigo de salida: se espera al ESTADO.
+            utmctl start "$VM" >/dev/null 2>&1
+            ARRANCO=0
+            for _ in $(seq 1 30); do
+                [ "$(utmctl status "$VM" 2>/dev/null)" = "started" ] && { ARRANCO=1; break; }
+                sleep 2
+            done
+            [ "$ARRANCO" -eq 1 ] || fallo "no pude encender $VM: sigue en «$(utmctl status "$VM" 2>&1)».
+        'utmctl start' devuelve 0 aunque falle, asi que mira su stderr. Si dice
+        OSStatus -1712 o -609, UTM tiene la conexion interna caida: reinicialo."
             APAGAR_AL_SALIR="$VM"
         else
             ok "la VM pedida ya estaba encendida (no la apago yo)"
@@ -136,7 +153,13 @@ $(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM ")"
         [ "$N" -le 1 ] || fallo "hay $N VMs encendidas a la vez:
 $ENCENDIDAS"
     fi
-    ok "VMs encendidas: $(utmctl list | awk 'NR>1 && $2=="started"' | grep -c .)"
+    # y este recuento SE COMPRUEBA en vez de imprimirse: un «0 encendidas» aqui
+    # es el modo de fallo de arriba, no una buena noticia
+    ENC=$(utmctl list | awk 'NR>1 && $2=="started"' | grep -c .)
+    if [ -n "$VM" ]; then
+        [ "$ENC" -eq 1 ] || fallo "esperaba EXACTAMENTE 1 VM encendida y hay $ENC"
+    fi
+    ok "VMs encendidas: $ENC"
 else
     echo "        (no hay utmctl: no puedo comprobar cuantas VMs hay encendidas)"
 fi
