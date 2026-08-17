@@ -12548,3 +12548,57 @@ Python **no se pueden teclear**; `script -c <orden> <fichero>` es la vía que s�
 funciona para capturar salida. Y `ubuntu-desktop-bootstrap` desde el terminal
 **sale en el mismo segundo con código 0**: no lanza una instancia nueva, sólo da
 el foco a la que ya corre.
+
+#### (i) LA CAUSA DE (h) ERA FALSA, Y EL EXPERIMENTO QUE LA PROBABA ES EL QUE LA TUMBA
+
+**(h) daba `.disk/info` por causa probable. Se rehizo el medio con la segunda
+palabra convertida en versión y EL INSTALADOR SE SIGUE CAYENDO IGUAL.** Se deja
+escrito al lado lo que se creía, que es lo que manda el método.
+
+```
+.disk/info : «EncinaOS 0.2.1 - Release arm64 (20260210)»
+             split()[1] = 0.2.1  ->  canal stable/ubuntu-0.2.1   (ya no «OS»)
+             FLAVOUR    = encinaos     rotulo = Install EncinaOS 0.2.1
+ISO        : e8a0ead24e3d6358…  3 721 265 152 bytes  ·  67 [OK]
+en pantalla: «Se produjo un problema»  <- IGUAL que antes
+```
+
+**Lo que estaba bien y lo que estaba mal, separado:** el mecanismo leído en
+`refresh.py` **es real** —`release = info.split()[1]` construye el canal de snap—
+y `stable/ubuntu-OS` **era un defecto de verdad**, así que el cambio se queda. Lo
+que era falso es la **atribución**: no es lo que tira el instalador. Mecanismo
+leído + control que pasa + caso que falla **no es una causa**, y aquí está la
+prueba de por qué este proyecto no marca una casilla sin verla pasar.
+
+**Y EL BISECADO, que es lo que sí acota** — las tres ISOs arrancadas en bundles
+idénticos, todos con identificadores de unidad propios (trampa 32):
+
+| ISO | Qué lleva de más | Instalador |
+|---|---|---|
+| `ac0a5721…` (2026-08-13) | la entregada de E4 | **funciona** — «Disposición del teclado» |
+| `1224b5b1…` (2026-08-15) | `.deb` y seed nuevos, **sin** capa, `Volume id` ni `.disk/info` | **funciona** — misma pantalla |
+| `ac175f64…` / `e8a0ead2…` (2026-08-17) | **+ los mecanismos de D23** | **se cae**, reproducible en tres arranques |
+
+**O sea que la regresión está DENTRO del grupo de D23**, y no en los `.deb`, ni en
+el seed, ni en el banco. Quedan **tres** sospechosos y ninguno medido:
+
+1. **La PRESENCIA de `/casper/zz-encina.squashfs`** — aunque no se monte. Es el
+   candidato más gordo: es lo único que añade un fichero a `/casper`, que es el
+   directorio que `casper` y `install-sources.yaml` enumeran.
+2. **El `Volume id`** — §4.53a leyó que nadie lo usa, pero eso se midió sobre
+   `casper`, `apt-cdrom` y el GRUB firmado, **no sobre el instalador gráfico**.
+3. **El resto del contenido de `.disk/info`** — descartada su segunda palabra, no
+   el fichero entero.
+
+**EL EXPERIMENTO QUE TOCA, y hay que escribirlo antes de hacerlo:** `fabricar-iso.sh`
+no tiene forma de saltarse la capa ni el `Volume id`, así que el bisecado exige
+**una bandera por mecanismo** y una construcción por combinación —~20 min cada
+una—. El orden barato es empezar por **quitar la capa** dejando lo demás: si el
+instalador arranca, es la capa, y entonces el rediseño de la casilla 3 tiene que
+resolver **dos** cosas a la vez —que la capa se monte (`layerfs-path=`) y que su
+presencia no tire el instalador—.
+
+**Y una cosa que este día deja clara sobre el instrumento:** la comprobación nueva
+del paso 5b —que la 2ª palabra sea una versión— **se queda y vale**, aunque no
+fuera la causa. Habría cazado `stable/ubuntu-OS` sin gastar un arranque, y eso
+sigue siendo cierto.

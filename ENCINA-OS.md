@@ -455,14 +455,31 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > cuelga antes de nada —pantalla negra y el `debug.log` de QEMU congelado en
 > 2 759 bytes—. Con identificadores propios arrancó a la primera.
 >
+> **ENMIENDA DE LA MISMA TARDE (§4.54i): ESA CAUSA ERA FALSA.** Se rehízo el medio
+> con `EncinaOS 0.2.1` —segunda palabra `0.2.1`, canal `stable/ubuntu-0.2.1`— y
+> **el instalador se cae igual** (`e8a0ead2…`). El mecanismo de `refresh.py` es
+> real y `stable/ubuntu-OS` era un defecto de verdad, **así que el cambio se
+> queda**; lo falso era la atribución.
+>
+> **LO QUE SÍ ACOTA ES EL BISECADO**, tres ISOs en bundles idénticos:
+>
+> | ISO | Qué lleva de más | Instalador |
+> |---|---|---|
+> | `ac0a5721…` | la entregada de E4 | **funciona** |
+> | `1224b5b1…` | `.deb` y seed nuevos, sin D23 | **funciona** |
+> | `e8a0ead2…` | **+ los mecanismos de D23** | **se cae** |
+>
+> **La regresión está DENTRO de D23**, no en los `.deb`, ni en el seed, ni en el
+> banco. Quedan tres sospechosos: **la presencia de `/casper/zz-encina.squashfs`**
+> —el más gordo, porque es lo único que añade un fichero a `/casper`—, el
+> **`Volume id`** y el **resto de `.disk/info`**.
+>
 > **LO SIGUIENTE, EN ESTE ORDEN:**
 >
-> 1. **Decidir la segunda palabra de `.disk/info`, que es de Jorge y no del
->    agente:** la usan **tres** cosas a la vez —el canal de `refresh.py`, el rótulo
->    del icono y, por derivación, el `Volume id`—, así que **«Encina OS» no cabe
->    ahí**. `Encina 0.2.1 …` deja el `Volume id` idéntico y cambia el rótulo a
->    «Install Encina 0.2.1». **Con eso decidido, rehacer el medio es la prueba
->    final de la causa.**
+> 1. **Bisecar D23, y para eso `fabricar-iso.sh` necesita una bandera por
+>    mecanismo** —hoy no sabe fabricar sin capa ni sin `Volume id`—. **Empezar por
+>    quitar la capa**: si con eso arranca, la casilla 3 tiene que resolver **dos**
+>    cosas a la vez, que la capa se monte y que su presencia no tire el instalador.
 > 2. **Decidir por dónde entra la marca de la sesión viva**, ahora que la capa
 >    suelta no vale. El candidato medido es **`layerfs-path=` en la línea del
 >    núcleo del `grub.cfg`** —fichero nuestro, que ya reescribimos— encadenando
