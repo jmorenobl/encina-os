@@ -12473,3 +12473,78 @@ conocida-buena, y hay que gastarlo antes de tocar nada.
    `[OK]` significa: dice «este sitio ya no dice Ubuntu» de ficheros que **el
    sistema en marcha no ve**. Diez y pico de sus 20 «sitios limpios» son de la
    capa. Mientras la capa no se monte, **ese número no describe el producto**.
+
+#### (h) ENMIENDA DEL MISMO DÍA: EL CONTROL SE GASTÓ, LA CAÍDA ES NUESTRA, Y LA CAUSA ESTÁ LEÍDA EN EL CÓDIGO
+
+**(f) decía que el control no estaba hecho y que `1224b5b1…` se quedaba negra. Las
+dos cosas eran ciertas y las dos las había roto yo**, con un defecto del banco que
+no estaba en ninguna trampa:
+
+> **Los tres bundles que fabriqué compartían los IDENTIFICADORES DE UNIDAD**
+> —`…000081` y `…000082`—, porque el guion se clonó con `sed` cambiando nombre,
+> UUID, MAC e ISO **y no los `Drive.Identifier`**. El bundle de referencia del
+> proyecto (`encina-95758c9e`) usa los suyos, `…071`/`…073`. Con identificadores
+> repetidos **la VM arranca y se queda colgada antes de nada**: pantalla negra,
+> disco a 0 bloques y el `debug.log` de QEMU **congelado en 2 759 bytes durante
+> 10 minutos**, frente a los ~110 KB de una que arranca. Dándoles identificadores
+> propios, **arrancó a la primera**.
+
+**Y entonces el control dice lo que hacía falta:**
+
+```
+ac0a5721…  (la entregada de E4)   -> el instalador FUNCIONA: «Disposición del
+                                     teclado» en español, 2ª de las cinco
+ac175f64…  (la de hoy)            -> «Se produjo un problema», reproducible en
+                                     dos arranques distintos
+```
+
+**O sea que la caída es NUESTRA**, una regresión entre esas dos ISOs.
+
+**LA CAUSA, LEÍDA EN EL CÓDIGO QUE VIAJA EN EL MEDIO** —
+`subiquity/server/controllers/refresh.py`, líneas 165-181, leído en el invitado:
+
+```python
+info_file = "/cdrom/.disk/info"
+...
+    with fp:
+        info = fp.read()
+release = info.split()[1]
+return ("stable/ubuntu-" + release, SnapChannelSource.DISK_INFO_FILE)
+```
+
+**La SEGUNDA PALABRA de `.disk/info` no es un nombre: es el número de versión, y
+con ella se construye el canal de snap del propio instalador.** Comprobado en
+frío sobre las tres cadenas, con el control de la oficial:
+
+```
+split()[1] = 24.04.4     <-  Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+split()[1] = OS          <-  Encina OS 0.2.1 - Release arm64 (20260210)      <- EL NUESTRO
+split()[1] = 0.2.1       <-  Encina 0.2.1 - Release arm64 (20260210)
+```
+
+Nuestro medio pide el canal **`stable/ubuntu-OS`**. **Es la explicación de por qué
+el fallo es SILENCIOSO** —no hay volcado en `/var/crash`, ni error en el
+`journal`, ni `Traceback` en el servidor, ni nada por `stderr`: es un controlador
+del arranque que no puede resolver su canal, y la interfaz sólo sabe decir «no
+estamos seguros de cuál es el error»—.
+
+**LO QUE ESTO NO ES TODAVÍA:** no se ha visto la excepción con estos ojos —el
+`grep` de `channel` sobre el registro del servidor da 0 y la consola del invitado
+escupe mensajes que arruinan el OCR—. **Mecanismo leído + control que pasa + caso
+que falla, pero la prueba final es rehacer el medio con una segunda palabra que
+sea una versión y ver arrancar el instalador.** Hasta entonces es la causa
+probable, no la causa.
+
+**Y TIENE PRECIO DE PRODUCTO, que es lo que hay que decidir antes de tocarlo:** la
+segunda palabra de `.disk/info` la usan **tres** cosas a la vez —el canal de
+`refresh.py`, el rótulo del icono (`25adduser` toma las dos primeras palabras) y,
+por derivación, el `Volume id`—. O sea que **«Encina OS» no cabe ahí**: hay que
+elegir entre `Encina 0.2.1 …` —que deja el `Volume id` idéntico y cambia el rótulo
+a «Install Encina 0.2.1»— y meter `LTS`. **Es decisión de Jorge, no del agente.**
+
+**Y una trampa más del pilotaje:** a `=`, `@`, `|` y `&` se suman **`>`, `"`, `[` y
+`]`** — no llegan al invitado. Las órdenes con redirección, comillas o índices de
+Python **no se pueden teclear**; `script -c <orden> <fichero>` es la vía que sí
+funciona para capturar salida. Y `ubuntu-desktop-bootstrap` desde el terminal
+**sale en el mismo segundo con código 0**: no lanza una instancia nueva, sólo da
+el foco a la que ya corre.

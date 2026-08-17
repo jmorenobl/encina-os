@@ -434,17 +434,35 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > `encina`— y el `grub.cfg` también. Los otros tres mecanismos de D23 están
 > verificados en el medio.
 >
-> **Y UN SEGUNDO HALLAZGO, SIN CAUSA Y SIN ADIVINAR: el instalador se cae** —«Se
-> produjo un problema», mirado en pantalla—. **No es la capa**, que nunca se
-> montó; el servidor de `subiquity` está sano y sin `Traceback`. **El control que
-> lo separaría no está hecho:** `1224b5b1…` arrancada en un bundle idéntico se
-> quedó **negra a los 20 minutos**, así que no dice nada.
+> **Y UN SEGUNDO HALLAZGO: EL INSTALADOR SE CAE, ES NUESTRO, Y LA CAUSA ESTÁ
+> LEÍDA EN EL CÓDIGO** (§4.54h, enmienda del mismo día). El control se gastó y
+> `ac0a5721…` **arranca y enseña el instalador**; la nuestra no, en dos arranques
+> distintos. La causa está en `subiquity/server/controllers/refresh.py`:
+>
+> ```python
+> release = info.split()[1]                       # de /cdrom/.disk/info
+> return ("stable/ubuntu-" + release, ...)
+> ```
+>
+> **La SEGUNDA PALABRA de `.disk/info` no es un nombre: es el número de versión**,
+> y con ella se construye el canal de snap del instalador. `Ubuntu 24.04.4 …` da
+> `24.04.4`; **`Encina OS 0.2.1 …` da `OS`**, o sea el canal `stable/ubuntu-OS`.
+> Eso explica que el fallo sea **silencioso**: ni volcado, ni error en el
+> `journal`, ni `Traceback`.
+>
+> **Y los dos controles anteriores no valían: los rompí yo.** Los tres bundles que
+> fabriqué **compartían los `Drive.Identifier`**, y con eso la VM arranca y se
+> cuelga antes de nada —pantalla negra y el `debug.log` de QEMU congelado en
+> 2 759 bytes—. Con identificadores propios arrancó a la primera.
 >
 > **LO SIGUIENTE, EN ESTE ORDEN:**
 >
-> 1. **Gastar el control de `ac0a5721…`**, que es la única ISO que alguien
->    instaló: si su instalador arranca en el mismo bundle, la caída es **nuestra**
->    y está entre esas dos; si no, es del banco. **Sin esto no se toca nada.**
+> 1. **Decidir la segunda palabra de `.disk/info`, que es de Jorge y no del
+>    agente:** la usan **tres** cosas a la vez —el canal de `refresh.py`, el rótulo
+>    del icono y, por derivación, el `Volume id`—, así que **«Encina OS» no cabe
+>    ahí**. `Encina 0.2.1 …` deja el `Volume id` idéntico y cambia el rótulo a
+>    «Install Encina 0.2.1». **Con eso decidido, rehacer el medio es la prueba
+>    final de la causa.**
 > 2. **Decidir por dónde entra la marca de la sesión viva**, ahora que la capa
 >    suelta no vale. El candidato medido es **`layerfs-path=` en la línea del
 >    núcleo del `grub.cfg`** —fichero nuestro, que ya reescribimos— encadenando

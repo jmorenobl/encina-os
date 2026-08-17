@@ -2231,3 +2231,29 @@ cosas, y el instrumento sólo mide la primera.**
 y ejecutó otra cosa. **Los subrayados sí llegan** (`ubuntu_bootstrap.log`, medido).
 Escribe las órdenes **sin tuberías y una por línea**, y mira la pantalla antes de
 Intro.
+
+**32. Dos bundles de UTM con el MISMO `Drive.Identifier` no arrancan.** Al
+fabricar VMs clonando el guion con `sed` es fácil cambiar nombre, UUID, MAC e ISO
+**y olvidar los identificadores de las unidades**. El síntoma no dice nada:
+**pantalla negra indefinida, disco a 0 bloques y el `debug.log` de QEMU congelado
+en ~2 700 bytes**, frente a los ~110 KB de una que arranca. Con identificadores
+propios arranca a la primera. **Costó dos controles que parecían decir que dos
+ISOs no arrancaban, y no era verdad** (`MEDICIONES.md` §4.54h). El `debug.log`
+congelado es la señal que lo separa de «tarda mucho».
+
+**33. La segunda palabra de `/.disk/info` es un NÚMERO DE VERSIÓN, no parte del
+nombre.** `subiquity/server/controllers/refresh.py` hace
+`release = info.split()[1]` y construye con ella el canal de snap del propio
+instalador (`stable/ubuntu-<release>`). Un `.disk/info` que diga
+`Encina OS 0.2.1 …` pide `stable/ubuntu-OS` y **el instalador se cae en silencio**
+—sin volcado, sin error en el `journal` y sin `Traceback`—. Ese campo lo usan
+**tres** cosas a la vez: el canal, el rótulo del icono (`25adduser` toma las dos
+primeras palabras) y el `Volume id`, que se deriva de aquí.
+
+**34. Más caracteres que no llegan al invitado con `teclear-vm.sh`:** a `=` y `@`
+se suman **`|`, `&`, `>`, `"`, `[` y `]`**. O sea que **no se pueden teclear
+redirecciones, tuberías, comillas ni índices**. Para capturar la salida de una
+orden, `script -c <orden> <fichero>` funciona sin ninguno de ellos. Y ojo:
+`ubuntu-desktop-bootstrap` lanzado desde el terminal **sale en el mismo segundo
+con código 0** sin imprimir nada — no arranca otra instancia, sólo le da el foco a
+la que ya corre, así que por ahí no se le saca el error.
