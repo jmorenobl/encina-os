@@ -157,7 +157,70 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       lo que parecía—. Lo que falta por medir está en §4.43h: **a 48 px**, el
       `sessionMode` dentro del shell, y si el `St` del shell usa otra cadena de
       temas que la `Gtk.IconTheme` con la que se midió.
-- [ ] **El nombre del volumen de la ISO.**
+- [x] ~~**El nombre del volumen de la ISO.**
       *Hecha cuando:* `xorriso -indev` da un `Volume id` propio y el medio sigue
       arrancando — que es lo que hay que comprobar, porque el nombre del volumen lo
-      usa el instalador para encontrarse a sí mismo.
+      usa el instalador para encontrarse a sí mismo.~~ **HECHA EL 2026-08-17
+      (`MEDICIONES.md` §4.53), y la premisa de la casilla era FALSA: el
+      instalador NO usa el nombre del volumen para encontrarse a sí mismo.**
+      Es `Encina OS 0.2.1 arm64`, **derivado** de `marca/disk-info` y de la
+      arquitectura del medio oficial —no escrito a mano, para que los dos sitios
+      no puedan separarse—, y lo pone `fabricar-iso.sh`, que ya no modifica sólo
+      tres ficheros: **cambia además una cosa que no es un fichero.**
+      **Lo primero fue leer QUIÉN usa hoy ese nombre, antes de tocarlo, y son
+      cuatro sitios leídos en el código que viaja en este medio:** `casper`
+      encuentra el medio **por contenido** —`is_casper_path` pregunta si hay
+      algún `*.squashfs` en `/casper`— y desempata **por UUID**
+      (`/conf/uuid.conf` del `initrd` contra `.disk/casper-uuid-*`, los dos
+      medidos y los dos `88e2e90e…`); las únicas etiquetas que `casper` sí busca
+      son de **persistencia** (`writable`, `casper-rw`…); `apt-cdrom` saca el
+      nombre de **`.disk/info`**, no del volumen, y monta por ruta con
+      `AutoDetect=false`; y `subiquity` va **toda** por la ruta `/cdrom`, con sus
+      seis sitios nombrados uno a uno.
+      **Y lo que podía tumbar la casilla estaba sin medir y sale a favor: el
+      `grubaa64.efi` FIRMADO busca `search --file --set=root /.disk/info`, no
+      `search --label`.** Está leído en el `grub.cfg` que lleva empotrado en un
+      `squashfs` interno de 840 690 bytes —sin tocar el binario—, con el control
+      de que `search --label`, `--label` y `cd_label` dan **0 apariciones**. O
+      sea que la cadena de arranque cuelga **del mismo fichero que este proyecto
+      ya reescribe**.
+      **El `Volume id` no está escrito en NINGÚN fichero del medio:** 0
+      apariciones en los 133 140 ficheros de las dos capas grandes (con el
+      control de que `Ubuntu 24.04.4 LTS` sí aparece en 4), 0 en los 6 656 del
+      snap del instalador, y en crudo **sólo 4 veces en toda la imagen**, las
+      cuatro dentro de un descriptor de volumen.
+      **La comprobación que decide, y es lo más fuerte que se puede dar sin
+      arrancar:** contra **un medio de control remasterizado con la misma orden
+      SIN tocar el nombre**, la diferencia son **88 bytes de 3 715 235 840, todos
+      dentro del campo del nombre** de los cuatro descriptores. Dos pasadas dan
+      la misma huella —el nombre **no reintroduce variabilidad**—, los tres
+      binarios firmados y la ESP salen byte a byte iguales, ningún fichero
+      cambia, y **`md5sum.txt` no hay que rehacerlo: esta casilla no tiene
+      precio**, al revés que el `grub.cfg` y el `.disk/info`. **17 correctas, 0
+      fallos**, y el medio de control es lo que hace que valgan: la primera
+      versión de la medición **le atribuyó al nombre dos cosas que pasan igual
+      sin tocarlo** —la imagen encoge 131 072 bytes y la ESP se mueve 276
+      sectores al remasterizar—.
+      **Y la trampa del propio instrumento que la casilla pedía resolver, está
+      resuelta:** el paso 10 de `fabricar-iso.sh` compara la ISO **fichero a
+      fichero** y el `Volume id` **no es un fichero**, así que su comprobación
+      más fuerte era **ciega** a este cambio. Ahora hay un paso 11 que lee
+      **todos** los descriptores de volumen y exige que todos los primarios digan
+      lo nuestro y que ninguno diga Ubuntu. **Los dos bloques nuevos se han
+      ejecutado con sus controles —5 de 5— sobre las líneas literales del
+      fichero**, porque el guion entero hoy no se puede ejecutar: su paso 2 exige
+      `encina-branding` 0.1.15 y ese `.deb` no está en el disco.
+      **Dos defectos suyos salieron de ejecutarlos, y ninguno se veía leyendo:**
+      el nombre se cortaba **por número de palabras** y un producto más largo
+      salía **truncado en silencio** antes de llegar al límite de 32 bytes; y
+      **el número de descriptores no es del formato sino de quien escribe la
+      imagen** —la oficial tiene 2 primarios y 2 Joliet, la nuestra 4 y 0—, así
+      que calibrar contra la ISO oficial hacía fallar el bloque **siempre**. De
+      ahí sale un hallazgo que nadie había medido: **remasterizar se lleva el
+      Joliet por delante, y eso pasa desde E3.**
+      **Control de producto:** el inventario del plano 1 pasa de **9 a 7
+      apariciones** y de 0 a 2 sitios limpios, con 0 fallos en los dos lados; de
+      los dos, el del volumen es de esta casilla y el `.disk/info` ya lo había
+      cerrado D23. El instrumento **no necesitó ningún cambio**.
+      **LO QUE NO DICE NINGÚN GUION: que arranque.** Es `[OJOS]`, es de Jorge y
+      se cobra en la vuelta única.

@@ -72,6 +72,7 @@ Tres cosas se repiten en todo el registro y son lo que le da valor:
 | §4.32 | **E3: el núcleo leído hasta el final, y la ISO de E4 contestando las cinco pantallas** | Sí. **Contesta la pregunta del núcleo por el lado contrario del que se preguntaba:** el objetivo **ya tiene** el medio como fuente de apt cuando `curtin` instala el núcleo —lo enseña el registro sirviendo GRUB entero desde `file:/cdrom`—, así que lo que falta no es una fuente sino **el núcleo dentro del archivo indexado**, y eso lo cierra la **firma de Canonical**. La clave `apt:` del seed **no** vale: sin red `subiquity` borra todas las partes de `sources.list.d` a propósito. El tamaño **medido, no estimado: 1 089 MB**, no ~700. **Y cierra la ISO de E4:** `CIDATA -> <no encontrado>`, `REPO ELEGIDO -> /cdrom/encina-repo` y el `telemetry` nombra **exactamente las cinco pantallas**. Saca dos defectos del verificador y el instrumento que faltaba para pilotar sin ojos |
 | §4.51 | **Dónde dice Ubuntu el medio: el inventario de la marca** | Sí. **Es la primera casilla de `tareas/marca-del-medio.md`**, hecha leyendo `1224b5b1…` sin arrancarla y sin gastar VM: **39 apariciones, cada una con su fichero, su cadena y dónde se ve**, en los tres planos que pedía la casilla. Deja guion —`imagen/inventario-marca.sh`— porque §4.27 leyó a mano y no dejó ninguno. Lo que más cambia el trabajo que viene: **el rótulo del icono del instalador se calcula desde `/.disk/info`** (medido con su control), **la sesión viva no lleva ni un fichero de Encina** —o sea que todo lo que rodea al instalador es Ubuntu de fábrica—, y **el instalador es un snap de 109 MB con un `whitelabel.yml` dentro** que nadie había nombrado. Y saca dos defectos de su propio instrumento: `awk '{print $NF}'` esconde los nombres de los enlaces —§4.45c otra vez— y `grep -q` con `pipefail` convierte un acierto en `[FALLO]` |
 | §4.52 | **La marca entra en el medio sin rehacer 1,69 GB: una capa de 2,9 MiB** | Sí. **Es la tercera casilla de `tareas/marca-del-medio.md`**, hecha leyendo el mismo `1224b5b1…` sin arrancarlo. Contesta los dos `[OMIT]` de §4.51 **sobre el código del commit exacto con el que se construyó el snap** —y uno estaba **mal planteado**: `{{ DISTRO }}` no sale de `.disk/info` ni de `os-release`, es **una constante del binario**, así que las diapositivas se sustituyen, no se parchean—. Y el otro abre la puerta entera: **el `whitelabel.yml` se apunta desde fuera del snap**, `/usr/share/desktop-provision/`, y con él el **título de la ventana** (`app-name`), las diapositivas y los dibujos de cada página. Lo que hace posible la casilla es que **el medio no lleva `layerfs-path=`**, así que casper monta **todos** los `*.squashfs` de `/casper` y **el último alfabéticamente manda**: una capa de **3 084 288 bytes** tapa a la de **1 692 274 688**. Deja `imagen/capa-marca.sh` (4 controles + 4 comprobaciones) y el inventario pasa de **31 a 24 apariciones**, con **los ocho sitios nombrados uno a uno**. Y saca **dos defectos del propio instrumento**: contaba sitios en vez de valores —el número no podía bajar nunca— y un control que **caducó al mejorar el producto** |
+| §4.53 | **El nombre del volumen: 88 bytes cambian de sitio y nada más** | Sí. **Es la cuarta y última casilla de `tareas/marca-del-medio.md`**, y la única cuyo «hecha cuando» pedía que **no se rompiera nada**. Se lee primero **quién usa hoy ese nombre**, en el código que viaja en el medio: `casper` encuentra el medio **por contenido** (`is_casper_path`: ¿hay `*.squashfs` en `/casper`?) y desempata **por UUID**, `apt-cdrom` saca el nombre de **`.disk/info`**, `subiquity` va toda por la **ruta `/cdrom`**, y **lo que podía tumbar la casilla —el `grubaa64.efi` firmado— busca `search --file /.disk/info`, no `--label`**, leído en el `grub.cfg` empotrado en su `squashfs` interno. **El `Volume id` no está escrito en ningún fichero del medio**: 0 apariciones en los 133 140 ficheros de las dos capas grandes, con su control. Medido contra **un medio de control remasterizado sin tocar el nombre**, la diferencia son **88 bytes de 3 715 235 840, todos dentro del campo del nombre de los cuatro descriptores**; dos pasadas dan la misma huella y `md5sum.txt` no hay que rehacerlo. Y el banco de los dos bloques nuevos de `fabricar-iso.sh` saca **dos defectos**: el nombre se cortaba **por número de palabras** y se truncaba en silencio, y **el número de descriptores no es constante** —la oficial tiene 2 primarios y 2 Joliet, la nuestra 4 y 0—, o sea que **remasterizar se lleva el Joliet desde E3** y nadie lo había medido |
 | A3 | Por qué se suprimió `encina-locale-es` | Sí, y de forma permanente. Se llamaba «§6.1» hasta el 2026-08-08 |
 | §9 | Trampas conocidas | Sí, entera. Es método y aplica igual al trabajo de imagen |
 
@@ -11361,6 +11362,9 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | **Un control que caduca cuando el producto mejora** | `[FALLO] el calculo de RELEASE da lo mismo con cualquier .disk/info`, sobre un guion que no se ha tocado y que ayer salía verde | El fichero de prueba del control decía `Encina OS 0.3 LTS …`, y el día que el medio empezó a llevar de verdad un `.disk/info` de Encina **los dos daban lo mismo**. Un control cuyo caso de prueba se parece al producto deja de discriminar en cuanto el producto avanza — y el rojo se lee como «instrumento roto» cuando lo que dice es «tu control ya no separa nada». El caso de prueba tiene que ser algo que **no pueda salir de ningún medio real** (§4.52e) |
 | **Un `squashfs` recién hecho no es reproducible** | La capa se fabrica dos veces seguidas, sin tocar nada, y da dos huellas distintas — y el `[FALLO]` no sale ahí sino tres pasos más abajo, en la huella de la ISO, donde parece un problema de `xorriso` | `mksquashfs` guarda **la hora de creación del sistema de ficheros y la de cada inodo**, y las de los inodos las pone `cp` al copiar los ficheros al árbol de trabajo. Se fija la misma fecha que ya usa `fabricar-iso.sh` para lo que añade, con `-mkfs-time`, `-inode-time` y `-root-time`, **y el control se mete dentro del guion**: fabricarla dos veces y comparar. Es la misma familia que la fecha de `xorriso` de §4.36k (§4.52e) |
 | **Un fichero que se lee de la capa de abajo mientras el medio enseña el de arriba** | El inventario dice `NAME="Ubuntu"` de un medio que en pantalla dice Encina | Con capas apiladas (`overlay`), leer una sola capa **no** es leer el medio. `unsquashfs` de `minimal.squashfs` devuelve el fichero **tapado**. Hay que extraer en el mismo orden en que casper monta —primero las de Ubuntu, **encima** las de marca— o el instrumento miente en la dirección más peligrosa, que es la de decir que queda trabajo por hacer donde ya está hecho, y a la inversa (§4.52e) |
+| **Una comprobación ciega en el sitio más fuerte del guion** | `fabricar-iso.sh` compara la ISO nueva contra la oficial **fichero a fichero** —531 entradas, huella a huella— y aun así dejaría pasar en silencio un cambio del `Volume id` | El `Volume id` **no es un fichero**: vive en los descriptores de volumen, sector 16 y siguientes, que el árbol de ficheros no cubre. Una comprobación exhaustiva **dentro de su dominio** no dice nada de lo que está fuera de él, y cuanto más fuerte es, más fácil es creerse que lo cubre todo. Lo mismo vale para `md5sum.txt`, que sólo cubre ficheros. Hace falta una comprobación aparte y **por bytes** (§4.53d) |
+| **Un número que parece del formato y es del que lo escribió** | Un bloque que exige «tantas copias del descriptor como tenía la oficial» **falla siempre**, sobre una ISO correcta | La ISO oficial de Canonical lleva **2 descriptores primarios y 2 Joliet**; la que sale de `fabricar-iso.sh` lleva **4 y 0**. Remasterizar con `xorriso` **duplica los primarios y se lleva el Joliet**, y eso pasaba desde E3 sin que nadie lo hubiera medido. Calibrar contra la entrada era calibrar contra otra cosa: se **leen todos** los descriptores de la salida y se exige que digan lo nuestro (§4.53d) |
+| **`unsquashfs` de una capa de Ubuntu muere a mitad en macOS, y `du` lo disimula** | `FATAL ERROR: write_file: … xt_connmark.h already exists`, y si se ha redirigido la salida queda un árbol **truncado** que `du -sh` describe como «27M» sin que nada diga que faltan 47 000 ficheros | El disco del Mac **no distingue mayúsculas**, y las capas del medio traen pares como `xt_connmark.h` / `xt_CONNMARK.h`. Son pocos —10 en `minimal.squashfs` y 47 en `minimal.standard.live.squashfs`, contados con `tr 'A-Z' 'a-z' \| sort \| uniq -d`— así que con `-f` la extracción **termina** y lo único que se pierde es una de cada pareja, que **se puede nombrar**. Un hueco declarado y contado vale; un árbol a medias que parece entero, no (§4.53a) |
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
@@ -12001,3 +12005,306 @@ de marca, que es el mismo orden con el que casper monta el overlay.
   que el icono ponga «Instalar Encina OS» y que el instalador titule «Encina OS»
   sólo lo dice arrancar la ISO, y eso es de Jorge y va en la vuelta única, detrás
   de la casilla 4.
+
+---
+
+### 4.53 EL NOMBRE DEL VOLUMEN: 88 bytes cambian de sitio y nada más — y lo que podía tumbar la casilla estaba en el GRUB firmado, que busca POR FICHERO y no por etiqueta (2026-08-17)
+
+**Es la cuarta y última casilla de `tareas/marca-del-medio.md`**, y su «hecha
+cuando» no es la de las otras tres: *«`xorriso -indev` da un `Volume id` propio
+**y el medio sigue arrancando**»*. Cambiarlo es un parámetro de `xorriso` y no
+tiene mérito; lo que había que comprobar es **que no se rompe nada**, porque el
+nombre del volumen es de las pocas cosas que software ajeno usa para encontrar el
+medio. Todo lo de aquí está leído y medido **sin arrancar nada y sin gastar VM**,
+sobre el mismo medio que las tres casillas anteriores:
+
+```
+1224b5b17b559007071dee8fcaa620ff28cc3d8361eb75fdbe4af1eb3401529f   3715366912 bytes
+Volume id: «Ubuntu 24.04.4 LTS arm64»
+```
+
+#### (a) QUIÉN USA HOY ESE NOMBRE — se lee ANTES de cambiarlo, y la respuesta es: nadie
+
+Cuatro sitios donde podía estar la dependencia, los cuatro leídos en el código
+que **viaja en este medio**, no en internet:
+
+**1. `scripts/casper` y `scripts/casper-helpers` del `initrd`** —sacados
+partiendo el `initrd` por su `TRAILER!!!` (byte 60 952 018) y descomprimiendo con
+`zstd` el segundo `cpio` que empieza en el 60 952 064, la receta de §4.52—.
+**`find_livefs` no busca por etiqueta: busca por CONTENIDO.** Recorre
+`/sys/block/*`, monta cada candidato y pregunta `is_casper_path`, que es esto:
+
+```sh
+is_casper_path() {
+    path=$1
+    if [ -d "$path/$LIVE_MEDIA_PATH" ]; then
+        if [ "$(echo $path/$LIVE_MEDIA_PATH/*.squashfs)" != "$path/$LIVE_MEDIA_PATH/*.squashfs" ] || …
+```
+
+o sea **«¿hay algún `*.squashfs` en `/casper`?»**. Y para desempatar entre dos
+medios usa `matches_uuid`, que compara el `UUID` del `initrd` con
+`.disk/casper-uuid-*` del medio — **medido, los dos ficheros existen y dicen lo
+mismo**:
+
+```
+initrd:/conf/uuid.conf          88e2e90e-0b09-4e16-8591-34e7f2de608b
+medio:/.disk/casper-uuid-generic 88e2e90e-0b09-4e16-8591-34e7f2de608b
+```
+
+**Y las únicas etiquetas que `casper` sí busca son de PERSISTENCIA, no del
+medio**: `writable`, `casper-rw`, `home-rw`, `casper-sn`, `home-sn`
+(`/dev/disk/by-label/$(root_persistence_label)`). Ninguna es el `Volume id`.
+
+**2. `casper-bottom/41apt_cdrom`**, que era el candidato serio porque ejecuta
+`apt-cdrom add` y **apt sí escribe un nombre** en `sources.list`. No lo saca del
+volumen: **lo saca de `.disk/info`**, que ya es de Encina desde D23. El guion
+monta por RUTA y desactiva la detección automática:
+
+```sh
+chroot /root apt-cdrom -o Acquire::cdrom::mount=/cdrom \
+                       -o Dir::Media::MountPath=/cdrom \
+                       -o Acquire::cdrom::AutoDetect=false -m add
+```
+
+y el `libapt-pkg.so.6.0.0` **de este medio** —sacado de `minimal.squashfs`— lo
+corrobora, con su control de que la misma búsqueda encuentra lo que sí está:
+
+```
+cdrom:        10 cadenas        /.disk        2 cadenas
+by-label       0                /dev/disk     0            blkid   0
+```
+
+**3. `grubaa64.efi` de la ESP. ERA LO QUE PODÍA TUMBAR LA CASILLA, y estaba sin
+medir**: si su configuración empotrada buscara por etiqueta, el nombre del
+volumen **sería la cadena de arranque** y cambiarlo dejaría la ISO sin arrancar.
+El binario firmado lleva un **`squashfs` empotrado** —el `memdisk`, en el byte
+1 586 640, 840 690 bytes, comprimido con `xz`— y dentro está el `grub.cfg` que se
+ejecuta antes que ningún otro. **Leído entero, sin tocar el binario:**
+
+```
+if [ -z "$prefix" -o ! -e "$prefix" ]; then
+	if ! search --file --set=root /.disk/info; then
+		search --file --set=root /.disk/mini-info
+	fi
+	set prefix=($root)/boot/grub
+fi
+if [ -e $prefix/arm64-efi/grub.cfg ]; then
+	source $prefix/arm64-efi/grub.cfg
+…
+```
+
+**`search --file`, no `search --label`.** El GRUB firmado encuentra el medio
+buscando **el fichero `/.disk/info`**, que es exactamente el fichero que este
+proyecto ya está reescribiendo. Con el control de las cadenas del propio binario:
+`search --label` **0 apariciones**, `--label` **0**, `cd_label` **0**, y el
+`Volume id` literal **0**. La única cadena con «Ubuntu» en los 2 443 144 bytes de
+`grubaa64.efi` es su propio identificador SBAT
+(`grub.ubuntu,2,Ubuntu,grub2,2.12-1ubuntu7.3,…`).
+
+**4. El instalador**, o sea el snap `ubuntu-desktop-bootstrap_495` (109 MB) y la
+`subiquity` que lleva dentro. **Todo lo que hace con el medio va por la RUTA
+`/cdrom`**, y está nombrado uno a uno:
+
+| Fichero de `subiquity` | Qué usa |
+|---|---|
+| `server/server.py:73` | `iso_autoinstall_path = "cdrom/autoinstall.yaml"` — el quinto sitio de §4.21c |
+| `server/apt.py:242-262` | monta `/cdrom` con `--bind` y escribe `deb [check-date=no] file:///cdrom` |
+| `server/controllers/source.py:32` | `/cdrom/casper/install-sources.yaml` |
+| `server/controllers/refresh.py:165` | `/cdrom/.disk/info` |
+| `server/controllers/install.py:556` | `glob("/cdrom/.disk/casper-uuid-*")` — **desempata por UUID, igual que casper** |
+| `common/errorreport.py:395` | `/cdrom/.disk/info` |
+
+**El `Volume id` literal aparece 0 veces en los 6 656 ficheros del snap.** Las 22
+menciones de `/dev/disk/by-label` que sí hay son de `pyudev`, `cloud-init`,
+`os-prober`, `curtin` **y de los ficheros de ejemplo de `subiquity`**
+(`examples/machines/*.json`, datos de prueba): ninguna resuelve el medio vivo.
+
+**Y el remate, sobre las dos capas grandes extraídas enteras** —`minimal.squashfs`
+y `minimal.standard.live.squashfs`, 133 140 ficheros regulares—:
+
+```
+«Ubuntu 24.04.4 LTS arm64» -> 0 ficheros en las dos capas
+control «Ubuntu 24.04.4 LTS» -> 4 ficheros en la capa base (os-release, lsb-release, issue, plymouth)
+control (una cadena inventada) -> 0
+```
+
+**O sea que el `Volume id` no está escrito en NINGÚN fichero del medio**: sólo en
+los descriptores de volumen. Un barrido en crudo de los 3,7 GB de la imagen lo
+confirma — **4 apariciones, todas en el byte 40 de un sector de descriptor**.
+
+**Lo que sale a favor, y decide el nombre que se elige:** la tabla de particiones
+es **MBR con dos entradas y sin nombres** (`0xcd` y `0xef`), y la única otra
+etiqueta del medio es la del sistema de ficheros de la ESP, **`ESP`** —FAT12,
+`mkfs.fat`, entrada de raíz con atributo `0x08`, medida—, que no es de Canonical
+y no hay que tocar. **El `Volume id` es lo único que un gestor de discos enseña.**
+
+#### (b) LO QUE SE CAMBIA, Y POR QUÉ NO SE ESCRIBE A MANO
+
+`Encina OS 0.2.1 arm64`, **21 bytes de los 32 que admite el campo**. No es una
+constante nueva: se **deriva** de dos datos que ya existen, para que no puedan
+separarse.
+
+```
+marca/disk-info : «Encina OS 0.2.1 - Release arm64 (20260210)»
+                   \_____________/                              lo de ANTES del « - »
+volid oficial   : «Ubuntu 24.04.4 LTS arm64»
+                                      \___/                     la arquitectura
+Volume id       : «Encina OS 0.2.1 arm64»
+```
+
+#### (c) LA MEDICIÓN: 17 correctas, 0 fallos — y lo que la hace valer es el MEDIO DE CONTROL
+
+Se fabricaron **tres** medios a partir de `1224b5b1…`: dos con el nombre nuevo y
+**uno de control con la misma orden de `xorriso` sin `-volid`**. Sin ese tercero
+la medición no vale nada, y la primera versión lo demostró: **atribuyó al nombre
+dos cosas que pasan igual sin tocarlo**.
+
+```
+nuevo1 : c51c542ebe1ad88d… 3715235840 bytes (4 avisos de xorriso)
+nuevo2 : c51c542ebe1ad88d… 3715235840 bytes (4 avisos)
+control: 776dab0c8ee14971… 3715235840 bytes (2 avisos)
+  [OK] las dos pasadas dan la misma huella: el nombre NO reintroduce variabilidad
+  [OK] control: xorriso ya avisa 2 veces SIN tocar el nombre -- la infraccion es del de
+       Ubuntu, que tampoco cumple ISO 9660 (con el nuestro avisa 4: los mismos 2 mas 2
+       del texto nuevo, palabra por palabra el mismo aviso)
+  [OK] el nombre no cambia el tamano de la imagen
+  (remasterizar encoge 131072 bytes, tambien en el medio de control)
+```
+
+**LA COMPROBACIÓN QUE DECIDE, y es la más fuerte que esta casilla podía dar sin
+arrancar: en qué se diferencian el medio de control y el nuestro.**
+
+```
+BYTES 88
+TRAMO 32808..32831   sector 16   en_campo_volid=SI      (3 tramos)
+TRAMO 65576..65599   sector 32   en_campo_volid=SI      (3 tramos)
+TRAMO 131112..131135 sector 64   en_campo_volid=SI      (3 tramos)
+TRAMO 163880..163903 sector 80   en_campo_volid=SI      (3 tramos)
+  [OK] 88 bytes distintos en toda la imagen, TODOS dentro del campo del nombre,
+       en los sectores 16 32 64 80
+```
+
+**88 bytes de 3 715 235 840, y ni uno fuera del campo del nombre.** El resto:
+
+```
+  [OK] xorriso -indev lee «Encina OS 0.2.1 arm64»
+  [OK] el nombre viejo NO queda ni una vez en la imagen        (4/0 -> 0/4, ascii/ucs2)
+  [OK] control: el mismo contador dice 4 y 0 sobre el medio de partida
+  [OK] bootaa64.efi / grubaa64.efi / mmaa64.efi intactos
+  [OK] forma CON los LBA contra el medio de control: identica
+  [OK] la ESP es byte a byte la del medio de partida en sus 14144 sectores
+  [OK] 0 anadidos, 0 quitados, 0 modificados en las 531 entradas del medio
+  [OK] control: con una huella saboteada, la comparacion la senala
+  [OK] las 266 lineas de md5sum.txt siguen cuadrando sin rehacerlo
+```
+
+**La última línea es una diferencia de fondo con las otras casillas: cambiar el
+nombre NO TIENE PRECIO.** `md5sum.txt` cubre ficheros, y el `Volume id` no lo es,
+así que —al revés que el `grub.cfg` y el `.disk/info`— no hay que rehacer nada
+para que la comprobación de integridad del propio medio siga cuadrando.
+
+**Y el `[OJOS]` va escrito y no disimulado: que arranque no lo dice ningún guion.**
+Lo que está medido es que **ninguno de los cuatro mecanismos que encuentran el
+medio mira la etiqueta**, y que la cadena de arranque —MBR, El Torito, la ESP y
+los tres binarios firmados— sale **byte a byte idéntica**. Arrancarlo es de la
+vuelta única.
+
+#### (d) LOS DOS BLOQUES NUEVOS DE `fabricar-iso.sh`, EJECUTADOS — porque el guion entero HOY NO SE PUEDE EJECUTAR
+
+`fabricar-iso.sh` se niega en su paso 2: exige `encina-branding` **0.1.15** por
+huella y ese `.deb` no está en el disco. O sea que los dos bloques nuevos —el 5e,
+que deriva el nombre, y el 11, que lo comprueba— **se habrían quedado sin ver
+pasar**, que es justo lo que este proyecto no admite. Se ejecutan **las líneas
+literales del fichero**, recortadas por sus marcas y alimentadas con un andamio,
+y **cada una con el caso en el que tiene que negarse**:
+
+```
+  bloque 5e: lineas 341..389    bloque 11: lineas 630..700
+  [OK]    sale «Encina OS 0.2.1 arm64», derivado y no escrito a mano
+  [OK]    se niega: un nombre que dice Ubuntu no pasa (pila A de D22)
+  [OK]    se niega: no trunca en silencio el campo del PVD
+  [OK]    pasa, y dice en cuantas copias
+  [OK]    se niega sobre un medio que no lleva el nombre puesto
+  5 correctas, 0 fallos
+```
+
+**Y los dos defectos que sacó, los dos al ejecutarlo y ninguno visible leyéndolo:**
+
+1. **El nombre se cortaba por número de palabras, así que un producto más largo
+   salía TRUNCADO EN SILENCIO.** La primera versión hacía `cut -d' ' -f1-3` sobre
+   `.disk/info`; con `Encina OS Distribucion Nacional 9.9.9 …` dentro, el control
+   de los 32 bytes **no llegaba a dispararse** porque el corte ya había tirado la
+   mitad del nombre: salía `Encina OS Distribucion arm64` y el guion decía `[OK]`.
+   Se corta por el separador `« - »`, que es lo que el propio formato de
+   `.disk/info` usa para separar el producto del resto.
+2. **El número de copias del descriptor NO es constante, y calibrarlo contra la
+   ISO oficial hacía que el bloque fallara SIEMPRE.** Medido en las tres imágenes:
+
+```
+ISO oficial de Canonical      2 primarios (16, 32)  + 2 Joliet (18, 33)
+ISO que sale de fabricar-iso  4 primarios (16, 32, 64, 80) + 0 Joliet
+```
+
+   O sea que **remasterizar duplica los descriptores primarios y se lleva por
+   delante el Joliet**, y eso **ya pasaba desde E3 sin que nadie lo hubiera
+   medido**: el `Volume id` Joliet de la ISO oficial es
+   **`Ubuntu 24.04.4 L`** —truncado a los 16 caracteres del límite de Joliet— y
+   en los medios de este repositorio **no existe**. Para la casilla sale a favor:
+   hay **un solo** nombre que cambiar. Pero el bloque no puede depender de un
+   número: **lee TODOS los descriptores de la imagen construida y exige que todos
+   los primarios digan lo nuestro y que ninguno diga Ubuntu**, con el control de
+   que el mismo lector encuentra los 4 de la oficial y los 4 dicen Ubuntu. Buscar
+   la cadena entera tampoco habría valido si el Joliet volviera: su nombre va
+   truncado.
+
+**El orden de las opciones de `xorriso` también se ha visto pasar, y no se ha
+supuesto:** la secuencia real del guion —`-boot_image any replay`, `-overwrite
+on`, `-volid`, los seis `-map` y los dos `-alter_date_r`— produce los **4
+descriptores primarios diciendo `Encina OS 0.2.1 arm64`**. Ni los `-map` ni los
+`-alter_date_r` posteriores lo pisan.
+
+#### (e) EL CONTROL DE PRODUCTO: EL INVENTARIO, ANTES Y DESPUÉS
+
+`imagen/inventario-marca.sh --sin-capas` sobre el medio de hoy y sobre un medio
+de control con el nombre nuevo. Los planos 2 y 3 salen `[OMIT]` a propósito —no
+es un aprobado—, porque lo que esta casilla toca es el plano 1:
+
+```
+                                          ANTES (1224b5b1)   DESPUES
+apariciones de la marca de Ubuntu (plano 1)      9                7
+sitios inventariados que YA NO la dicen          0                2
+controles correctos / fallos                   3 / 0            3 / 0
+```
+
+**Los dos que dejan de decirla son el volumen ISO 9660 y `/.disk/info`**, y sólo
+el primero es de esta casilla: el segundo ya lo había cerrado D23. El instrumento
+no necesitó ningún cambio — desde §4.52e lo que decide es **el valor**, y un
+`Volume id` que no dice Ubuntu deja de contar solo.
+
+#### (e bis) POR QUÉ ESTA MEDICIÓN NO DEJA GUION, y no es un descuido
+
+§4.51 dejó `inventario-marca.sh` y lo dijo con su motivo —§4.27 había leído un
+medio a mano y no dejó ninguno—, así que aquí toca justificar lo contrario. **El
+instrumento que se queda es el propio `fabricar-iso.sh`**: los pasos 5e y 11 se
+ejecutan **en cada construcción**, que es exactamente cuando hay algo que
+comprobar. Los dos guiones que se usaron hoy —el que fabrica el medio de control
+y compara byte a byte, y el banco que ejecuta los dos bloques— son **de un solo
+uso y no se versionan**: el primero contesta una pregunta que ya está contestada
+(*«¿cambiar el nombre mueve algo más?»*), y el segundo **deja de tener sentido en
+cuanto exista `encina-branding` 0.1.15**, porque entonces el guion entero se
+puede ejecutar y el banco sería código muerto que hay que mantener. Lo que sí se
+queda, y es lo que se podría necesitar, son **sus salidas literales, arriba**.
+
+#### (f) LO QUE SIGUE SIN HACERSE, CON SU NOMBRE
+
+- **El `[OJOS]`: nadie ha arrancado nada.** Va en la vuelta única, con el de la
+  casilla 3.
+- **El splash del arranque.** `watermark.png` (248×87, `bfc97707…`) y
+  `bgrt-fallback.png` (128×128, `0d4f0416…`) siguen siendo el logotipo de Ubuntu,
+  viven en el `initrd` y ninguna capa los alcanza. **Es lo primero que se ve.**
+- **`/.disk/release_notes_url`** sigue apuntando a `ubuntu.com`.
+- **Los logotipos dentro del snap firmado** siguen viajando aunque ya no se vean.
+- **El Joliet que la remasterización se lleva por delante** desde E3: medido hoy,
+  **no decidido**. Hoy juega a favor —un nombre menos que cambiar— pero significa
+  que un Windows que abra la ISO no ve los nombres largos de Joliet, sino los de
+  ISO 9660. Nadie lo ha mirado y no se da por bueno.

@@ -72,6 +72,26 @@
 #                            DOS lineas y se ANADE una tercera, la de la capa de
 #                            marca, para que el propio medio la verifique.
 #
+# Y CAMBIA UNA COSA QUE NO ES UN FICHERO, desde el 2026-08-17:
+#     el Volume id      <- 'Ubuntu 24.04.4 LTS arm64' -> 'Encina OS 0.2.1 arm64'.
+#                          Es LO UNICO que un gestor de discos ensena al conectar
+#                          el USB, en cualquier sistema operativo y ANTES de
+#                          arrancar nada: la tabla de particiones de este medio
+#                          es MBR y no lleva nombres (§4.51b), y la unica otra
+#                          etiqueta del medio es la FAT de la ESP, que dice 'ESP'
+#                          y no es de Canonical (§4.53a). Es pila A de D22.
+#                          NO SE ESCRIBE A MANO: se DERIVA de marca/disk-info,
+#                          que ya es el nombre del producto, para que los dos
+#                          sitios no puedan separarse (paso 5e).
+#
+# EL VOLUME ID NO ES UN FICHERO, Y ESO TIENE UN PRECIO PARA ESTE GUION: vive en
+# el Descriptor Primario de Volumen -- y en sus CUATRO copias, sectores 16, 32,
+# 64 y 80 --, no en el arbol de ficheros. O sea que el paso 10, que es la
+# comprobacion mas fuerte que tiene esta receta, es CIEGO a este cambio: compara
+# fichero a fichero y lo dejaria pasar en silencio. Por eso el paso 11 lo
+# comprueba aparte y POR BYTES, contando las apariciones del nombre viejo y del
+# nuevo en la imagen entera, con su control.
+#
 # CONSECUENCIA PARA LA DEFINICION DE TERMINADO: E3 ya no es «solo anadir
 # ficheros», y la casilla de integridad pasa a comprobar el md5sum.txt NUEVO en
 # vez del oficial. Por eso este guion no se cree a si mismo: al final compara la
@@ -318,6 +338,55 @@ L=$(wc -l < "$TMP/md5sum.oficial" | tr -d ' ')
 [ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$((L+1))" ] || fallo "md5sum.txt no crecio en una linea"
 ok "md5sum.txt: dos lineas rehechas, una anadida (casper/$CAPA_N), las otras $((L-2)) intactas"
 
+# --- 5e. el nombre del volumen ----------------------------------------------
+# NO SE ESCRIBE A MANO. El nombre del producto ya esta en marca/disk-info -- de
+# ahi salen el rotulo del icono del instalador y el usuario de la sesion viva --,
+# asi que el Volume id se DERIVA de ese mismo fichero y de la arquitectura que
+# declara el medio oficial. Escribirlo dos veces seria dejar que se separaran.
+#
+#   marca/disk-info : «Encina OS 0.2.1 - Release arm64 (20260210)»
+#                      \_____________/                    -> lo de ANTES del « - »
+#   volid oficial   : «Ubuntu 24.04.4 LTS arm64»
+#                                        \___/            -> la arquitectura
+#   Volume id       : «Encina OS 0.2.1 arm64»
+#
+# EL CORTE ES POR EL SEPARADOR « - », NO POR NUMERO DE PALABRAS, y eso no es
+# gusto: la primera version de este bloque cortaba las TRES primeras palabras y
+# un nombre de producto mas largo salia TRUNCADO EN SILENCIO -- «Encina OS
+# Distribucion arm64» -- en vez de tropezar con el limite de 32 bytes. Lo saco
+# el banco de pruebas del bloque, ejecutandolo con su control.
+echo "== 5e. el nombre del volumen, que es lo que se ve al conectar el USB"
+VOLID_OFICIAL=$(xorriso -indev "$ISO" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
+[ -n "$VOLID_OFICIAL" ] || fallo "no pude leer el Volume id de la ISO oficial"
+ARQ="${VOLID_OFICIAL##* }"
+case "$ARQ" in
+    arm64|amd64) : ;;
+    *) fallo "la ultima palabra del Volume id oficial es «$ARQ» y esperaba una arquitectura" ;;
+esac
+INFO_L=$(head -1 "$TMP/info")
+case "$INFO_L" in
+    *" - "*) : ;;
+    *) fallo "el .disk/info no tiene el separador « - »: «$INFO_L»
+        sin el no se puede saber donde acaba el nombre del producto" ;;
+esac
+VOLID_ENCINA="${INFO_L%% - *} $ARQ"
+# El limite del campo del PVD son 32 BYTES, y no se trunca en silencio. Se miden
+# bytes y no caracteres a proposito: ${#var} contaria una «ñ» como uno y en el
+# fichero ocupa dos.
+N_VOLID=$(printf '%s' "$VOLID_ENCINA" | wc -c | tr -d ' ')
+[ "$N_VOLID" -le 32 ] \
+    || fallo "«$VOLID_ENCINA» son $N_VOLID bytes y el campo del PVD admite 32"
+# pila A de D22: lo que presenta el producto ante el usuario NO puede decir Ubuntu
+if printf '%s' "$VOLID_ENCINA" | grep -qi ubuntu; then
+    fallo "el Volume id de Encina todavia dice Ubuntu: «$VOLID_ENCINA»"
+fi
+# CONTROL de esa busqueda, que es la misma trampa del paso 5a: tiene que
+# encontrarlo donde SI lo hay, o «no dice Ubuntu» significa «no he mirado».
+printf '%s' "$VOLID_OFICIAL" | grep -qi ubuntu \
+    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «$VOLID_OFICIAL»"
+[ "$VOLID_ENCINA" != "$VOLID_OFICIAL" ] || fallo "el Volume id no cambia"
+ok "Volume id: «$VOLID_OFICIAL» -> «$VOLID_ENCINA» ($N_VOLID bytes de 32)"
+
 # --- 6. construir ------------------------------------------------------------
 echo "== 6. xorriso: anadir el seed, el repo y la capa de marca, y reemplazar tres"
 mkdir -p "$TMP/encina-repo"
@@ -371,9 +440,17 @@ rm -f "$SALIDA"
 # (--modification-date='2026021001455100'), asi que lo anadido hereda la fecha
 # del medio y la construccion es REPRODUCIBLE: misma entrada, misma huella.
 FECHA='2026021001455100'
+#
+# OJO CON LOS AVISOS DE xorriso, QUE NO SON NUESTROS: al escribir la imagen dice
+# «-volid text does not comply to ISO 9660 / ECMA 119 rules» y «problematic as
+# automatic mount point name». Salen IGUAL sin pasar -volid (medido, §4.53c):
+# se queja del nombre que ya trae el medio oficial, porque «Ubuntu 24.04.4 LTS
+# arm64» tampoco cumple la norma -- minusculas y espacios. Lo nuestro hereda
+# exactamente la misma infraccion, ni una mas.
 xorriso -indev "$ISO" -outdev "$SALIDA" \
         -boot_image any replay \
         -overwrite on \
+        -volid "$VOLID_ENCINA" \
         -map "$TMP/autoinstall.yaml" /autoinstall.yaml \
         -map "$TMP/encina-repo" /encina-repo \
         -map "$TMP/grub.cfg" /boot/grub/grub.cfg \
@@ -550,7 +627,78 @@ c=$(LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.saboteada" | awk '$2!
 [ "$c" -eq 1 ] || fallo "CONTROL ROTO: la comparacion no ve una huella cambiada"
 ok "control: con una huella saboteada, la comparacion la senala"
 
-echo "== 11. la integridad del propio medio, contra el md5sum.txt NUEVO"
+# --- 11. el nombre del volumen, que NO es un fichero --------------------------
+# EXISTE PORQUE EL PASO 10 ES CIEGO A ESTO. El paso 10 es la comprobacion mas
+# fuerte de esta receta -- las 500 y pico entradas del medio, huella a huella --
+# y aun asi dejaria pasar el cambio del Volume id sin decir nada, porque el
+# Volume id NO ES UN FICHERO: vive en los descriptores de volumen, en el sector
+# 16 y siguientes, que el arbol de ficheros no cubre.
+#
+# Y NO HAY UNO: HAY VARIOS, Y NO SIEMPRE LOS MISMOS. Medido (§4.53c):
+#     ISO oficial de Canonical      2 primarios (16, 32) + 2 Joliet (18, 33)
+#     ISO que sale de este guion    4 primarios (16, 32, 64, 80) + 0 Joliet
+# O sea que remasterizar CAMBIA cuantas copias hay y ADEMAS se lleva por delante
+# el Joliet -- y eso ya pasaba desde E3, sin que nadie lo hubiera medido. Por
+# eso este bloque NO cuenta apariciones esperando un numero: LEE TODOS los
+# descriptores que haya en la imagen construida y exige que TODOS digan lo
+# nuestro. Un numero fijo se habria roto solo, y calibrarlo contra la oficial
+# -- que fue el primer intento -- comparaba 4 contra 2 y fallaba siempre.
+echo "== 11. el nombre del volumen: no es un fichero, asi que el paso 10 no lo ve"
+# lo primero es lo que pide la casilla con esas palabras -- «xorriso -indev da
+# un Volume id propio» --, y lo segundo es lo que esa lectura NO cubre: xorriso
+# contesta con el PRIMER descriptor y hay mas de uno.
+V=$(xorriso -indev "$SALIDA" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
+[ "$V" = "$VOLID_ENCINA" ] || fallo "xorriso -indev lee «$V» y esperaba «$VOLID_ENCINA»"
+ok "xorriso -indev lee «$V»"
+# lee cada descriptor de volumen: "<tipo> <sector> <nombre>"
+descriptores() {
+    python3 - "$1" <<'PY4'
+import sys
+f = open(sys.argv[1], 'rb')
+for s in range(16, 1024):
+    f.seek(s * 2048)
+    d = f.read(2048)
+    if len(d) < 2048 or d[1:6] != b'CD001':
+        continue
+    if d[0] == 1:      # primario: el nombre va en ASCII
+        print(1, s, d[40:72].decode('latin1').rstrip())
+    elif d[0] == 2:    # suplementario (Joliet): el nombre va en UCS-2BE
+        print(2, s, d[40:72].decode('utf-16-be', 'replace').rstrip())
+PY4
+}
+descriptores "$SALIDA" > "$TMP/vd.nuestra"
+descriptores "$ISO"    > "$TMP/vd.oficial"
+# OJO: aqui, y solo aqui, va /usr/bin/grep y no 'grep' a secas. El resto de este
+# guion usa 'grep' porque solo mira su codigo de salida; estas cuatro lineas
+# CUENTAN, y el hook de rtk resume la salida de grep (§4.9d), asi que un numero
+# sacado del grep filtrado seria un numero inventado.
+# CONTROL, y va delante: si el lector no sabe leer los descriptores DE LA
+# OFICIAL -- donde el nombre de Ubuntu esta y el nuestro no puede estar --, sus
+# respuestas de abajo no significan «esta bien», significan «no he mirado».
+NP_O=$(awk '$1==1' "$TMP/vd.oficial" | wc -l | tr -d ' ')
+MAL_O=$(cut -d' ' -f3- "$TMP/vd.oficial" | /usr/bin/grep -ci ubuntu)
+TOT_O=$(wc -l < "$TMP/vd.oficial" | tr -d ' ')
+{ [ "$NP_O" -ge 1 ] && [ "$MAL_O" -eq "$TOT_O" ]; } \
+    || fallo "CONTROL ROTO: en la ISO oficial esperaba $TOT_O descriptores diciendo Ubuntu y hay $MAL_O
+$(cat "$TMP/vd.oficial")"
+ok "control: el lector encuentra $TOT_O descriptores en la ISO oficial ($NP_O primarios) y los $TOT_O dicen Ubuntu"
+# y ahora la nuestra: TODOS los primarios tienen que decir exactamente lo nuestro
+NP=$(awk '$1==1' "$TMP/vd.nuestra" | wc -l | tr -d ' ')
+[ "$NP" -ge 1 ] || fallo "la ISO construida no tiene ni un descriptor primario"
+BUENOS=$(awk '$1==1' "$TMP/vd.nuestra" | cut -d' ' -f3- | /usr/bin/grep -cxF "$VOLID_ENCINA")
+[ "$BUENOS" -eq "$NP" ] \
+    || fallo "solo $BUENOS de los $NP descriptores primarios dicen «$VOLID_ENCINA»:
+$(cat "$TMP/vd.nuestra")"
+# ni un descriptor, del tipo que sea, puede seguir diciendo Ubuntu. Esto cubre
+# el Joliet si algun dia volviera: su nombre va TRUNCADO a 16 caracteres
+# («Ubuntu 24.04.4 L» en la oficial), asi que buscar la cadena entera no lo veria.
+SUCIOS=$(cut -d' ' -f3- "$TMP/vd.nuestra" | /usr/bin/grep -ci ubuntu)
+[ "$SUCIOS" -eq 0 ] \
+    || fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
+$(cat "$TMP/vd.nuestra")"
+ok "los $NP descriptores primarios dicen «$VOLID_ENCINA», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+
+echo "== 12. la integridad del propio medio, contra el md5sum.txt NUEVO"
 tar -xOf "$SALIDA" md5sum.txt | sed 's|  \./|  /|' | LC_ALL=C sort -k2 > "$TMP/md5.declarado"
 d=$(wc -l < "$TMP/md5.declarado" | tr -d ' ')
 c=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.declarado" "$TMP/mapa.nuestra" | wc -l | tr -d ' ')
@@ -571,6 +719,7 @@ echo
 echo "iso:    $SALIDA"
 echo "sha256: $(shasum -a 256 "$SALIDA" | cut -d' ' -f1)"
 echo "tam:    $(stat -f %z "$SALIDA") bytes"
+echo "volid:  $VOLID_ENCINA   (lo que se ve al conectar el USB)"
 echo
 echo "LO QUE ESTE GUION NO PUEDE DECIR: que arranque. Eso se mide en una VM"
 echo "creada desde cero, contestando las cinco pantallas (AGENTS.md §6ter.3)."

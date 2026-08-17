@@ -2131,3 +2131,64 @@ el dueño: en macOS el gid 0 se llama `wheel` y `root/wheel` sería un rojo fals
 
 **Lo que este guion NO puede decir: que en pantalla se vea.** Eso lo dice
 arrancar la ISO, y es `[OJOS]` de Jorge.
+
+## El nombre del volumen del medio, dentro de `fabricar-iso.sh` (2026-08-17)
+
+**No hay guion nuevo, y es deliberado.** El nombre del volumen —lo que un gestor
+de discos enseña al conectar el USB, en cualquier sistema operativo y antes de
+arrancar nada— **es un parámetro de `xorriso`**, así que vive donde vive la
+receta: en `imagen/fabricar-iso.sh`. Es la cuarta casilla de
+`tareas/marca-del-medio.md` y está medida en `MEDICIONES.md` §4.53.
+
+**El guion pasa a hacer dos cosas más, en dos bloques nuevos:**
+
+- **paso `5e`** — **deriva** el nombre y se niega si no cuadra. No lo escribe a
+  mano: lo saca de `imagen/marca/disk-info` (todo lo anterior al `« - »`) y de la
+  arquitectura que declara el `Volume id` de la ISO oficial. `Encina OS 0.2.1 - …`
+  + `… arm64` = **`Encina OS 0.2.1 arm64`**. Se niega si el resultado dice
+  «Ubuntu» —con el control de que la misma búsqueda **sí** lo encuentra en el
+  nombre oficial—, si pasa de **32 bytes** (el límite del campo del PVD) o si el
+  `.disk/info` no trae el separador.
+- **paso `11`** — comprueba que quedó puesto. **Existe porque el paso 10 es ciego
+  a esto:** el paso 10 compara la ISO nueva contra la oficial **fichero a
+  fichero** y el `Volume id` **no es un fichero**. Y no comprueba uno: **lee
+  todos los descriptores de volumen de la imagen** y exige que **todos** los
+  primarios digan lo nuestro y que **ninguno** diga Ubuntu.
+
+**Tres cosas que cuestan una tarde si no están escritas:**
+
+1. **`xorriso -indev … -pvd_info` lee UNO y hay más de uno.** La ISO que sale de
+   este guion tiene **cuatro** descriptores primarios —sectores 16, 32, 64 y
+   80— porque el medio se escribe con `partition_offset=16`. Dar por bueno lo que
+   contesta `-pvd_info` sería aprobar un medio que, leído por su partición,
+   podría seguir diciendo otra cosa.
+2. **El número de descriptores NO es del formato: cambia al remasterizar.** La
+   oficial de Canonical trae **2 primarios y 2 Joliet**; la nuestra, **4 y 0**.
+   O sea que **`xorriso` se lleva el Joliet por delante**, y eso pasa **desde
+   E3**. Ninguna comprobación puede esperar un número fijo ni calibrarlo contra
+   la ISO de entrada.
+3. **Los avisos de `xorriso` al escribir NO son nuestros.** Dice
+   *«-volid text does not comply to ISO 9660 / ECMA 119 rules»* y *«problematic
+   as automatic mount point name»*, y los dice **igual sin pasar `-volid`**:
+   son del nombre que ya trae el medio oficial, porque `Ubuntu 24.04.4 LTS arm64`
+   tampoco cumple la norma —minúsculas y espacios—. Lo nuestro **hereda la misma
+   infracción, ni una más**. Está medido con su control (§4.53c) y escrito en la
+   cabecera del guion; si algún día aparecen más de dos avisos de más, ahí sí hay
+   algo que mirar.
+
+**Y una del entorno, que muerde al leer el medio y no al escribirlo:**
+`unsquashfs` de las capas grandes **muere a mitad en macOS** —*«FATAL ERROR:
+write_file: … `xt_connmark.h` already exists»*— porque el disco del Mac no
+distingue mayúsculas. Son **10 colisiones** en `minimal.squashfs` y **47** en
+`minimal.standard.live.squashfs`, contadas con
+`tr 'A-Z' 'a-z' | sort | uniq -d` sobre el listado. Con `-f` la extracción
+termina y sólo se pierde una de cada pareja, **que se puede nombrar**. Sin `-f`,
+y con la salida redirigida, queda un árbol truncado que `du -sh` describe como si
+estuviera entero.
+
+**Lo que estos bloques NO pueden decir: que el medio arranque.** Lo que sí está
+medido es que **ninguno de los cuatro mecanismos que encuentran el medio mira la
+etiqueta** —`casper` va por contenido y UUID, el GRUB firmado hace
+`search --file /.disk/info`, `apt-cdrom` lee `.disk/info` y `subiquity` va por la
+ruta `/cdrom`— y que la cadena de arranque sale **byte a byte idéntica**.
+Arrancarlo es `[OJOS]` de Jorge.
