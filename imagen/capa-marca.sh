@@ -142,16 +142,31 @@ release_de() {
     [ "$lts" = "LTS" ] && [ -n "$rel" ] && rel="$rel LTS"
     echo "$rel"
 }
-paso "(b) el .disk/info de Encina da «Install Encina OS» y el del medio no"
+# NO se compara contra el nombre del producto escrito aqui: eso lo guardaria en
+# un sitio mas. Se comprueban LAS PROPIEDADES, las mismas que el paso 5b de
+# fabricar-iso.sh -- que el rotulo no diga Ubuntu, que sea distinto del medio, y
+# que la 2a palabra sea un NUMERO DE VERSION, porque refresh.py la usa como canal
+# de snap del instalador y con «OS» ahi el instalador se cae EN SILENCIO
+# (MEDICIONES.md §4.54h).
+paso "(b) el rotulo del icono deja de decir Ubuntu, y la 2a palabra es una version"
 xorriso -indev "$ISO" -osirrox on -cpx /.disk/info "$T/" -- >/dev/null 2>&1
 DISKINFO_ENCINA="$FUENTE/disk-info"
 if [ -f "$T/info" ] && [ -f "$DISKINFO_ENCINA" ]; then
     R_MEDIO=$(release_de "$T/info"); R_NUESTRO=$(release_de "$DISKINFO_ENCINA")
-    if [ "$R_NUESTRO" = "Encina OS" ] && [ "$R_MEDIO" != "$R_NUESTRO" ]; then
-        ok "Name=Install $R_NUESTRO  (el del medio da: Install $R_MEDIO)"
+    V2_NUESTRO=$(cut -d' ' -f2 "$DISKINFO_ENCINA"); V2_MEDIO=$(cut -d' ' -f2 "$T/info")
+    if printf '%s' "$R_NUESTRO" | grep -qi ubuntu; then
+        fallo "el rotulo del icono seguiria diciendo Ubuntu" "nuestro=$R_NUESTRO"
+    elif ! printf '%s' "$R_MEDIO" | grep -qi ubuntu; then
+        fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en el del medio" "medio=$R_MEDIO"
+    elif [ "$R_MEDIO" = "$R_NUESTRO" ]; then
+        fallo "CONTROL ROTO: el calculo da lo mismo con los dos .disk/info" "$R_NUESTRO"
+    elif ! printf '%s' "$V2_NUESTRO" | grep -qE '^[0-9]+(\.[0-9]+)*$'; then
+        fallo "la 2a palabra de .disk/info es «$V2_NUESTRO» y tiene que ser un NUMERO DE VERSION" \
+              "refresh.py la usa como canal: pediria stable/ubuntu-$V2_NUESTRO y el instalador se caeria en silencio (4.54h)"
+    elif ! printf '%s' "$V2_MEDIO" | grep -qE '^[0-9]+(\.[0-9]+)*$'; then
+        fallo "CONTROL ROTO: la 2a palabra del .disk/info DEL MEDIO tampoco pasa la regla" "medio=$V2_MEDIO"
     else
-        fallo "el .disk/info de Encina no da «Install Encina OS»" \
-              "nuestro=$R_NUESTRO  medio=$R_MEDIO"
+        ok "Name=Install $R_NUESTRO  (el del medio da: Install $R_MEDIO) · 2a palabra «$V2_NUESTRO» -> canal stable/ubuntu-$V2_NUESTRO"
     fi
 else
     fallo "falta el .disk/info del medio o el de $FUENTE"
