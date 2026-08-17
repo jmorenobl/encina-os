@@ -344,11 +344,23 @@ ok "md5sum.txt: dos lineas rehechas, una anadida (casper/$CAPA_N), las otras $((
 # asi que el Volume id se DERIVA de ese mismo fichero y de la arquitectura que
 # declara el medio oficial. Escribirlo dos veces seria dejar que se separaran.
 #
-#   marca/disk-info : «Encina OS 0.2.1 - Release arm64 (20260210)»
-#                      \_____________/                    -> lo de ANTES del « - »
+#   marca/disk-info : «EncinaOS 0.2.1 - Release arm64 (20260210)»
+#                      \____________/                     -> lo de ANTES del « - »
 #   volid oficial   : «Ubuntu 24.04.4 LTS arm64»
 #                                        \___/            -> la arquitectura
-#   Volume id       : «Encina OS 0.2.1 arm64»
+#   Volume id       : «EncinaOS 0.2.1 arm64»
+#
+# Y OJO CON LA SEGUNDA PALABRA DE ESE FICHERO, QUE NO ES PARTE DEL NOMBRE: es un
+# NUMERO DE VERSION, y no por gusto. subiquity/server/controllers/refresh.py hace
+#     release = info.split()[1]
+#     return ("stable/ubuntu-" + release, SnapChannelSource.DISK_INFO_FILE)
+# o sea que construye con ella el CANAL DE SNAP DEL PROPIO INSTALADOR. Con
+# «Encina OS 0.2.1 …» la segunda palabra era «OS», el medio pedia el canal
+# «stable/ubuntu-OS» y EL INSTALADOR SE CAIA EN SILENCIO -- sin volcado en
+# /var/crash, sin error en el journal y sin Traceback en el servidor (§4.54h).
+# Por eso el producto se escribe aqui en UNA palabra. Ese campo lo usan TRES
+# cosas a la vez: el canal, el rotulo del icono (25adduser toma las dos primeras
+# palabras) y este Volume id.
 #
 # EL CORTE ES POR EL SEPARADOR « - », NO POR NUMERO DE PALABRAS, y eso no es
 # gusto: la primera version de este bloque cortaba las TRES primeras palabras y
