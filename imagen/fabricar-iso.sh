@@ -277,10 +277,34 @@ release_de() {
     echo "$rel"
 }
 R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info")
-[ "$R_NUESTRO" = "Encina OS" ] \
-    || fallo "el .disk/info de Encina daria «Install $R_NUESTRO» y tenia que dar «Install Encina OS»"
+# NO se compara contra el nombre del producto escrito aqui: eso seria guardar el
+# nombre en un sitio mas, y este guion ya tiene la lista de sitios que lo dicen.
+# Se comprueba LA PROPIEDAD -- pila A de D22: el rotulo no puede decir Ubuntu --,
+# con su control de que la busqueda encuentra «Ubuntu» donde SI lo hay.
+if printf '%s' "$R_NUESTRO" | grep -qi ubuntu; then
+    fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install $R_NUESTRO»"
+fi
+printf '%s' "$R_OFICIAL" | grep -qi ubuntu \
+    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «$R_OFICIAL»"
 [ "$R_OFICIAL" != "$R_NUESTRO" ] \
     || fallo "CONTROL ROTO: el calculo da lo mismo con los dos .disk/info"
+# LA SEGUNDA PALABRA TIENE QUE SER UNA VERSION, Y ESTO NO ES ESTILO: es lo que
+# costo una vuelta entera el 2026-08-17 (MEDICIONES.md §4.54h).
+# subiquity/server/controllers/refresh.py hace
+#     release = info.split()[1]
+#     return ("stable/ubuntu-" + release, SnapChannelSource.DISK_INFO_FILE)
+# o sea que la segunda palabra es EL CANAL DE SNAP DEL PROPIO INSTALADOR. Con
+# «Encina OS 0.2.1 …» valia «OS», el medio pedia «stable/ubuntu-OS» y el
+# instalador SE CAIA EN SILENCIO: sin volcado, sin error en el journal y sin
+# Traceback. Esta comprobacion es la que lo habria cazado sin gastar un arranque.
+V2_NUESTRO=$(cut -d' ' -f2 "$TMP/info"); V2_OFICIAL=$(cut -d' ' -f2 "$TMP/info.oficial")
+printf '%s' "$V2_NUESTRO" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
+    || fallo "la 2a palabra de .disk/info es «$V2_NUESTRO» y tiene que ser un NUMERO DE VERSION.
+        refresh.py la usa como canal: pediria «stable/ubuntu-$V2_NUESTRO» y el
+        instalador se caeria en silencio (§4.54h). Escribe el producto en UNA palabra."
+printf '%s' "$V2_OFICIAL" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
+    || fallo "CONTROL ROTO: la 2a palabra del .disk/info OFICIAL es «$V2_OFICIAL» y tampoco pasa la regla"
+ok "la 2a palabra es una version: «$V2_NUESTRO» -> canal stable/ubuntu-$V2_NUESTRO (la oficial: «$V2_OFICIAL»)"
 # y la forma que necesitan los otros dos que lo leen: la primera palabra es el
 # usuario y el nombre de maquina de la sesion viva, y el parentesis del final es
 # el numero de serie de 57pollinate.
