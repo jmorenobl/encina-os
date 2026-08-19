@@ -13585,3 +13585,52 @@ volid:  EncinaOS 24.04.4 LTS arm64   (lo que se ve al conectar el USB)
 ninguna tuvo nada que decir. Y el `Volume id` es **nuestro**, no el oficial —a
 diferencia de `b7d287f7…`, que sólo se pudo fabricar con el volumen de Ubuntu—.
 O sea que **si este medio arranca, es un producto completo**, no un diagnóstico.
+
+**c) SE CAE. `LTS` SOLO NO BASTA — Y LA PREDICCIÓN DE (a) ACERTÓ (2 de 5).**
+Arrancado `encina-lts-7325c900`: **«Se produjo un problema»**, el mismo diálogo,
+a la primera y sin pantallas negras.
+
+```
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (…)   9 campos   FUNCIONA
+EncinaOS 24.04.4 LTS                - Release arm64 (…)   7 campos   SE CAE   <- HOY
+```
+
+**Una sola diferencia entre esas dos filas: `"Noble Numbat"`.** O sea que lo que
+hace falta son **las comillas o el nombre en clave**, y el `LTS` queda descartado
+como lo que importa. **Y con eso muere la salida barata:** no hay forma de que el
+producto arranque sin llevar un nombre en clave entrecomillado.
+
+**d) LA PREGUNTA QUE DE VERDAD DECIDE EL PRODUCTO, y no es la que parecía.** No es
+«¿hace falta el nombre en clave?» sino **«¿hace falta el de UBUNTU, o vale uno
+nuestro?»**. Son cosas distintas y tienen consecuencias distintas:
+
+```
+si vale uno NUESTRO  -> ni marca de Ubuntu en el producto, ni romper la derivacion
+si hace falta el SUYO -> «Noble Numbat» dentro del producto (casilla 2) Y romper
+                         la derivacion, porque 41 bytes no caben en 32 (§4.56q)
+```
+
+**El medio que lo separa, y también es cadena de PRODUCTO:**
+
+```
+EncinaOS 24.04.4 LTS "A B" - Release arm64 (20260210)      9 campos
+  volid  -> «EncinaOS 24.04.4 LTS "A B" arm64» = 32 bytes  CABE, justo
+  rotulo -> Install EncinaOS 24.04.4 LTS
+  no dice «Ubuntu» en ningun sitio
+```
+
+`"A B"` no es un nombre, es **el máximo que cabe** con `EncinaOS` delante: el
+presupuesto deja exactamente 5 bytes para el codename entrecomillado. Si esto
+arranca, el nombre de verdad se elige después (acortar el producto a `Encina`
+compraría 2 bytes más).
+
+> **PREDICCIÓN: predigo que ARRANCA**, o sea que lo que importa es **la forma
+> —unas comillas con algo dentro—** y no el nombre concreto. Me apoyo en que la
+> interfaz que se rompe es la que **parsea** el fichero, y un parseo que exige
+> comillas se satisface con cualquier contenido.
+>
+> **Lo que la tumba:** que el instalador **compruebe** el nombre en clave contra
+> algo —`VERSION_CODENAME=noble` de `/etc/os-release`, o una tabla de releases—,
+> en cuyo caso `"A B"` no vale y hace falta el de Ubuntu.
+>
+> Marcador: **2 de 5**.
