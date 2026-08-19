@@ -401,7 +401,49 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-19: **EL BISECADO CIERRA — LA CAUSA ES `/.disk/info`**, y lo que falta es saber POR QUÉ y decidir el precio
+> ### LA TAREA EN CURSO, 2026-08-19 (tarde): **EL BISECADO BAJA A UN SOLO TROZO — `LTS "Noble Numbat"`**, y la derivación de §4.53 hay que romperla gane quien gane
+>
+> **TRES HIPÓTESIS MUERTAS POR EXPERIMENTO EN UNA SESIÓN** (`MEDICIONES.md`
+> §4.56), las tres con predicción escrita antes de arrancar y las tres **falsas**:
+>
+> | `.disk/info` | campos | instalador |
+> |---|---|---|
+> | `Ubuntu 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **funciona** (el oficial) |
+> | `EncinaOS 24.04.4 - Release …` `d81586ae` | 6 | **se cae** — muere el CANAL |
+> | `Ubuntu 24.04.4 - Release …` `9b1194b9` | 6 | **se cae** — muere el SABOR |
+>
+> El canal `stable/ubuntu-24.04.4` es **el del medio oficial**, que funciona, y aun
+> así se cae. Y con `Ubuntu` de primera palabra —sabor válido— también. **El
+> separador y el paréntesis están iguales en los dos lados.** Queda `LTS "Noble
+> Numbat"`, y **las comillas están en el único que funciona y faltan en los cuatro
+> que se caen**.
+>
+> **LO QUE YA SE PUEDE DAR POR CERRADO SIN SABER CUÁL GANA:** §4.56q mide que
+> **con el nombre en clave real no cabe NINGÚN nombre de producto en el `Volume
+> id`** —ni la cadena vacía: `LTS "Noble Numbat"` consume los 32 bytes enteros—.
+> Así que si gana el trozo, la derivación no cabe; y si gana la primera palabra,
+> el nombre no puede ir en el fichero. **En los dos casos hay que romper la
+> derivación que §4.53 unió**, y la «tercera vía» de §4.56a deja de ser opcional.
+>
+> **LO QUE FALTA:** el medio `EncinaOS 24.04.4 LTS "Noble Numbat" - …`
+> (`b7d287f7`), ya fabricado con `--info-crudo` y **sin arrancar todavía**: tres
+> intentos, tres pantallas negras con el sistema vivo (log a 92 204 B e IP), que
+> por la trampa 38 **no es un resultado**. Contesta si nuestro nombre vale una vez
+> restaurado el trozo. Y detrás, separar cuál de los tres —`LTS`, comillas o
+> recuento— es, con `Ubuntu 24.04.4 LTS - Release …` (7 campos).
+>
+> **INSTRUMENTO NUEVO: `--info-crudo`**, para medios de diagnóstico. Las **tres**
+> guardas de marca dejan de parar pero se siguen evaluando y lo dicen, con el
+> `.disk/info` del producto como control. Sin ella estos medios **no se podían
+> fabricar**.
+>
+> **Y UN PATRÓN QUE YA NO ES SOSPECHA:** van **cuatro** atribuciones falsas
+> seguidas hechas igual —mecanismo leído + control + caso que falla—. Esa forma
+> **no produce causas** en este proyecto.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-19 (mañana): **EL BISECADO CIERRA — LA CAUSA ES `/.disk/info`**, y lo que falta es saber POR QUÉ y decidir el precio
 >
 > **SE BISECÓ D23 Y HAY RESPUESTA** (`MEDICIONES.md` §4.55). Primero hizo falta el
 > instrumento: `fabricar-iso.sh` tiene ahora **una bandera por mecanismo**

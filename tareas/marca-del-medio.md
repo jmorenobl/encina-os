@@ -73,6 +73,42 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
+      > **BISECADA HASTA UN SOLO TROZO EL 2026-08-19, tarde (`MEDICIONES.md`
+      > §4.56): LA CAUSA ESTÁ DENTRO DE `LTS "Noble Numbat"`.** Tres hipótesis
+      > muertas **por experimento** en una sesión, las tres con su predicción
+      > escrita antes de arrancar y las tres **falsas**:
+      >
+      > | `.disk/info` | campos | instalador |
+      > |---|---|---|
+      > | `Ubuntu 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **funciona** (el oficial) |
+      > | `EncinaOS 24.04.4 - Release …` (`d81586ae`) | 6 | **se cae** — muere la del CANAL |
+      > | `Ubuntu 24.04.4 - Release …` (`9b1194b9`) | 6 | **se cae** — muere la del SABOR |
+      >
+      > **La segunda palabra ya no es sospechosa:** `stable/ubuntu-24.04.4` es el
+      > canal del medio oficial, que funciona, y aun así se cae. **La primera
+      > tampoco basta:** con `Ubuntu` —un sabor válido, leído en `libapp.so` junto
+      > a `UbuntuFlavor.fromName` y los otros diez— se cae igual. Y el separador y
+      > el paréntesis están **iguales** en el que funciona y en los que se caen.
+      > **Queda un solo trozo**, y las comillas del nombre en clave están en el
+      > único que funciona y faltan en los cuatro que se caen.
+      >
+      > **LO QUE ESTO OBLIGA, y ya no es opcional:** o la causa es la primera
+      > palabra (y entonces `.disk/info` no puede llevar nuestro nombre) o es el
+      > trozo (y entonces `LTS "Noble Numbat"` **no cabe** en los 32 bytes del
+      > `Volume id` derivado — §4.56q mide que **con el nombre en clave real no
+      > cabe NINGÚN nombre de producto, ni la cadena vacía**). **En los dos casos
+      > hay que romper la derivación** que §4.53 unió a propósito.
+      >
+      > **Instrumento nuevo:** `--info-crudo`, para medios de **diagnóstico**. Las
+      > tres guardas de marca dejan de parar pero **se siguen evaluando** y lo
+      > dicen, con el `.disk/info` del producto como control de que la guarda
+      > sigue viva. Sin ella los medios que separan las hipótesis **no se podían
+      > fabricar**, porque son justo las cadenas que el producto debe rechazar.
+      >
+      > **UN PATRÓN QUE YA NO ES SOSPECHA:** van **cuatro** atribuciones falsas
+      > seguidas construidas igual —mecanismo leído en el código + su control + un
+      > caso que falla—. En este proyecto esa forma **no produce causas**.
+
       > **BISECADA EL 2026-08-19 (`MEDICIONES.md` §4.55): DE LOS CUATRO
       > MECANISMOS, EL QUE TUMBA EL INSTALADOR ES `/.disk/info`.** Se le dio a
       > `fabricar-iso.sh` **una bandera por mecanismo** —lo que faltaba para poder
