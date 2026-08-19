@@ -2379,3 +2379,22 @@ antes es `stat -f '%l %i %z %N'`, no acordarse. Y para la VM, **`utmctl delete
 bundle a mano deja la VM **en el registro de UTM sin bundle detrás** —que es
 exactamente lo que le pasó a `encina-marca-ac175f64`, que sigue en `utmctl list`
 y no aparece en `inventario-vms.sh`—.
+
+**40. `grep -r` SIN `-a` SE SALTA LOS BINARIOS Y DEVUELVE UN CERO FALSO.** Cazada
+el 2026-08-19 buscando quién lee `.disk/info` dentro del snap del instalador. La
+conclusión fue «sólo dos ficheros Python», **y era falsa**:
+
+```
+grep -rl  'disk/info' snapfs | grep -v '\.py$'   ->  hooks/install, ubuntu-image.rst
+grep -ral 'disk/info' snapfs | grep -v '\.py$'   ->  bin/lib/libapp.so   <- ESTE FALTABA
+```
+
+`libapp.so` es **justo** el binario de la interfaz Flutter, o sea el que §4.55
+midió que es el que se corta. Un cero de `grep -r` sobre un árbol que mezcla
+texto y binarios **no significa «no está»**: significa «no está en los ficheros
+que grep decidió leer». **Siempre `-a` al buscar en un árbol extraído** (un snap,
+un squashfs, un `.deb` desempaquetado), y si lo que se busca es una cadena dentro
+de un ejecutable, `strings -a` **con su control** —una cadena inventada tiene que
+dar 0 y una que sabes que está tiene que dar más de 0—. Es la misma familia que
+`timeout` en §4.54 y el banco de §4.51: **el instrumento contestó que no había
+nada porque ni siquiera miró.**
