@@ -13521,3 +13521,51 @@ producto lleve a la vez el `.disk/info` que arranca y un `Volume id` propio, **h
 que romper la derivación de §4.53** y escribir el `Volume id` por su cuenta. Es lo
 que §4.56r predijo antes de saber cuál de las dos hipótesis ganaba, y ha ganado
 por el camino que llevaba a la misma consecuencia.
+
+---
+
+### 4.57 SEPARAR EL `LTS` DE LAS COMILLAS: el `[OMIT]` de §4.56cc estaba en la ruta crítica y nadie lo había visto (2026-08-19, cierre)
+
+**a) POR QUÉ ESTO NO ES CURIOSIDAD.** §4.56cc dejó sin separar cuál de los tres
+—el `LTS`, las comillas del nombre en clave, o el número de campos— es el que
+importa. Parecía una pregunta para después. **No lo es**, y la aritmética de
+§4.56q es la que lo decide: un nombre en clave real de dos palabras **no cabe
+nunca** en los 32 bytes del `Volume id` derivado. O sea que **la única salida que
+conserva la derivación de §4.53 es que el nombre en clave NO haga falta.**
+
+El candidato de **7 campos**, comprobado con las fórmulas del propio guion:
+
+```
+EncinaOS 24.04.4 LTS - Release arm64 (20260210)      7 campos
+  [OK] 5b: el rotulo «Install EncinaOS 24.04.4 LTS» no dice Ubuntu
+  [OK] 5b: la 2a palabra es la de la base
+  [OK] 5b: conserva la forma «Palabra … (numero)»
+  [OK] 5e: «EncinaOS 24.04.4 LTS arm64» = 26 bytes, CABE en 32
+  [OK] 5e: el volid no dice Ubuntu
+```
+
+**Pasa las tres guardas del producto**, así que no necesita `--info-crudo`: es una
+cadena **entregable**. Si arranca se caen de golpe tres problemas —el nombre en
+clave de Ubuntu dentro del producto, romper la derivación, y el bloqueo del paso
+5e que hoy impide construir—.
+
+> **PREDICCIÓN, escrita antes de fabricar: predigo que SE CAE**, o sea que lo que
+> importa son **las comillas / el nombre en clave** y no el `LTS`.
+>
+> **En qué me apoyo:** `LTS` y las comillas están **igual de correlacionados** con
+> los cinco casos medidos, así que la correlación no decide; lo que inclina es el
+> mecanismo plausible. Un parseador que saque el nombre en clave **de entre
+> comillas** y no encuentre ninguna es una forma corriente de romperse; que falte
+> un `LTS` opcional lo es mucho menos.
+>
+> **Y con el marcador delante: llevo 1 de 4 en esta sesión.** Las tres falsas
+> también tenían apoyo que parecía bueno, así que esta predicción vale lo que vale.
+>
+> **Lo que la tumba:** que arranque, y sería la mejor noticia posible —producto
+> entregable sin tocar la derivación—.
+>
+> **Y si se cae, queda una tercera salida que hoy nadie ha probado:** un nombre en
+> clave **corto y propio** que conserve las comillas y quepa en 32 bytes
+> (`EncinaOS 24.04.4 LTS "A B"` da exactamente 32). Separaría «hacen falta las
+> comillas» de «hace falta el nombre en clave DE UBUNTU», que no es lo mismo y
+> tiene consecuencias distintas para la casilla 2.
