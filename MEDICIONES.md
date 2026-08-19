@@ -13569,3 +13569,19 @@ clave de Ubuntu dentro del producto, romper la derivación, y el bloqueo del pas
 > (`EncinaOS 24.04.4 LTS "A B"` da exactamente 32). Separaría «hacen falta las
 > comillas» de «hace falta el nombre en clave DE UBUNTU», que no es lo mismo y
 > tiene consecuencias distintas para la casilla 2.
+
+**b) EL MEDIO SALE LIMPIO, Y ESO YA ES UN DATO.** `7325c90030f14906…`,
+3 721 265 152 bytes, fabricado **sin `--info-crudo`**:
+
+```
+== 13. los cuatro mecanismos, leidos del medio terminado
+[OK]    el medio lleva exactamente lo pedido (capa volid info menu): 1 1 1 1
+volid:  EncinaOS 24.04.4 LTS arm64   (lo que se ve al conectar el USB)
+0 fallos     0 avisos de DIAGNOSTICO
+```
+
+**Cero avisos de diagnóstico** es la comprobación de que la cadena es
+**entregable**: las tres guardas de marca se ejecutaron **en modo producto** y
+ninguna tuvo nada que decir. Y el `Volume id` es **nuestro**, no el oficial —a
+diferencia de `b7d287f7…`, que sólo se pudo fabricar con el volumen de Ubuntu—.
+O sea que **si este medio arranca, es un producto completo**, no un diagnóstico.
