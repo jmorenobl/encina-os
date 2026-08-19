@@ -12602,3 +12602,91 @@ presencia no tire el instalador—.
 del paso 5b —que la 2ª palabra sea una versión— **se queda y vale**, aunque no
 fuera la causa. Habría cazado `stable/ubuntu-OS` sin gastar un arranque, y eso
 sigue siendo cierto.
+
+### 4.55 BISECAR D23: una bandera por mecanismo, y la predicción escrita antes de gastar el arranque (2026-08-19)
+
+**§4.54i dejó la regresión acotada al grupo de D23 y tres sospechosos sin medir.
+Bisecarlos exigía algo que el guion no sabía hacer:** fabricar un medio que lleve
+tres mecanismos y le falte uno. La capa y el `Volume id` estaban clavados.
+
+#### (a) EL INSTRUMENTO: cuatro banderas, y un paso que lee el producto
+
+`imagen/fabricar-iso.sh` acepta `--sin-capa`, `--sin-volid`, `--sin-info` y
+`--sin-menu`; `construir-todo.sh` las pasa **sin interpretarlas**. Sin ninguna
+sale el producto. El `locale=es_ES.UTF-8` **no tiene bandera y no es un olvido**:
+ya viajaba en `1224b5b1…`, que **arranca**, así que no está bajo sospecha.
+
+**Y con las banderas aparece una trampa que no existía:** todas las
+comprobaciones del guion —el `diff` de `md5sum.txt`, la lista de añadidos del
+paso 10, los descriptores del 11— **derivan sus expectativas de la misma bandera
+que dicen comprobar**. Si `--sin-capa` no hiciera nada, el paso 10 esperaría la
+capa, la encontraría, y daría `[OK]`. **Un bisecado entero saldría al revés y
+nada lo diría.** De ahí el **paso 13**, que abre la ISO terminada y pregunta qué
+lleva sin mirar ninguna variable intermedia, y que **no busca nombres nuestros**:
+cuenta los `squashfs` de `/casper`, compara `.disk/info` con el de la oficial y
+busca el título **oficial** del menú.
+
+**Ese lector tiene banco propio y cuesta segundos, no 20 minutos**
+(`imagen/banco-mecanismos.sh`, y `--leer-mecanismos <iso>` para una suelta). Los
+casos son **medios reales con su arranque ya medido**, y el control va dentro:
+
+```
+esperado  leido    medio                                que es
+0 0 0 0   0 0 0 0  ubuntu-24.04.4-desktop-arm64.iso     la oficial de Canonical
+0 0 0 0   0 0 0 0  encina-os-E4-es-0.2.1.iso            ac0a5721: FUNCIONA
+0 0 0 0   0 0 0 0  encina-os-E4-es-0.2.1-1224b5b1.iso   1224b5b1: FUNCIONA
+1 1 1 1   1 1 1 1  encina-os-0.2.1-encinaos-p1.iso      e8a0ead2: SE CAE
+correctas: 4   fallos: 0
+```
+
+**CONTROL GASTADO:** con un directorio de medios trucado por enlaces duros —la
+ISO oficial con el nombre de la que lleva los cuatro, y al revés— el banco dice
+`[FALLO]` **en los dos sentidos** (`0 0 0 0` donde esperaba `1 1 1 1` y al revés)
+y sale con código 1.
+
+**Y de paso, un comentario FALSO del propio guion, corregido dejando al lado lo
+que decía:** el bloque de la capa afirmaba que *«casper monta todos los
+`*.squashfs` de `/casper` en orden alfabético y el último manda»*, que es de
+donde salía el `zz-`. §4.54e lo tumbó. La comprobación del nombre se queda —el
+día que la capa entre por `layerfs-path=` seguirá haciendo falta que encadene—,
+pero ya no miente sobre por qué.
+
+#### (b) LA PREDICCIÓN, ESCRITA ANTES DE CONSTRUIR — y dos lecturas de segundos que la cambiaron de bando
+
+**Primero pensé que la capa NO era la causa**, y por un motivo medido: el único
+argumento para sospechar de ella es *«añade un fichero al directorio que `casper`
+e `install-sources.yaml` enumeran»*, y de esos dos, **`casper` ya está medido y
+NO enumera el directorio** (§4.54e: la rama del glob sólo corre con
+`$LAYERFS_PATH` vacío, y no lo está).
+
+**Dos lecturas de la ISO oficial, de segundos, me han cambiado la predicción:**
+
+1. **`install-sources.yaml` no lista ficheros: lista DOS rutas explícitas**
+   —`minimal.squashfs` y `minimal.standard.squashfs`, las dos
+   `type: fsimage-layered`, con `locale_support: langpack` y **nueve**
+   `preinstalled_langs`—. Para servir esos langpacks alguien tiene que
+   **localizar `minimal.standard.es.squashfs` y compañía**, y esos nombres **no
+   están escritos en ningún sitio del yaml**.
+2. **CADA `squashfs` de `/casper` viaja con DOS ficheros acompañantes**, su
+   `.manifest` y su `.size`: 21 `squashfs` y sus 21 pares. **`zz-encina.squashfs`
+   no tiene ni `zz-encina.manifest` ni `zz-encina.size`** — es el único fichero
+   suelto del directorio. Tampoco está en `casper/SHA256SUMS`.
+
+**PREDICCIÓN, y es falsable: con `--sin-capa` el instalador ARRANCA** —o sea, la
+capa es la causa—. Lo que creo que pasa, y esto es **deducción, no medición**:
+algo del instalador recorre `/casper/*.squashfs` para descubrir las variantes de
+idioma, se encuentra un `zz-encina.squashfs` que no tiene `.size` ni `.manifest`,
+y revienta antes de la segunda pantalla. Encaja con que el fallo sea **silencioso
+y temprano**.
+
+**Si me equivoco y se sigue cayendo**, lo que se aprende es que **no hay tal
+tercer consumidor**, la capa queda descartada, y el siguiente es el `Volume id`
+—§4.53a midió que nadie lo usa, pero lo midió sobre `casper`, `apt-cdrom` y el
+GRUB firmado, **no sobre el instalador gráfico**—.
+
+**Lo que el guion tiene que imprimir si la bandera hace lo que dice** (predicho
+también, para que el registro se pueda cotejar sin interpretarlo):
+`capa --` en el bloque 0, `md5sum.txt: 2 líneas rehechas, 0 añadidas`,
+`modificados exactamente 3`, un fichero añadido menos que en `e8a0ead2…`,
+`--sin-capa: /casper tiene los mismos 21 squashfs que la oficial`, y el paso 13
+`0 1 1 1`.

@@ -3,6 +3,22 @@
 #
 #     ./fabricar-iso.sh [--iso <oficial.iso>] --repo <dir> --salida <encina.iso>
 #                       [--capa <zz-encina.squashfs>]
+#                       [--sin-capa] [--sin-volid] [--sin-info] [--sin-menu]
+#     ./fabricar-iso.sh --leer-mecanismos <alguna.iso>   <- solo lee, no fabrica
+#
+# LAS CUATRO BANDERAS «--sin-*» SON PARA BISECAR, NO PARA EL PRODUCTO. Cada una
+# quita UNO de los cuatro mecanismos de marca del medio (D23) y deja los otros
+# tres. Existen porque el 2026-08-17 no se pudo hacer justo eso: el instalador
+# grafico se cae con los cuatro puestos y ARRANCA sin ninguno -- medido en tres
+# ISOs y bundles identicos, MEDICIONES.md §4.54i --, o sea que la regresion esta
+# dentro de este grupo, y sin poder quitarlos de uno en uno no hay forma de
+# saber cual. El paso 13 LEE DEL MEDIO CONSTRUIDO que mecanismos lleva y lo
+# coteja con lo que se pidio, con su control sobre la ISO oficial: sin eso, una
+# bandera que no hiciera nada daria un bisecado entero equivocado.
+#
+# El «locale=es_ES.UTF-8» del grub.cfg NO tiene bandera y no es un descuido: ya
+# viajaba en 1224b5b1…, que es una de las dos ISOs cuyo instalador arranca, asi
+# que no esta bajo sospecha.
 #
 # --iso vale por defecto medios/ubuntu-24.04.4-desktop-arm64.iso, que es donde
 # la deja imagen/traer-iso-oficial.sh. Ese directorio esta en .gitignore: la ISO
@@ -121,6 +137,11 @@ GUION="$AQUI/encina-seed.sh"
 YAML="$AQUI/autoinstall.yaml"
 
 ISO=""; REPO=""; SALIDA=""; CAPA=""
+# los cuatro mecanismos de D23. Todos puestos por defecto: el producto los lleva,
+# y una bandera de bisecado que se olvide tiene que dar el PRODUCTO, no un medio
+# a medias.
+CON_CAPA=1; CON_VOLID=1; CON_INFO=1; CON_MENU=1
+LEER=""   # --leer-mecanismos <iso>: solo lee y sale, no fabrica nada
 # la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
 H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
 # EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
@@ -139,21 +160,82 @@ while [ $# -gt 0 ]; do
         --salida) SALIDA="$2"; shift 2 ;;
         --capa)   CAPA="$2";   shift 2 ;;
         --yaml)   YAML="$2";   shift 2 ;;
+        --leer-mecanismos) LEER="$2"; shift 2 ;;
+        --sin-capa)  CON_CAPA=0;  shift ;;
+        --sin-volid) CON_VOLID=0; shift ;;
+        --sin-info)  CON_INFO=0;  shift ;;
+        --sin-menu)  CON_MENU=0;  shift ;;
         -h|--help) sed -n '1,40p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
 done
 [ -n "$ISO" ] || ISO="$AQUI/../medios/ubuntu-24.04.4-desktop-arm64.iso"
-[ -n "$REPO" ] && [ -n "$SALIDA" ] || uso
+if [ -n "$LEER" ]; then
+    :                                   # solo leer: no hace falta ni --repo ni --salida
+else
+    [ -n "$REPO" ] && [ -n "$SALIDA" ] || uso
+fi
 
 fallo() { echo "[FALLO] $*"; exit 1; }
 ok()    { echo "[OK]    $*"; }
+
+# QUE MECANISMOS DE MARCA LLEVA UNA ISO, LEIDOS DE ELLA Y NO DE NINGUNA VARIABLE.
+# Vive aqui arriba, y no dentro del paso 13 que la usa, porque «--leer-mecanismos
+# <iso>» la deja disponible sobre CUALQUIER medio: asi el lector se puede
+# ejercitar en segundos contra las ISOs que ya estan en el disco -- cuya
+# composicion esta escrita en MEDICIONES.md -- en vez de solo dentro de una
+# construccion de 20 minutos. Imprime cuatro cifras: capa volid info menu.
+# NO BUSCA NOMBRES NUESTROS a proposito: cuenta squashfs, compara ficheros con
+# los de la ISO oficial y busca el titulo OFICIAL del menu. Un lector que
+# buscara «Encina» estaria de acuerdo con el guion por construccion, que es
+# justo lo que este bloque existe para no hacer.
+mecanismos() {   # imprime "capa volid info menu" con 1 o 0, leyendo la ISO
+    local iso="$1" c v i m n_s n_o vol
+    n_s=$(tar -tf "$iso" 2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
+    n_o=$(tar -tf "$ISO" 2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
+    [ "$n_s" -gt "$n_o" ] && c=1 || c=0
+    vol=$(xorriso -indev "$iso" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
+    [ "$vol" = "$VOLID_OFICIAL" ] && v=0 || v=1
+    if tar -xOf "$iso" .disk/info 2>/dev/null | diff -q - "$TMP/info.oficial" >/dev/null 2>&1
+        then i=0; else i=1; fi
+    if tar -xOf "$iso" boot/grub/grub.cfg 2>/dev/null \
+       | grep -q '^menuentry "Try or Install Ubuntu" {$'
+        then m=0; else m=1; fi
+    echo "$c $v $i $m"
+}
 
 command -v xorriso >/dev/null || fallo "no hay xorriso (brew install xorriso)"
 [ -f "$ISO" ]  || fallo "no esta la ISO oficial: $ISO
         Traela y comprueba su firma con:  ./imagen/traer-iso-oficial.sh
         (medios/ esta en .gitignore a proposito: ver medios/LEEME.md)"
 [ -f "$YAML" ] || fallo "no existe el seed: $YAML"
+
+# --- modo lectura: --leer-mecanismos <iso>, y no se fabrica nada -------------
+if [ -n "$LEER" ]; then
+    [ -f "$LEER" ] || fallo "no esta la ISO que hay que leer: $LEER"
+    TMP=$(mktemp -d) || fallo "mktemp"
+    trap 'rm -rf "$TMP"' EXIT
+    tar -xOf "$ISO" .disk/info > "$TMP/info.oficial" \
+        || fallo "no pude leer .disk/info de la ISO oficial (referencia)"
+    VOLID_OFICIAL=$(xorriso -indev "$ISO" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
+    [ -n "$VOLID_OFICIAL" ] || fallo "no pude leer el Volume id de la ISO oficial"
+    echo "$(mecanismos "$LEER")   capa volid info menu   $(basename "$LEER")"
+    exit 0
+fi
+
+# --- 0. QUE MECANISMOS DE MARCA LLEVA ESTE MEDIO ----------------------------
+# Va DELANTE de todo lo demas a proposito: una construccion son ~20 minutos y
+# hay que poder ver en la primera linea del registro que se esta fabricando.
+mec() { [ "$1" = 1 ] && printf 'SI ' || printf '-- '; }
+echo "== 0. los cuatro mecanismos de marca del medio (D23)"
+echo "        $(mec $CON_CAPA) la capa /casper/zz-encina.squashfs"
+echo "        $(mec $CON_VOLID) el Volume id propio"
+echo "        $(mec $CON_INFO) el /.disk/info propio"
+echo "        $(mec $CON_MENU) el menuentry del grub.cfg"
+N_SIN=$(( (1-CON_CAPA) + (1-CON_VOLID) + (1-CON_INFO) + (1-CON_MENU) ))
+if [ "$N_SIN" -gt 0 ]; then
+    echo "        [AVISO] faltan $N_SIN de los 4: esto es un MEDIO DE BISECADO, no el producto"
+fi
 
 # --- 1. la ISO de partida es la medida, no otra -----------------------------
 echo "== 1. la ISO oficial, por huella"
@@ -230,7 +312,9 @@ for i in 0 1 2; do
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
 done
 
-# --- 5. los TRES ficheros que si se modifican, y la capa de marca -----------
+# --- 5. los ficheros que si se modifican, y la capa de marca ----------------
+# CUANTOS son depende de las banderas «--sin-*»: el grub.cfg y el md5sum.txt van
+# siempre, el .disk/info y la capa solo si su mecanismo esta puesto.
 echo "== 5. el grub.cfg, el .disk/info, la capa de marca y el md5sum.txt que los cubre"
 TMP=$(mktemp -d) || fallo "mktemp"
 trap 'rm -rf "$TMP"' EXIT
@@ -248,25 +332,50 @@ grep -q 'locale=' "$TMP/grub.cfg.oficial" \
 # no lo dice, no se adivina: se para.
 n=$(grep -c '^menuentry "Try or Install Ubuntu" {$' "$TMP/grub.cfg.oficial")
 [ "$n" -eq 1 ] || fallo "esperaba UNA linea 'menuentry \"Try or Install Ubuntu\" {' y hay $n"
-# la palabra va ANTES del '---', que es la ranura de casper
+# la palabra va ANTES del '---', que es la ranura de casper. El locale va SIEMPRE
+# (no es marca y ya viajaba en una ISO que arranca); el titulo del menu si es
+# marca, y por eso tiene bandera.
 sed -e "s|/casper/vmlinuz|/casper/vmlinuz locale=$LOCALE|" \
-    -e "s|^menuentry \"Try or Install Ubuntu\" {\$|menuentry \"$MENU_ENCINA\" {|" \
     "$TMP/grub.cfg.oficial" > "$TMP/grub.cfg"
+if [ "$CON_MENU" = 1 ]; then
+    sed -e "s|^menuentry \"Try or Install Ubuntu\" {\$|menuentry \"$MENU_ENCINA\" {|" \
+        "$TMP/grub.cfg" > "$TMP/grub.cfg.paso" || fallo "sed del menuentry"
+    mv "$TMP/grub.cfg.paso" "$TMP/grub.cfg"
+fi
 grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE .*---" "$TMP/grub.cfg" \
     || fallo "la palabra no quedo en la linea del nucleo antes del ---"
-grep -q "^menuentry \"$MENU_ENCINA\" {\$" "$TMP/grub.cfg" \
-    || fallo "el titulo del menu no quedo puesto"
-grep -q "Ubuntu" "$TMP/grub.cfg" \
-    && fallo "el grub.cfg de Encina todavia dice Ubuntu en alguna linea"
+if [ "$CON_MENU" = 1 ]; then
+    D_GRUB=4
+    grep -q "^menuentry \"$MENU_ENCINA\" {\$" "$TMP/grub.cfg" \
+        || fallo "el titulo del menu no quedo puesto"
+    grep -q "Ubuntu" "$TMP/grub.cfg" \
+        && fallo "el grub.cfg de Encina todavia dice Ubuntu en alguna linea"
+else
+    # --sin-menu: la comprobacion NO se omite, SE INVIERTE. Que el titulo oficial
+    # siga ahi es lo unico que separa «lo he quitado» de «el sed no ha aplicado»,
+    # y en un bisecado esa diferencia es la respuesta entera.
+    D_GRUB=2
+    grep -q "^menuentry \"Try or Install Ubuntu\" {\$" "$TMP/grub.cfg" \
+        || fallo "--sin-menu, pero el menuentry OFICIAL ya no esta en el grub.cfg"
+    grep -q "$MENU_ENCINA" "$TMP/grub.cfg" \
+        && fallo "--sin-menu, y sin embargo el grub.cfg dice «$MENU_ENCINA»"
+fi
 d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
-[ "$d" -eq 4 ] || fallo "grub.cfg cambia en $d lineas y tenian que cambiar dos"
-ok "grub.cfg: locale=$LOCALE y menuentry «$MENU_ENCINA», y no cambia nada mas"
+[ "$d" -eq "$D_GRUB" ] || fallo "grub.cfg cambia en $d lineas y esperaba $D_GRUB"
+if [ "$CON_MENU" = 1 ]; then
+    ok "grub.cfg: locale=$LOCALE y menuentry «$MENU_ENCINA», y no cambia nada mas"
+else
+    ok "grub.cfg: locale=$LOCALE y NADA MAS (--sin-menu: el menuentry sigue siendo «Try or Install Ubuntu»)"
+fi
 
 # --- 5b. .disk/info: 60 bytes que rotulan el icono del instalador ------------
 tar -xOf "$ISO" .disk/info > "$TMP/info.oficial" \
     || fallo "no pude leer .disk/info de la ISO"
 [ -s "$AQUI/marca/disk-info" ] || fallo "no esta imagen/marca/disk-info"
-cp "$AQUI/marca/disk-info" "$TMP/info" || fallo "cp .disk/info"
+# EL FICHERO NUESTRO SE COMPRUEBA SIEMPRE, viaje o no al medio: de el sale
+# tambien el Volume id (paso 5e), asi que --sin-info no puede dejarlo sin mirar.
+# Lo que la bandera decide es CUAL DE LOS DOS VIAJA, al final de este bloque.
+cp "$AQUI/marca/disk-info" "$TMP/info.encina" || fallo "cp .disk/info"
 # EL CONTROL, y es el calculo de casper-bottom/25adduser tal cual viaja en el
 # medio: no se comprueba que el fichero cambie, se comprueba QUE ROTULO SALE.
 release_de() {
@@ -276,7 +385,7 @@ release_de() {
     [ "$lts" = "LTS" ] && [ -n "$rel" ] && rel="$rel LTS"
     echo "$rel"
 }
-R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info")
+R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info.encina")
 # NO se compara contra el nombre del producto escrito aqui: eso seria guardar el
 # nombre en un sitio mas, y este guion ya tiene la lista de sitios que lo dicen.
 # Se comprueba LA PROPIEDAD -- pila A de D22: el rotulo no puede decir Ubuntu --,
@@ -297,7 +406,7 @@ printf '%s' "$R_OFICIAL" | grep -qi ubuntu \
 # «Encina OS 0.2.1 …» valia «OS», el medio pedia «stable/ubuntu-OS» y el
 # instalador SE CAIA EN SILENCIO: sin volcado, sin error en el journal y sin
 # Traceback. Esta comprobacion es la que lo habria cazado sin gastar un arranque.
-V2_NUESTRO=$(cut -d' ' -f2 "$TMP/info"); V2_OFICIAL=$(cut -d' ' -f2 "$TMP/info.oficial")
+V2_NUESTRO=$(cut -d' ' -f2 "$TMP/info.encina"); V2_OFICIAL=$(cut -d' ' -f2 "$TMP/info.oficial")
 printf '%s' "$V2_NUESTRO" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
     || fallo "la 2a palabra de .disk/info es «$V2_NUESTRO» y tiene que ser un NUMERO DE VERSION.
         refresh.py la usa como canal: pediria «stable/ubuntu-$V2_NUESTRO» y el
@@ -308,11 +417,29 @@ ok "la 2a palabra es una version: «$V2_NUESTRO» -> canal stable/ubuntu-$V2_NUE
 # y la forma que necesitan los otros dos que lo leen: la primera palabra es el
 # usuario y el nombre de maquina de la sesion viva, y el parentesis del final es
 # el numero de serie de 57pollinate.
-grep -qE '^[A-Za-z]+ .*\([0-9]+\)$' "$TMP/info" \
+grep -qE '^[A-Za-z]+ .*\([0-9]+\)$' "$TMP/info.encina" \
     || fallo "el .disk/info de Encina no conserva la forma «Palabra … (numero)»"
-ok ".disk/info: Name=Install $R_NUESTRO (el oficial daba: Install $R_OFICIAL), FLAVOUR=$(cut -d' ' -f1 "$TMP/info" | tr 'A-Z' 'a-z')"
+# y ahora si: cual de los dos viaja en el medio
+if [ "$CON_INFO" = 1 ]; then
+    cp "$TMP/info.encina" "$TMP/info" || fallo "cp del .disk/info al medio"
+    ok ".disk/info: Name=Install $R_NUESTRO (el oficial daba: Install $R_OFICIAL), FLAVOUR=$(cut -d' ' -f1 "$TMP/info.encina" | tr 'A-Z' 'a-z')"
+else
+    # --sin-info: el fichero NO se toca, asi que ni se mapea ni entra en
+    # md5sum.txt. Se deja copiado para que el resto del guion pueda compararlo.
+    cp "$TMP/info.oficial" "$TMP/info" || fallo "cp del .disk/info oficial"
+    ok ".disk/info: --sin-info, viaja el OFICIAL intacto (rotulo: Install $R_OFICIAL)"
+fi
 
 # --- 5c. la capa de marca ----------------------------------------------------
+if [ "$CON_CAPA" = 0 ]; then
+    # --sin-capa: ni se fabrica (capa-marca.sh son minutos) ni se anade nada a
+    # /casper. Es el primer sospechoso del bisecado: es lo UNICO que mete un
+    # fichero nuevo en el directorio que casper e install-sources.yaml enumeran,
+    # y su contenido da igual porque NO SE MONTA NUNCA (§4.54e) -- o sea que lo
+    # que se prueba quitandola es su PRESENCIA.
+    CAPA=""; CAPA_N=""
+    ok "capa de marca: NO (--sin-capa), /casper queda como en la ISO oficial"
+else
 if [ -z "$CAPA" ]; then
     echo "   (no se dio --capa: se fabrica con capa-marca.sh, que lee la ISO oficial)"
     "$AQUI/capa-marca.sh" "$ISO" --salida "$TMP/capa" --trabajo "$TMP/capa-trabajo" \
@@ -321,10 +448,15 @@ if [ -z "$CAPA" ]; then
 fi
 [ -f "$CAPA" ] || fallo "no esta la capa de marca: $CAPA"
 CAPA_N=$(basename "$CAPA")
-# El nombre NO es decorativo: casper monta todos los *.squashfs de /casper en
-# orden alfabetico y el ultimo es el que manda. Un nombre que no vaya detras de
-# «minimal.*» deja la capa TAPADA, el medio vuelve a decir Ubuntu y no falla
-# nada -- que es la peor forma de fallar que hay.
+# LO QUE ESTA LINEA CREIA, Y ERA FALSO (se deja escrito al lado, MEDICIONES.md
+# §4.54e): «casper monta todos los *.squashfs de /casper en orden alfabetico y
+# el ultimo es el que manda», de donde salia el «zz-». Casper tiene DOS ramas y
+# la del glob solo corre si $LAYERFS_PATH esta vacio; no lo esta -- vale
+# «minimal.standard.live.squashfs», puesto en /conf/conf.d/default-layer.conf
+# DENTRO DEL INITRD --, asi que la lista de capas se construye quitando puntos
+# del nombre y ESTA CAPA NO SE MONTA NUNCA. La comprobacion se queda igualmente:
+# el dia que la capa entre por «layerfs-path=» seguira haciendo falta que el
+# nombre encadene, y mientras tanto no cuesta nada.
 case "$CAPA_N" in
     zz-*) : ;;
     *) fallo "la capa se llama '$CAPA_N': tiene que ir detras de «minimal.*» o queda tapada" ;;
@@ -332,6 +464,7 @@ esac
 tar -tf "$ISO" "casper/$CAPA_N" >/dev/null 2>&1 \
     && fallo "la ISO oficial ya trae un casper/$CAPA_N: parar y mirar por que"
 ok "capa de marca: $CAPA_N, $(stat -f %z "$CAPA") bytes  $(shasum -a 256 "$CAPA" | cut -c1-16)…"
+fi
 
 # --- 5d. md5sum.txt: dos lineas rehechas y una anadida ----------------------
 tar -xOf "$ISO" md5sum.txt > "$TMP/md5sum.oficial" \
@@ -351,16 +484,34 @@ rehacer_md5() {   # ruta-en-el-medio  fichero-oficial  fichero-nuestro
     sed "s|^$viejo  \.$ruta\$|$nuevo  .$ruta|" "$TMP/md5sum.txt" > "$TMP/md5sum.paso"
     mv "$TMP/md5sum.paso" "$TMP/md5sum.txt"
 }
+# LAS DOS LISTAS QUE MANDAN EN EL RESTO DEL GUION, y salen de las banderas en un
+# solo sitio: que ficheros del medio se MODIFICAN y cuales se ANADEN. Los pasos
+# 6, 10 y 12 leen de aqui en vez de llevar la lista clavada, que es lo que haria
+# que una bandera nueva pasara sus comprobaciones sin cambiar el producto.
+MODIFICADOS=(/boot/grub/grub.cfg)
 rehacer_md5 /boot/grub/grub.cfg "$TMP/grub.cfg.oficial" "$TMP/grub.cfg"
-rehacer_md5 /.disk/info         "$TMP/info.oficial"     "$TMP/info"
+if [ "$CON_INFO" = 1 ]; then
+    rehacer_md5 /.disk/info "$TMP/info.oficial" "$TMP/info"
+    MODIFICADOS=("${MODIFICADOS[@]}" /.disk/info)
+fi
 # y la capa NUEVA se anade a la lista, para que la comprobacion de integridad
 # del propio medio la cubra en vez de ignorarla
-printf '%s  ./casper/%s\n' "$(md5 -q "$CAPA")" "$CAPA_N" >> "$TMP/md5sum.txt"
+ANADIDOS_MEDIO=(/autoinstall.yaml)
+if [ "$CON_CAPA" = 1 ]; then
+    printf '%s  ./casper/%s\n' "$(md5 -q "$CAPA")" "$CAPA_N" >> "$TMP/md5sum.txt"
+    ANADIDOS_MEDIO=("${ANADIDOS_MEDIO[@]}" "/casper/$CAPA_N")
+fi
+N_MOD=${#MODIFICADOS[@]}
+N_NUEVOS=$((CON_CAPA))
+# el diff cuenta DOS lineas por cada rehecha -- la vieja y la nueva -- y una por
+# cada anadida, asi que el numero esperado se calcula, no se clava.
+D_MD5=$(( N_MOD * 2 + N_NUEVOS ))
 d=$(diff "$TMP/md5sum.oficial" "$TMP/md5sum.txt" | grep -c '^[<>]')
-[ "$d" -eq 5 ] || fallo "md5sum.txt cambia en $d lineas y tenian que cambiar dos y anadirse una"
+[ "$d" -eq "$D_MD5" ] || fallo "md5sum.txt cambia en $d lineas y esperaba $D_MD5 ($N_MOD rehechas, $N_NUEVOS anadidas)"
 L=$(wc -l < "$TMP/md5sum.oficial" | tr -d ' ')
-[ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$((L+1))" ] || fallo "md5sum.txt no crecio en una linea"
-ok "md5sum.txt: dos lineas rehechas, una anadida (casper/$CAPA_N), las otras $((L-2)) intactas"
+[ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$((L+N_NUEVOS))" ] \
+    || fallo "md5sum.txt no crecio en $N_NUEVOS lineas"
+ok "md5sum.txt: $N_MOD lineas rehechas (${MODIFICADOS[*]}), $N_NUEVOS anadidas, las otras $((L-N_MOD)) intactas"
 
 # --- 5e. el nombre del volumen ----------------------------------------------
 # NO SE ESCRIBE A MANO. El nombre del producto ya esta en marca/disk-info -- de
@@ -399,7 +550,7 @@ case "$ARQ" in
     arm64|amd64) : ;;
     *) fallo "la ultima palabra del Volume id oficial es «$ARQ» y esperaba una arquitectura" ;;
 esac
-INFO_L=$(head -1 "$TMP/info")
+INFO_L=$(head -1 "$TMP/info.encina")   # el NUESTRO, lo lleve el medio o no
 case "$INFO_L" in
     *" - "*) : ;;
     *) fallo "el .disk/info no tiene el separador « - »: «$INFO_L»
@@ -421,7 +572,18 @@ fi
 printf '%s' "$VOLID_OFICIAL" | grep -qi ubuntu \
     || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «$VOLID_OFICIAL»"
 [ "$VOLID_ENCINA" != "$VOLID_OFICIAL" ] || fallo "el Volume id no cambia"
-ok "Volume id: «$VOLID_OFICIAL» -> «$VOLID_ENCINA» ($N_VOLID bytes de 32)"
+# QUE NOMBRE SE ESCRIBE DE VERDAD. Con --sin-volid se le pasa a xorriso el
+# nombre OFICIAL, en vez de no pasarle nada: el resultado es el mismo -- §4.53c
+# midio que los avisos de xorriso salen igual con -volid y sin el, porque se
+# queja del nombre que ya trae el medio -- y asi el guion escribe siempre lo que
+# ha decidido en vez de heredar en silencio.
+if [ "$CON_VOLID" = 1 ]; then
+    VOLID="$VOLID_ENCINA"
+    ok "Volume id: «$VOLID_OFICIAL» -> «$VOLID_ENCINA» ($N_VOLID bytes de 32)"
+else
+    VOLID="$VOLID_OFICIAL"
+    ok "Volume id: --sin-volid, se conserva el OFICIAL «$VOLID_OFICIAL» (el nuestro habria sido «$VOLID_ENCINA»)"
+fi
 
 # --- 6. construir ------------------------------------------------------------
 echo "== 6. xorriso: anadir el seed, el repo y la capa de marca, y reemplazar tres"
@@ -451,21 +613,39 @@ MODO_F=644
 MODO_D=755
 # la capa se copia a TMP antes de tocarle el modo: puede venir de --capa, o sea
 # de un directorio que no es nuestro.
-cp "$CAPA" "$TMP/$CAPA_N" || fallo "cp de la capa de marca"
+# LA LISTA DE FICHEROS QUE VIAJAN, derivada de las banderas: es la misma para el
+# chmod, para el -map de xorriso y para la fecha, asi que se escribe UNA vez.
+#   MAPAS  : los pares «-map <local> <ruta en el medio>» que se le pasan a xorriso
+#   RUTAS  : esas mismas rutas, para -alter_date_r
+#   LOCALES: los ficheros del Mac, para el chmod y su comprobacion
+MAPAS=(-map "$TMP/autoinstall.yaml" /autoinstall.yaml
+       -map "$TMP/encina-repo"      /encina-repo
+       -map "$TMP/grub.cfg"         /boot/grub/grub.cfg
+       -map "$TMP/md5sum.txt"       /md5sum.txt)
+RUTAS=(/autoinstall.yaml /encina-repo /boot/grub/grub.cfg /md5sum.txt)
+LOCALES=("$TMP/autoinstall.yaml" "$TMP/grub.cfg" "$TMP/md5sum.txt")
+if [ "$CON_INFO" = 1 ]; then
+    MAPAS=("${MAPAS[@]}" -map "$TMP/info" /.disk/info)
+    RUTAS=("${RUTAS[@]}" /.disk/info)
+    LOCALES=("${LOCALES[@]}" "$TMP/info")
+fi
+if [ "$CON_CAPA" = 1 ]; then
+    cp "$CAPA" "$TMP/$CAPA_N" || fallo "cp de la capa de marca"
+    MAPAS=("${MAPAS[@]}" -map "$TMP/$CAPA_N" "/casper/$CAPA_N")
+    RUTAS=("${RUTAS[@]}" "/casper/$CAPA_N")
+    LOCALES=("${LOCALES[@]}" "$TMP/$CAPA_N")
+fi
 chmod "$MODO_D" "$TMP/encina-repo"                  || fallo "chmod dir repo"
-chmod "$MODO_F" "$TMP/encina-repo"/* "$TMP/autoinstall.yaml" \
-                "$TMP/grub.cfg" "$TMP/md5sum.txt" \
-                "$TMP/info" "$TMP/$CAPA_N"          || fallo "chmod ficheros"
+chmod "$MODO_F" "$TMP/encina-repo"/* "${LOCALES[@]}" || fallo "chmod ficheros"
 # Y SE COMPRUEBA QUE SE APLICO, que es la trampa 13: una mutacion se verifica
 # ANTES de leer su resultado. Sin esto, un chmod que fallara en silencio daria
 # exactamente la ISO que este bloque existe para evitar, y nadie lo notaria.
-n=$(find "$TMP/encina-repo" "$TMP/autoinstall.yaml" "$TMP/grub.cfg" \
-         "$TMP/md5sum.txt" "$TMP/info" "$TMP/$CAPA_N" -type f ! -perm "$MODO_F" | wc -l | tr -d ' ')
+n=$(find "$TMP/encina-repo" "${LOCALES[@]}" -type f ! -perm "$MODO_F" | wc -l | tr -d ' ')
 [ "$n" -eq 0 ] || fallo "$n ficheros no quedaron en $MODO_F pese al chmod"
 d=$(find "$TMP/encina-repo" -type d ! -perm "$MODO_D" | wc -l | tr -d ' ')
 [ "$d" -eq 0 ] || fallo "el directorio del repo no quedo en $MODO_D"
 t=$(find "$TMP/encina-repo" -type f | wc -l | tr -d ' ')
-ok "modo fijado: $((t+5)) ficheros en $MODO_F y el directorio del repo en $MODO_D"
+ok "modo fijado: $((t+${#LOCALES[@]})) ficheros en $MODO_F y el directorio del repo en $MODO_D"
 
 rm -f "$SALIDA"
 # LA FECHA DE LO QUE SE ANADE, FIJADA A PROPOSITO: sin esto, la misma orden
@@ -486,19 +666,10 @@ FECHA='2026021001455100'
 xorriso -indev "$ISO" -outdev "$SALIDA" \
         -boot_image any replay \
         -overwrite on \
-        -volid "$VOLID_ENCINA" \
-        -map "$TMP/autoinstall.yaml" /autoinstall.yaml \
-        -map "$TMP/encina-repo" /encina-repo \
-        -map "$TMP/grub.cfg" /boot/grub/grub.cfg \
-        -map "$TMP/md5sum.txt" /md5sum.txt \
-        -map "$TMP/info" /.disk/info \
-        -map "$TMP/$CAPA_N" "/casper/$CAPA_N" \
-        -alter_date_r b "$FECHA" /autoinstall.yaml /encina-repo \
-                                 /boot/grub/grub.cfg /md5sum.txt \
-                                 /.disk/info "/casper/$CAPA_N" -- \
-        -alter_date_r c "$FECHA" /autoinstall.yaml /encina-repo \
-                                 /boot/grub/grub.cfg /md5sum.txt \
-                                 /.disk/info "/casper/$CAPA_N" -- \
+        -volid "$VOLID" \
+        "${MAPAS[@]}" \
+        -alter_date_r b "$FECHA" "${RUTAS[@]}" -- \
+        -alter_date_r c "$FECHA" "${RUTAS[@]}" -- \
         -commit -end 2>&1 | grep -iE "^xorriso : (FAILURE|SORRY|WARNING)" | head -20
 [ -f "$SALIDA" ] || fallo "xorriso no produjo $SALIDA"
 ok "escrita: $(stat -f %z "$SALIDA") bytes"
@@ -522,10 +693,23 @@ for i in 0 1 2 3; do
     [ "$d" = "${HUELLAS[$i]}" ] || fallo "${FICHEROS[$i]} no sobrevivio a la ISO"
 done
 ok "los cuatro .deb sobreviven a la ISO, huella a huella"
-d=$(tar -xOf "$SALIDA" "casper/$CAPA_N" | shasum -a 256 | cut -d' ' -f1)
-[ "$d" = "$(shasum -a 256 "$CAPA" | cut -d' ' -f1)" ] \
-    || fallo "la capa de marca no sobrevivio a la ISO"
-ok "casper/$CAPA_N sobrevive a la ISO, huella a huella"
+if [ "$CON_CAPA" = 1 ]; then
+    d=$(tar -xOf "$SALIDA" "casper/$CAPA_N" | shasum -a 256 | cut -d' ' -f1)
+    [ "$d" = "$(shasum -a 256 "$CAPA" | cut -d' ' -f1)" ] \
+        || fallo "la capa de marca no sobrevivio a la ISO"
+    ok "casper/$CAPA_N sobrevive a la ISO, huella a huella"
+else
+    # --sin-capa: se comprueba la AUSENCIA, y contando, no preguntando por un
+    # nombre. Si algun dia la capa se llamara de otro modo, «no esta zz-encina»
+    # seria un verde falso; «/casper tiene los mismos squashfs que la oficial»
+    # no lo es.
+    n_n=$(tar -tf "$SALIDA" 2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
+    n_o=$(tar -tf "$ISO"    2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
+    [ "$n_o" -gt 0 ] || fallo "CONTROL ROTO: no encuentro ni un squashfs en /casper de la ISO oficial"
+    [ "$n_n" -eq "$n_o" ] \
+        || fallo "--sin-capa y sin embargo /casper tiene $n_n squashfs contra los $n_o de la oficial"
+    ok "--sin-capa: /casper tiene los mismos $n_n squashfs que la oficial, ni uno mas"
+fi
 # CONTROL: la ISO no puede contener algo que no se metio
 if tar -tf "$SALIDA" 2>/dev/null | grep -q "^encina-repo/fichero-que-no-existe"; then
     fallo "CONTROL ROTO: aparece un fichero que nadie metio"
@@ -634,8 +818,7 @@ awk '{print $2}' "$TMP/mapa.nuestra" | LC_ALL=C sort > "$TMP/rutas.nuestra"
 # todo lo que bajaba de internet, asi que la lista esperada se DERIVA del
 # directorio de origen. Lo que no cambia es la exigencia: ni uno mas, ni uno
 # menos, y ninguno perdido.
-{ echo /autoinstall.yaml
-  echo "/casper/$CAPA_N"
+{ for a in "${ANADIDOS_MEDIO[@]}"; do echo "$a"; done
   for f in "$REPO"/*; do echo "/encina-repo/$(basename "$f")"; done
 } | LC_ALL=C sort > "$TMP/anadidos.esperados"
 N_ESPERADOS=$(wc -l < "$TMP/anadidos.esperados" | tr -d ' ')
@@ -650,11 +833,11 @@ ok "$N_ESPERADOS ficheros anadidos, ni uno mas, y ninguno perdido"
 
 LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
     | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"
-printf '%s\n' /boot/grub/grub.cfg /md5sum.txt /.disk/info | LC_ALL=C sort > "$TMP/cambiados.esperados"
+printf '%s\n' /md5sum.txt "${MODIFICADOS[@]}" | LC_ALL=C sort > "$TMP/cambiados.esperados"
 diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
-    || fallo "los ficheros modificados no son los tres declarados:
+    || fallo "los ficheros modificados no son los $((N_MOD+1)) declarados:
 $(diff "$TMP/cambiados.esperados" "$TMP/cambiados")"
-ok "modificados exactamente tres: /boot/grub/grub.cfg, /md5sum.txt y /.disk/info"
+ok "modificados exactamente $((N_MOD+1)): /md5sum.txt ${MODIFICADOS[*]}"
 # CONTROL de la comparacion entera: tiene que saber ver un cambio donde lo hay.
 # Se compara la oficial consigo misma cambiandole una huella a mano.
 awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \
@@ -684,7 +867,7 @@ echo "== 11. el nombre del volumen: no es un fichero, asi que el paso 10 no lo v
 # un Volume id propio» --, y lo segundo es lo que esa lectura NO cubre: xorriso
 # contesta con el PRIMER descriptor y hay mas de uno.
 V=$(xorriso -indev "$SALIDA" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
-[ "$V" = "$VOLID_ENCINA" ] || fallo "xorriso -indev lee «$V» y esperaba «$VOLID_ENCINA»"
+[ "$V" = "$VOLID" ] || fallo "xorriso -indev lee «$V» y esperaba «$VOLID»"
 ok "xorriso -indev lee «$V»"
 # lee cada descriptor de volumen: "<tipo> <sector> <nombre>"
 descriptores() {
@@ -721,18 +904,30 @@ ok "control: el lector encuentra $TOT_O descriptores en la ISO oficial ($NP_O pr
 # y ahora la nuestra: TODOS los primarios tienen que decir exactamente lo nuestro
 NP=$(awk '$1==1' "$TMP/vd.nuestra" | wc -l | tr -d ' ')
 [ "$NP" -ge 1 ] || fallo "la ISO construida no tiene ni un descriptor primario"
-BUENOS=$(awk '$1==1' "$TMP/vd.nuestra" | cut -d' ' -f3- | /usr/bin/grep -cxF "$VOLID_ENCINA")
+BUENOS=$(awk '$1==1' "$TMP/vd.nuestra" | cut -d' ' -f3- | /usr/bin/grep -cxF "$VOLID")
 [ "$BUENOS" -eq "$NP" ] \
-    || fallo "solo $BUENOS de los $NP descriptores primarios dicen «$VOLID_ENCINA»:
+    || fallo "solo $BUENOS de los $NP descriptores primarios dicen «$VOLID»:
 $(cat "$TMP/vd.nuestra")"
-# ni un descriptor, del tipo que sea, puede seguir diciendo Ubuntu. Esto cubre
-# el Joliet si algun dia volviera: su nombre va TRUNCADO a 16 caracteres
-# («Ubuntu 24.04.4 L» en la oficial), asi que buscar la cadena entera no lo veria.
-SUCIOS=$(cut -d' ' -f3- "$TMP/vd.nuestra" | /usr/bin/grep -ci ubuntu)
-[ "$SUCIOS" -eq 0 ] \
-    || fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
+if [ "$CON_VOLID" = 1 ]; then
+    # ni un descriptor, del tipo que sea, puede seguir diciendo Ubuntu. Esto cubre
+    # el Joliet si algun dia volviera: su nombre va TRUNCADO a 16 caracteres
+    # («Ubuntu 24.04.4 L» en la oficial), asi que buscar la cadena entera no lo veria.
+    SUCIOS=$(cut -d' ' -f3- "$TMP/vd.nuestra" | /usr/bin/grep -ci ubuntu)
+    [ "$SUCIOS" -eq 0 ] \
+        || fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
 $(cat "$TMP/vd.nuestra")"
-ok "los $NP descriptores primarios dicen «$VOLID_ENCINA», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+    ok "los $NP descriptores primarios dicen «$VOLID_ENCINA», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+else
+    # --sin-volid: aqui la exigencia se INVIERTE. Este medio TIENE que seguir
+    # diciendo Ubuntu en el nombre del volumen -- es justo lo que se esta
+    # probando --, y comprobarlo es lo que separa «no se lo he puesto» de «se me
+    # ha olvidado ponerselo».
+    SUCIOS=$(cut -d' ' -f3- "$TMP/vd.nuestra" | /usr/bin/grep -ci ubuntu)
+    [ "$SUCIOS" -eq "$(wc -l < "$TMP/vd.nuestra" | tr -d ' ')" ] \
+        || fallo "--sin-volid: esperaba que TODOS los descriptores dijeran lo oficial y solo $SUCIOS lo dicen:
+$(cat "$TMP/vd.nuestra")"
+    ok "--sin-volid: los $NP descriptores primarios conservan «$VOLID_OFICIAL» (D22: este medio NO se publica)"
+fi
 
 echo "== 12. la integridad del propio medio, contra el md5sum.txt NUEVO"
 tar -xOf "$SALIDA" md5sum.txt | sed 's|  \./|  /|' | LC_ALL=C sort -k2 > "$TMP/md5.declarado"
@@ -748,14 +943,38 @@ ok "las $d lineas de md5sum.txt cuadran con la ISO construida, la del grub.cfg, 
 # el fichero oficial, asi que el 'join' ni la mira.
 sed 's|  \./|  /|' "$TMP/md5sum.oficial" | LC_ALL=C sort -k2 > "$TMP/md5.oficial.rutas"
 m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.oficial.rutas" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
-[ "$m" -eq 2 ] || fallo "CONTROL ROTO: con el md5sum.txt oficial esperaba 2 fallos y hay $m"
-ok "control: con el md5sum.txt OFICIAL fallan exactamente dos lineas, la del grub.cfg y la del .disk/info"
+[ "$m" -eq "$N_MOD" ] || fallo "CONTROL ROTO: con el md5sum.txt oficial esperaba $N_MOD fallos y hay $m"
+ok "control: con el md5sum.txt OFICIAL fallan exactamente $N_MOD lineas: ${MODIFICADOS[*]}"
+
+# --- 13. los mecanismos, LEIDOS DEL MEDIO CONSTRUIDO --------------------------
+# ESTE BLOQUE ES LO QUE HACE FIABLE UN BISECADO. Todo lo de arriba comprueba que
+# el guion hizo lo que EL creia; esto abre la ISO terminada y pregunta que lleva,
+# sin mirar ninguna variable intermedia. Una bandera que no hiciera nada pasaria
+# todos los pasos anteriores -- porque sus expectativas salen de la misma
+# bandera -- y aqui no pasa. Y no lee nombres nuestros: cuenta squashfs, compara
+# ficheros con los de la oficial y busca el titulo OFICIAL del menu, que es lo
+# unico que no puede estar de acuerdo con el guion por casualidad.
+echo "== 13. los cuatro mecanismos, leidos del medio terminado"
+# CONTROL, y va delante: sobre la ISO OFICIAL el lector tiene que decir que no
+# lleva NINGUNO. Si dijera que si, sus respuestas de abajo no significarian «lo
+# lleva», significarian «este lector dice que si a todo».
+LEIDO_O=$(mecanismos "$ISO")
+[ "$LEIDO_O" = "0 0 0 0" ] \
+    || fallo "CONTROL ROTO: el lector dice «$LEIDO_O» sobre la ISO OFICIAL y tenia que decir «0 0 0 0»"
+ok "control: sobre la ISO oficial el lector no encuentra ninguno de los cuatro"
+LEIDO=$(mecanismos "$SALIDA")
+PEDIDO="$CON_CAPA $CON_VOLID $CON_INFO $CON_MENU"
+[ "$LEIDO" = "$PEDIDO" ] || fallo "EL MEDIO NO LLEVA LO QUE SE PIDIO
+        pedido (capa volid info menu): $PEDIDO
+        leido  en la ISO terminada   : $LEIDO"
+ok "el medio lleva exactamente lo pedido (capa volid info menu): $LEIDO"
 
 echo
 echo "iso:    $SALIDA"
 echo "sha256: $(shasum -a 256 "$SALIDA" | cut -d' ' -f1)"
 echo "tam:    $(stat -f %z "$SALIDA") bytes"
-echo "volid:  $VOLID_ENCINA   (lo que se ve al conectar el USB)"
+echo "volid:  $VOLID   (lo que se ve al conectar el USB)"
+echo "marca:  capa=$(mec $CON_CAPA| tr -d ' ') volid=$(mec $CON_VOLID| tr -d ' ') info=$(mec $CON_INFO| tr -d ' ') menu=$(mec $CON_MENU| tr -d ' ')   (SI = lo lleva, -- = quitado para bisecar)"
 echo
 echo "LO QUE ESTE GUION NO PUEDE DECIR: que arranque. Eso se mide en una VM"
 echo "creada desde cero, contestando las cinco pantallas (AGENTS.md §6ter.3)."

@@ -46,6 +46,12 @@ MANIFIESTO="$AQUI/repo-manifiesto.tsv"
 
 CONSTRUCTOR=""; ISO_OFICIAL=""; AUTOFIRMA=""; SALIDA=""
 TRABAJO=""; VM=""; LLAVE=""; PERMITIR_SUCIO=0; CONSERVAR=0
+# LAS BANDERAS DE BISECADO NO SE INTERPRETAN AQUI: se le pasan tal cual a
+# fabricar-iso.sh, que es quien sabe lo que significan y quien comprueba en su
+# paso 13 que el medio terminado lleva justo eso. Este guion solo las repite en
+# su salida, para que un registro de 20 minutos diga en la cabecera que se ha
+# fabricado.
+BISECADO=""
 
 uso() { sed -n '2,9p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
@@ -59,6 +65,8 @@ while [ $# -gt 0 ]; do
         --llave)          LLAVE="$2";        shift 2 ;;
         --permitir-sucio) PERMITIR_SUCIO=1;  shift ;;
         --conservar)      CONSERVAR=1;       shift ;;
+        --sin-capa|--sin-volid|--sin-info|--sin-menu)
+                          BISECADO="$BISECADO $1"; shift ;;
         -h|--help)        sed -n '1,40p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
@@ -317,12 +325,15 @@ ok "control: con un tamano falseado, la comparacion lo senala"
 
 # --- 6. la ISO --------------------------------------------------------------
 paso "6. la ISO"
-"$AQUI/fabricar-iso.sh" --iso "$ISO_OFICIAL" --repo "$TRABAJO" --salida "$SALIDA" \
+# el $BISECADO va SIN comillas a proposito: o esta vacio -- y entonces no pone
+# ningun argumento, que es el producto -- o son banderas sueltas sin espacios.
+"$AQUI/fabricar-iso.sh" --iso "$ISO_OFICIAL" --repo "$TRABAJO" --salida "$SALIDA" $BISECADO \
     | sed 's/^/        /' || fallo "fabricar-iso.sh no paso"
 [ -f "$SALIDA" ] || fallo "no salio la ISO"
 
 echo
 echo "commit: $COMMIT"
+[ -n "$BISECADO" ] && echo "marca:  MEDIO DE BISECADO, le faltan mecanismos:$BISECADO"
 echo "iso:    $SALIDA"
 echo "sha256: $(shasum -a 256 "$SALIDA" | cut -d' ' -f1)"
 echo "tam:    $(stat -f %z "$SALIDA") bytes"

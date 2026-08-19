@@ -2257,3 +2257,51 @@ orden, `script -c <orden> <fichero>` funciona sin ninguno de ellos. Y ojo:
 `ubuntu-desktop-bootstrap` lanzado desde el terminal **sale en el mismo segundo
 con código 0** sin imprimir nada — no arranca otra instancia, sólo le da el foco a
 la que ya corre, así que por ahí no se le saca el error.
+
+## Bisecar la marca del medio: una bandera por mecanismo, dentro de `fabricar-iso.sh` (2026-08-19)
+
+**El instalador gráfico se cae con los cuatro mecanismos de D23 puestos y arranca
+sin ninguno** (`MEDICIONES.md` §4.54i, tres ISOs en bundles idénticos). Para
+saber cuál de los cuatro es hay que fabricar medios que lleven tres y les falte
+uno, y **eso el guion no lo sabía hacer**: la capa y el `Volume id` estaban
+clavados. Desde hoy hay **una bandera por mecanismo**:
+
+```
+./imagen/fabricar-iso.sh --repo <dir> --salida <iso> [--sin-capa] [--sin-volid]
+                                                    [--sin-info] [--sin-menu]
+./imagen/construir-todo.sh … --sin-capa        # las pasa tal cual, no las interpreta
+```
+
+- `--sin-capa` — no se fabrica ni se añade `/casper/zz-encina.squashfs`
+- `--sin-volid` — el `Volume id` sigue siendo `Ubuntu 24.04.4 LTS arm64`
+- `--sin-info` — el `/.disk/info` viaja **intacto**, el oficial
+- `--sin-menu` — el `menuentry` sigue diciendo `Try or Install Ubuntu`
+
+**El `locale=es_ES.UTF-8` NO tiene bandera, y no es un olvido:** ya viajaba en
+`1224b5b1…`, que es una de las dos ISOs cuyo instalador **arranca**, así que no
+está bajo sospecha. Las banderas son **para bisecar, no para el producto**: sin
+ninguna sale el producto, y con cualquiera de ellas el guion lo dice en su primer
+bloque y otra vez en el resumen.
+
+**LA TRAMPA DE UN GUION CON BANDERAS, que es lo que obligó a escribir el paso 13:**
+todas las comprobaciones del guion derivan sus expectativas **de la misma bandera
+que dicen comprobar** —si `--sin-capa` no hiciera nada, el paso 10 esperaría la
+capa, la encontraría y daría `[OK]`—. Por eso el **paso 13 abre la ISO terminada y
+pregunta qué lleva**, sin mirar ninguna variable intermedia, y **no busca nombres
+nuestros**: cuenta los `squashfs` de `/casper`, compara `.disk/info` con el de la
+oficial y busca el título **oficial** del menú. Un lector que buscara «Encina»
+estaría de acuerdo con el guion por construcción.
+
+**Y ese lector tiene banco propio, que cuesta segundos en vez de 20 minutos:**
+
+```
+./imagen/fabricar-iso.sh --leer-mecanismos <alguna.iso>   # imprime «capa volid info menu»
+./imagen/banco-mecanismos.sh                              # los cuatro medios del disco
+```
+
+Los casos son **medios reales con su arranque ya medido**, y el control va dentro:
+tres tienen que dar `0 0 0 0` —la oficial, `ac0a5721…` y `1224b5b1…`, que son las
+**tres cuyo instalador funciona**— y una `1 1 1 1` —`e8a0ead2…`, la que **se
+cae**—. Un lector mudo falla ahí. **Gastado el control:** con un directorio de
+medios trucado por enlaces duros —la ISO oficial con el nombre de la que lleva los
+cuatro— el banco dice `[FALLO]` **en los dos sentidos** y sale con código 1.
