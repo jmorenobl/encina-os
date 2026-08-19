@@ -13370,3 +13370,48 @@ errores **fabrica falsos positivos en cada lectura del registro**. Reescrito com
 
 **Los cuatro mecanismos de D23 puestos**, como el que se cae. La única diferencia
 contra `d81586ae…` es `.disk/info`.
+
+**y) SE CAE. LA PREDICCIÓN DE (u) ES FALSA Y LA HIPÓTESIS DEL SABOR ESTÁ TUMBADA
+— PERO ESTE ES EL MEDIO QUE MÁS HA ACOTADO EN TRES SESIONES.** Arrancado
+`encina-sabor-9b1194b9` desde cero, con `.disk/info` = `Ubuntu 24.04.4 - Release
+arm64 (20260210)` —**primera palabra un sabor VÁLIDO**— sale **el mismo diálogo**
+«Se produjo un problema» a los ~3 minutos.
+
+**Es mi TERCERA predicción falsa de la sesión** (el canal en (d), el `Volume id`
+en (j), el sabor aquí), y las tres estaban escritas antes de arrancar. La lectura
+de (m) era real —`/cdrom/.disk/info`, `FlavorService`, `UbuntuFlavor.fromName` y
+los once sabores están en `libapp.so`, con su control—, pero **la atribución era
+falsa OTRA VEZ**. Van cuatro atribuciones falsas seguidas construidas igual:
+mecanismo leído + control + caso que falla. **Esa forma de razonar no produce
+causas en este proyecto, y ya no es una sospecha: es un patrón medido.**
+
+**PERO MIRA DÓNDE DEJA EL BISECADO:**
+
+```
+FICHERO                                           CAMPOS  RESULTADO
+Ubuntu   24.04.4 LTS "Noble Numbat" - Release …     9     FUNCIONA (el oficial)
+Ubuntu   24.04.4                    - Release …     6     SE CAE      <- HOY
+EncinaOS 24.04.4                    - Release …     6     SE CAE
+EncinaOS 0.2.1                      - Release …     6     SE CAE
+Encina OS 0.2.1                     - Release …     7     SE CAE
+```
+
+**El fichero de hoy y el oficial se diferencian en UNA sola cosa: `LTS "Noble
+Numbat"`.** Y el de hoy se cae. O sea que **la causa está DENTRO de ese trozo**
+—el `LTS`, el nombre en clave entrecomillado, o el número de campos—, y no en el
+canal, ni en la primera palabra, ni en el separador, ni en el paréntesis.
+
+**LO QUE ESTO EXONERA Y LO QUE NO, dicho con precisión:** que poner una primera
+palabra válida **no arregle** el fallo prueba que **arreglarla no basta**; **no**
+prueba que la nuestra sea inofensiva. Podría haber dos causas. Lo que sí queda
+medido es que **restaurar ese trozo es necesario**, y eso es lo que hay que
+probar ahora — **con nuestro nombre delante**, que es la prueba que de verdad le
+importa al producto:
+
+```
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+```
+
+**Y AHORA SÍ SE PUEDE FABRICAR**, porque `--info-crudo` se salta el techo de 32
+bytes de (q) y hace viajar el `Volume id` oficial sin truncar nada. Era
+exactamente el medio que (k) y (p) no pudieron construir.
