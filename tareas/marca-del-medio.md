@@ -73,6 +73,21 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
+      > **BISECADA EL 2026-08-19 (`MEDICIONES.md` §4.55): DE LOS CUATRO
+      > MECANISMOS, EL QUE TUMBA EL INSTALADOR ES `/.disk/info`.** Se le dio a
+      > `fabricar-iso.sh` **una bandera por mecanismo** —lo que faltaba para poder
+      > bisecar— y se fabricó un medio por sospechoso, cada uno con los otros tres
+      > puestos: **sin capa se cae, sin `Volume id` se cae, sin `.disk/info`
+      > ARRANCA** y enseña «Disposición del teclado» en español. O sea que **la
+      > capa, el `Volume id` y el `menuentry` quedan exonerados por experimento**,
+      > y no por lectura. **Lo que NO está medido es POR QUÉ**: el candidato es el
+      > canal de snap de `refresh.py`, y §4.54i lo descartó comparando dos canales
+      > **que no existen ninguno de los dos** —`stable/ubuntu-OS` y
+      > `stable/ubuntu-0.2.1`—, así que ese descarte no valía. **La prueba que
+      > falta:** un `.disk/info` propio cuya segunda palabra sea **24.04.4**. Y eso
+      > tiene **precio de producto y es de Jorge**: esa palabra manda a la vez en el
+      > canal, en el rótulo del icono y en el `Volume id`.
+      >
       > **REABIERTA EL 2026-08-17 AL ARRANCARLA POR PRIMERA VEZ
       > (`MEDICIONES.md` §4.54): LA CAPA NO SE MONTA NUNCA, y con ella no llega
       > NADA de lo de abajo.** Medido dentro de la sesión viva:

@@ -2305,3 +2305,46 @@ tres tienen que dar `0 0 0 0` —la oficial, `ac0a5721…` y `1224b5b1…`, que 
 cae**—. Un lector mudo falla ahí. **Gastado el control:** con un directorio de
 medios trucado por enlaces duros —la ISO oficial con el nombre de la que lleva los
 cuatro— el banco dice `[FALLO]` **en los dos sentidos** y sale con código 1.
+
+## Cuatro más, bisecando la marca del medio (2026-08-19)
+
+**35. El `_` NO llega al invitado: llega como `?`.** Se suma a `= @ | & > " [ ]`.
+Medido con su control en la misma orden —el `-` y el `.` sí llegan—:
+
+```
+tecleado:     echo A_B-C.D
+en pantalla:  echo A?B-C.D   ->   A?B-C.D
+```
+
+**Y es peor que las otras del grupo, porque puede dar un verde falso en vez de un
+error:** `?` es **comodín del shell**, así que
+`tail /var/log/installer/ubuntu?bootstrap.log` **funciona** —casa con el fichero
+de verdad— y con dos ficheros parecidos habría leído otro sin decir nada. Casi
+todos los registros del instalador llevan `_` en el nombre.
+
+**36. Hay TERMINAL dentro de la sesión del instalador caído, y es la vía que no se
+había usado.** Con el diálogo «Se produjo un problema» en pantalla, `Alt`+`F2`
+abre «Ejecutar una orden» y desde ahí `gnome-terminal` arranca. La sesión viva
+está entera. **Lo que NO se consigue por teclado: pulsar «Mostrar registro»** —ni
+`Tab` ni `Shift`+`Tab` mueven el foco visible, y el ratón de UTM no llega—.
+
+**37. `construir-todo.sh --conservar --trabajo <dir>` NO sirve para reutilizar el
+repo en otra construcción.** La segunda pasada muere en su propio control:
+
+```
+[FALLO] CONTROL ROTO: sin autofirma esperaba 27 .deb y hay 28
+```
+
+y es correcto: la cosecha exige empezar **en limpio** y el directorio conservado
+ya trae AutoFirma. Para repetir sólo la ISO —que es lo que pide un bisecado, donde
+**ningún `.deb` cambia**— se llama directamente a `fabricar-iso.sh --repo <ese
+dir>`, que **coteja las cuatro huellas antes de usarlas**, así que no se está
+dando nada por bueno.
+
+**38. Una VM en negro no siempre está colgada, y hay dos señales que lo separan.**
+El primer arranque del medio de bisecado dio pantalla negra con el cursor de X a
+los 7 minutos. **No era la trampa 32:** el `debug.log` crecía (70→97 KB, no
+congelado en ~2 700 bytes) **y la VM tenía IP en el `arp` del anfitrión**
+(`arp -a | grep <su MAC>`), o sea que el sistema live había arrancado y estaba en
+red. En el segundo arranque del **mismo** medio salió el instalador. Así que
+`[AVISO]` y repetir: una pantalla negra suelta no es un resultado.

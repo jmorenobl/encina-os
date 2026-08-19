@@ -12690,3 +12690,159 @@ también, para que el registro se pueda cotejar sin interpretarlo):
 `modificados exactamente 3`, un fichero añadido menos que en `e8a0ead2…`,
 `--sin-capa: /casper tiene los mismos 21 squashfs que la oficial`, y el paso 13
 `0 1 1 1`.
+
+#### (c) EL RESULTADO: LA PREDICCIÓN DE (b) ERA FALSA — LA CAPA NO ES LA CAUSA
+
+**Se fabricó `--sin-capa` y el instalador SE SIGUE CAYENDO.** Se deja escrito al
+lado lo que se creía, que es lo que manda el método.
+
+```
+ISO      : 26bf5442a65efc42…   3 717 595 136 bytes   (los otros tres mecanismos SÍ)
+paso 13  : «el medio lleva exactamente lo pedido (capa volid info menu): 0 1 1 1»
+en pantalla, a los 110 s: «Se produjo un problema»   <- IGUAL que con los cuatro
+```
+
+**Lo que el guion imprimió, cotejado contra lo predicho en (b), palabra por
+palabra:** `md5sum.txt: 2 líneas rehechas, 0 añadidas` · `modificados exactamente
+3` · `30 ficheros añadidos` (uno menos que con capa) · `--sin-capa: /casper tiene
+los mismos 21 squashfs que la oficial` · paso 13 `0 1 1 1`. **Las cinco.** Lo que
+falló no fue el instrumento: fue la hipótesis.
+
+**Y el razonamiento que la sostenía, para saber qué parte se cae:** el hallazgo de
+que cada `squashfs` viaja con su `.manifest` y su `.size` y que la capa no tenía
+ninguno de los dos **sigue siendo cierto** — lo que era falso es que algo del
+instalador recorra `/casper` y se atragante con ellos. **No hay tal tercer
+consumidor**, y ahora está medido y no deducido: `casper` no enumera (§4.54e),
+`install-sources.yaml` lista **dos rutas explícitas**, y quitar el fichero **no
+cambia nada**.
+
+**EL CONTROL, Y ES LO QUE HACE QUE ESTO VALGA.** El primer arranque de este medio
+dio **pantalla negra con el cursor de X a los 7 minutos**, con la VM en red
+(`192.168.64.26` en el `arp` del anfitrión) y el `debug.log` creciendo —o sea, ni
+colgada ni la trampa 32—. Eso **no es** el fallo de ayer, así que antes de
+escribirlo se gastó el control: **`ac0a5721…` en un bundle fabricado con el mismo
+guion nuevo enseña «Disposición del teclado» en español a los ~110 s**. El banco
+estaba sano. Y el **segundo** arranque del mismo medio dio «Se produjo un
+problema» a los 110 s, o sea que **la pantalla negra no se reprodujo**: queda como
+anomalía de un arranque, `[AVISO]`, no como resultado.
+
+#### (d) LA VÍA QUE SE ABRIÓ: HAY TERMINAL DENTRO DE LA SESIÓN CAÍDA, Y LO QUE DICE
+
+Con el diálogo de error en pantalla, **`Alt`+`F2` abre «Ejecutar una orden»**, y
+desde ahí `gnome-terminal`. **La sesión viva está entera**: el prompt dice
+`encinaos@encinaos`, que de paso confirma otra vez que `.disk/info` funciona.
+Desde ahí, leído con estos ojos:
+
+```
+/var/crash                                      VACÍO
+grep -ril traceback /var/log /var/crash         solo mis PROPIAS ordenes en auth.log
+journalctl -m -g Traceback                      idem: NI UN Traceback del instalador
+/var/log/installer/                             block/ subiquity-server-{debug,info}.log
+                                                ubuntu_bootstrap.log (+ los .PID)
+servidor, últimas líneas                        eventos de red, SANO, sin excepción
+interfaz, últimas líneas                        ... markConfigured([mirror, proxy, ssh,
+                                                snaplist, ubuntu_pro]) · Disabling screen
+                                                blanking · Disabling screensaver ·
+                                                Inhibiting Gnome session   <- y AHÍ SE CORTA
+estado del servidor                             ApplicationState.WAITING,
+                                                error: null, nonreportableError: null
+```
+
+**O sea que el diálogo sale con `error: null`**, que es exactamente lo que la
+pantalla dice con otras palabras: *«no estamos seguros de cuál es el error»*. **Lo
+que NO se ha conseguido:** pulsar el botón **«Mostrar registro»** —`Tab` y
+`Shift`+`Tab` no mueven el foco visible y el ratón de UTM no llega—, y esa es la
+única vía que queda sin agotar dentro de la sesión.
+
+**Y una trampa nueva del pilotaje, medida con su control en la misma orden:
+el `_` NO llega al invitado — llega como `?`.**
+
+```
+tecleado:  echo A_B-C.D
+en pantalla: echo A?B-C.D      ->  A?B-C.D
+```
+
+El `-` y el `.` llegan bien, que es el control. Se suma a `= @ | & > " [ ]`. Y
+tiene un efecto que puede dar un verde falso: `?` es **comodín del shell**, así
+que `tail /var/log/installer/ubuntu?bootstrap.log` **funcionó** —casaba con el
+fichero de verdad— y podría haber casado con otro sin que nadie lo notara.
+
+#### (e) EL `Volume id` TAMPOCO ES LA CAUSA — y lo que queda pone en duda cómo se descartó `.disk/info`
+
+```
+ISO      : 08392ddc38b02633…   3 721 265 152 bytes   ·  41 [OK]
+paso 13  : «el medio lleva exactamente lo pedido (capa volid info menu): 1 0 1 1»
+volid    : «Ubuntu 24.04.4 LTS arm64» en los 4 descriptores primarios (comprobado invertido)
+en pantalla, 2º arranque, 100 s: «Se produjo un problema»
+```
+
+Así que de los cuatro mecanismos de D23 quedan **dos**: el `.disk/info` entero y
+el `menuentry` del `grub.cfg`.
+
+**Y AL LLEGAR AQUÍ SE VE UN AGUJERO EN CÓMO §4.54i DESCARTÓ `.disk/info`.** Aquel
+experimento cambió la segunda palabra de `OS` a `0.2.1` y, como el instalador se
+siguió cayendo, se dio por descartado el fichero. Pero `refresh.py` construye con
+esa palabra un **canal de snap**, y:
+
+```
+Ubuntu 24.04.4 LTS …  ->  stable/ubuntu-24.04.4     <- existe
+Encina OS 0.2.1 …     ->  stable/ubuntu-OS          <- NO existe
+EncinaOS 0.2.1 …      ->  stable/ubuntu-0.2.1       <- TAMPOCO existe
+```
+
+**Se cambió un canal inexistente por OTRO canal inexistente.** Que el resultado no
+cambiara no descarta el mecanismo: descarta *esa* variante. Lo que nunca se ha
+probado es un medio cuyo `.disk/info` produzca un canal **que exista**.
+
+**PREDICCIÓN, escrita antes de fabricar `--sin-info`: el instalador ARRANCA.** Es
+el único de los dos que queda que el instalador **lee de verdad** —leído en el
+código que viaja en el medio, §4.54h—, mientras que el `menuentry` sólo lo lee
+GRUB antes de arrancar el núcleo. **Si acierto**, la causa es `.disk/info` y el
+precio de producto vuelve a la mesa con una forma nueva: no basta con que la
+segunda palabra *parezca* una versión, **tiene que ser la de Ubuntu**. **Si
+fallo**, la causa es el `menuentry` —lo que sería un resultado grande y raro— o
+hay algo fuera de los cuatro.
+
+#### (f) EL BISECADO CIERRA: LA CAUSA ES `/.disk/info`, Y ESTA VEZ NO ES UNA LECTURA, ES UN EXPERIMENTO
+
+```
+ISO                          capa volid info menu   instalador
+ac0a5721… (la entregada)      0    0    0    0      FUNCIONA  «Disposición del teclado»
+1224b5b1… (.deb y seed)       0    0    0    0      FUNCIONA  (§4.54i)
+e8a0ead2… (los cuatro)        1    1    1    1      SE CAE    3 arranques
+26bf5442… --sin-capa          0    1    1    1      SE CAE    «Se produjo un problema», 110 s
+08392ddc… --sin-volid         1    0    1    1      SE CAE    «Se produjo un problema», 100 s
+4f856618… --sin-info          1    1    0    1      FUNCIONA  «Disposición del teclado», 105 s
+```
+
+**La única variable que cambia el resultado es `/.disk/info`.** Los otros tres
+mecanismos —la capa, el `Volume id` y el `menuentry`— están **exonerados por
+experimento**, cada uno con su medio propio y su paso 13 comprobando que el medio
+llevaba lo que se pidió.
+
+**Y OJO CON LA DIFERENCIA RESPECTO A §4.54h, que es justo la lección de ayer:**
+aquello era *mecanismo leído + control que pasa + caso que falla*, y resultó
+falso. Esto es otra cosa: **quitar una pieza y ver arrancar lo que no arrancaba**,
+dejando las otras tres puestas. No hace falta leer ni una línea de código para
+sostenerlo.
+
+**Lo que sigue SIN estar medido, y no se da por bueno:** *por qué* lo tumba.
+`refresh.py` sigue siendo el candidato —y ahora con el agujero de (e) tapado: los
+tres valores probados (`OS`, `0.2.1`) daban canales **inexistentes** y el oficial
+(`24.04.4`) existe—, pero **eso es la hipótesis, no el resultado**. La prueba es
+un medio con `.disk/info` propio cuya segunda palabra sea **la versión de Ubuntu**.
+
+**Una asimetría del banco que conviene tener escrita:** «se ve el instalador» es
+una señal **positiva** y basta una vez; «pantalla negra» **no** es un resultado
+—apareció en 3 de los medios, incluido uno que luego arrancó—, así que un negro
+obliga a repetir y nunca a concluir. Con `--sin-info` hicieron falta **tres
+arranques** para verlo.
+
+**EL PRECIO DE PRODUCTO, que vuelve a la mesa y es DE JORGE:** si la hipótesis del
+canal se confirma, la segunda palabra de `.disk/info` no puede ser nuestra versión
+—`0.2.1`—, tiene que ser **la de Ubuntu** (`24.04.4`). Y esa palabra la usan tres
+cosas: el canal, el rótulo del icono (`Install <dos primeras palabras>`) y, por
+derivación, el `Volume id`. O sea que el medio se rotularía **«Install EncinaOS
+24.04.4»** y el volumen **«EncinaOS 24.04.4 arm64»**. La alternativa es dejar de
+derivar el `Volume id` y el rótulo de ese fichero, que es lo que §4.53 unió a
+propósito para que no se separaran.

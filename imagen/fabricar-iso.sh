@@ -131,6 +131,12 @@
 # intervalo de bytes, El Torito y la tabla MBR hibrida tal cual estaban.
 
 set -uo pipefail
+# EL LOCALE, FIJADO AQUI Y NO HEREDADO (trampa 2). Hasta el 2026-08-19 este guion
+# no lo fijaba y SOLO FUNCIONABA LLAMADO DESDE construir-todo.sh, que si lo
+# exporta: ejecutado a mano moria en «MENU_ENCINA»: unbound variable», porque sin
+# LC_ALL=C bash se comia el « » » pegado al nombre de la variable. Un guion que
+# depende del entorno de quien lo llama no es reproducible.
+export LC_ALL=C
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
 GUION="$AQUI/encina-seed.sh"
@@ -362,12 +368,12 @@ else
     grep -q "^menuentry \"Try or Install Ubuntu\" {\$" "$TMP/grub.cfg" \
         || fallo "--sin-menu, pero el menuentry OFICIAL ya no esta en el grub.cfg"
     grep -q "$MENU_ENCINA" "$TMP/grub.cfg" \
-        && fallo "--sin-menu, y sin embargo el grub.cfg dice «$MENU_ENCINA»"
+        && fallo "--sin-menu, y sin embargo el grub.cfg dice «${MENU_ENCINA}»"
 fi
 d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
 [ "$d" -eq "$D_GRUB" ] || fallo "grub.cfg cambia en $d lineas y esperaba $D_GRUB"
 if [ "$CON_MENU" = 1 ]; then
-    ok "grub.cfg: locale=$LOCALE y menuentry «$MENU_ENCINA», y no cambia nada mas"
+    ok "grub.cfg: locale=$LOCALE y menuentry «${MENU_ENCINA}», y no cambia nada mas"
 else
     ok "grub.cfg: locale=$LOCALE y NADA MAS (--sin-menu: el menuentry sigue siendo «Try or Install Ubuntu»)"
 fi
@@ -395,10 +401,10 @@ R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info.e
 # Se comprueba LA PROPIEDAD -- pila A de D22: el rotulo no puede decir Ubuntu --,
 # con su control de que la busqueda encuentra «Ubuntu» donde SI lo hay.
 if printf '%s' "$R_NUESTRO" | grep -qi ubuntu; then
-    fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install $R_NUESTRO»"
+    fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install ${R_NUESTRO}»"
 fi
 printf '%s' "$R_OFICIAL" | grep -qi ubuntu \
-    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «$R_OFICIAL»"
+    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «${R_OFICIAL}»"
 [ "$R_OFICIAL" != "$R_NUESTRO" ] \
     || fallo "CONTROL ROTO: el calculo da lo mismo con los dos .disk/info"
 # LA SEGUNDA PALABRA TIENE QUE SER UNA VERSION, Y ESTO NO ES ESTILO: es lo que
@@ -412,12 +418,12 @@ printf '%s' "$R_OFICIAL" | grep -qi ubuntu \
 # Traceback. Esta comprobacion es la que lo habria cazado sin gastar un arranque.
 V2_NUESTRO=$(cut -d' ' -f2 "$TMP/info.encina"); V2_OFICIAL=$(cut -d' ' -f2 "$TMP/info.oficial")
 printf '%s' "$V2_NUESTRO" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
-    || fallo "la 2a palabra de .disk/info es «$V2_NUESTRO» y tiene que ser un NUMERO DE VERSION.
-        refresh.py la usa como canal: pediria «stable/ubuntu-$V2_NUESTRO» y el
+    || fallo "la 2a palabra de .disk/info es «${V2_NUESTRO}» y tiene que ser un NUMERO DE VERSION.
+        refresh.py la usa como canal: pediria «stable/ubuntu-${V2_NUESTRO}» y el
         instalador se caeria en silencio (§4.54h). Escribe el producto en UNA palabra."
 printf '%s' "$V2_OFICIAL" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
-    || fallo "CONTROL ROTO: la 2a palabra del .disk/info OFICIAL es «$V2_OFICIAL» y tampoco pasa la regla"
-ok "la 2a palabra es una version: «$V2_NUESTRO» -> canal stable/ubuntu-$V2_NUESTRO (la oficial: «$V2_OFICIAL»)"
+    || fallo "CONTROL ROTO: la 2a palabra del .disk/info OFICIAL es «${V2_OFICIAL}» y tampoco pasa la regla"
+ok "la 2a palabra es una version: «${V2_NUESTRO}» -> canal stable/ubuntu-$V2_NUESTRO (la oficial: «${V2_OFICIAL}»)"
 # y la forma que necesitan los otros dos que lo leen: la primera palabra es el
 # usuario y el nombre de maquina de la sesion viva, y el parentesis del final es
 # el numero de serie de 57pollinate.
@@ -552,12 +558,12 @@ VOLID_OFICIAL=$(xorriso -indev "$ISO" -pvd_info 2>/dev/null | sed -n 's/^Volume 
 ARQ="${VOLID_OFICIAL##* }"
 case "$ARQ" in
     arm64|amd64) : ;;
-    *) fallo "la ultima palabra del Volume id oficial es «$ARQ» y esperaba una arquitectura" ;;
+    *) fallo "la ultima palabra del Volume id oficial es «${ARQ}» y esperaba una arquitectura" ;;
 esac
 INFO_L=$(head -1 "$TMP/info.encina")   # el NUESTRO, lo lleve el medio o no
 case "$INFO_L" in
     *" - "*) : ;;
-    *) fallo "el .disk/info no tiene el separador « - »: «$INFO_L»
+    *) fallo "el .disk/info no tiene el separador « - »: «${INFO_L}»
         sin el no se puede saber donde acaba el nombre del producto" ;;
 esac
 VOLID_ENCINA="${INFO_L%% - *} $ARQ"
@@ -566,15 +572,15 @@ VOLID_ENCINA="${INFO_L%% - *} $ARQ"
 # fichero ocupa dos.
 N_VOLID=$(printf '%s' "$VOLID_ENCINA" | wc -c | tr -d ' ')
 [ "$N_VOLID" -le 32 ] \
-    || fallo "«$VOLID_ENCINA» son $N_VOLID bytes y el campo del PVD admite 32"
+    || fallo "«${VOLID_ENCINA}» son $N_VOLID bytes y el campo del PVD admite 32"
 # pila A de D22: lo que presenta el producto ante el usuario NO puede decir Ubuntu
 if printf '%s' "$VOLID_ENCINA" | grep -qi ubuntu; then
-    fallo "el Volume id de Encina todavia dice Ubuntu: «$VOLID_ENCINA»"
+    fallo "el Volume id de Encina todavia dice Ubuntu: «${VOLID_ENCINA}»"
 fi
 # CONTROL de esa busqueda, que es la misma trampa del paso 5a: tiene que
 # encontrarlo donde SI lo hay, o «no dice Ubuntu» significa «no he mirado».
 printf '%s' "$VOLID_OFICIAL" | grep -qi ubuntu \
-    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «$VOLID_OFICIAL»"
+    || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «${VOLID_OFICIAL}»"
 [ "$VOLID_ENCINA" != "$VOLID_OFICIAL" ] || fallo "el Volume id no cambia"
 # QUE NOMBRE SE ESCRIBE DE VERDAD. Con --sin-volid se le pasa a xorriso el
 # nombre OFICIAL, en vez de no pasarle nada: el resultado es el mismo -- §4.53c
@@ -583,10 +589,10 @@ printf '%s' "$VOLID_OFICIAL" | grep -qi ubuntu \
 # ha decidido en vez de heredar en silencio.
 if [ "$CON_VOLID" = 1 ]; then
     VOLID="$VOLID_ENCINA"
-    ok "Volume id: «$VOLID_OFICIAL» -> «$VOLID_ENCINA» ($N_VOLID bytes de 32)"
+    ok "Volume id: «${VOLID_OFICIAL}» -> «${VOLID_ENCINA}» ($N_VOLID bytes de 32)"
 else
     VOLID="$VOLID_OFICIAL"
-    ok "Volume id: --sin-volid, se conserva el OFICIAL «$VOLID_OFICIAL» (el nuestro habria sido «$VOLID_ENCINA»)"
+    ok "Volume id: --sin-volid, se conserva el OFICIAL «${VOLID_OFICIAL}» (el nuestro habria sido «${VOLID_ENCINA}»)"
 fi
 
 # --- 6. construir ------------------------------------------------------------
@@ -871,8 +877,8 @@ echo "== 11. el nombre del volumen: no es un fichero, asi que el paso 10 no lo v
 # un Volume id propio» --, y lo segundo es lo que esa lectura NO cubre: xorriso
 # contesta con el PRIMER descriptor y hay mas de uno.
 V=$(xorriso -indev "$SALIDA" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
-[ "$V" = "$VOLID" ] || fallo "xorriso -indev lee «$V» y esperaba «$VOLID»"
-ok "xorriso -indev lee «$V»"
+[ "$V" = "$VOLID" ] || fallo "xorriso -indev lee «${V}» y esperaba «${VOLID}»"
+ok "xorriso -indev lee «${V}»"
 # lee cada descriptor de volumen: "<tipo> <sector> <nombre>"
 descriptores() {
     python3 - "$1" <<'PY4'
@@ -910,7 +916,7 @@ NP=$(awk '$1==1' "$TMP/vd.nuestra" | wc -l | tr -d ' ')
 [ "$NP" -ge 1 ] || fallo "la ISO construida no tiene ni un descriptor primario"
 BUENOS=$(awk '$1==1' "$TMP/vd.nuestra" | cut -d' ' -f3- | /usr/bin/grep -cxF "$VOLID")
 [ "$BUENOS" -eq "$NP" ] \
-    || fallo "solo $BUENOS de los $NP descriptores primarios dicen «$VOLID»:
+    || fallo "solo $BUENOS de los $NP descriptores primarios dicen «${VOLID}»:
 $(cat "$TMP/vd.nuestra")"
 if [ "$CON_VOLID" = 1 ]; then
     # ni un descriptor, del tipo que sea, puede seguir diciendo Ubuntu. Esto cubre
@@ -920,7 +926,7 @@ if [ "$CON_VOLID" = 1 ]; then
     [ "$SUCIOS" -eq 0 ] \
         || fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
 $(cat "$TMP/vd.nuestra")"
-    ok "los $NP descriptores primarios dicen «$VOLID_ENCINA», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+    ok "los $NP descriptores primarios dicen «${VOLID_ENCINA}», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
 else
     # --sin-volid: aqui la exigencia se INVIERTE. Este medio TIENE que seguir
     # diciendo Ubuntu en el nombre del volumen -- es justo lo que se esta
@@ -930,7 +936,7 @@ else
     [ "$SUCIOS" -eq "$(wc -l < "$TMP/vd.nuestra" | tr -d ' ')" ] \
         || fallo "--sin-volid: esperaba que TODOS los descriptores dijeran lo oficial y solo $SUCIOS lo dicen:
 $(cat "$TMP/vd.nuestra")"
-    ok "--sin-volid: los $NP descriptores primarios conservan «$VOLID_OFICIAL» (D22: este medio NO se publica)"
+    ok "--sin-volid: los $NP descriptores primarios conservan «${VOLID_OFICIAL}» (D22: este medio NO se publica)"
 fi
 
 echo "== 12. la integridad del propio medio, contra el md5sum.txt NUEVO"
@@ -964,7 +970,7 @@ echo "== 13. los cuatro mecanismos, leidos del medio terminado"
 # lleva», significarian «este lector dice que si a todo».
 LEIDO_O=$(mecanismos "$ISO")
 [ "$LEIDO_O" = "0 0 0 0" ] \
-    || fallo "CONTROL ROTO: el lector dice «$LEIDO_O» sobre la ISO OFICIAL y tenia que decir «0 0 0 0»"
+    || fallo "CONTROL ROTO: el lector dice «${LEIDO_O}» sobre la ISO OFICIAL y tenia que decir «0 0 0 0»"
 ok "control: sobre la ISO oficial el lector no encuentra ninguno de los cuatro"
 LEIDO=$(mecanismos "$SALIDA")
 PEDIDO="$CON_CAPA $CON_VOLID $CON_INFO $CON_MENU"

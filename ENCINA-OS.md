@@ -401,7 +401,51 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-17 (tarde): **LA CAPA NO SE MONTA** — la vuelta única se dio, y tumbó la casilla 3
+> ### LA TAREA EN CURSO, 2026-08-19: **EL BISECADO CIERRA — LA CAUSA ES `/.disk/info`**, y lo que falta es saber POR QUÉ y decidir el precio
+>
+> **SE BISECÓ D23 Y HAY RESPUESTA** (`MEDICIONES.md` §4.55). Primero hizo falta el
+> instrumento: `fabricar-iso.sh` tiene ahora **una bandera por mecanismo**
+> —`--sin-capa`, `--sin-volid`, `--sin-info`, `--sin-menu`— y un **paso 13 que abre
+> la ISO terminada y comprueba que lleva lo que se pidió**, porque todas las demás
+> comprobaciones del guion sacan sus expectativas de la misma bandera que dicen
+> comprobar. Ese lector tiene banco propio de segundos, `imagen/banco-mecanismos.sh`,
+> con su control gastado.
+>
+> | ISO | capa volid info menu | instalador |
+> |---|---|---|
+> | `e8a0ead2…` | 1 1 1 1 | **se cae** |
+> | `26bf5442…` `--sin-capa` | 0 1 1 1 | **se cae** |
+> | `08392ddc…` `--sin-volid` | 1 0 1 1 | **se cae** |
+> | `4f856618…` `--sin-info` | 1 1 0 1 | **FUNCIONA** — «Disposición del teclado» |
+>
+> **La capa, el `Volume id` y el `menuentry` quedan exonerados POR EXPERIMENTO.**
+> Y esto no es lo de §4.54h —mecanismo leído más control más caso que falla, que
+> salió falso—: es quitar una pieza y ver arrancar lo que no arrancaba.
+>
+> **LO QUE FALTA, EN ESTE ORDEN:**
+>
+> 1. **Saber POR QUÉ, que no está medido.** El candidato sigue siendo el canal de
+>    snap de `refresh.py`, y ahora se ve el agujero de §4.54i: comparó
+>    `stable/ubuntu-OS` con `stable/ubuntu-0.2.1`, **dos canales que no existen
+>    ninguno de los dos**, así que aquel descarte no valía. La prueba es un
+>    `.disk/info` **nuestro** cuya segunda palabra sea `24.04.4`.
+> 2. **DECIDIR EL PRECIO, Y ES DE JORGE.** Esa palabra manda a la vez en el canal,
+>    en el rótulo del icono (`Install <dos primeras palabras>`) y, por derivación,
+>    en el `Volume id`. Con `24.04.4` el medio se rotula **«Install EncinaOS
+>    24.04.4»** y el volumen **«EncinaOS 24.04.4 arm64»**. La alternativa es
+>    romper la derivación que §4.53 unió a propósito.
+> 3. **Y sigue en pie que LA CAPA NO SE MONTA** (§4.54e), que es cosa aparte del
+>    instalador: sin resolverlo no hay marca en la sesión viva. El candidato medido
+>    es `layerfs-path=` en la línea del núcleo del `grub.cfg`.
+>
+> **Dos cosas del banco que hay que tener delante:** «se ve el instalador» es señal
+> positiva y basta una vez; **«pantalla negra» NO es un resultado** —salió en tres
+> medios, uno de los cuales arrancó al tercer intento—. Y el `_` **no llega** al
+> invitado: llega como `?`, que es comodín del shell (trampa 35).
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-17 (tarde): **LA CAPA NO SE MONTA** — la vuelta única se dio, y tumbó la casilla 3
 >
 > **LA VUELTA ESTÁ DADA Y LOS PASOS 1 Y 2 SALIERON LIMPIOS A LA PRIMERA**
 > (`MEDICIONES.md` §4.54): `encina-branding` 0.1.15 construido y cotejado por
