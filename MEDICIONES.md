@@ -13081,3 +13081,87 @@ causa resulta ser ese trozo, la salida pasa por llevar **`LTS "Noble Numbat"`
 —el nombre en clave de Ubuntu— dentro de la cadena de nuestro producto**, que es
 justo el terreno que miró la casilla 2. Como **medio de diagnóstico** no se
 entrega nada; como **producto**, es una decisión aparte.
+
+**k) EL MEDIO DE (j) NO SE PUDO FABRICAR, Y LO PARÓ EL PROPIO GUION.** La cuenta
+del `Volume id` que escribí en (j) —26 bytes— **estaba mal**: usé la fórmula del
+**rótulo** (`release_de`, que corta los dos primeros campos) para predecir el
+**volumen**, que se deriva de otra manera. El paso 5e lo cazó antes de gastar
+nada:
+
+```
+[FALLO] «EncinaOS 24.04.4 LTS "Noble Numbat" arm64» son 41 bytes y el campo del PVD admite 32
+```
+
+O sea que **la derivación que §4.53 unió tiene un techo de 32 bytes**, y con `LTS
+"Noble Numbat"` dentro no cabe. El experimento de (j) **no es fabricable tal cual**.
+La predicción de (j) queda **sin cotejar**, no refutada.
+
+**l) UN CERO FALSO MÍO, CAZADO POR SU PROPIO CONTROL: `grep -r` SIN `-a` SE SALTA
+LOS BINARIOS.** Buscando quién lee `.disk/info` dentro del snap del instalador
+concluí que sólo lo tocaban dos ficheros Python. **Era falso**, y el defecto
+estaba en el instrumento:
+
+```
+grep -rl  'disk/info' snapfs | grep -v '\.py$'   ->  hooks/install, ubuntu-image.rst
+grep -ral 'disk/info' snapfs | grep -v '\.py$'   ->  bin/lib/libapp.so  <- ESTE FALTABA
+```
+
+**Un `grep -r` sobre un árbol con binarios devuelve un CERO FALSO**, que es
+exactamente la familia de verde falso de §4.54 (`timeout`) y §4.51. Va a
+`SCRIPTS.md`.
+
+**m) EL MECANISMO, LEÍDO EN EL MEDIO Y CON SU CONTROL — Y NO ES EL RECUENTO DE
+CAMPOS: ES LA PRIMERA PALABRA.** Extraído `minimal.standard.live.squashfs` de la
+ISO **oficial**, de ahí `ubuntu-desktop-bootstrap_495.snap`, y de ahí su
+`bin/lib/libapp.so` (13 239 216 bytes), que es la interfaz Flutter —la que §4.55
+midió que es la que se corta, con el servidor sano—. Dentro están, juntas:
+
+```
+/cdrom/.disk/info
+FlavorService                 package:ubuntu_provision/src/services/flavor_service.dart
+UbuntuFlavor.fromName         package:ubuntu_flavor/src/ubuntu_flavor.dart
+. Valid flavors are:
+Unknown flavor found in config:
+```
+
+**Y los once sabores están; el nuestro no.** Con el control delante —una cadena
+inventada da 0 y la de verdad da 1—:
+
+```
+Ubuntu ESTA   Kubuntu ESTA   Xubuntu ESTA   Lubuntu ESTA   Edubuntu ESTA
+Ubuntu MATE ESTA   Ubuntu Budgie ESTA   Ubuntu Studio ESTA
+Ubuntu Kylin ESTA   Ubuntu Unity ESTA   Ubuntu Cinnamon ESTA
+EncinaOS  no esta          Encina  no esta
+```
+
+Encaja con **las cinco** mediciones que hay: los tres medios cuya primera palabra
+es nuestra se caen (`e8a0ead2`, `d81586ae`, el de §4.54), y los dos cuyo
+`.disk/info` va intacto arrancan (`4f856618` con `--sin-info`, `1224b5b1`).
+
+> **ESTO NO ES UNA CAUSA, Y AQUÍ MENOS QUE NUNCA.** Es un mecanismo **leído** más
+> un control más casos que fallan, que es **literalmente** la forma de las dos
+> atribuciones falsas de §4.55b y §4.56g. **El recuento de campos de (j) encaja
+> con las mismas cinco mediciones**, así que hay **dos** hipótesis vivas y
+> ninguna medida.
+>
+> **EL MEDIO QUE LAS SEPARA, y es uno solo:** `.disk/info` con **6 campos** (lo
+> que el recuento dice que se cae) y **primera palabra válida** (lo que el sabor
+> dice que arranca):
+>
+> ```
+> Ubuntu 24.04.4 - Release arm64 (20260210)
+> ```
+>
+> Si **arranca**, la causa es la primera palabra y el recuento queda falso. Si
+> **se cae**, es al revés. **Pero el paso 5b lo RECHAZA a propósito** —«el rótulo
+> del icono seguiría diciendo Ubuntu»—, y los once sabores válidos llevan todos
+> «buntu» dentro, así que **no hay ninguna cadena que pase la comprobación de
+> marca y sirva para este experimento**. Hace falta **una bandera de bisecado
+> más**, igual que §4.55 necesitó una por mecanismo.
+
+**n) LO QUE ESTO PONE EN DUDA, Y ES DE JORGE.** Si la primera palabra resulta ser
+la causa, entonces **`/.disk/info` no puede llevar nuestro nombre nunca**, y con
+él se caen los tres sitios que §4.53 ató a ese fichero: el rótulo del icono, el
+`Volume id` y el `FLAVOUR`. Eso **no es un ajuste, es replantear el mecanismo de
+D23 para este fichero**, y la tercera vía que §4.56a dejó anotada —romper la
+derivación— pasaría de opción a obligación.
