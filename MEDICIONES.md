@@ -13634,3 +13634,58 @@ compraría 2 bytes más).
 > en cuyo caso `"A B"` no vale y hace falta el de Ubuntu.
 >
 > Marcador: **2 de 5**.
+
+**e) ARRANCA CON UN NOMBRE EN CLAVE NUESTRO. LA PREDICCIÓN DE (d) ACERTÓ (3 de 6),
+Y EL BLOQUEO DEL PRODUCTO DESAPARECE.** `cf4bce47b2e228a0…`, fabricado **sin
+`--info-crudo`** (0 fallos, **0 avisos de diagnóstico**, `1 1 1 1`, `Volume id`
+propio `EncinaOS 24.04.4 LTS "A B" arm64`). Arrancado a la primera: **«Disposición
+del teclado», en español**.
+
+**EL BISECADO, YA COMPLETO — ocho ficheros:**
+
+```
+.disk/info                                          campos  instalador
+Ubuntu   24.04.4 LTS "Noble Numbat" - Release …       9     FUNCIONA (oficial)
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release …       9     FUNCIONA
+EncinaOS 24.04.4 LTS "A B"          - Release …       9     FUNCIONA   <- codename NUESTRO
+EncinaOS 24.04.4 LTS                - Release …       7     se cae
+Ubuntu   24.04.4                    - Release …       6     se cae
+EncinaOS 24.04.4                    - Release …       6     se cae
+EncinaOS 0.2.1                      - Release …       6     se cae
+Encina OS 0.2.1                     - Release …       7     se cae
+```
+
+**LA CAUSA, EN UNA FRASE Y PROBADA QUITANDO Y PONIENDO:** el instalador gráfico
+necesita que `/.disk/info` lleve **un nombre en clave entre comillas**. **El
+contenido da igual** —`"A B"` vale igual que `"Noble Numbat"`—, el `LTS` **no
+basta** por sí solo, la primera palabra **puede ser la nuestra**, y ni el canal,
+ni el `Volume id`, ni el separador, ni el paréntesis tienen nada que ver.
+
+**LO QUE ESTO DESBLOQUEA, Y ES TODO:**
+
+```
+NO hace falta el nombre en clave de Ubuntu  -> la casilla 2 ni se toca
+NO hace falta romper la derivacion de §4.53 -> «EncinaOS 24.04.4 LTS "A B" arm64» = 32 bytes, CABE
+NO hace falta --info-crudo                  -> es cadena de PRODUCTO, 0 avisos
+construir-todo.sh deja de parar en el 5e
+```
+
+**LO QUE QUEDA, Y ES DECISIÓN DE JORGE, NO MEDICIÓN:**
+
+**1. El nombre en clave de verdad, y el presupuesto es durísimo.** Con `EncinaOS`
+delante quedan **exactamente 5 bytes** para el codename entrecomillado, o sea
+`"A B"` y nada más. Acortar el producto a `Encina` compra 2 bytes:
+
+```
+Encina 24.04.4 LTS "Roble" arm64   = 32 bytes  CABE   (codename de UNA palabra)
+Encina 24.04.4 LTS "Ab Cd" arm64   = 32 bytes  CABE   (de dos, de 2+2 letras)
+```
+
+**`[OMIT]`: no está medido si un codename de UNA sola palabra vale.** Todos los
+que han arrancado llevan dos. Cuesta un medio.
+
+**2. Y hay un efecto que el bloqueo tapaba:** el `Volume id` derivado **arrastra
+ahora el `LTS` y las comillas**, así que lo que se ve al conectar el USB es
+`EncinaOS 24.04.4 LTS "A B" arm64`. **Cabe, pero es feo.** Romper la derivación
+ya no es *obligatorio* —lo era en §4.56dd—, pero sigue siendo la única forma de
+que el rótulo del USB sea legible. Eso ya es criterio de producto, no medición.
