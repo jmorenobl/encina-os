@@ -13200,3 +13200,63 @@ resultado, y ya estaba exonerado por experimento.
 > no había leído el binario. La de (j) se queda escrita y sin cotejar.
 > **Lo que la tumba:** que arranque. Y aun cayéndose, **no probaría** el sabor:
 > dejaría dos hipótesis en una.
+
+**p) `--sin-volid` NO SALTA ESA COMPROBACIÓN, Y LA PREMISA DE (o) ERA FALSA.** El
+medio no se fabricó, con el mismo `[FALLO]` de (k). Leído el bloque 5e —en vez de
+suponerlo por tercera vez—, el guion comprueba **el fichero nuestro siempre,
+«lo lleve el medio o no»**, por la misma razón declarada que el 5b: de él sale el
+`Volume id` aunque la bandera decida no aplicarlo. **`--sin-volid` decide qué
+viaja, no qué se comprueba.**
+
+**q) Y DE AHÍ SALE UNA RESTRICCIÓN DURA QUE NO ESTABA ESCRITA EN NINGÚN SITIO.**
+La fórmula del 5e es **lo de antes del ` - `, más la arquitectura**, y el campo
+del PVD admite **32 bytes**:
+
+```
+«24.04.4 LTS "Noble Numbat"»   26 bytes
+« arm64»                        6 bytes
+                              -------
+                               32 bytes  <- YA ESTAN LOS 32, y aun no hay NOMBRE
+```
+
+```
+«EncinaOS 24.04.4 LTS "Noble Numbat" arm64»   41 bytes   NO CABE
+«E        24.04.4 LTS "Noble Numbat" arm64»   34 bytes   NO CABE
+«         24.04.4 LTS "Noble Numbat" arm64»   33 bytes   NO CABE
+```
+
+**Con el nombre en clave de verdad no cabe NINGÚN nombre de producto, ni siquiera
+la cadena vacía.** No es que «EncinaOS» sea largo: es que `LTS "Noble Numbat"`
+consume el presupuesto entero. O sea que **`.disk/info` no puede llevar a la vez
+el nombre en clave de Ubuntu y un `Volume id` derivado de él.**
+
+**r) LAS DOS HIPÓTESIS VIVAS CONVERGEN EN LA MISMA CONSECUENCIA.** Y esto sí se
+puede decir hoy, sin haber medido cuál de las dos es:
+
+```
+si gana el SABOR (m)     -> .disk/info no puede llevar nuestra 1a palabra
+si gana el RECUENTO (j)  -> .disk/info tiene que llevar LTS "Noble Numbat",
+                            y entonces el Volume id NO CABE (q)
+```
+
+**En los dos casos, la derivación que §4.53 unió a propósito tiene que romperse.**
+La «tercera vía» que §4.56a dejó anotada como opción —dejar de derivar el rótulo
+y el `Volume id` de este fichero— **deja de ser opcional**, y lo es ya, antes de
+saber cuál de las dos hipótesis es la buena. Es lo único que hoy se puede dar por
+cerrado de esta sesión aparte de la falsación del canal.
+
+**s) EL MEDIO QUE FALTA SIGUE SIN PODERSE FABRICAR, Y AHORA SE SABE QUÉ INSTRUMENTO
+FALTA.** Los dos medios que separan (j) de (m) chocan cada uno con una guarda **de
+producto**:
+
+```
+«Ubuntu 24.04.4 - Release arm64 (20260210)»              -> lo rechazan 5b y 5e
+   (6 campos + sabor valido: separa las dos de un golpe)     («todavia dice Ubuntu»)
+«EncinaOS 24.04.4 LTS "Noble Numbat" - …»                -> lo rechaza 5e (41 > 32)
+```
+
+Esas guardas existen para que **el producto** no salga mal rotulado, y hacen bien
+su trabajo: han parado dos fabricaciones. Lo que falta es **una bandera de
+bisecado que permita un `.disk/info` crudo en un medio de DIAGNÓSTICO**, igual que
+§4.55 necesitó una bandera por mecanismo para poder bisecar. **`[OMIT]`: no está
+escrita, así que la elección entre (j) y (m) sigue SIN MEDIR.**
