@@ -4,6 +4,7 @@
 #     ./fabricar-iso.sh [--iso <oficial.iso>] --repo <dir> --salida <encina.iso>
 #                       [--capa <zz-encina.squashfs>]
 #                       [--sin-capa] [--sin-volid] [--sin-info] [--sin-menu]
+#                       [--info-crudo <fichero>]   <- MEDIO DE DIAGNOSTICO
 #     ./fabricar-iso.sh --leer-mecanismos <alguna.iso>   <- solo lee, no fabrica
 #
 # LAS CUATRO BANDERAS «--sin-*» SON PARA BISECAR, NO PARA EL PRODUCTO. Cada una
@@ -148,6 +149,15 @@ ISO=""; REPO=""; SALIDA=""; CAPA=""
 # a medias.
 CON_CAPA=1; CON_VOLID=1; CON_INFO=1; CON_MENU=1
 LEER=""   # --leer-mecanismos <iso>: solo lee y sale, no fabrica nada
+# --info-crudo <fichero>: un .disk/info ARBITRARIO, para MEDIOS DE DIAGNOSTICO.
+# NO es para el producto y no relaja ninguna guarda del producto: lo que hace es
+# dejar de PARAR con las dos que protegen la marca -- «el rotulo no puede decir
+# Ubuntu» (5b) y «el Volume id no puede decir Ubuntu» / «32 bytes» (5e) --, que
+# se siguen EVALUANDO y dicen en voz alta que habrian hecho. Existe porque los
+# medios que hacen falta para bisecar DENTRO de .disk/info (§4.56s) son
+# justamente cadenas que el producto tiene que rechazar: sin esto, la eleccion
+# entre las hipotesis de §4.56j y §4.56m no se puede medir.
+INFO_CRUDO=""
 # la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
 H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
 # EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
@@ -167,6 +177,7 @@ while [ $# -gt 0 ]; do
         --capa)   CAPA="$2";   shift 2 ;;
         --yaml)   YAML="$2";   shift 2 ;;
         --leer-mecanismos) LEER="$2"; shift 2 ;;
+        --info-crudo) INFO_CRUDO="$2"; shift 2 ;;
         --sin-capa)  CON_CAPA=0;  shift ;;
         --sin-volid) CON_VOLID=0; shift ;;
         --sin-info)  CON_INFO=0;  shift ;;
@@ -385,7 +396,17 @@ tar -xOf "$ISO" .disk/info > "$TMP/info.oficial" \
 # EL FICHERO NUESTRO SE COMPRUEBA SIEMPRE, viaje o no al medio: de el sale
 # tambien el Volume id (paso 5e), asi que --sin-info no puede dejarlo sin mirar.
 # Lo que la bandera decide es CUAL DE LOS DOS VIAJA, al final de este bloque.
-cp "$AQUI/marca/disk-info" "$TMP/info.encina" || fallo "cp .disk/info"
+if [ -n "$INFO_CRUDO" ]; then
+    [ -s "$INFO_CRUDO" ] || fallo "no existe o esta vacio el --info-crudo: $INFO_CRUDO"
+    cp "$INFO_CRUDO" "$TMP/info.encina" || fallo "cp del --info-crudo"
+    echo "        ####################################################################"
+    echo "        # MEDIO DE DIAGNOSTICO, NO PRODUCTO: --info-crudo $INFO_CRUDO"
+    echo "        # $(head -1 "$TMP/info.encina")"
+    echo "        # Las guardas de marca NO paran, pero SI se evaluan y se dicen."
+    echo "        ####################################################################"
+else
+    cp "$AQUI/marca/disk-info" "$TMP/info.encina" || fallo "cp .disk/info"
+fi
 # EL CONTROL, y es el calculo de casper-bottom/25adduser tal cual viaja en el
 # medio: no se comprueba que el fichero cambie, se comprueba QUE ROTULO SALE.
 release_de() {
@@ -401,7 +422,22 @@ R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info.e
 # Se comprueba LA PROPIEDAD -- pila A de D22: el rotulo no puede decir Ubuntu --,
 # con su control de que la busqueda encuentra «Ubuntu» donde SI lo hay.
 if printf '%s' "$R_NUESTRO" | grep -qi ubuntu; then
-    fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install ${R_NUESTRO}»"
+    if [ -n "$INFO_CRUDO" ]; then
+        echo "[AVISO] DIAGNOSTICO: el rotulo diria «Install ${R_NUESTRO}». En el producto esto seria [FALLO]."
+    else
+        fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install ${R_NUESTRO}»"
+    fi
+fi
+# EL CONTROL DE LA GUARDA, y solo hace falta cuando se le ha quitado la parada:
+# la MISMA regla, sobre el .disk/info DEL PRODUCTO, tiene que seguir diciendo que
+# ese pasa. Si dijera que no, la guarda estaria rota y el [AVISO] de arriba no
+# significaria nada -- que es como se cuela un verde falso.
+if [ -n "$INFO_CRUDO" ]; then
+    R_PRODUCTO=$(release_de "$AQUI/marca/disk-info")
+    if printf '%s' "$R_PRODUCTO" | grep -qi ubuntu; then
+        fallo "CONTROL ROTO: el .disk/info DEL PRODUCTO tampoco pasaria la guarda: «${R_PRODUCTO}»"
+    fi
+    ok "CONTROL: la guarda de marca sigue viva -- rechazaria «${R_OFICIAL}» y acepta el producto «${R_PRODUCTO}»"
 fi
 printf '%s' "$R_OFICIAL" | grep -qi ubuntu \
     || fallo "CONTROL ROTO: la busqueda no encuentra «Ubuntu» ni en «${R_OFICIAL}»"
@@ -606,11 +642,25 @@ VOLID_ENCINA="${INFO_L%% - *} $ARQ"
 # bytes y no caracteres a proposito: ${#var} contaria una «ñ» como uno y en el
 # fichero ocupa dos.
 N_VOLID=$(printf '%s' "$VOLID_ENCINA" | wc -c | tr -d ' ')
-[ "$N_VOLID" -le 32 ] \
-    || fallo "«${VOLID_ENCINA}» son $N_VOLID bytes y el campo del PVD admite 32"
+if [ "$N_VOLID" -gt 32 ]; then
+    if [ -n "$INFO_CRUDO" ]; then
+        # no se trunca en silencio JAMAS: si no cabe, el medio de diagnostico se
+        # fabrica con el Volume id OFICIAL y se dice. §4.55f dejo medido que el
+        # Volume id no determina si el instalador arranca.
+        echo "[AVISO] DIAGNOSTICO: «${VOLID_ENCINA}» son $N_VOLID bytes y caben 32."
+        echo "        Este medio viaja con el Volume id OFICIAL (como --sin-volid). NO se trunca."
+        CON_VOLID=0
+    else
+        fallo "«${VOLID_ENCINA}» son $N_VOLID bytes y el campo del PVD admite 32"
+    fi
+fi
 # pila A de D22: lo que presenta el producto ante el usuario NO puede decir Ubuntu
 if printf '%s' "$VOLID_ENCINA" | grep -qi ubuntu; then
-    fallo "el Volume id de Encina todavia dice Ubuntu: «${VOLID_ENCINA}»"
+    if [ -n "$INFO_CRUDO" ]; then
+        echo "[AVISO] DIAGNOSTICO: el Volume id diria «${VOLID_ENCINA}». En el producto esto seria [FALLO]."
+    else
+        fallo "el Volume id de Encina todavia dice Ubuntu: «${VOLID_ENCINA}»"
+    fi
 fi
 # CONTROL de esa busqueda, que es la misma trampa del paso 5a: tiene que
 # encontrarlo donde SI lo hay, o «no dice Ubuntu» significa «no he mirado».
