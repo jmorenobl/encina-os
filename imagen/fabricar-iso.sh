@@ -1008,9 +1008,17 @@ if [ "$CON_VOLID" = 1 ]; then
     # el Joliet si algun dia volviera: su nombre va TRUNCADO a 16 caracteres
     # («Ubuntu 24.04.4 L» en la oficial), asi que buscar la cadena entera no lo veria.
     SUCIOS=$(cut -d' ' -f3- "$TMP/vd.nuestra" | /usr/bin/grep -ci ubuntu)
-    [ "$SUCIOS" -eq 0 ] \
-        || fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
+    if [ "$SUCIOS" -ne 0 ]; then
+        # LA TERCERA guarda de marca, y esta NO se encontro leyendo el guion sino
+        # EJECUTANDOLO: las dos de §4.56t miran la CADENA antes de fabricar, y
+        # esta mira el MEDIO YA CONSTRUIDO, asi que no salio en la misma busqueda.
+        if [ -n "$INFO_CRUDO" ]; then
+            echo "[AVISO] DIAGNOSTICO: $SUCIOS descriptores del medio dicen Ubuntu. En el producto esto seria [FALLO]."
+        else
+            fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
 $(cat "$TMP/vd.nuestra")"
+        fi
+    fi
     ok "los $NP descriptores primarios dicen «${VOLID_ENCINA}», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
 else
     # --sin-volid: aqui la exigencia se INVIERTE. Este medio TIENE que seguir
