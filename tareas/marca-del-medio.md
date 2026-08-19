@@ -73,10 +73,44 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
-      > **BISECADA HASTA UN SOLO TROZO EL 2026-08-19, tarde (`MEDICIONES.md`
-      > §4.56): LA CAUSA ESTÁ DENTRO DE `LTS "Noble Numbat"`.** Tres hipótesis
-      > muertas **por experimento** en una sesión, las tres con su predicción
-      > escrita antes de arrancar y las tres **falsas**:
+      > **CAUSA CERRADA EL 2026-08-19, tarde (`MEDICIONES.md` §4.56cc): ES LA
+      > AUSENCIA DE `LTS "Noble Numbat"`, Y NUESTRO NOMBRE QUEDA EXONERADO.**
+      > Probado quitando y poniendo el trozo, no leyendo. **`EncinaOS 24.04.4 LTS
+      > "Noble Numbat" - Release arm64 (…)` ARRANCA** y enseña «Disposición del
+      > teclado» en español —al **tercer** intento; los dos primeros en negro, que
+      > por la trampa 38 no es un resultado—. Es **el primer medio de toda la línea
+      > de D23 que lleva un `.disk/info` NUESTRO y arranca el instalador**.
+      >
+      > **Las dos filas de 9 campos se diferencian sólo en la primera palabra y las
+      > dos funcionan**, así que `EncinaOS` no tumba nada. Por el camino murieron
+      > **el canal** y **el sabor**, las dos por experimento.
+      >
+      > **LO QUE ESTO OBLIGA, y es consecuencia medida:** el fichero que arranca da
+      > un `Volume id` derivado de **41 bytes** contra los **32** del PVD, y §4.56q
+      > mide que con el nombre en clave real **no cabe ningún nombre de producto,
+      > ni la cadena vacía**. El medio de hoy viaja con el volumen **oficial**, o
+      > sea que **NO es entregable**. **Hay que romper la derivación de §4.53** y
+      > escribir el `Volume id` por su cuenta: la «tercera vía» deja de ser opción.
+      >
+      > **`[OMIT]` que no se da por bueno:** cuál de los tres —el `LTS`, las
+      > comillas o el número de campos— importa **no está medido**; el trozo los
+      > restaura a la vez. Lo separa `Ubuntu 24.04.4 LTS - Release …` (7 campos).
+      >
+      > **Y ES DE JORGE:** el fichero que funciona lleva el **nombre en clave de
+      > Ubuntu** dentro de la cadena del producto. Terreno de la casilla 2.
+      >
+      > **Instrumento nuevo:** `--info-crudo`, para medios de **diagnóstico**. Las
+      > tres guardas de marca dejan de parar pero **se siguen evaluando** y lo
+      > dicen, con el `.disk/info` del producto como control de que la guarda sigue
+      > viva. Sin ella estos medios **no se podían fabricar**.
+      >
+      > **UN PATRÓN QUE YA NO ES SOSPECHA:** cuatro atribuciones falsas seguidas
+      > construidas igual —mecanismo leído + su control + un caso que falla—. En
+      > este proyecto esa forma **no produce causas**. Predicciones: **1 de 4**.
+      >
+      > **LO QUE SE CREÍA A MEDIA TARDE Y QUEDÓ CORTO, al lado a propósito:**
+      > tres hipótesis muertas y la causa acotada a un trozo, sin saber aún si
+      > nuestro nombre valía:
       >
       > | `.disk/info` | campos | instalador |
       > |---|---|---|
