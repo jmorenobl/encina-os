@@ -13260,3 +13260,69 @@ su trabajo: han parado dos fabricaciones. Lo que falta es **una bandera de
 bisecado que permita un `.disk/info` crudo en un medio de DIAGNÓSTICO**, igual que
 §4.55 necesitó una bandera por mecanismo para poder bisecar. **`[OMIT]`: no está
 escrita, así que la elección entre (j) y (m) sigue SIN MEDIR.**
+
+**t) EL INSTRUMENTO QUE FALTABA: `--info-crudo`, Y SU CONTROL EN LOS DOS SENTIDOS.**
+Decidido por Jorge entre las tres vías de (s). La bandera **no relaja nada del
+producto** —sin ella el guion se comporta exactamente igual que hoy—; lo que hace
+es que las dos guardas de marca **dejen de PARAR y sigan EVALUÁNDOSE**, diciendo
+en voz alta qué habrían hecho:
+
+```
+[AVISO] DIAGNOSTICO: el rotulo diria «Install Ubuntu 24.04.4». En el producto esto seria [FALLO].
+```
+
+**Y lleva un control de que la guarda sigue viva**, que es lo que separa esto de
+apagarla: la **misma** regla, sobre el `.disk/info` **del producto**, tiene que
+seguir diciendo que ése pasa. Si dijera que no, la guarda estaría rota y el
+`[AVISO]` no significaría nada —que es exactamente como se cuela un verde falso—.
+Además **el `Volume id` no se trunca jamás**: si no cabe en 32 bytes, el medio de
+diagnóstico viaja con el oficial y lo dice.
+
+**EL BANCO, que extrae la guarda del guion en vez de retectearla, y la prueba es
+que la MISMA cadena da respuestas OPUESTAS según la bandera:**
+
+```
+== extraidas 7 lineas de la guarda de marca de imagen/fabricar-iso.sh
+[OK] CONTROL DEL BANCO: la guarda se extrajo del guion, no esta retecleada aqui
+  [OK]    «Ubuntu 24.04.4» crudo=no    -> para
+  [OK]    «Ubuntu 24.04.4» crudo=si    -> avisa
+  [OK]    «EncinaOS 24.04.4» crudo=no  -> pasa
+  [OK]    «EncinaOS 24.04.4» crudo=si  -> pasa
+== 4 correctas, 0 fallos
+```
+
+Y gastado contra un guion saboteado —la guarda deja de parar también en el
+producto—, que saca el fallo **donde toca** y sólo ahí:
+
+```
+  [FALLO] «Ubuntu 24.04.4» crudo=no -> avisa, se esperaba para
+== 3 correctas, 1 fallos     salida 1
+```
+
+**u) EL MEDIO QUE SEPARA LAS DOS HIPÓTESIS.** `.disk/info` de diagnóstico:
+
+```
+Ubuntu 24.04.4 - Release arm64 (20260210)     6 campos, 1a palabra un sabor VALIDO
+```
+
+**Seis campos** —lo que la hipótesis del recuento (j) dice que **se cae**— y
+**primera palabra válida** —lo que la hipótesis del sabor (m) dice que
+**arranca**—. Fabricado reutilizando la cosecha de (p), que sobrevivió al
+`[FALLO]` de `fabricar-iso.sh` (28 `.deb` y su `Packages`), así que no cuesta la
+vuelta entera por `ssh`.
+
+> **PREDICCIÓN, escrita antes de fabricar y antes de arrancar: predigo que
+> ARRANCA**, o sea que la causa es **la primera palabra** y el recuento de campos
+> de (j) queda falso. Me apoyo en (m): `/cdrom/.disk/info`, `FlavorService`,
+> `UbuntuFlavor.fromName` y los once sabores están en el mismo binario, y el
+> nuestro no.
+>
+> **Y lo digo con la desconfianza ganada hoy:** llevo **dos predicciones falsas**
+> en esta sesión (la del canal en (d), la del `Volume id` en (j)) y **dos premisas
+> falsas** ((o) y el `grep` de (l)). Esta hipótesis tiene la misma forma que las
+> que se cayeron.
+>
+> **Lo que la tumba:** que se caiga. Y **aun arrancando, no cierra la causa del
+> todo**: probaría que con un sabor válido el instalador levanta, no que
+> `UbuntuFlavor.fromName` sea la línea exacta que lo tira. Eso último seguiría
+> siendo lectura.
