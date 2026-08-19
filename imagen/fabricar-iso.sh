@@ -651,7 +651,12 @@ if [ "$N_VOLID" -gt 32 ]; then
         echo "        Este medio viaja con el Volume id OFICIAL (como --sin-volid). NO se trunca."
         CON_VOLID=0
     else
-        fallo "«${VOLID_ENCINA}» son $N_VOLID bytes y el campo del PVD admite 32"
+        fallo "«${VOLID_ENCINA}» son $N_VOLID bytes y el campo del PVD admite 32.
+        SI ESTO SALE CON EL .disk/info DEL PRODUCTO, NO ES UN DEFECTO NUEVO: es el
+        bloqueo conocido de MEDICIONES.md §4.56dd. El fichero que hace ARRANCAR al
+        instalador necesita «LTS \"Noble Numbat\"» (§4.56cc) y ese trozo se come los
+        32 bytes el solo, asi que el Volume id NO PUEDE seguir derivandose de aqui:
+        hay que romper la derivacion de §4.53 y escribirlo por su cuenta."
     fi
 fi
 # pila A de D22: lo que presenta el producto ante el usuario NO puede decir Ubuntu
