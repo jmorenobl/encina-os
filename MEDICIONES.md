@@ -13326,3 +13326,47 @@ vuelta entera por `ssh`.
 > todo**: probaría que con un sabor válido el instalador levanta, no que
 > `UbuntuFlavor.fromName` sea la línea exacta que lo tira. Eso último seguiría
 > siendo lectura.
+
+**v) LA BANDERA NECESITÓ CONVERTIR TRES GUARDAS, NO DOS — Y LA TERCERA NO SALIÓ
+LEYENDO, SALIÓ EJECUTANDO.** Las dos de (t) miran **la cadena** antes de fabricar
+(pasos 5b y 5e); la tercera vive en el **paso 11** y mira **el medio ya
+construido**, leyendo sus descriptores de volumen. Por eso no apareció en la
+misma búsqueda: no es la misma clase de comprobación. La primera fabricación paró
+ahí, **con la ISO ya escrita pero sin haber corrido el paso 12 (integridad) ni el
+13 (mecanismos)** —o sea, un medio a medio verificar, que no se arranca—.
+
+**w) Y AL EJECUTARLA SALIERON DOS DEFECTOS DE SU PROPIA SALIDA, los dos míos.**
+
+**El primero es un `[OK]` que describía lo que el guion quería y no lo que había
+en el medio**, que es la trampa 13 escrita en la salida:
+
+```
+[OK]    los 4 descriptores primarios dicen «Ubuntu 24.04.4 arm64», y ninguno de los 4 dice Ubuntu
+                                             ^^^^^^                              ^^^^^^^^^^^^^^^
+                                             lo dicen los cuatro          ...y aqui dice que ninguno
+```
+
+Convertí el `fallo` en `[AVISO]` y **dejé el mensaje de éxito sin tocar**. Ahora
+el texto cuenta lo que hay: «y 4 de 4 dicen Ubuntu, porque es un medio de
+DIAGNOSTICO».
+
+**El segundo envenena el instrumento con el que cuento fallos:** los avisos
+llevaban el literal `[FALLO]` dentro («En el producto esto sería [FALLO]»), así
+que `grep -c '\[FALLO\]'` sobre el registro daba **3** en una fabricación que no
+tuvo ninguno. Un guion que escribe en su salida la cadena que usas para buscar
+errores **fabrica falsos positivos en cada lectura del registro**. Reescrito como
+«En el producto esto pararía la fabricación».
+
+**x) EL MEDIO, VERIFICADO ENTERO.** `9b1194b92775eeae…`, 3 721 265 152 bytes:
+
+```
+[AVISO] DIAGNOSTICO: el rotulo diria «Install Ubuntu 24.04.4». …
+[OK]    CONTROL: la guarda de marca sigue viva -- rechazaria «Ubuntu 24.04.4 LTS» y acepta el producto «EncinaOS 24.04.4 LTS»
+[OK]    las 267 lineas de md5sum.txt cuadran con la ISO construida…
+[OK]    control: con el md5sum.txt OFICIAL fallan exactamente 2 lineas: /boot/grub/grub.cfg /.disk/info
+[OK]    control: sobre la ISO oficial el lector no encuentra ninguno de los cuatro
+[OK]    el medio lleva exactamente lo pedido (capa volid info menu): 1 1 1 1
+```
+
+**Los cuatro mecanismos de D23 puestos**, como el que se cae. La única diferencia
+contra `d81586ae…` es `.disk/info`.
