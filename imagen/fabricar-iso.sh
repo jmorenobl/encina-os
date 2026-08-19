@@ -423,7 +423,7 @@ R_OFICIAL=$(release_de "$TMP/info.oficial"); R_NUESTRO=$(release_de "$TMP/info.e
 # con su control de que la busqueda encuentra «Ubuntu» donde SI lo hay.
 if printf '%s' "$R_NUESTRO" | grep -qi ubuntu; then
     if [ -n "$INFO_CRUDO" ]; then
-        echo "[AVISO] DIAGNOSTICO: el rotulo diria «Install ${R_NUESTRO}». En el producto esto seria [FALLO]."
+        echo "[AVISO] DIAGNOSTICO: el rotulo diria «Install ${R_NUESTRO}». En el producto esto pararia la fabricacion."
     else
         fallo "el rotulo del icono seguiria diciendo Ubuntu: «Install ${R_NUESTRO}»"
     fi
@@ -657,7 +657,7 @@ fi
 # pila A de D22: lo que presenta el producto ante el usuario NO puede decir Ubuntu
 if printf '%s' "$VOLID_ENCINA" | grep -qi ubuntu; then
     if [ -n "$INFO_CRUDO" ]; then
-        echo "[AVISO] DIAGNOSTICO: el Volume id diria «${VOLID_ENCINA}». En el producto esto seria [FALLO]."
+        echo "[AVISO] DIAGNOSTICO: el Volume id diria «${VOLID_ENCINA}». En el producto esto pararia la fabricacion."
     else
         fallo "el Volume id de Encina todavia dice Ubuntu: «${VOLID_ENCINA}»"
     fi
@@ -1013,13 +1013,20 @@ if [ "$CON_VOLID" = 1 ]; then
         # EJECUTANDOLO: las dos de §4.56t miran la CADENA antes de fabricar, y
         # esta mira el MEDIO YA CONSTRUIDO, asi que no salio en la misma busqueda.
         if [ -n "$INFO_CRUDO" ]; then
-            echo "[AVISO] DIAGNOSTICO: $SUCIOS descriptores del medio dicen Ubuntu. En el producto esto seria [FALLO]."
+            echo "[AVISO] DIAGNOSTICO: $SUCIOS descriptores del medio dicen Ubuntu. En el producto esto pararia la fabricacion."
         else
             fallo "$SUCIOS descriptores de volumen de la ISO construida siguen diciendo Ubuntu:
 $(cat "$TMP/vd.nuestra")"
         fi
     fi
-    ok "los $NP descriptores primarios dicen «${VOLID_ENCINA}», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+    if [ -n "$INFO_CRUDO" ] && [ "$SUCIOS" -ne 0 ]; then
+        # NO se puede decir «ninguno dice Ubuntu» cuando SUCIOS no es 0: seria un
+        # [OK] que describe lo que el guion QUERIA y no lo que hay en el medio,
+        # que es la trampa 13 escrita en la salida.
+        ok "los $NP descriptores primarios dicen «${VOLID_ENCINA}» -- y $SUCIOS de $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dicen Ubuntu, porque es un medio de DIAGNOSTICO"
+    else
+        ok "los $NP descriptores primarios dicen «${VOLID_ENCINA}», y ninguno de los $(wc -l < "$TMP/vd.nuestra" | tr -d ' ') dice Ubuntu"
+    fi
 else
     # --sin-volid: aqui la exigencia se INVIERTE. Este medio TIENE que seguir
     # diciendo Ubuntu en el nombre del volumen -- es justo lo que se esta
