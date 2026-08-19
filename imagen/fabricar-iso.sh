@@ -226,7 +226,11 @@ fi
 # --- 0. QUE MECANISMOS DE MARCA LLEVA ESTE MEDIO ----------------------------
 # Va DELANTE de todo lo demas a proposito: una construccion son ~20 minutos y
 # hay que poder ver en la primera linea del registro que se esta fabricando.
-mec() { [ "$1" = 1 ] && printf 'SI ' || printf '-- '; }
+# OJO CON EL printf: 'printf -- ' se come los dos guiones como «fin de
+# opciones» y no imprime NADA, asi que la linea que dice que mecanismos lleva el
+# medio omitia justo el que falta -- «capa=» en vez de «capa=--». Salio al
+# EJECUTARLO, no al leerlo, en la primera construccion de bisecado.
+mec() { [ "$1" = 1 ] && printf '%s' 'SI' || printf '%s' '--'; }
 echo "== 0. los cuatro mecanismos de marca del medio (D23)"
 echo "        $(mec $CON_CAPA) la capa /casper/zz-encina.squashfs"
 echo "        $(mec $CON_VOLID) el Volume id propio"
@@ -974,7 +978,7 @@ echo "iso:    $SALIDA"
 echo "sha256: $(shasum -a 256 "$SALIDA" | cut -d' ' -f1)"
 echo "tam:    $(stat -f %z "$SALIDA") bytes"
 echo "volid:  $VOLID   (lo que se ve al conectar el USB)"
-echo "marca:  capa=$(mec $CON_CAPA| tr -d ' ') volid=$(mec $CON_VOLID| tr -d ' ') info=$(mec $CON_INFO| tr -d ' ') menu=$(mec $CON_MENU| tr -d ' ')   (SI = lo lleva, -- = quitado para bisecar)"
+echo "marca:  capa=$(mec $CON_CAPA) volid=$(mec $CON_VOLID) info=$(mec $CON_INFO) menu=$(mec $CON_MENU)   (SI = lo lleva, -- = quitado para bisecar)"
 echo
 echo "LO QUE ESTE GUION NO PUEDE DECIR: que arranque. Eso se mide en una VM"
 echo "creada desde cero, contestando las cinco pantallas (AGENTS.md §6ter.3)."
