@@ -13415,3 +13415,34 @@ EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
 **Y AHORA SÍ SE PUEDE FABRICAR**, porque `--info-crudo` se salta el techo de 32
 bytes de (q) y hace viajar el `Volume id` oficial sin truncar nada. Era
 exactamente el medio que (k) y (p) no pudieron construir.
+
+**z) EL MEDIO DEL PRODUCTO: nuestro nombre CON el trozo restaurado.** `.disk/info`
+de diagnóstico:
+
+```
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+```
+
+**9 campos como el oficial, y la primera palabra la NUESTRA.** Es la pregunta que
+de verdad le importa al producto: ¿basta con devolver el trozo, conservando
+`EncinaOS`? Fabricado con `--info-crudo`, que se salta el techo de 32 bytes y hace
+viajar el `Volume id` **oficial** sin truncar nada.
+
+**UNA OBSERVACIÓN QUE NO HABÍA HECHO, y es más específica que el recuento:** las
+**comillas** están en el único fichero que funciona y **faltan en los cuatro que
+se caen**. Un parseador que saque el nombre en clave *de entre comillas* y no
+encuentre ninguna explicaría los cinco casos igual de bien que el recuento, y con
+un mecanismo más concreto.
+
+> **PREDICCIÓN: predigo que ARRANCA.** Si arranca, `EncinaOS` como primera palabra
+> queda exonerado **por experimento** y el producto puede llevar su nombre en este
+> fichero.
+>
+> **Y va con mi marcador de hoy delante: llevo 0 de 3.** Las tres predicciones de
+> esta sesión eran falsas y las tres tenían apoyo que parecía bueno.
+>
+> **Lo que NO separa este medio, dicho antes de gastarlo:** restaura **el `LTS`,
+> las comillas y el recuento a la vez**, así que si arranca **no dirá cuál de los
+> tres era**. Eso costaría un medio más (`Ubuntu 24.04.4 LTS - Release …`, 7
+> campos, con `LTS` y sin comillas). Se gasta este primero porque es el que
+> contesta la pregunta **del producto**, no la de la curiosidad.
