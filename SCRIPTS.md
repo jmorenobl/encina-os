@@ -2380,6 +2380,20 @@ bundle a mano deja la VM **en el registro de UTM sin bundle detrás** —que es
 exactamente lo que le pasó a `encina-marca-ac175f64`, que sigue en `utmctl list`
 y no aparece en `inventario-vms.sh`—.
 
+**41. El TAMAÑO del PNG distingue las tres pantallas sin abrirlo.** Medido sobre
+las diez capturas del 2026-08-19, con `capturar-vm.sh` y la misma ventana:
+
+```
+~ 73 000 – 112 000 bytes   NEGRA          (no es un resultado, trampa 38)
+~270 000 – 290 000 bytes   registro de systemd en texto
+~670 000 – 780 000 bytes   sesion GRAFICA (escritorio, instalador o su dialogo)
+```
+
+Sirve para **decidir si merece la pena mirarla**, no para decir qué pone: tres
+capturas negras seguidas dieron **exactamente 112 446 bytes** las tres, que además
+es señal de que la pantalla no cambia entre ellas. Un `stat -f %z` cuesta cero y
+ahorra abrir capturas que no dicen nada.
+
 **40. `grep -r` SIN `-a` SE SALTA LOS BINARIOS Y DEVUELVE UN CERO FALSO.** Cazada
 el 2026-08-19 buscando quién lee `.disk/info` dentro del snap del instalador. La
 conclusión fue «sólo dos ficheros Python», **y era falsa**:
