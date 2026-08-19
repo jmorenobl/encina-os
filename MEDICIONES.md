@@ -13446,3 +13446,34 @@ un mecanismo más concreto.
 > tres era**. Eso costaría un medio más (`Ubuntu 24.04.4 LTS - Release …`, 7
 > campos, con `LTS` y sin comillas). Se gasta este primero porque es el que
 > contesta la pregunta **del producto**, no la de la curiosidad.
+
+**aa) EL MEDIO SE FABRICÓ, Y LA BANDERA HIZO LO QUE PROMETÍA CON EL `Volume id`.**
+`b7d287f7f763cc4a…`, 3 721 265 152 bytes, **0 fallos**:
+
+```
+[AVISO] DIAGNOSTICO: «EncinaOS 24.04.4 LTS "Noble Numbat" arm64» son 41 bytes y caben 32.
+        Este medio viaja con el Volume id OFICIAL (como --sin-volid). NO se trunca.
+[OK]    el medio lleva exactamente lo pedido (capa volid info menu): 1 0 1 1
+volid:  Ubuntu 24.04.4 LTS arm64
+```
+
+O sea que la restricción de (q) **se cumplió en la práctica** y el guion la
+resolvió **diciéndolo** en vez de truncando en silencio, que es lo que el bloque
+5e existe para evitar desde que se escribió.
+
+**bb) PRIMER ARRANQUE: PANTALLA NEGRA, QUE NO ES UN RESULTADO.** Aplicada la
+trampa 38 en vez de concluir. Las dos señales dicen que el sistema **está vivo**:
+
+```
+t=20s  log=83790B   ip=—
+t=40s  log=84507B   ip=192.168.64.28
+t=60s  log=92203B   ip=192.168.64.28
+t=80s  log=92203B   ip=192.168.64.28   <- y ahi se queda 90s mas
+```
+
+`92203B` es **el mismo tamaño** al que llegaron los dos medios de hoy cuando
+alcanzaron el escritorio, así que llegó igual de lejos; lo que no salió es la
+pantalla. Capturas de **112 446 bytes** —negra— frente a los ~730 000 de una
+gráfica: el tamaño del PNG distingue las dos sin mirarlas, y eso vale como
+criterio barato. **Se repite el arranque**, que es lo que §4.55 midió que hacía
+falta (un medio arrancó al **tercer** intento).
