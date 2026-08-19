@@ -2250,6 +2250,18 @@ instalador (`stable/ubuntu-<release>`). Un `.disk/info` que diga
 **tres** cosas a la vez: el canal, el rótulo del icono (`25adduser` toma las dos
 primeras palabras) y el `Volume id`, que se deriva de aquí.
 
+> **ENMIENDA del 2026-08-19: «que sea un número de versión» NO BASTA, y esto es lo
+> que decía de menos.** La comprobación que salió de esta trampa exigía
+> `^[0-9]+(\.[0-9]+)*$`, y **`0.2.1` la pasaba**: es un número de versión. Pero
+> `stable/ubuntu-0.2.1` **no existe** igual que no existía `stable/ubuntu-OS`, así
+> que la regla dejaba pasar el mismo defecto con otra cara. Los únicos
+> `stable/ubuntu-*` que existen son los de las **releases de Ubuntu**, o sea que la
+> segunda palabra tiene que ser **la de la base** (`24.04.4`), no una versión
+> cualquiera y desde luego no la nuestra. El paso 5b lo compara ya contra la 2ª
+> palabra de la ISO oficial. Y **el nombre del producto va en la PRIMERA palabra**,
+> que es lo único que queda nuestro: `EncinaOS 24.04.4 - Release arm64 (…)`.
+> Lo que se creía y era falso queda arriba a propósito (`MEDICIONES.md` §4.56b).
+
 **34. Más caracteres que no llegan al invitado con `teclear-vm.sh`:** a `=` y `@`
 se suman **`|`, `&`, `>`, `"`, `[` y `]`**. O sea que **no se pueden teclear
 redirecciones, tuberías, comillas ni índices**. Para capturar la salida de una
@@ -2348,3 +2360,22 @@ congelado en ~2 700 bytes) **y la VM tenía IP en el `arp` del anfitrión**
 (`arp -a | grep <su MAC>`), o sea que el sistema live había arrancado y estaba en
 red. En el segundo arranque del **mismo** medio salió el instalador. Así que
 `[AVISO]` y repetir: una pantalla negra suelta no es un resultado.
+
+**39. Borrar una VM del banco no libera nada si su ISO es enlace duro, y `utmctl`
+tiene `delete`.** Las dos cosas medidas el 2026-08-19 antes de tocar el disco.
+`fabricar-vm-medio.py` mete la ISO en el bundle **por enlace duro**, así que la
+copia de `medios/` y la de dentro del `.utm` son **el mismo inodo**:
+
+```
+2 90304989 3717595136 medios/encina-os-bisec-sin-capa.iso
+2 90304989 3717595136 …/encina-bisec-sin-capa.utm/Data/medio.iso
+   ^ nlink   ^ inodo, el mismo
+```
+
+Con `nlink=2`, borrar **una sola** de las dos copias deja los 3,5 GiB donde
+estaban y `df` no se mueve. Hay que borrar **las dos**, y la forma de saberlo
+antes es `stat -f '%l %i %z %N'`, no acordarse. Y para la VM, **`utmctl delete
+<nombre>` existe**: desregistra *y* borra el bundle en una orden. Borrar el
+bundle a mano deja la VM **en el registro de UTM sin bundle detrás** —que es
+exactamente lo que le pasó a `encina-marca-ac175f64`, que sigue en `utmctl list`
+y no aparece en `inventario-vms.sh`—.

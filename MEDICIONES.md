@@ -12965,3 +12965,119 @@ libres). Y `utmctl delete` **existe** y desregistra *y* borra el bundle —lo qu
 explica el fantasma `encina-marca-ac175f64`, que sigue en `utmctl list` con el
 bundle borrado a mano—. Las dos mutaciones se verificaron después de pedirlas
 (trampa 13), no se dieron por hechas.
+
+**f) LA ISO, y el medio lleva los CUATRO mecanismos.** `d81586ae5db18076…`,
+3 721 265 152 bytes, commit `ee88f2a8`. **El mismo tamaño exacto que `e8a0ead2…`
+y huella distinta**, que es la tercera vez que pasa y por lo que aquí se compara
+por huella y nunca por tamaño. El paso 13 lo lee del medio terminado:
+
+```
+[OK]    CONTROL: la regla del canal acepta «24.04.4» y rechaza «0.2.1» y «OS»
+[OK]    la 2a palabra es una version: «24.04.4» -> canal stable/ubuntu-24.04.4 (la oficial: «24.04.4»)
+[OK]    .disk/info: Name=Install EncinaOS 24.04.4 (el oficial daba: Install Ubuntu 24.04.4 LTS), FLAVOUR=encinaos
+[OK]    Volume id: «Ubuntu 24.04.4 LTS arm64» -> «EncinaOS 24.04.4 arm64» (22 bytes de 32)
+[OK]    control: sobre la ISO oficial el lector no encuentra ninguno de los cuatro
+[OK]    el medio lleva exactamente lo pedido (capa volid info menu): 1 1 1 1
+```
+
+El único `[FALLO]` de las cuatro etapas es **el control intencionado** de la
+cosecha (la 1ª orden sale incompleta a propósito). Y **`FLAVOUR=encinaos`**: un
+**cuarto** consumidor de la primera palabra que no estaba en la lista de tres.
+
+**g) LA PREDICCIÓN DE (d) ES FALSA. LA HIPÓTESIS DEL CANAL ESTÁ TUMBADA.**
+Arrancado `encina-canal-d81586ae` desde cero, la sesión llega a escritorio —barra
+de GNOME en español, «19 de ago»— y a los ~3 minutos sale **el mismo diálogo**:
+
+```
+Se produjo un problema
+Lo sentimos, pero no estamos seguros de cuál es el error.
+…
+sudo ubuntu-bug ubuntu-desktop-bootstrap
+```
+
+Con la segunda palabra **idéntica a la del medio oficial** —`24.04.4`, canal
+`stable/ubuntu-24.04.4`, el mismo que pide la ISO de Canonical, que funciona— **el
+instalador se cae igual**. Así que el canal de `refresh.py` **no es la causa**.
+
+**Lo que se creía y era falso, al lado y sin ordenar:** §4.55f probó por
+experimento que `/.disk/info` tumba el instalador, y de ahí se dedujo que lo hacía
+**por el canal**. El mecanismo era real y está leído en el fuente; **la atribución
+era falsa, otra vez**. Es la segunda vez en tres sesiones que un mecanismo leído
+más un caso que falla no dan una causa (§4.54h fue la primera, §4.55b la segunda).
+**Lo que la predicción sí acertó** —y estaba escrito antes— es el precio: el
+rótulo salió `Install EncinaOS 24.04.4` y el volumen `EncinaOS 24.04.4 arm64`,
+exactos. Y también estaba escrito por delante qué la tumbaría: *«que lo que rompa
+no sea el canal sino otra de las tres diferencias contra el oficial»*.
+
+**h) LO QUE ESTO ACOTA, Y ES MUCHO: QUEDAN DOS SOSPECHOSOS.** Al igualar la
+segunda palabra, las diferencias contra el fichero oficial se han quedado en dos:
+
+```
+oficial: Ubuntu   24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)   FUNCIONA
+nuestro: EncinaOS 24.04.4                    - Release arm64 (20260210)   SE CAE
+         ^^^^^^^^         ^^^^^^^^^^^^^^^^^^
+         1. la 1a palabra   2. falta este trozo
+```
+
+El separador ` - ` y el paréntesis del final **ya no son sospechosos**: los dos
+están en el fichero que se cae **y** en el que funciona, iguales.
+
+**i) EL BOTÓN «Mostrar registro» SIGUE SIN PODERSE PULSAR, y ahora se sabe POR
+QUÉ.** Se intentó por ratón, que era la vía que quedaba después de que §4.55
+descartara el teclado: leída la posición de la ventana (`168,53`, 1280×840
+puntos) y calculado el botón en `(1033, 809)` absolutos, el clic **no llegó** —el
+cursor del invitado apareció en el borde izquierdo—. **La causa es que UTM usa
+puntero RELATIVO**: mueve el cursor del invitado por incrementos, así que una
+coordenada absoluta del anfitrión no mapea a nada. No es que el botón esté
+inerte: es que **ni el teclado ni el ratón absoluto llegan a él**. Sigue siendo la
+única vía sin agotar dentro de la sesión, y para abrirla haría falta puntero
+absoluto en la configuración del bundle. **`[OMIT]`, no descartado.**
+
+**j) EL SIGUIENTE MEDIO, Y LA PREDICCIÓN ESCRITA ANTES DE FABRICARLO.** Con dos
+sospechosos, un medio discrimina. Se elige el que además deja una configuración
+**usable** si sale bien —conservar nuestro nombre y añadir el trozo que falta—:
+
+```
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+```
+
+Una sola variable contra `d81586ae…`: **se añade `LTS "Noble Numbat"`**, y la
+primera palabra no se toca. Rótulo `Install EncinaOS 24.04.4 LTS`, volumen
+`EncinaOS 24.04.4 LTS arm64` (26 bytes de 32).
+
+**EL MECANISMO EN EL QUE ME APOYO, y es CONTADO, no leído en ningún fuente:** el
+número de campos separados por espacios.
+
+```
+OFICIAL   9 campos  Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)   FUNCIONA
+e8a0ead2  6 campos  EncinaOS 0.2.1 - Release arm64 (20260210)                      SE CAE
+d81586ae  6 campos  EncinaOS 24.04.4 - Release arm64 (20260210)                    SE CAE
+§4.54     7 campos  Encina OS 0.2.1 - Release arm64 (20260210)                     SE CAE
+NUEVO     9 campos  EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)  ?
+```
+
+**Los tres ficheros que tumban el instalador tienen 6 ó 7 campos; el que funciona
+tiene 9.** Si algo del instalador hace un `split()` e indexa por posición más allá
+del 5, nuestro fichero da `IndexError` y el suyo no. Eso explicaría además por qué
+no hay `Traceback` en el `journal` (§4.55) sin que deje de ser una excepción: la
+recogería el propio arranque del instalador.
+
+> **Predigo que el instalador ARRANCA.**
+>
+> **Y lo digo con menos confianza que las dos anteriores, a propósito:** esto es
+> una **correlación sobre cuatro casos**, no un mecanismo leído en el código, y
+> llevo **dos atribuciones falsas seguidas** (§4.55b y §4.56g). El recuento de
+> campos y «falta `LTS "Noble Numbat"`» son **la misma diferencia contada de dos
+> maneras**, así que este medio **no separa** «es el número de campos» de «es ese
+> trozo concreto». Eso costaría otro medio.
+>
+> **Lo que la tumba:** que arranque no probaría el recuento de campos; y si **se
+> cae**, entonces la causa es **la primera palabra** —`EncinaOS` en vez de
+> `Ubuntu`—, y eso mataría la posibilidad de renombrar este fichero, obligando a
+> romper la derivación del rótulo y el `Volume id` que §4.53 unió.
+
+**Y UNA CONSECUENCIA DE PRODUCTO QUE ES DE JORGE Y NO SE DECIDE AQUÍ:** si la
+causa resulta ser ese trozo, la salida pasa por llevar **`LTS "Noble Numbat"`
+—el nombre en clave de Ubuntu— dentro de la cadena de nuestro producto**, que es
+justo el terreno que miró la casilla 2. Como **medio de diagnóstico** no se
+entrega nada; como **producto**, es una decisión aparte.
