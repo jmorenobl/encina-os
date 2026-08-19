@@ -13477,3 +13477,47 @@ pantalla. Capturas de **112 446 bytes** —negra— frente a los ~730 000 de una
 gráfica: el tamaño del PNG distingue las dos sin mirarlas, y eso vale como
 criterio barato. **Se repite el arranque**, que es lo que §4.55 midió que hacía
 falta (un medio arrancó al **tercer** intento).
+
+**cc) ARRANCA. LA CAUSA ESTÁ CERRADA: ES `LTS "Noble Numbat"`, Y NUESTRO NOMBRE
+QUEDA EXONERADO POR EXPERIMENTO.** Tercer arranque de `b7d287f7…` —los dos
+primeros en negro, trampa 38 aplicada—: **«Disposición del teclado», en español,
+con «Español» marcado**. Es **el primer medio de toda la línea de D23 que lleva un
+`.disk/info` NUESTRO y arranca el instalador**.
+
+```
+.disk/info                                                campos  instalador
+Ubuntu   24.04.4 LTS "Noble Numbat" - Release arm64 (…)      9     FUNCIONA (el oficial)
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (…)      9     FUNCIONA  <- con NUESTRO nombre
+Ubuntu   24.04.4                    - Release arm64 (…)      6     se cae
+EncinaOS 24.04.4                    - Release arm64 (…)      6     se cae
+EncinaOS 0.2.1                      - Release arm64 (…)      6     se cae
+Encina OS 0.2.1                     - Release arm64 (…)      7     se cae
+```
+
+**Las dos filas de arriba se diferencian sólo en la primera palabra y las dos
+funcionan; las cuatro de abajo son las que no llevan el trozo y las cuatro se
+caen.** Eso cierra las dos cosas a la vez:
+
+- **La causa es la ausencia de `LTS "Noble Numbat"`.** Restaurarlo hace arrancar
+  lo que no arrancaba, con todo lo demás igual. No es lectura: es el experimento.
+- **`EncinaOS` como primera palabra no tumba el instalador.** §4.56y sólo pudo
+  decir que arreglarla no bastaba; esta fila lo cierra en el otro sentido.
+
+**Y LA PREDICCIÓN DE (z) SALIÓ BIEN — la primera de cuatro.** Marcador de la
+sesión: **1 acertada de 4**. Se apoyaba en la observación de que las comillas
+están en el único fichero que funcionaba y faltan en todos los que se caen.
+
+**LO QUE SIGUE SIN SEPARAR, y lo digo porque este medio no podía hacerlo:** el
+trozo restaura **el `LTS`, las comillas y el recuento a la vez**. Cuál de los tres
+es, **no está medido**. El medio que lo separa es `Ubuntu 24.04.4 LTS - Release
+arm64 (…)` —7 campos, con `LTS`, sin comillas—. **`[OMIT]`.**
+
+**dd) EL PRECIO, QUE AHORA ES UNA CONSECUENCIA MEDIDA Y NO UNA OPCIÓN.** El
+fichero que funciona da un `Volume id` derivado de **41 bytes** y el campo del PVD
+admite **32** (§4.56q). El medio de hoy sólo pudo fabricarse porque `--info-crudo`
+hace viajar el `Volume id` **oficial** —`Ubuntu 24.04.4 LTS arm64`—, o sea que
+**este medio no es entregable: dice Ubuntu en el nombre del volumen**. Para que el
+producto lleve a la vez el `.disk/info` que arranca y un `Volume id` propio, **hay
+que romper la derivación de §4.53** y escribir el `Volume id` por su cuenta. Es lo
+que §4.56r predijo antes de saber cuál de las dos hipótesis ganaba, y ha ganado
+por el camino que llevaba a la misma consecuencia.
