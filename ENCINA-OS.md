@@ -401,7 +401,54 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-19 (tarde): **EL BISECADO BAJA A UN SOLO TROZO — `LTS "Noble Numbat"`**, y la derivación de §4.53 hay que romperla gane quien gane
+> ### LA TAREA EN CURSO, 2026-08-19 (tarde): **CAUSA CERRADA — ES LA AUSENCIA DE `LTS "Noble Numbat"`**, y lo siguiente es ROMPER LA DERIVACIÓN de §4.53
+>
+> **CERRADA POR EXPERIMENTO** (`MEDICIONES.md` §4.56cc). Se probó quitando y
+> poniendo, no leyendo:
+>
+> | `.disk/info` | campos | instalador |
+> |---|---|---|
+> | `Ubuntu 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **funciona** (el oficial) |
+> | `EncinaOS 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **FUNCIONA — con NUESTRO nombre** |
+> | `Ubuntu 24.04.4 - Release …` | 6 | se cae |
+> | `EncinaOS 24.04.4 - Release …` | 6 | se cae |
+> | `EncinaOS 0.2.1 - Release …` | 6 | se cae |
+> | `Encina OS 0.2.1 - Release …` | 7 | se cae |
+>
+> **Dos cosas cerradas de un golpe:** la causa es **la ausencia de ese trozo**, y
+> **`EncinaOS` como primera palabra NO tumba el instalador** —las dos filas de 9
+> campos sólo se diferencian en ella y las dos arrancan—. Por el camino murieron
+> tres hipótesis por experimento: **el canal**, **el sabor** y, ayer, la capa, el
+> `Volume id` y el `menuentry`.
+>
+> **LO SIGUIENTE, Y ES UNA CONSECUENCIA MEDIDA, NO UNA OPCIÓN: hay que ROMPER LA
+> DERIVACIÓN de §4.53.** El `.disk/info` que arranca da un `Volume id` derivado de
+> **41 bytes** contra los **32** del PVD (§4.56q: con el nombre en clave real no
+> cabe **ningún** nombre de producto, ni la cadena vacía). El medio de hoy sólo se
+> pudo fabricar porque `--info-crudo` hace viajar el volumen **oficial**, así que
+> **NO es entregable: dice Ubuntu en el nombre del volumen**. Para tener a la vez
+> el fichero que arranca y un `Volume id` propio, el `Volume id` tiene que dejar
+> de salir de `.disk/info`.
+>
+> **Y HAY UNA DECISIÓN DE PRODUCTO QUE ES DE JORGE:** el fichero que funciona
+> lleva **`LTS "Noble Numbat"`**, el nombre en clave de Ubuntu, dentro de la cadena
+> del producto. Es terreno de la casilla 2.
+>
+> **`[OMIT]` que no se cuela como hecho:** cuál de los tres —el `LTS`, las
+> comillas o el número de campos— es el que importa **no está medido**; el trozo
+> los restaura a la vez. Lo separa `Ubuntu 24.04.4 LTS - Release …` (7 campos).
+>
+> **Instrumento nuevo: `--info-crudo`**, para medios de diagnóstico: las **tres**
+> guardas de marca dejan de parar pero **se siguen evaluando** y lo dicen, con el
+> `.disk/info` del producto como control. Sin ella nada de esto se podía fabricar.
+>
+> **Y UN PATRÓN QUE YA NO ES SOSPECHA:** cuatro atribuciones falsas seguidas
+> construidas igual —mecanismo leído + control + caso que falla—. Esa forma **no
+> produce causas** aquí. Marcador de predicciones de la sesión: **1 de 4**.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-19 (tarde, a medias): el bisecado baja a un solo trozo
 >
 > **TRES HIPÓTESIS MUERTAS POR EXPERIMENTO EN UNA SESIÓN** (`MEDICIONES.md`
 > §4.56), las tres con predicción escrita antes de arrancar y las tres **falsas**:
