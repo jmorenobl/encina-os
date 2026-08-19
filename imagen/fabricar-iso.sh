@@ -423,6 +423,41 @@ printf '%s' "$V2_NUESTRO" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
         instalador se caeria en silencio (§4.54h). Escribe el producto en UNA palabra."
 printf '%s' "$V2_OFICIAL" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
     || fallo "CONTROL ROTO: la 2a palabra del .disk/info OFICIAL es «${V2_OFICIAL}» y tampoco pasa la regla"
+# ...Y TIENE QUE SER LA DE LA BASE, que es lo que a la regla de arriba le
+# FALTABA y por eso no cazo nada: «0.2.1» ES un numero de version y la pasaba
+# tan campante, pero «stable/ubuntu-0.2.1» no existe igual que no existia
+# «stable/ubuntu-OS». Ese es el agujero de §4.55e: el descarte de §4.54i creyo
+# exonerar el fichero cambiando OS por 0.2.1, o sea COMPARO DOS CANALES QUE NO
+# EXISTEN NINGUNO DE LOS DOS, y por eso aquel descarte no valia. Los unicos
+# «stable/ubuntu-*» que existen son los de las releases de Ubuntu, o sea el de
+# LA BASE: la ISO oficial que este mismo guion tiene abierta dos lineas arriba.
+#
+# LO MEDIDO Y LO DEDUCIDO, separados, porque hoy no es lo mismo:
+#   MEDIDO   -- refresh.py construye el canal con esta palabra (leido en el
+#               fuente) y §4.55f probo POR EXPERIMENTO que quitar .disk/info
+#               hace arrancar el instalador que se caia.
+#   HIPOTESIS-- que sea el canal invalido LO QUE lo tumba. Sin cotejar aun.
+# La comprobacion vale por lo primero y no depende de lo segundo: pedir un
+# canal que no existe es un defecto se caiga lo que se caiga.
+canal_de() { printf 'stable/ubuntu-%s' "$1"; }
+regla_canal() { [ "$1" = "$V2_OFICIAL" ]; }
+# EL CONTROL VA ANTES QUE LA MEDICION, y gastado con el caso que de verdad
+# fallo: una regla que no sabe dar sus DOS respuestas no es una comprobacion.
+regla_canal "$V2_OFICIAL" \
+    || fallo "CONTROL ROTO: la regla rechaza la palabra de la propia base «${V2_OFICIAL}»"
+if regla_canal "0.2.1"; then
+    fallo "CONTROL ROTO: la regla ACEPTA «0.2.1», que es la del medio que se cae (§4.55f)"
+fi
+if regla_canal "OS"; then
+    fallo "CONTROL ROTO: la regla ACEPTA «OS», que es la de §4.54h"
+fi
+ok "CONTROL: la regla del canal acepta «${V2_OFICIAL}» y rechaza «0.2.1» y «OS»"
+regla_canal "$V2_NUESTRO" \
+    || fallo "la 2a palabra de .disk/info es «${V2_NUESTRO}» y la de la BASE es «${V2_OFICIAL}».
+        refresh.py pediria «$(canal_de "$V2_NUESTRO")», que NO EXISTE: los unicos
+        canales son los de las releases de Ubuntu. Tiene que decir «${V2_OFICIAL}».
+        Y ojo: ser un numero de version NO BASTA, que es justo lo que dejo pasar
+        «0.2.1» hasta §4.55 (el nombre del producto va en la 1a palabra)."
 ok "la 2a palabra es una version: «${V2_NUESTRO}» -> canal stable/ubuntu-$V2_NUESTRO (la oficial: «${V2_OFICIAL}»)"
 # y la forma que necesitan los otros dos que lo leen: la primera palabra es el
 # usuario y el nombre de maquina de la sesion viva, y el parentesis del final es

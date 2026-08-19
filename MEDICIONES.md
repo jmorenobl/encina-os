@@ -12846,3 +12846,122 @@ derivación, el `Volume id`. O sea que el medio se rotularía **«Install Encina
 24.04.4»** y el volumen **«EncinaOS 24.04.4 arm64»**. La alternativa es dejar de
 derivar el `Volume id` y el rótulo de ese fichero, que es lo que §4.53 unió a
 propósito para que no se separaran.
+
+---
+
+### 4.56 LA HIPÓTESIS DEL CANAL: se paga el precio de producto y se escribe la predicción antes de fabricar (2026-08-19, tarde)
+
+**a) LA DECISIÓN, que era de Jorge y está tomada: la segunda palabra es `24.04.4`.**
+`imagen/marca/disk-info` pasa de
+
+```
+EncinaOS 0.2.1 - Release arm64 (20260210)
+EncinaOS 24.04.4 - Release arm64 (20260210)
+```
+
+y **sólo cambia esa palabra**: ni el separador ` - `, ni el paréntesis del final,
+ni la ausencia de `LTS` y del codename entrecomillado que sí lleva el oficial
+(`Ubuntu 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)`). **Una variable
+por experimento**, porque si esto no arranca lo que queda es acotar dentro del
+propio fichero y esas tres diferencias son los siguientes sospechosos.
+
+Lo que la palabra arrastra, derivado con el cálculo de `casper-bottom/25adduser`
+tal cual viaja en el medio, no deducido de memoria:
+
+```
+rotulo -> Install EncinaOS 24.04.4
+canal  -> stable/ubuntu-24.04.4
+```
+
+Se descartó la tercera vía —romper la derivación y escribir el rótulo y el
+`Volume id` aparte— porque §4.53 los unió a propósito y separarlos cuesta trabajo
+**sin medir** antes de poder arrancar nada. Queda anotada, no cerrada.
+
+**b) EL AGUJERO DE §4.55e, HECHO CÓDIGO: el paso 5b ya exigía una versión y `0.2.1`
+LA PASABA.** Esto no se dedujo, se leyó en el guion: la regla era
+`grep -qE '^[0-9]+(\.[0-9]+)*$'`, o sea «que sea un número de versión», y `0.2.1`
+lo es. Por eso la comprobación que se escribió en §4.54 para no volver a gastar un
+arranque **no cazó nada**: verificaba la forma, no el valor. La regla nueva es que
+la segunda palabra sea **la de la base**, porque los únicos `stable/ubuntu-*` que
+existen son los de las releases de Ubuntu, y la base es la ISO oficial que el
+guion ya tiene abierta.
+
+**Y va con su control, ejecutado ANTES que la medición**, gastado con las dos
+palabras que de verdad fallaron:
+
+```
+[OK] CONTROL: la regla del canal acepta «24.04.4» y rechaza «0.2.1» y «OS»
+```
+
+**c) EL BANCO DE ESA REGLA, y falla en los dos sentidos.** El banco **no recltea**
+la regla: la **extrae del guion de verdad** entre sus dos marcas, y si la
+extracción sacara menos de 10 líneas se niega a medir —que es la familia de
+defecto de §4.54, donde `timeout` no existía en macOS y el banco leyó cuatro
+`command not found` como PASA—. Cuatro casos:
+
+```
+== extraidas 13 lineas del bloque real de imagen/fabricar-iso.sh
+[OK] CONTROL DEL BANCO: el bloque se extrajo del guion, no esta retecleado aqui
+  [OK]    «24.04.4» -> acepta
+  [OK]    «0.2.1» -> rechaza
+  [OK]    «OS» -> rechaza
+  [OK]    «24.04» -> rechaza
+== 4 correctas, 0 fallos
+```
+
+Y gastado contra dos guiones saboteados, porque un banco que sólo sabe decir
+«bien» no es un banco:
+
+```
+SABOTAJE 1 — regla_canal() { true; }   (el defecto que dejó pasar 0.2.1)
+  [OK]    «24.04.4» -> acepta
+  [FALLO] «0.2.1» -> acepta, se esperaba rechaza
+  [FALLO] «OS» -> acepta, se esperaba rechaza
+  [FALLO] «24.04» -> acepta, se esperaba rechaza
+== 1 correctas, 3 fallos          salida 1
+
+SABOTAJE 2 — el bloque borrado del guion
+  == extraidas 1 lineas
+  [FALLO] CONTROL DEL BANCO: no extraje el bloque      salida 1
+```
+
+**d) LA PREDICCIÓN, ESCRITA ANTES DE FABRICAR Y ANTES DE ARRANCAR.** Se coteja
+abajo, salga como salga, y si sale falsa se queda al lado como se quedó la de
+§4.55b.
+
+> **Predigo que el instalador ARRANCA** y que se ve «Disposición del teclado» en
+> español, igual que con `--sin-info`, **con los cuatro mecanismos de D23 puestos**
+> —capa, `Volume id`, `.disk/info` y `menuentry`—.
+>
+> **En qué me apoyo, y es una sola cosa:** §4.55f probó por experimento que quitar
+> `.disk/info` hace arrancar lo que se caía, y `refresh.py` construye con su
+> segunda palabra el canal de snap del propio instalador
+> (`"stable/ubuntu-" + info.split()[1]`). `stable/ubuntu-0.2.1` no existe;
+> `stable/ubuntu-24.04.4` sí. Si la causa es el canal, ésta es la única palabra
+> que hacía falta cambiar.
+>
+> **Lo que puede tumbarla, y lo digo antes:** que lo que rompa no sea el canal sino
+> otra de las tres diferencias contra el oficial —el `LTS` ausente, el codename
+> entrecomillado ausente o la forma del separador—, en cuyo caso el medio se caerá
+> **igual** y la hipótesis del canal quedará FALSA. Que arranque no probaría que el
+> canal existe: probaría que ESTA cadena no lo tumba.
+>
+> **Y predigo además** que el `Volume id` saldrá `EncinaOS 24.04.4 arm64` y el
+> rótulo del icono `Install EncinaOS 24.04.4`, que es el precio pagado.
+
+**e) LO QUE COSTÓ EL BANCO, y la trampa del enlace duro medida en vez de recordada.**
+Se borraron las dos ISOs del bisecado ya gastadas (`--sin-capa` y `--sin-volid`,
+que ya dieron su dato) con sus dos VMs. **Cada ISO tenía `nlink=2` y el mismo
+inodo dentro del bundle de UTM**, o sea que borrar una sola de las dos copias no
+habría liberado **nada**:
+
+```
+2 90304989 3717595136 medios/encina-os-bisec-sin-capa.iso
+2 90304989 3717595136 …/encina-bisec-sin-capa.utm/Data/medio.iso
+```
+
+Predicción escrita antes de borrar: **≈6,9 GiB**. Medido: **7,07 GiB** (28 → 35 GiB
+libres). Y `utmctl delete` **existe** y desregistra *y* borra el bundle —lo que
+explica el fantasma `encina-marca-ac175f64`, que sigue en `utmctl list` con el
+bundle borrado a mano—. Las dos mutaciones se verificaron después de pedirlas
+(trampa 13), no se dieron por hechas.
