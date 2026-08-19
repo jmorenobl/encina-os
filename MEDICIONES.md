@@ -13165,3 +13165,38 @@ la causa, entonces **`/.disk/info` no puede llevar nuestro nombre nunca**, y con
 `Volume id` y el `FLAVOUR`. Eso **no es un ajuste, es replantear el mecanismo de
 D23 para este fichero**, y la tercera vía que §4.56a dejó anotada —romper la
 derivación— pasaría de opción a obligación.
+
+**o) EL MEDIO QUE SÍ SE PUEDE FABRICAR HOY, Y DISCRIMINA IGUAL — CON `--sin-volid`.**
+El techo de 32 bytes de (k) sólo aplica **si se cambia el `Volume id`**. Con
+`--sin-volid` el volumen se queda el oficial y el fichero de 9 campos **sí es
+fabricable**, conservando **nuestra primera palabra**:
+
+```
+EncinaOS 24.04.4 LTS "Noble Numbat" - Release arm64 (20260210)
+```
+
+**Y esto separa las dos hipótesis igual de bien que el medio «Ubuntu …» de (m),
+sin necesitar ninguna bandera nueva:**
+
+```
+si ARRANCA -> la 1a palabra sigue siendo «EncinaOS», un sabor que NO esta en el
+              binario, asi que LA HIPOTESIS DEL SABOR ES FALSA y la causa es el
+              trozo que faltaba / el recuento de campos
+si SE CAE  -> el fichero ya tiene 9 campos, asi que EL RECUENTO ES FALSO y la
+              hipotesis del sabor sobrevive (sin quedar probada)
+```
+
+**Por qué `--sin-volid` no contamina, y es medido, no supuesto:** §4.55f gastó un
+medio con `--sin-volid` (`08392ddc…`, `1 0 1 1`) y **se cayó igual**, y el medio
+que funciona (`4f856618…`) lleva el `Volume id` **puesto**. O sea que se ha visto
+`volid=1` con los **dos** resultados: el `Volume id` **no determina** el
+resultado, y ya estaba exonerado por experimento.
+
+> **PREDICCIÓN, escrita antes de fabricar: predigo que SE CAE**, o sea que el
+> recuento de campos de (j) es falso y la primera palabra sigue viva. Me apoyo en
+> (m): los once sabores están en el binario y el nuestro no, junto a
+> `/cdrom/.disk/info` y `UbuntuFlavor.fromName` en el mismo fichero.
+> **Y esto contradice mi predicción de (j)**, escrita hace dos horas, cuando aún
+> no había leído el binario. La de (j) se queda escrita y sin cotejar.
+> **Lo que la tumba:** que arranque. Y aun cayéndose, **no probaría** el sabor:
+> dejaría dos hipótesis en una.
