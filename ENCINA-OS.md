@@ -401,7 +401,52 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-19 (tarde): **CAUSA CERRADA — ES LA AUSENCIA DE `LTS "Noble Numbat"`**, y lo siguiente es ROMPER LA DERIVACIÓN de §4.53
+> ### LA TAREA EN CURSO, 2026-08-19 (cierre): **CAUSA CERRADA DEL TODO — `/.disk/info` NECESITA UN NOMBRE EN CLAVE ENTRECOMILLADO, Y EL CONTENIDO DA IGUAL**
+>
+> **PROBADO QUITANDO Y PONIENDO** (`MEDICIONES.md` §4.57e). Ocho ficheros:
+>
+> | `.disk/info` | campos | instalador |
+> |---|---|---|
+> | `Ubuntu 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **funciona** (el oficial) |
+> | `EncinaOS 24.04.4 LTS "Noble Numbat" - Release …` | 9 | **funciona** |
+> | `EncinaOS 24.04.4 LTS "A B" - Release …` | 9 | **FUNCIONA — codename NUESTRO** |
+> | `EncinaOS 24.04.4 LTS - Release …` | 7 | se cae |
+> | `Ubuntu 24.04.4 - Release …` | 6 | se cae |
+> | `EncinaOS 24.04.4 - Release …` | 6 | se cae |
+> | `EncinaOS 0.2.1 - Release …` | 6 | se cae |
+> | `Encina OS 0.2.1 - Release …` | 7 | se cae |
+>
+> **El `LTS` solo no basta. La primera palabra puede ser la nuestra. El contenido
+> del codename da igual.** Y ni el canal, ni el `Volume id`, ni el separador, ni el
+> paréntesis tenían nada que ver: murieron todos por experimento.
+>
+> **ESTO DESBLOQUEA TODO LO QUE §4.56 DABA POR BLOQUEADO:**
+>
+> ```
+> NO hace falta «Noble Numbat»       -> la casilla 2 ni se toca
+> NO hace falta romper la derivacion -> «EncinaOS 24.04.4 LTS "A B" arm64» = 32 bytes, CABE
+> NO hace falta --info-crudo         -> es cadena de PRODUCTO: 0 avisos, volid nuestro
+> construir-todo.sh deja de parar en el 5e
+> ```
+>
+> **LO QUE QUEDA ES CRITERIO DE JORGE, NO MEDICIÓN:**
+>
+> 1. **El nombre en clave de verdad.** Presupuesto durísimo: con `EncinaOS` delante
+>    caben **5 bytes** de codename (`"A B"` y nada más); con `Encina`, **7**
+>    (`Encina 24.04.4 LTS "Roble" arm64` = 32, `… "Ab Cd" arm64` = 32).
+> 2. **Si aun así se rompe la derivación**, porque el `Volume id` arrastra el `LTS`
+>    y las comillas: el USB se rotula `EncinaOS 24.04.4 LTS "A B" arm64`. **Cabe,
+>    pero es feo.** Ya no es obligatorio; es estética de producto.
+>
+> **`[OMIT]`:** no está medido si un codename de **una sola palabra** vale —los
+> tres que arrancan llevan dos—. Cuesta un medio.
+>
+> **Y detrás siguen, sin tocar:** que **la capa no se monta** (§4.54e), la
+> **segunda pasada de reproducibilidad**, y los **`[OJOS]`**.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-19 (tarde): la causa acotada a `LTS "Noble Numbat"`, que resultó ser sólo las comillas
 >
 > **CERRADA POR EXPERIMENTO** (`MEDICIONES.md` §4.56cc). Se probó quitando y
 > poniendo, no leyendo:
