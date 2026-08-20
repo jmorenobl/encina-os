@@ -12010,6 +12010,24 @@ de marca, que es el mismo orden con el que casper monta el overlay.
 
 ### 4.53 EL NOMBRE DEL VOLUMEN: 88 bytes cambian de sitio y nada más — y lo que podía tumbar la casilla estaba en el GRUB firmado, que busca POR FICHERO y no por etiqueta (2026-08-17)
 
+> **ENMIENDA DEL 2026-08-20: LA DERIVACIÓN QUE ESTA MEDICIÓN UNIÓ A PROPÓSITO SE
+> HA ROTO, y no por gusto: quedó medido que NO CABE** (§4.57e/f). El instalador
+> exige un **nombre en clave entrecomillado** en `.disk/info`, y con cualquiera de
+> verdad el `Volume id` derivado se pasa de los **32 bytes** del PVD —§4.56q midió
+> que con el de Ubuntu no cabe **ni la cadena vacía** de nombre—.
+>
+> **Lo que esta medición defendía sigue en pie y NO se ha tirado:** el nombre del
+> producto no puede estar escrito en dos ficheros. Por eso el `Volume id` **no se
+> escribe: se compone** de la 1ª palabra de `.disk/info` (que sigue siendo la
+> única fuente del nombre) más la versión de `encina-meta` (cotejada por huella en
+> el paso 2) más la arquitectura. **Y de paso se recupera lo que esta medición
+> obligaba a ceder:** el volumen dice **`EncinaOS 0.2.1 arm64`**, nuestra versión,
+> en vez de la de Ubuntu.
+>
+> Lo que se creía —que atar las dos cosas era lo correcto— se queda escrito abajo
+> a propósito: era correcto **con la información de entonces**, y lo que lo tumba
+> es una restricción que no se conocía.
+
 **Es la cuarta y última casilla de `tareas/marca-del-medio.md`**, y su «hecha
 cuando» no es la de las otras tres: *«`xorriso -indev` da un `Volume id` propio
 **y el medio sigue arrancando**»*. Cambiarlo es un parámetro de `xorriso` y no
