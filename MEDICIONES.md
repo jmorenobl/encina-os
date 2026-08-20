@@ -14200,10 +14200,11 @@ arranque: acertar las predicciones **no protege** de concluir de más entre medi
 
 ---
 
-### 4.59 CONTAR ARRANQUES: separar el fallo intermitente del banco de un posible efecto de la capa (2026-08-21)
+### 4.59 CONTAR ARRANQUES: separar el fallo intermitente del banco de un posible efecto de la capa (2026-08-20, noche)
 
 **POR QUÉ ESTA MEDICIÓN Y NO OTRA.** §4.58j–l dejó el banco bajo sospecha y con
-él **cualquier** medición de arranque que se haga en este anfitrión: el 20 se
+él **cualquier** medición de arranque que se haga en este anfitrión: esta misma
+tarde se
 escribió una causa (`ubuntu-text.plymouth`) sobre **un** arranque negro, y la
 tumbó **repetir**. Mientras la tasa de fallo del anfitrión no esté acotada, no se
 puede bisecar nada. Esto la acota.
@@ -14212,7 +14213,7 @@ puede bisecar nada. Esto la acota.
 
 Se escribe **antes** de fabricar el instrumento y **antes** del primer arranque,
 y se deja aquí para que el resultado no se interprete solo. Van **cinco**
-atribuciones falsas en este repositorio, y la de ayer **no fue por leer mal el
+atribuciones falsas en este repositorio, y la de esta tarde **no fue por leer mal el
 código**: fue por tomar **un** arranque negro como un negativo.
 
 **EL DATO DE PARTIDA, y es todo lo que hay** (§4.58, y las tres primeras filas
@@ -14255,9 +14256,9 @@ una capa» de «lo que la capa contiene».
 - **~25 %: hay efecto y es de grado**, no de suficiencia: la capa entera hace el
   arranque más frágil (más ficheros que leer del squashfs de arriba, más presión
   de E/S en un arranque ya justo).
-- **~5 %: el banco no falla en absoluto hoy** y los tres brazos salen limpios.
+- **~5 %: el banco no falla en absoluto esta noche** y los tres brazos salen limpios.
   Sería el peor resultado: no probaría nada y dejaría el `[OMIT]` abierto, porque
-  el fallo de ayer seguiría sin explicar.
+  el fallo de esta tarde seguiría sin explicar.
 
 **QUÉ CONSIDERO SEÑAL Y QUÉ CONSIDERO RUIDO, dicho antes de ver un solo número.**
 Con `E` = arranques que llegan al escritorio y `N` = arranques por brazo:
@@ -14289,7 +14290,8 @@ saldría peor sin que la capa tenga nada que ver. Es exactamente el error que
 convierte una correlación en una causa falsa.
 
 **LA TRAMPA QUE ME PUEDE MORDER HOY.** La 42 estaba escrita **antes** de la
-sesión de ayer y aun así se cayó en ella. La forma concreta que tomaría hoy:
+sesión de esta tarde y aun así se cayó en ella. La forma concreta que tomaría
+ahora:
 tomar la primera ronda como resultado porque «ya se ve la tendencia». Por eso el
 criterio está escrito arriba, con números, antes de que exista el primer dato.
 
@@ -14332,7 +14334,7 @@ instrumento por bueno. Es la regla del sitio en su forma más literal: *una
 comprobación que no puede dar sus dos respuestas no es una comprobación.*
 
 **Y DE PASO, UN DATO QUE NO SE BUSCABA: `p12` FALLÓ HOY SU PRIMER ARRANQUE Y
-ARRANCÓ EL SEGUNDO**, sin tocar nada. `p12` es el medio que ayer hizo 1 de 1.
+ARRANCÓ EL SEGUNDO**, sin tocar nada. `p12` es el medio que esta tarde hizo 1 de 1.
 **Es la trampa 42 reproducida en un medio que no es `p10` ni `p14`**, o sea en
 uno que **no** lleva `ubuntu-text.plymouth`. Esto ya apunta a que el fallo no es
 de un fichero de la capa, pero **es un arranque**: se cuenta abajo, no aquí.
@@ -14455,7 +14457,7 @@ R6  p10 NEGRA     p11 GRAFICA   p9  GRAFICA
 fallo del anfitrión del 33 %, ver `1 de 3` en `p10` y `1 de 1` en tres medios de
 bisección **es lo que se espera por azar** — la probabilidad de que un medio
 bueno dé `1 de 1` es 0,67, y `1 de 3` en otro no pide explicación ninguna. **Los
-cuatro bisecados de ayer no midieron nada del producto.**
+cuatro bisecados de esta tarde no midieron nada del producto.**
 
 #### (f) UN HALLAZGO QUE NO SE BUSCABA, Y ES POST-HOC: UN FALLO EXACTO POR RONDA
 
@@ -14478,7 +14480,7 @@ cada tres arranques hay uno que cae, en vez de que cada arranque tire un dado po
 su cuenta. **No está medido qué**, y `debug.log` no lo separa: en los 18
 arranques se queda en el rellano de ~92 KB tanto si la pantalla acaba negra como
 si acaba en el instalador (91 935 – 92 402), **que es la trampa 38 confirmada
-otra vez**. Para el conteo de hoy da igual —la tasa es la tasa, y el intercalado
+otra vez**. Para el conteo de esta noche da igual —la tasa es la tasa, y el intercalado
 reparte esa estructura entre los tres brazos por igual—, pero **es la pista
 concreta para el día que se quiera arreglar el banco en vez de rodearlo**.
 

@@ -91,7 +91,7 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       > `whitelabel.yml`, el **fondo es el nuestro** y el instalador arranca en
       > «Disposición del teclado» en español.
       >
-      > **Y LO QUE LA MANTENÍA ABIERTA SE MIDIÓ EL 2026-08-21 y era el BANCO**
+      > **Y LO QUE LA MANTENÍA ABIERTA SE MIDIÓ ESA MISMA NOCHE y era el BANCO**
       > (§4.59): con la capa entera el medio parecía arrancar sólo a veces. **18
       > arranques en 6 rondas intercaladas**: `p10` (capa entera) **4 de 6**, `p11`
       > (capa vacía) **5 de 6**, `p9` (capa **inerte**) **3 de 6**; Fisher de una

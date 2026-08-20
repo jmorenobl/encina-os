@@ -2537,7 +2537,7 @@ la misma capa. Se comprueba **por contenido y por huella**: `unsquashfs -ll` con
 la ruta de cada fichero que tiene que faltar, **más un control** de uno que tiene
 que seguir estando, y `shasum` de las dos capas.
 
-## Contar arranques sin ojos: los tres guiones del 2026-08-21
+## Contar arranques sin ojos: los cuatro guiones del 2026-08-20 (por la noche)
 
 Salieron de la tarea de acotar el fallo intermitente del banco (§4.59), y el
 orden en que se escribieron **es** el método: primero el veredicto y su banco,
@@ -2633,7 +2633,7 @@ declarada.
 después como uno quiera. `3 de 5` frente a `5 de 5` **parece** peor y da
 `p = 0,095`. El guion no negocia.
 
-## Y una más, contando arranques (2026-08-21)
+## Y una más, contando arranques esa misma noche (2026-08-20)
 
 **44. INTERCALAR SIEMPRE EN EL MISMO ORDEN CONFUNDE EL BRAZO CON LA POSICIÓN.**
 Cazada en el propio experimento de §4.59, y es mía. Ir por rondas —`p10`, `p11`,
@@ -2649,7 +2649,7 @@ p9  fue el 3.º las seis veces  ->  3 de 6
 
 **Un efecto de posición** —«el tercero de cada ronda arranca peor porque algo del
 anfitrión aún no se ha soltado»— **daría exactamente la misma tabla** que un
-efecto del medio, y no hay forma de separarlos después. Aquel día no cambió la
+efecto del medio, y no hay forma de separarlos después. Esa noche no cambió la
 conclusión porque la conclusión fue que **no** hay diferencia (`p = 0,6942`), y
 una confusión no puede esconder un efecto que tampoco aparece separando. Pero si
 hubiera salido señal, habría llevado a bisecar un producto por un artefacto del
@@ -2660,7 +2660,7 @@ propósito**: `contar-arranques.sh` recorre `BRAZOS` en orden fijo, y cambiarlo
 invalidaría la comparación con los 18 arranques ya medidos. **El día que se
 vuelva a contar, primero se baraja.**
 
-> **ENMIENDA A LA TRAMPA 42, del día siguiente y en su favor.** «Un negro
+> **ENMIENDA A LA TRAMPA 42, del MISMO DIA y en su favor.** «Un negro
 > repetido una vez sigue sin ser un resultado» se queda corta: medida la tasa,
 > **este anfitrión falla el 33 % de los arranques** (6 de 18, con los tres medios
 > fallando). Con esa tasa hacen falta **cinco** arranques limpios seguidos para

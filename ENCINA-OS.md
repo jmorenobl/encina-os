@@ -401,7 +401,7 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-21: **EL FALLO INTERMITENTE ES DEL BANCO, MEDIDO: 33 % Y LOS TRES MEDIOS. La capa queda LIMPIA**
+> ### LA TAREA EN CURSO, 2026-08-20 (noche): **EL FALLO INTERMITENTE ES DEL BANCO, MEDIDO: 33 % Y LOS TRES MEDIOS. La capa queda LIMPIA**
 >
 > **18 arranques, 6 rondas intercaladas, veredicto contado y no mirado**
 > (`MEDICIONES.md` §4.59). Era el `[OMIT]` que contaminaba **cualquier** medición

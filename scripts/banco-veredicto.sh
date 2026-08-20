@@ -17,7 +17,7 @@
 #   control-negra.png                 el framebuffer de encina-capa-p14 tras un
 #                                     arranque fallido (2026-08-20)
 #   control-grafica.png               encina-capa-p12 parada DESDE el instalador
-#                                     (2026-08-21), fondo de Encina
+#                                     (2026-08-20), fondo de Encina
 #   control-grafica-fondo-ubuntu.png  encina-nutria, capa inerte: el instalador
 #                                     con el fondo PURPURA de Ubuntu, que es el
 #                                     control grafico mas POBRE en colores (585)
