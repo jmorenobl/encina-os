@@ -21,8 +21,21 @@
 # no existia leyo «command not found» como PASA y dio cuatro verdes falsos.
 #
 # LOS CASOS SON MEDIOS REALES y su composicion esta escrita en MEDICIONES.md
-# §4.54i, con su arranque medido -- las tres que dicen «0 0 0 0» son las tres
-# cuyo instalador FUNCIONA, y la que dice «1 1 1 1» es la que SE CAE --.
+# §4.54i, con su arranque medido.
+#
+# LAS ESPERAS DE LA COLUMNA «capa» CAMBIARON EL 2026-08-20, y se deja escrito al
+# lado lo que decian: hasta ese dia el lector daba la capa por presente con solo
+# ver un squashfs de mas en /casper, y con esa regla e8a0ead2 y p9-nutria daban
+# «1 1 1 1». Pero ESE FICHERO NO SE MONTABA NUNCA (§4.54e): el mecanismo no es
+# que la capa viaje, es que la capa MANDE, y para eso hace falta ademas el
+# layerfs-path= de la linea del nucleo. Con la regla nueva esos dos medios dan
+# «0 1 1 1», que es una descripcion mas verdadera del producto que llevaban.
+#
+# Y ESO SE LLEVA POR DELANTE UNA PREMISA DE §4.54i: el bisecado que dejo la
+# regresion «dentro del grupo de D23» vario una capa INERTE, asi que lo que alli
+# se llamo «la capa» significaba solo «un fichero de mas en /casper». No invalida
+# el bisecado -- la regresion sigue dentro del grupo -- pero si lo que se creia
+# que era una de sus cuatro piezas.
 
 set -uo pipefail
 export LC_ALL=C
@@ -37,7 +50,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-N_OK=0; N_FALLO=0; N_OMIT=0
+N_OK=0; N_FALLO=0; N_OMIT=0; CORRIDOS=()
 echo "== el lector de mecanismos, contra medios reales (capa volid info menu)"
 printf '   %-8s %-8s %s\n' esperado leido medio
 while IFS='|' read -r ESP ISO NOTA; do
@@ -46,6 +59,7 @@ while IFS='|' read -r ESP ISO NOTA; do
         N_OMIT=$((N_OMIT+1)); continue
     fi
     LEIDO=$("$AQUI/fabricar-iso.sh" --leer-mecanismos "$MEDIOS/$ISO" 2>&1 | cut -d' ' -f1-7 | sed 's/   .*//')
+    CORRIDOS+=("$ESP")
     if [ "$LEIDO" = "$ESP" ]; then
         printf '[OK]    %-8s %-8s %-38s %s\n' "$ESP" "$LEIDO" "$ISO" "$NOTA"; N_OK=$((N_OK+1))
     else
@@ -55,7 +69,9 @@ done <<'CASOS'
 0 0 0 0|ubuntu-24.04.4-desktop-arm64.iso|la oficial de Canonical
 0 0 0 0|encina-os-E4-es-0.2.1.iso|ac0a5721: el instalador FUNCIONA
 0 0 0 0|encina-os-E4-es-0.2.1-1224b5b1.iso|1224b5b1, .deb y seed nuevos: FUNCIONA
-1 1 1 1|encina-os-0.2.1-encinaos-p1.iso|e8a0ead2, los cuatro de D23: SE CAE
+0 1 1 1|encina-os-0.2.1-encinaos-p1.iso|e8a0ead2: capa INERTE (sin layerfs-path). Antes se esperaba 1 1 1 1
+0 1 1 1|encina-os-p9-nutria.iso|71f7958c, el producto del 2026-08-20: capa INERTE, instalador FUNCIONA
+1 1 1 1|encina-os-p10-capa.iso|el primero con layerfs-path=: la capa MANDA
 CASOS
 
 # EL CONTROL DEL PROPIO BANCO: si no se ha ejecutado ni un caso, o si todos los
@@ -64,6 +80,28 @@ if [ "$N_OK" -eq 0 ] && [ "$N_FALLO" -eq 0 ]; then
     echo "[FALLO] CONTROL ROTO: no se ejecuto ni un caso ($N_OMIT omitidos): esto NO es un aprobado"
     exit 1
 fi
+
+# Y EL CONTROL QUE FALTABA, COLUMNA A COLUMNA. Que el banco haya ejecutado casos
+# no basta: si UNA de las cuatro columnas sale constante entre los casos que de
+# verdad corrieron, un lector que contestara siempre lo mismo EN ESA COLUMNA
+# pasaria en verde. Es lo que iba a pasar el 2026-08-20 al redefinir «capa»: sin
+# un medio con layerfs-path= no quedaba ni un caso que esperara «1» ahi.
+echo
+i=0
+for COL in capa volid info menu; do
+    i=$((i+1))
+    VALS=$(printf '%s\n' "${CORRIDOS[@]}" | cut -d' ' -f$i | sort -u | tr '\n' ' ')
+    N_V=$(printf '%s\n' "${CORRIDOS[@]}" | cut -d' ' -f$i | sort -u | /usr/bin/grep -c .)
+    if [ "$N_V" -ge 2 ]; then
+        # NO suma a «correctas»: esto describe la TABLA DE CASOS, no una lectura.
+        # Sumarlo daria un «correctas: 3» con los cinco casos en rojo, que fue lo
+        # primero que enseno este control al estrenarlo.
+        echo "[OK]    columna «$COL»: los casos que corrieron esperan las dos respuestas ($VALS)"
+    else
+        echo "[AVISO] columna «$COL»: todos los casos que corrieron esperan «$VALS». En esa columna"
+        echo "        este banco NO puede distinguir un lector bueno de uno que conteste siempre lo mismo"
+    fi
+done
 echo
 echo "correctas: $N_OK   fallos: $N_FALLO   omitidas: $N_OMIT"
 [ "$N_FALLO" -eq 0 ] || exit 1

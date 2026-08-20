@@ -13794,3 +13794,122 @@ era de **1280×840** mientras las anteriores eran de **2560×1680**. **La regla 
 vale a escala fija**, y la escribí sin ese control. Enmendada en `SCRIPTS.md`.
 Es la segunda vez hoy que un instrumento mío pasa por bueno algo que no había
 mirado —la otra fue el `grep -r` sin `-a`—.
+
+---
+
+### 4.58 QUE LA CAPA SE MONTE: `layerfs-path=` en la línea del núcleo y la capa renombrada a la cadena (2026-08-20)
+
+**LA PREDICCIÓN, ESCRITA ANTES DE FABRICAR NADA Y ANTES DE TOCAR UN GUION.** Va
+delante por una razón que este proyecto se ha ganado a golpes: en las tres
+últimas sesiones van **cuatro atribuciones falsas seguidas**, y **las cuatro
+construidas igual** —mecanismo leído en el código + su control + un caso que
+falla—. Esa forma **no produce causas aquí**. Lo único que ha producido causas es
+**quitar una pieza y ver cambiar el resultado**. Así que lo de abajo se marca por
+lo que es: **lectura**, y la lectura no cierra nada hasta que arranque un medio.
+
+#### (a) LO LEÍDO EN EL `casper` DE ESTE MEDIO, con sus controles
+
+Todo sobre el `scripts/casper` sacado del initrd de la ISO oficial, y **el nombre
+de la función que §4.52b citaba estaba mal**: no es `setup_unionfs` —ése es el
+nombre de arriba, de las versiones viejas— sino **`setup_overlay`** (línea 545).
+Lo pilló el control: `grep setup_unionfs` dio **0** y mi control con una cadena
+inventada dio **el mismo 0**, o sea que **el control no discriminaba** y el cero
+no significaba lo que parecía. Es la trampa 40 otra vez, por otro lado.
+
+```
+grep -c setup_overlay  scripts/casper -> 3   (definicion 545, llamada 145)
+grep -c setup_bellota  scripts/casper -> 0   (control: la busqueda no dice que si a todo)
+```
+
+**EL ORDEN DE PRECEDENCIA, que es la pregunta 4 de la tarea, contestado sin gastar
+un arranque** —leído en los dos ficheros, no deducido de uno—:
+
+```
+/init:94     for conf in conf/conf.d/*; do . "${conf}" ; done
+             -> conf.d/default-layer.conf:  LAYERFS_PATH=minimal.standard.live.squashfs
+/init:287    . "/scripts/casper"            (BOOT=casper, de default-boot-to-casper.conf)
+/init:292    mountroot
+casper:909     parse_cmdline
+casper:67-69     layerfs-path=*) export LAYERFS_PATH="${x#layerfs-path=}"
+casper:145     mount_images_in_directory -> setup_overlay   <- LEE LA VARIABLE AQUI
+```
+
+**La línea del núcleo PISA al `conf.d`**, y no al revés: el `conf.d` se lee en el
+paso 94 y `parse_cmdline` reexporta en el 909. **No hay que tocar el initrd.**
+
+#### (b) EL ALGORITMO DE LA CADENA, COPIADO Y NO RESUMIDO (`casper:609-628`)
+
+```sh
+layer_name=$(basename ${LAYERFS_PATH%.*})      # quita la extension
+layer_ext=${LAYERFS_PATH##*.}                  # squashfs
+while :; do
+    layer_cur="${layer_dir}/${layer_name}.${layer_ext}"
+    if [ ! -f "${layer_cur}" ]; then layer_err="…doesn't exist." ; fi
+    layers="${layer_dir}/${layer_name} ${layers}"      # antepone: acaba corta->larga
+    parent_layer_name=${layer_name%.*}
+    if [ "${parent_layer_name}" = "${layer_name}" ]; then break; fi
+    layer_name=${parent_layer_name}
+done
+if [ -n "${layer_err}" ]; then panic "File system layers are missing:…" ; fi
+…
+    rofslist="${croot}${imagename} ${rofslist}"        # antepone otra vez: larga->corta
+```
+
+**Dos consecuencias que mandan sobre el nombre, y no son opinión:**
+
+1. **CADA ESLABÓN TIENE QUE EXISTIR COMO FICHERO O CASPER HACE `panic`.** No es un
+   aviso: es el arranque entero. O sea que el nombre **no se puede elegir libre**:
+   tiene que colgar de la cadena que ya existe. `encina.squashfs` daría una cadena
+   de un solo eslabón —sin sistema base— y cualquier otro prefijo daría `panic`.
+   **`minimal.standard.live.encina.squashfs` es el único nombre posible**, y su
+   cadena tiene los cuatro ficheros:
+
+```
+minimal.squashfs                        existe en el medio
+minimal.standard.squashfs               existe
+minimal.standard.live.squashfs          existe
+minimal.standard.live.encina.squashfs   la nuestra, renombrada
+```
+
+2. **EL DOBLE ANTEPONER DEJA LA MÁS LARGA LA PRIMERA DE `lowerdir`**, y en
+   `overlayfs` la primera manda. Cuadra con lo medido en §4.54e, que es su
+   control: con `LAYERFS_PATH=minimal.standard.live.squashfs` el invitado enseñó
+   `lowerdir=/minimal.standard.live.squashfs:/minimal.standard.squashfs:/minimal.squashfs`
+   —tres eslabones, la más larga delante—.
+
+**Y ESTO MATA EL `zz-`, QUE YA ESTABA MUERTO:** el orden alfabético no pinta nada
+en esta rama. El nombre no es tipografía, **es la cadena**.
+
+#### (c) LO QUE SE CAMBIA, Y ES POCO A PROPÓSITO
+
+```
+imagen/capa-marca.sh    zz-encina.squashfs -> minimal.standard.live.encina.squashfs
+                        y el control (a) deja de medir el orden del glob -que es
+                        rama MUERTA en este medio- y pasa a medir LA CADENA
+imagen/fabricar-iso.sh  layerfs-path=<capa> en la linea del nucleo del grub.cfg,
+                        derivado del nombre del fichero y NO escrito a mano
+```
+
+#### (d) LAS PREDICCIONES, NUMERADAS Y FALSABLES
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| P1 | `grep encina /proc/mounts` **dentro de la sesión viva** devuelve ≥1 línea, y el `lowerdir=` empieza por `/minimal.standard.live.encina.squashfs` seguido de los **otros tres** | 0 líneas, o una cadena de 3 |
+| P2 | `/usr/share/desktop-provision/` **existe** y tiene `whitelabel.yml` | no existe |
+| P3 | `/etc/os-release` dice `NAME="Encina OS"` | dice `NAME="Ubuntu"` |
+| P4 | **el instalador sigue arrancando** y enseña «Disposición del teclado» en español | «Se produjo un problema», o pantalla que no llega |
+| P5 | el **título de la ventana** del instalador deja de decir *Install Ubuntu* | sigue diciéndolo |
+
+**P4 ES LA QUE MENOS CONFIANZA ME MERECE Y HAY QUE DECIRLO ANTES.** La capa pasa
+de ser un fichero **que nadie mira** a ser un eslabón **montado encima de todo**,
+y `/etc/os-release` cambia debajo de un instalador que lleva tres sesiones
+costando. **No está medido que eso sea inocuo.** Si P1–P3 salen y P4 se cae, el
+resultado sigue siendo bueno —acota a «la capa montada tira el instalador», que
+es información nueva— pero **no es producto**, y entonces hay que mirar qué
+fichero de la capa lo tira, uno a uno.
+
+**Y LO QUE NO VOY A CONTAR COMO CAUSA PASE LO QUE PASE:** que (a) y (b) estén
+leídos con sus controles **no prueba nada** sobre el medio que arranque. La señal
+es `/proc/mounts` **dentro de la sesión viva**, no lo que diga el guion ni lo que
+diga esta sección.
+

@@ -3,8 +3,8 @@
 #
 #     ./imagen/capa-marca.sh <iso> --salida <dir> [--trabajo DIR] [--conservar]
 #
-# QUE PRODUCE: un solo fichero, <dir>/zz-encina.squashfs, que fabricar-iso.sh
-# mete en /casper/ de la ISO. Dentro va TODO lo que la sesion viva del medio
+# QUE PRODUCE: un solo fichero, <dir>/minimal.standard.live.encina.squashfs, que
+# fabricar-iso.sh mete en /casper/ de la ISO. Dentro va TODO lo que la sesion viva del medio
 # tiene que decir en Encina: el os-release, el lsb-release, /etc/issue, el nombre
 # de la sesion Wayland, el tema de texto de Plymouth, los activos graficos de
 # Canonical sustituidos por los nuestros, y el directorio
@@ -16,19 +16,35 @@
 # y rehacerlo para cambiar nueve ficheros de texto y quince dibujos es pagar
 # 1,69 GB por 200 KB. La capa cuesta lo que pesa.
 #
-# Y POR QUE SE PUEDE, que es lo que hubo que medir y no suponer (§4.52b). Leido
-# en el 'scripts/casper' que viaja en el initrd de ESTE medio:
-#   - el medio NO lleva 'layerfs-path=' en la linea del nucleo -- se ha buscado
-#     en el grub.cfg, en la ESP y en el resto del medio --, asi que casper entra
-#     por su rama de «no multi-capa»: monta TODOS los *.squashfs de /casper.
-#   - los monta en orden de glob (ascendente, ASCII) y va PONIENDO CADA UNO
-#     DELANTE en la lista, asi que el ULTIMO por orden alfabetico acaba el
-#     primero de 'lowerdir=' -- y en overlayfs el primero de lowerdir es EL QUE
-#     MANDA.
-#   - de ahi el nombre: 'zz-encina' va detras de los veintiun 'minimal.*'.
-#     No es un capricho tipografico: es la unica razon por la que la capa tapa
-#     y no queda tapada. El control (a) de este guion lo comprueba, y sabe decir
-#     que NO con un nombre que empiece por 'aa-'.
+# EL NOMBRE NO ES TIPOGRAFIA, ES LA CADENA -- y esto ES lo que hay que entender
+# antes de tocarlo. Lo que sigue esta leido en 'scripts/casper' (setup_overlay,
+# linea 545) del initrd de ESTE medio, no deducido:
+#
+#   - EL MEDIO SI LLEVA MULTI-CAPA. 'LAYERFS_PATH' NO esta vacio: vale
+#     'minimal.standard.live.squashfs', puesto en /conf/conf.d/default-layer.conf
+#     DENTRO DEL INITRD. Asi que casper entra por su rama de arriba y NO ENUMERA
+#     el directorio: no hay glob, y el orden alfabetico NO PINTA NADA.
+#   - la lista de capas se construye QUITANDO PUNTOS del nombre, un eslabon cada
+#     vez, hasta que no quedan. Y CADA ESLABON TIENE QUE EXISTIR COMO FICHERO:
+#     si falta uno, casper hace 'panic' y el arranque se acaba ahi.
+#   - las monta de la corta a la larga ANTEPONIENDO cada una, asi que en
+#     'lowerdir=' acaba PRIMERA LA MAS LARGA -- y en overlayfs la primera manda.
+#   - de ahi el nombre: 'minimal.standard.live.encina.squashfs' cuelga de la
+#     cadena que el medio ya tiene y le anade UN eslabon por encima. Es el UNICO
+#     nombre posible: cualquier otro prefijo o hace 'panic' o deja la capa sola
+#     sin sistema debajo. El control (a) de este guion lo comprueba reproduciendo
+#     el bucle de casper, y sabe decir que NO con 'zz-encina.squashfs'.
+#   - Y NO SE MONTA SOLA: hace falta 'layerfs-path=' en la linea del nucleo del
+#     grub.cfg, que lo pone fabricar-iso.sh. El 'conf.d' se lee en /init:94 y
+#     'parse_cmdline' reexporta en casper:909, asi que LA LINEA DEL NUCLEO PISA.
+#     Sin esa bandera esta capa viaja en el medio y NO SE MONTA NUNCA (§4.54e).
+#
+# LO QUE SE CREIA HASTA EL 2026-08-17, Y SE DEJA ESCRITO AL LADO porque es lo que
+# manda el metodo: «el medio NO lleva layerfs-path=, casper monta TODOS los
+# *.squashfs de /casper y el ULTIMO por orden alfabetico manda; de ahi zz-». Era
+# falso, y el cero que lo sostenia era verdadero: se busco 'layerfs-path' -- la
+# grafia de la linea de ordenes -- y la variable de dentro se llama
+# 'LAYERFS_PATH' y vive en un cpio comprimido. El 'zz-' no servia de nada.
 #
 # LO QUE ESTA CAPA NO PUEDE HACER, dicho aqui para que no se busque despues:
 #   - el fondo NO se cambia por el ajuste: 10_ubuntu-settings.gschema.override
@@ -93,7 +109,7 @@ VERIF="$T/verif-capa"          # y el que se desempaqueta para comprobarlo
 rm -rf "$ARBOL" "$VERIF"
 
 mkdir -p "$SALIDA"; SALIDA=$(cd "$SALIDA" && pwd)
-CAPA="$SALIDA/zz-encina.squashfs"
+CAPA="$SALIDA/minimal.standard.live.encina.squashfs"
 
 titulo "0. EL MEDIO QUE SE LEE, por huella y no por nombre"
 echo "  fichero : $ISO"
@@ -104,32 +120,62 @@ echo "  salida  : $CAPA"
 # --------------------------------------------------------------------------
 titulo "1. LOS CONTROLES, ANTES DE FABRICAR NADA"
 
-# (a) EL ORDEN DE MONTAJE. Esto es 'setup_unionfs' de scripts/casper escrito
-#     otra vez, a proposito: no se resume, se reproduce, porque lo que decide
-#     que esta capa sirva de algo es ese bucle y no una intuicion.
-lowerdir_de() {   # recibe nombres de capa; imprime el 'lowerdir=' que saldria
-    local rofslist="" img
-    for img in $(printf '%s\n' "$@" | LC_ALL=C sort); do
-        rofslist="/$img $rofslist"          # casper pone cada nueva DELANTE
+# (a) LA CADENA DE CAPAS. Esto es el bucle de 'setup_overlay' de scripts/casper
+#     -- lineas 609-628 del initrd de este medio -- escrito otra vez, a
+#     proposito: no se resume, se REPRODUCE, porque lo que decide que esta capa
+#     sirva de algo es ese bucle y no una intuicion. La rama que corre es la de
+#     MULTI-CAPA (el medio trae LAYERFS_PATH puesto en el initrd), asi que aqui
+#     no se mira el orden alfabetico de nada: se mira que el nombre ENCADENE.
+cadena_de() {     # nombre de capa -> sus eslabones, de la CORTA a la LARGA
+    local ext="${1##*.}" ln="${1%.*}" padre layers=""
+    while :; do
+        layers="$ln.$ext${layers:+ }$layers"     # casper ANTEPONE cada eslabon
+        padre="${ln%.*}"
+        [ "$padre" = "$ln" ] && break
+        ln="$padre"
     done
-    local mounts=""
+    echo "$layers"
+}
+lowerdir_de() {   # eslabones corta->larga -> el 'lowerdir=' que saldria
+    local rofslist="" img mounts=""
+    for img in $1; do rofslist="/$img $rofslist"; done   # y ANTEPONE otra vez
     for m in $rofslist; do mounts="$mounts:$m"; done
     echo "${mounts#:}"
 }
-paso "(a) el orden de montaje de casper deja la capa de Encina la primera"
+paso "(a) el nombre de la capa ENCADENA, y la deja la primera de lowerdir"
 CAPAS_MEDIO=$(xorriso -indev "$ISO" -find /casper -name '*.squashfs' -- 2>/dev/null \
               | tr -d "'" | sed 's|.*/||')
 N_CAPAS=$(printf '%s\n' "$CAPAS_MEDIO" | /usr/bin/grep -c . )
+NUESTRA=$(basename "$CAPA")
 if [ "$N_CAPAS" -lt 3 ]; then
     fallo "el medio declara $N_CAPAS capas squashfs: no se ha leido nada"
 else
-    PRIM_SI=$(lowerdir_de $CAPAS_MEDIO zz-encina.squashfs | cut -d: -f1)
-    PRIM_NO=$(lowerdir_de $CAPAS_MEDIO aa-encina.squashfs | cut -d: -f1)
-    if [ "$PRIM_SI" = "/zz-encina.squashfs" ] && [ "$PRIM_NO" != "/aa-encina.squashfs" ]; then
-        ok "sobre las $N_CAPAS capas del medio: 'zz-' queda la primera de lowerdir y 'aa-' NO (queda $PRIM_NO)"
+    # cada eslabon que NO sea el nuestro tiene que existir en el medio, o casper
+    # hace panic y el arranque se acaba ahi. No es un aviso: es el arranque.
+    CADENA=$(cadena_de "$NUESTRA"); N_ESL=$(printf '%s\n' $CADENA | /usr/bin/grep -c .)
+    FALTAN=""
+    for e in $CADENA; do
+        [ "$e" = "$NUESTRA" ] && continue
+        printf '%s\n' $CAPAS_MEDIO | /usr/bin/grep -qx "$e" || FALTAN="$FALTAN $e"
+    done
+    PRIM_SI=$(lowerdir_de "$CADENA" | cut -d: -f1)
+    # EL CONTROL, con el nombre que se usaba hasta hoy: 'zz-encina.squashfs' no
+    # tiene ni un punto que quitar, asi que su cadena es UN eslabon -- el suyo --
+    # y debajo no queda sistema ninguno. Tiene que salir MAL.
+    CAD_NO=$(cadena_de "zz-encina.squashfs"); N_NO=$(printf '%s\n' $CAD_NO | /usr/bin/grep -c .)
+    if [ -n "$FALTAN" ]; then
+        fallo "la cadena de '$NUESTRA' nombra eslabones que NO estan en el medio: casper haria panic" \
+              "faltan:$FALTAN
+cadena: $CADENA"
+    elif [ "$PRIM_SI" != "/$NUESTRA" ]; then
+        fallo "la capa de Encina no queda la primera de lowerdir" "queda $PRIM_SI de: $(lowerdir_de "$CADENA")"
+    elif [ "$N_ESL" -lt 2 ]; then
+        fallo "la cadena de '$NUESTRA' tiene $N_ESL eslabon: no cuelga de nada" "$CADENA"
+    elif [ "$N_NO" -ne 1 ]; then
+        fallo "CONTROL ROTO: 'zz-encina.squashfs' tenia que dar UNA cadena de 1 eslabon y da $N_NO" "$CAD_NO"
     else
-        fallo "el orden de montaje no deja la capa de Encina la primera" \
-              "con zz-: $PRIM_SI    con aa-: $PRIM_NO"
+        ok "'$NUESTRA': cadena de $N_ESL eslabones, los $((N_ESL-1)) de debajo estan en el medio, y queda la 1a de lowerdir"
+        ok "control: 'zz-encina.squashfs' da una cadena de $N_NO eslabon ($CAD_NO) y dejaria al medio sin sistema"
     fi
 fi
 
@@ -375,11 +421,17 @@ else
 fi
 rm -f "$T/capa-segunda.squashfs"
 
-paso "el nombre de la capa es el que la pone la ultima"
-case "$(basename "$CAPA")" in
-    zz-*) ok "$(basename "$CAPA"): va detras de los «minimal.*» del medio" ;;
-    *)    fallo "la capa no se llama zz-*: quedaria TAPADA por las de Ubuntu" ;;
-esac
+paso "el nombre de la capa la deja la primera de lowerdir, con su control"
+NUESTRA=$(basename "$CAPA")
+CADENA=$(cadena_de "$NUESTRA")
+if [ "$(lowerdir_de "$CADENA" | cut -d: -f1)" != "/$NUESTRA" ]; then
+    fallo "'$NUESTRA' no queda la primera de lowerdir: quedaria TAPADA por las de Ubuntu" \
+          "$(lowerdir_de "$CADENA")"
+elif [ "$(lowerdir_de "$(cadena_de zz-encina.squashfs)")" = "$(lowerdir_de "$CADENA")" ]; then
+    fallo "CONTROL ROTO: el calculo da lo mismo con 'zz-encina.squashfs'" "$(lowerdir_de "$CADENA")"
+else
+    ok "$NUESTRA: lowerdir=$(lowerdir_de "$CADENA")"
+fi
 
 # --------------------------------------------------------------------------
 echo

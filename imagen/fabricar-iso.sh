@@ -2,7 +2,7 @@
 # Encina OS - E3. Fabrica la ISO que se entrega, EN MACOS.
 #
 #     ./fabricar-iso.sh [--iso <oficial.iso>] --repo <dir> --salida <encina.iso>
-#                       [--capa <zz-encina.squashfs>]
+#                       [--capa <minimal.standard.live.encina.squashfs>]
 #                       [--sin-capa] [--sin-volid] [--sin-info] [--sin-menu]
 #                       [--info-crudo <fichero>]   <- MEDIO DE DIAGNOSTICO
 #     ./fabricar-iso.sh --leer-mecanismos <alguna.iso>   <- solo lee, no fabrica
@@ -40,19 +40,36 @@
 #                            §4.27: el JRE de autofirma, libnss3-tools,
 #                            hunspell-es, el navegador de Mozilla y su idioma,
 #                            la tienda y el escaner) y su indice Packages
-#     /casper/zz-encina.squashfs <- LA CAPA DE MARCA, que la hace capa-marca.sh
-#                            y que es lo que hace que la SESION VIVA y el
-#                            INSTALADOR digan Encina (D23, casilla 3 de
-#                            tareas/marca-del-medio.md). El nombre empieza por
-#                            'zz-' porque casper monta todos los *.squashfs de
-#                            /casper en orden alfabetico y el ULTIMO es el que
-#                            manda: si se le cambia el nombre, la capa deja de
-#                            tapar y el medio vuelve a decir Ubuntu sin que
-#                            falle nada. Esta leido en el casper de este mismo
-#                            medio y medido en MEDICIONES.md §4.52b.
+#     /casper/minimal.standard.live.encina.squashfs <- LA CAPA DE MARCA, que la
+#                            hace capa-marca.sh y que es lo que hace que la
+#                            SESION VIVA y el INSTALADOR digan Encina (D23,
+#                            casilla 3 de tareas/marca-del-medio.md).
+#                            EL NOMBRE NO ES TIPOGRAFIA, ES LA CADENA: casper
+#                            entra por su rama de multi-capa -- el initrd trae
+#                            LAYERFS_PATH puesto -- y construye la lista QUITANDO
+#                            PUNTOS del nombre, exigiendo que CADA ESLABON exista
+#                            como fichero o hace 'panic'. Por eso cuelga de
+#                            'minimal.standard.live' y no se puede llamar de otra
+#                            forma. Leido en el casper de este medio, §4.58b.
+#                            Y NO BASTA CON QUE VIAJE: hay que nombrarla en la
+#                            linea del nucleo (mas abajo, layerfs-path=) o el
+#                            medio la lleva y NO LA MONTA -- que es exactamente
+#                            lo que paso del 2026-08-15 al 20 (§4.54e).
+#                            Hasta el 2026-08-20 se llamaba 'zz-encina.squashfs',
+#                            y se deja escrito al lado lo que se creia: «casper
+#                            monta todos los *.squashfs de /casper y el ULTIMO
+#                            alfabeticamente manda» (§4.52b). Era falso.
 #
 # MODIFICA, y hasta el 2026-08-10 no modificaba nada:
-#     /boot/grub/grub.cfg <- 'locale=es_ES.UTF-8' en la linea del nucleo, que es
+#     /boot/grub/grub.cfg <- 'layerfs-path=<la capa>' en la linea del nucleo, que
+#                            es LO UNICO que hace que la capa de marca se monte
+#                            (§4.58): el /init lee conf.d en su paso 94 y
+#                            casper reexporta la variable en parse_cmdline
+#                            (casper:909), asi que LA LINEA DEL NUCLEO PISA al
+#                            valor del initrd y no hay que tocar el initrd.
+#                            El nombre sale del fichero de la capa, no se
+#                            escribe aqui: una sola fuente.
+#                       y <- 'locale=es_ES.UTF-8' en la linea del nucleo, que es
 #                            lo que pone EL INSTALADOR en espanol. Sin esto la
 #                            ISO recibe en ingles a quien la instala, aunque la
 #                            maquina que sale quede en espanol: es la NOVENA
@@ -208,9 +225,13 @@ ok()    { echo "[OK]    $*"; }
 # justo lo que este bloque existe para no hacer.
 mecanismos() {   # imprime "capa volid info menu" con 1 o 0, leyendo la ISO
     local iso="$1" c v i m n_s n_o vol
+    # LA CAPA SON DOS COSAS Y SE LEEN LAS DOS: el fichero de mas en /casper y el
+    # layerfs-path= que lo monta. Con una sola, el mecanismo NO esta -- que es
+    # justo lo que paso del 2026-08-15 al 20 y este lector no habria cazado.
     n_s=$(tar -tf "$iso" 2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
     n_o=$(tar -tf "$ISO" 2>/dev/null | /usr/bin/grep -c '^casper/.*\.squashfs$')
-    [ "$n_s" -gt "$n_o" ] && c=1 || c=0
+    if [ "$n_s" -gt "$n_o" ] && tar -xOf "$iso" boot/grub/grub.cfg 2>/dev/null | grep -q 'layerfs-path='
+        then c=1; else c=0; fi
     vol=$(xorriso -indev "$iso" -pvd_info 2>/dev/null | sed -n 's/^Volume Id    : //p' | head -1)
     [ "$vol" = "$VOLID_OFICIAL" ] && v=0 || v=1
     if tar -xOf "$iso" .disk/info 2>/dev/null | diff -q - "$TMP/info.oficial" >/dev/null 2>&1
@@ -525,27 +546,76 @@ if [ -z "$CAPA" ]; then
     echo "   (no se dio --capa: se fabrica con capa-marca.sh, que lee la ISO oficial)"
     "$AQUI/capa-marca.sh" "$ISO" --salida "$TMP/capa" --trabajo "$TMP/capa-trabajo" \
         | sed 's/^/        /' || fallo "capa-marca.sh no paso"
-    CAPA="$TMP/capa/zz-encina.squashfs"
+    CAPA="$TMP/capa/minimal.standard.live.encina.squashfs"
 fi
 [ -f "$CAPA" ] || fallo "no esta la capa de marca: $CAPA"
 CAPA_N=$(basename "$CAPA")
-# LO QUE ESTA LINEA CREIA, Y ERA FALSO (se deja escrito al lado, MEDICIONES.md
-# §4.54e): «casper monta todos los *.squashfs de /casper en orden alfabetico y
-# el ultimo es el que manda», de donde salia el «zz-». Casper tiene DOS ramas y
-# la del glob solo corre si $LAYERFS_PATH esta vacio; no lo esta -- vale
-# «minimal.standard.live.squashfs», puesto en /conf/conf.d/default-layer.conf
-# DENTRO DEL INITRD --, asi que la lista de capas se construye quitando puntos
-# del nombre y ESTA CAPA NO SE MONTA NUNCA. La comprobacion se queda igualmente:
-# el dia que la capa entre por «layerfs-path=» seguira haciendo falta que el
-# nombre encadene, y mientras tanto no cuesta nada.
-case "$CAPA_N" in
-    zz-*) : ;;
-    *) fallo "la capa se llama '$CAPA_N': tiene que ir detras de «minimal.*» o queda tapada" ;;
-esac
+# EL NOMBRE TIENE QUE ENCADENAR, Y ESTO NO ES COSMETICA: casper construye la
+# lista de capas quitando puntos del nombre y hace 'panic' si UN eslabon no
+# existe como fichero (§4.58b, leido en casper:609-628). Un nombre mal puesto no
+# da una capa que no tapa: da un medio QUE NO ARRANCA. Se comprueba aqui ademas
+# de en capa-marca.sh porque con --capa aquel guion no ha corrido.
+# Lo que esto sustituye, y se deja escrito al lado (§4.52b, falso desde §4.54e):
+# «casper monta todos los *.squashfs de /casper en orden alfabetico y el ultimo
+# manda», de donde salia el «zz-». El orden alfabetico no pinta nada en la rama
+# que corre.
+ESL="${CAPA_N%.*}"; EXT="${CAPA_N##*.}"; FALTAN=""; N_ESL=0
+while :; do
+    N_ESL=$((N_ESL+1))
+    if [ "$ESL.$EXT" != "$CAPA_N" ] && ! tar -tf "$ISO" "casper/$ESL.$EXT" >/dev/null 2>&1; then
+        FALTAN="$FALTAN $ESL.$EXT"
+    fi
+    P="${ESL%.*}"; [ "$P" = "$ESL" ] && break; ESL="$P"
+done
+[ -z "$FALTAN" ] || fallo "la cadena de '$CAPA_N' nombra eslabones que NO estan en /casper de la ISO oficial: casper haria PANIC
+        faltan:$FALTAN"
+[ "$N_ESL" -ge 2 ] || fallo "la cadena de '$CAPA_N' tiene $N_ESL eslabon: no cuelga de nada y el medio quedaria sin sistema"
+# CONTROL de que la cuenta sabe decir que no: el nombre viejo no tiene ni un
+# punto que quitar, asi que su cadena es de UNO.
+N_NO=0; E2="zz-encina"; while :; do N_NO=$((N_NO+1)); P="${E2%.*}"; [ "$P" = "$E2" ] && break; E2="$P"; done
+[ "$N_NO" -eq 1 ] || fallo "CONTROL ROTO: 'zz-encina' tenia que dar una cadena de 1 y da $N_NO"
 tar -tf "$ISO" "casper/$CAPA_N" >/dev/null 2>&1 \
     && fallo "la ISO oficial ya trae un casper/$CAPA_N: parar y mirar por que"
 ok "capa de marca: $CAPA_N, $(stat -f %z "$CAPA") bytes  $(shasum -a 256 "$CAPA" | cut -c1-16)…"
+ok "la cadena de la capa son $N_ESL eslabones y los $((N_ESL-1)) de debajo estan en /casper (control: «zz-encina» daria $N_NO)"
 fi
+
+# --- 5c-bis. layerfs-path=: lo UNICO que hace que la capa se MONTE -----------
+# ESTE BLOQUE ES LA CASILLA 3. Del 2026-08-15 al 20 el medio llevo la capa dentro
+# y NO LA MONTO NUNCA (§4.54e): el initrd trae LAYERFS_PATH=minimal.standard.live
+# .squashfs en /conf/conf.d/default-layer.conf, casper entra por su rama de
+# multi-capa y NO ENUMERA el directorio, asi que un fichero de mas en /casper no
+# lo mira nadie. Nombrarla en la linea del nucleo es lo que la mete en la cadena.
+#
+# EL NOMBRE NO SE ESCRIBE AQUI: sale de "$CAPA_N", que sale del fichero. Tenerlo
+# en dos sitios es exactamente como se pierden estas cosas en silencio.
+if [ "$CON_CAPA" = 1 ]; then
+    grep -q 'layerfs-path=' "$TMP/grub.cfg.oficial" \
+        && fallo "el grub.cfg oficial ya trae un layerfs-path=: parar y mirar por que"
+    sed -e "s|/casper/vmlinuz locale=$LOCALE|/casper/vmlinuz locale=$LOCALE layerfs-path=$CAPA_N|" \
+        "$TMP/grub.cfg" > "$TMP/grub.cfg.paso" || fallo "sed del layerfs-path"
+    mv "$TMP/grub.cfg.paso" "$TMP/grub.cfg"
+    # trampa 13: la mutacion se verifica DESPUES de pedirla, y en su sitio -- antes
+    # del '---', que es la ranura que casper lee.
+    grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE layerfs-path=$CAPA_N .*---" "$TMP/grub.cfg" \
+        || fallo "layerfs-path=$CAPA_N no quedo en la linea del nucleo antes del ---"
+    n=$(grep -c 'layerfs-path=' "$TMP/grub.cfg")
+    [ "$n" -eq 1 ] || fallo "hay $n layerfs-path= en el grub.cfg y esperaba UNO"
+    ok "grub.cfg: layerfs-path=$CAPA_N en la linea del nucleo (sin esto la capa viaja y NO se monta)"
+else
+    # --sin-capa: la comprobacion NO se omite, SE INVIERTE. Y aqui importa mas que
+    # en las otras banderas: un layerfs-path= apuntando a una capa que no viaja
+    # hace que casper haga PANIC, o sea un medio que no arranca por culpa del
+    # bisecado y no de lo que se bisecaba.
+    grep -q 'layerfs-path=' "$TMP/grub.cfg" \
+        && fallo "--sin-capa, y el grub.cfg nombra un layerfs-path=: casper haria PANIC"
+    ok "grub.cfg: SIN layerfs-path= (--sin-capa), que es lo que evita el panic de casper"
+fi
+# El numero de lineas cambiadas NO sube: layerfs-path= cae en la MISMA linea del
+# nucleo que ya cambio el locale. Que siga siendo $D_GRUB es lo que prueba que
+# el sed cayo donde tenia y no en otro sitio.
+d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
+[ "$d" -eq "$D_GRUB" ] || fallo "con layerfs-path= el grub.cfg cambia en $d lineas y esperaba $D_GRUB (tenia que caer en la linea del nucleo, que ya estaba contada)"
 
 # --- 5d. md5sum.txt: dos lineas rehechas y una anadida ----------------------
 tar -xOf "$ISO" md5sum.txt > "$TMP/md5sum.oficial" \
