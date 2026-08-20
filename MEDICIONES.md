@@ -13689,3 +13689,66 @@ ahora el `LTS` y las comillas**, así que lo que se ve al conectar el USB es
 `EncinaOS 24.04.4 LTS "A B" arm64`. **Cabe, pero es feo.** Romper la derivación
 ya no es *obligatorio* —lo era en §4.56dd—, pero sigue siendo la única forma de
 que el rótulo del USB sea legible. Eso ya es criterio de producto, no medición.
+
+**f) SE ROMPE LA DERIVACIÓN DE §4.53, Y SIN REINTRODUCIR «EL NOMBRE EN DOS
+SITIOS».** Decidido por Jorge. La derivación cae porque quedó **medido** que no
+cabe: el instalador exige un codename entrecomillado y con cualquiera de verdad
+se pasan los 32 bytes. Pero el peligro que §4.53 evitaba —que el nombre del
+producto se escriba en dos ficheros y se separen— **no vuelve**, porque el
+`Volume id` ya no se escribe: **se compone de fuentes que ya existen y ya están
+verificadas**.
+
+```
+nombre  <- la 1a palabra de .disk/info      (sigue siendo la UNICA fuente del nombre)
+version <- la del encina-meta que el paso 2 acaba de cotejar POR HUELLA
+arq     <- la ultima palabra del Volume id OFICIAL, como siempre
+        -> «EncinaOS 0.2.1 arm64»  = 20 bytes
+```
+
+**Y de paso se recupera lo que §4.53 obligó a ceder:** el volumen dice **nuestra
+versión**, no la de Ubuntu.
+
+**EL CONTROL VA DELANTE, y hace falta:** un `sed` que no case devuelve **cadena
+vacía sin quejarse**, y un `Volume id` con un hueco en medio pasaría los 32 bytes
+tan tranquilo. Banco que **extrae la función del guion**:
+
+```
+[OK] CONTROL DEL BANCO: la funcion se extrajo del guion, no esta retecleada aqui
+  [OK] [encina-meta_0.2.1_all.deb]      -> [0.2.1]
+  [OK] [encina-meta_1.0_all.deb]        -> [1.0]
+  [OK] [otra-cosa_0.2.1_all.deb]        -> []
+  [OK] [encina-meta_0.2.1_arm64.deb]    -> []
+  [OK] [encina-branding_0.1.15_all.deb] -> []
+== 5 correctas, 0 fallos        [EncinaOS 0.2.1 arm64] = 20 bytes CABE
+```
+
+y gastado contra un guion saboteado —la extracción acepta **cualquier** paquete y
+no sólo `encina-meta`—, que saca **los dos fallos donde tocan**:
+
+```
+  [FALLO] [otra-cosa_0.2.1_all.deb]        -> [0.2.1], se esperaba []
+  [FALLO] [encina-branding_0.1.15_all.deb] -> [0.1.15], se esperaba []
+== 3 correctas, 2 fallos        salida 1
+```
+
+**Y el banco tenía un defecto suyo, visto en su primera ejecución:** sin `LC_ALL`
+su salida salía **ilegible** —las comillas angulares rotas— y los valores no se
+podían leer, así que los cinco `[OK]` no significaban nada hasta arreglarlo. Es
+la trampa 2 otra vez, y van dos veces hoy.
+
+**g) EL CODENAME: `"Nutria Nocturna"`.** Esquema, no nombre suelto: **dos palabras
+aliteradas** como Ubuntu, pero **en español y con fauna de dehesa** —que es
+literalmente el bosque de encinas—, y con **la inicial atada a la base**: `N` de
+`Noble`, así que el codename dice de un vistazo sobre qué Ubuntu va. **En ASCII a
+propósito**: el `.disk/info` oficial es ASCII puro y el paso 5e cuenta **bytes**,
+no caracteres. Se descartó `"Nutria Noble"` por reutilizar el adjetivo de Ubuntu.
+
+```
+EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release arm64 (20260210)
+  9 campos    rotulo «Install EncinaOS 24.04.4 LTS»    canal stable/ubuntu-24.04.4
+  volid «EncinaOS 0.2.1 arm64»  (compuesto, ya no derivado de aqui)
+```
+
+**`[OMIT]` que sigue sin medir:** si un codename de **una sola palabra** vale
+—los tres que han arrancado llevan dos—, y si un codename con **tildes o eñes**
+vale. Ninguna de las dos hace falta para el producto tal como queda.
