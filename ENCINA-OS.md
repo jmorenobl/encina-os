@@ -401,7 +401,50 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-19 (cierre): **CAUSA CERRADA DEL TODO — `/.disk/info` NECESITA UN NOMBRE EN CLAVE ENTRECOMILLADO, Y EL CONTENIDO DA IGUAL**
+> ### LA TAREA EN CURSO, 2026-08-20: **HAY MEDIO DE PRODUCTO QUE ARRANCA, CON NOMBRE Y VERSIÓN PROPIOS** — lo que queda es la capa, la reproducibilidad y los `[OJOS]`
+>
+> **`71f7958c…` ARRANCA** y enseña «Disposición del teclado» en español, fabricada
+> **sin `--info-crudo`**: **0 fallos, 0 avisos**, `1 1 1 1` (`MEDICIONES.md`
+> §4.57h). Es el primer medio que lleva a la vez las dos cosas que hasta ayer eran
+> incompatibles:
+>
+> ```
+> .disk/info : EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release arm64 (20260210)
+> volid      : EncinaOS 0.2.1 arm64        <- NUESTRO nombre y NUESTRA version
+> rotulo     : Install EncinaOS 24.04.4 LTS
+> canal      : stable/ubuntu-24.04.4
+> ```
+>
+> **LA CAUSA, CERRADA POR EXPERIMENTO:** el instalador exige que `/.disk/info`
+> lleve **un nombre en clave entre comillas**; **el contenido da igual** (`"A B"`
+> vale igual que `"Noble Numbat"`), el `LTS` solo **no basta**, y la primera
+> palabra **puede ser la nuestra**. Ocho ficheros medidos, en §4.57e.
+>
+> **LA DERIVACIÓN DE §4.53 SE HA ROTO, y sin reintroducir «el nombre en dos
+> sitios»:** el `Volume id` **no se escribe, se compone** de la 1ª palabra de
+> `.disk/info` (única fuente del nombre) + la versión de `encina-meta` (cotejada
+> por huella en el paso 2) + la arquitectura. Con su banco y su sabotaje gastado.
+>
+> **EL CODENAME ES UN ESQUEMA:** dos palabras aliteradas como Ubuntu, pero **en
+> español, con fauna de dehesa** —el bosque de encinas— y con **la inicial atada a
+> la base** (`N` de `Noble`), así que dice sobre qué Ubuntu va. **ASCII a
+> propósito.**
+>
+> **LO QUE QUEDA, y no es poco:**
+>
+> 1. **LA CAPA NO SE MONTA** (§4.54e). Sin eso no hay marca en la sesión viva: ni
+>    fondo, ni título de ventana, ni diapositivas, ni `os-release`. Candidato
+>    medido: `layerfs-path=` en la línea del núcleo del `grub.cfg`.
+> 2. **La segunda pasada de reproducibilidad**, que sigue sin pagarse.
+> 3. **Los dos `[OJOS]` de Jorge** y las dos últimas casillas de
+>    `tareas/aspecto/5-cierre.md`.
+>
+> **`[OMIT]` que no se cuela:** si un codename de **una sola palabra** vale, y si
+> vale con tildes o eñes. Ninguna hace falta para el producto tal como queda.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-19 (cierre): la causa, cerrada — un nombre en clave entrecomillado
 >
 > **PROBADO QUITANDO Y PONIENDO** (`MEDICIONES.md` §4.57e). Ocho ficheros:
 >

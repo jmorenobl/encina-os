@@ -73,6 +73,23 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
 - [ ] **El arranque y el instalador, con identidad de Encina.**
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
+      > **HAY MEDIO QUE ARRANCA, CON NOMBRE Y VERSIÓN PROPIOS (2026-08-20,
+      > `MEDICIONES.md` §4.57h).** `71f7958c…`, fabricada **sin `--info-crudo`**,
+      > **0 fallos y 0 avisos**, `1 1 1 1`, y enseña «Disposición del teclado» en
+      > español. `.disk/info` = `EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release
+      > arm64 (20260210)`; `Volume id` = **`EncinaOS 0.2.1 arm64`**.
+      >
+      > **La causa era que `/.disk/info` lleve un nombre en clave ENTRECOMILLADO, y
+      > el contenido da igual** (§4.57e, ocho ficheros). **La derivación de §4.53 se
+      > rompió** porque quedó medido que no cabe, pero el `Volume id` **no se
+      > escribe: se compone** de fuentes ya verificadas, así que el nombre sigue en
+      > un solo sitio.
+      >
+      > **SIGUE ABIERTA por lo de siempre:** la **capa no se monta** (§4.54e), o sea
+      > que no hay marca en la sesión viva; y el **`[OJOS]`** es de Jorge.
+      >
+      > **LO ANTERIOR, del 2026-08-19 por la tarde, al lado:**
+
       > **CAUSA CERRADA EL 2026-08-19, tarde (`MEDICIONES.md` §4.56cc): ES LA
       > AUSENCIA DE `LTS "Noble Numbat"`, Y NUESTRO NOMBRE QUEDA EXONERADO.**
       > Probado quitando y poniendo el trozo, no leyendo. **`EncinaOS 24.04.4 LTS
