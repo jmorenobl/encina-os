@@ -2536,3 +2536,99 @@ hecho que «pesa igual, será la misma», el bisecado entero habría medido dos 
 la misma capa. Se comprueba **por contenido y por huella**: `unsquashfs -ll` con
 la ruta de cada fichero que tiene que faltar, **más un control** de uno que tiene
 que seguir estando, y `shasum` de las dos capas.
+
+## Contar arranques sin ojos: los tres guiones del 2026-08-21
+
+Salieron de la tarea de acotar el fallo intermitente del banco (§4.59), y el
+orden en que se escribieron **es** el método: primero el veredicto y su banco,
+después el experimento, y sólo entonces los datos.
+
+### `scripts/veredicto-pantalla.py` — qué hay en una captura, contado
+
+```bash
+./scripts/veredicto-pantalla.py <captura.png> [--recorte-superior N] [--tsv]
+```
+
+Devuelve `NEGRA`, `GRAFICA`, `TEXTO?` o `INDETERMINADA` contando **colores
+distintos** (cuantizados a 5 bits por canal) y el **brillo medio**. La separación
+medida es de más de dos órdenes de magnitud:
+
+```
+pantalla negra de verdad        1 color      brillo   0,0
+instalador, fondo de Ubuntu   585 colores    brillo 176,7
+instalador, fondo de Encina  3 638 colores   brillo 194,6
+escritorio con la capa       4 349 colores   brillo  95,3
+```
+
+**No usa el tamaño del PNG, y ese es el motivo de que exista** (trampa 41): el
+tamaño sólo separa las tres pantallas a escala fija. El conteo de colores no
+depende de la escala, y el banco lo comprueba reduciendo los controles a la mitad.
+
+**La zona gris es deliberada.** Entre las dos bandas calibradas hay hueco y ahí
+contesta `INDETERMINADA`: un instrumento que se calla donde no sabe vale más que
+uno que decide. `TEXTO?` se declara **sin control conocido** y no se da por buena.
+
+**DE DÓNDE SACAR LA CAPTURA, que resultó ser la mitad del instrumento.** UTM
+escribe `screenshot.png` en el bundle con el **framebuffer del invitado** —
+1280×800 fijos, sin barra de ventana, sin permiso de Grabación de Pantalla —, y
+**la trampa 41 no le aplica porque no hay ventana de por medio**. Con dos
+condiciones medidas:
+
+```
+VM corriendo, 3 min  ->  mtime intacto: NO se actualiza en vivo
+utmctl stop          ->  lo reescribe, y con el framebuffer REAL:
+                         parada desde el instalador  -> 3 638 colores
+                         parada tras fallar          ->     1 color
+```
+
+La segunda mitad es la que importa: sin ella, un negro tras parar podría ser el
+framebuffer ya apagado y **el instrumento diría «negra» siempre**.
+
+### `scripts/banco-veredicto.sh` — su banco (segundos)
+
+**9 correctas, 0 fallos.** Extrae la regla de `veredicto-pantalla.py` entre los
+marcadores `INICIO REGLA`/`FIN REGLA` y **se niega a medir si sale corta**
+(≥12 líneas, ≥4 umbrales, ≥4 salidas distintas). Cuatro secciones: las dos
+respuestas sobre capturas de verdad, **control por columna** (negra y gráfica no
+pueden dar el mismo veredicto), **la trampa 41** (los controles a 640×400 dan el
+mismo veredicto) y **tres sabotajes**, los tres cazados.
+
+Los controles viven en `scripts/pruebas/veredicto/` y son capturas reales, no
+imágenes fabricadas para pasar. El que **aprieta el umbral por abajo** es
+`control-grafica-fondo-ubuntu.png`: con la capa inerte el fondo es el púrpura de
+Ubuntu y da sólo **585 colores**, el gráfico más pobre que hay.
+
+### `scripts/contar-arranques.sh` — el experimento
+
+```bash
+./scripts/contar-arranques.sh --rondas 6 [--ventana 420] [--salida DIR]
+```
+
+Arranca los brazos **intercalados ronda a ronda**, nunca en bloques: la carga de
+este anfitrión deriva, y en bloques la deriva se confunde con el efecto. Ventana
+**fija e idéntica** para todos, **sin prórroga** — una prórroga sólo se dispararía
+en los arranques que van mal, o sea daría trato distinto justo a lo que se cuenta.
+
+**LA COMPROBACIÓN QUE NO SE PUEDE QUITAR** (trampa 13, y aquí muerde de verdad):
+como UTM sólo reescribe `screenshot.png` al parar, se compara el `mtime` de antes
+con el de después. Si no cambió —`stop` que falló, VM que ya estaba parada,
+`utmctl` devolviendo 0 sin hacer nada (trampa 28)— se estaría leyendo **el
+framebuffer del arranque anterior** y contando dos veces el mismo dato. Esa línea
+sale `FALLO-SIN-CAPTURA` y **no cuenta como arranque**.
+
+### `scripts/veredicto-conteo.py` — el criterio, aplicado por un guion
+
+```bash
+./scripts/veredicto-conteo.py <arranques.tsv>
+./scripts/veredicto-conteo.py --banco
+```
+
+Aplica **el criterio escrito antes de empezar** (§4.59a) y nada más: Fisher
+exacta de una cola con `p ≤ 0,05`, mínimo de rondas completas, y la prueba
+primaria de que basta con que **un control** falle. Su banco: **8 correctas, 0
+fallos**, con control por columna y una comprobación de que la cola es la
+declarada.
+
+**Por qué un guion y no yo:** quince arranques con tasas cerca del 50 % se leen
+después como uno quiera. `3 de 5` frente a `5 de 5` **parece** peor y da
+`p = 0,095`. El guion no negocia.

@@ -14197,3 +14197,207 @@ arranque: acertar las predicciones **no protege** de concluir de más entre medi
 - **La causa del fallo intermitente del banco.** Contamina cualquier medición de
   arranque que se haga en este anfitrión.
 
+
+---
+
+### 4.59 CONTAR ARRANQUES: separar el fallo intermitente del banco de un posible efecto de la capa (2026-08-21)
+
+**POR QUÉ ESTA MEDICIÓN Y NO OTRA.** §4.58j–l dejó el banco bajo sospecha y con
+él **cualquier** medición de arranque que se haga en este anfitrión: el 20 se
+escribió una causa (`ubuntu-text.plymouth`) sobre **un** arranque negro, y la
+tumbó **repetir**. Mientras la tasa de fallo del anfitrión no esté acotada, no se
+puede bisecar nada. Esto la acota.
+
+#### (a) LA PREDICCIÓN, ESCRITA ANTES DE ARRANCAR NADA
+
+Se escribe **antes** de fabricar el instrumento y **antes** del primer arranque,
+y se deja aquí para que el resultado no se interprete solo. Van **cinco**
+atribuciones falsas en este repositorio, y la de ayer **no fue por leer mal el
+código**: fue por tomar **un** arranque negro como un negativo.
+
+**EL DATO DE PARTIDA, y es todo lo que hay** (§4.58, y las tres primeras filas
+vienen de sesiones distintas):
+
+| medio | qué lleva la capa | arrancó |
+|---|---|---|
+| `p10-capa` | los 30 ficheros | **1 de 3** |
+| `p11-vacia` | 1 fichero que no tapa nada | 1 de 1 |
+| `p12-sintexto` | 24 (los 6 de texto fuera) | 1 de 1 |
+| `p13-desktop` | 24 + `ubuntu.desktop` | 1 de 1 |
+| `p14-plymouth` | 24 + `ubuntu-text.plymouth` | **1 de 2** |
+
+Es una **correlación sobre cinco medios con N=1..3**. No es una causa, y con un
+fallo intermitente de por medio un «arranca» vale a la primera pero un **«no
+arranca» hay que contarlo**.
+
+**LOS TRES BRAZOS**, elegidos porque **ya están en disco** y no cuestan una ISO
+(el disco manda: 12 GiB libres, nueve ISOs). Cotejados por `inode` contra el
+`medio.iso` de su bundle antes de empezar:
+
+| brazo | ISO | inode | la capa |
+|---|---|---|---|
+| `p10` | `encina-os-p10-capa.iso` | 90350889 | entera (30 ficheros) y **montada** |
+| `p11` | `encina-os-p11-vacia.iso` | 90351676 | **montada** pero vacía (1 fichero inocuo) |
+| `p9` | `encina-os-p9-nutria.iso` | 90347109 | **presente pero INERTE** (sin `layerfs-path=`) |
+
+`p9` es el control de fondo: lleva el squashfs dentro pero el núcleo **no lo
+nombra**, así que su arranque es el de un medio sin capa. `p11` separa «montar
+una capa» de «lo que la capa contiene».
+
+**QUÉ ESPERO, con probabilidad dicha antes:**
+
+- **~70 %: es el banco.** Las tres tasas salen parecidas y **los controles
+  también fallan alguna vez**. Razón: la única señal a favor de un efecto de la
+  capa —los dos medios con reintento son los dos que llevan `ubuntu-text.plymouth`—
+  ya se cayó una vez, y `p10` acabó arrancando **con la capa entera puesta**, o
+  sea que la capa **no impide** arrancar. Un fallo que a veces no ocurre con la
+  causa presente es un fallo del entorno mucho más a menudo que del producto.
+- **~25 %: hay efecto y es de grado**, no de suficiencia: la capa entera hace el
+  arranque más frágil (más ficheros que leer del squashfs de arriba, más presión
+  de E/S en un arranque ya justo).
+- **~5 %: el banco no falla en absoluto hoy** y los tres brazos salen limpios.
+  Sería el peor resultado: no probaría nada y dejaría el `[OMIT]` abierto, porque
+  el fallo de ayer seguiría sin explicar.
+
+**QUÉ CONSIDERO SEÑAL Y QUÉ CONSIDERO RUIDO, dicho antes de ver un solo número.**
+Con `E` = arranques que llegan al escritorio y `N` = arranques por brazo:
+
+1. **PRUEBA DE QUE EL FALLO ES DEL BANCO** (y es el objetivo primario, y se
+   alcanza con N pequeño): **basta con que `p11` o `p9` fallen al menos una vez.**
+   Un control conocido-bueno que falla es el fallo intermitente **sin la capa
+   entera de por medio**, y eso cierra el `[OMIT]` de §4.58 en positivo.
+2. **SEÑAL DE EFECTO DE LA CAPA:** `p10` contra la **unión** de los dos controles
+   por **Fisher exacta de una cola con `p ≤ 0,05`**. Con N=5 por brazo (5 vs 10)
+   eso exige `p10 ≤ 1/5` con los controles a `10/10`, o `p10 = 0/5` con los
+   controles a `9/10`. **Cualquier cosa por encima de eso es RUIDO** y se escribe
+   como `[OMIT]`, no como «tendencia».
+3. **RUIDO EXPLÍCITO:** una diferencia de **un solo arranque** entre brazos no es
+   nada. Con tasas alrededor del 50 % y N=5, ver 3/5 frente a 5/5 por puro azar
+   es corriente. **No voy a llamar a eso «peor».**
+4. **LO QUE NO VOY A HACER:** concluir con menos de **4 rondas completas**. Si el
+   experimento se corta antes, el resultado entero es `[OMIT]` y se dice.
+
+**EL PRESUPUESTO, dicho antes de empezar.** Un arranque hasta el escritorio son
+~6–10 min; la ventana de observación se fija en **8 min** por arranque, más el
+apagado en frío. Una ronda son los tres brazos: **~27 min**. **Objetivo: 5
+rondas** (15 arranques, ~2 h 15). **Mínimo para concluir: 4.**
+
+**Y EL ORDEN ES INTERCALADO —`p10`, `p11`, `p9`, `p10`, `p11`, `p9`…— y NO por
+bloques.** La carga de este anfitrión deriva a lo largo de la sesión, y en
+bloques la deriva se confunde con el efecto: el brazo que toque el mal rato
+saldría peor sin que la capa tenga nada que ver. Es exactamente el error que
+convierte una correlación en una causa falsa.
+
+**LA TRAMPA QUE ME PUEDE MORDER HOY.** La 42 estaba escrita **antes** de la
+sesión de ayer y aun así se cayó en ella. La forma concreta que tomaría hoy:
+tomar la primera ronda como resultado porque «ya se ve la tendencia». Por eso el
+criterio está escrito arriba, con números, antes de que exista el primer dato.
+
+#### (b) EL INSTRUMENTO, CONSTRUIDO ANTES QUE EL EXPERIMENTO, CON SU CONTROL
+
+**Lo primero que se descartó es el tamaño del PNG**, que es lo que la trampa 41
+proponía: sólo separa las tres pantallas **a escala fija**, y la ventana del
+anfitrión cambia de tamaño sola. Se cuenta otra cosa: **cuántos colores distintos
+hay** (cuantizados a 5 bits por canal, para no perseguir ruido de compresión) más
+el **brillo medio**. Reducir una imagen no crea colores donde no los hay.
+
+**DE DÓNDE SALE LA CAPTURA, y esto resultó ser la mitad del instrumento.** UTM
+escribe `screenshot.png` dentro del bundle con el **framebuffer del invitado**:
+**1280×800 fijos**, sin la barra de la ventana del anfitrión y sin necesitar el
+permiso de Grabación de Pantalla. **La trampa 41 no le aplica porque no hay
+ventana de por medio.** Medido hoy, y las dos mitades hicieron falta:
+
+```
+VM arrancada, 3 min:  mtime del screenshot.png = 16:11:52 (el de AYER), 598 369 b
+                      -> NO se actualiza en vivo. Sirve DESPUES de parar.
+utmctl stop:          mtime 17:00:35, 13 560 b  -> SI lo reescribe al parar
+```
+
+**Y la segunda mitad, que es la que salva de una atribución falsa.** Ese `stop`
+escribió una pantalla de **1 color y brillo 0,0**. Con eso sólo, caben dos
+lecturas: **(A)** `p12` falló el arranque, o **(B)** UTM captura el framebuffer
+**ya apagado** y entonces diría «negra» siempre y el instrumento no vale. Se
+separaron arrancando `p12` otra vez, **mirándola viva** con `capturar-vm.sh` —
+estaba en el instalador, «Disposición del teclado» en español — y parándola
+**desde ahí**:
+
+```
+parada DESDE el instalador   ->  3 638 colores, brillo 194,65   GRAFICA
+parada tras arranque fallido ->      1 color,   brillo   0,00   NEGRA
+```
+
+**El instrumento distingue, y por tanto aquel negro era un fallo de verdad.** Sin
+este control se habría contado un fallo que podía no serlo — o descartado el
+instrumento por bueno. Es la regla del sitio en su forma más literal: *una
+comprobación que no puede dar sus dos respuestas no es una comprobación.*
+
+**Y DE PASO, UN DATO QUE NO SE BUSCABA: `p12` FALLÓ HOY SU PRIMER ARRANQUE Y
+ARRANCÓ EL SEGUNDO**, sin tocar nada. `p12` es el medio que ayer hizo 1 de 1.
+**Es la trampa 42 reproducida en un medio que no es `p10` ni `p14`**, o sea en
+uno que **no** lleva `ubuntu-text.plymouth`. Esto ya apunta a que el fallo no es
+de un fichero de la capa, pero **es un arranque**: se cuenta abajo, no aquí.
+
+**LOS DOS INSTRUMENTOS NUEVOS:**
+
+- **`scripts/veredicto-pantalla.py`** — lee una captura y dice `NEGRA`,
+  `GRAFICA`, `TEXTO?` o `INDETERMINADA`. **La zona gris entre bandas es
+  deliberada**: un instrumento que se calla donde no sabe vale más que uno que
+  decide. `TEXTO?` se declara **sin control conocido** y no se da por buena.
+- **`scripts/banco-veredicto.sh`** — **9 correctas, 0 fallos**. Extrae la regla
+  del guion entre marcadores y **se niega a medir si la extracción sale corta**
+  (exige ≥12 líneas, ≥4 umbrales y ≥4 salidas distintas). Cuatro secciones:
+
+```
+1. las dos respuestas, sobre capturas de VERDAD (no fabricadas para pasar)
+2. CONTROL POR COLUMNA: negra y grafica no pueden dar el mismo veredicto
+3. la trampa 41: los dos controles a la MITAD (640x400) dan el MISMO veredicto
+4. tres sabotajes, y los tres se notan
+```
+
+Los controles son capturas reales y viven en `scripts/pruebas/veredicto/`. El
+**control gráfico que aprieta** es `encina-nutria`: con la capa inerte, el fondo
+es el **púrpura de Ubuntu** y da sólo **585 colores** — el gráfico más pobre que
+hay, y el que fija el umbral por abajo.
+
+#### (c) UNA ENMIENDA AL PRESUPUESTO DE (a), ESCRITA ANTES DEL PRIMER ARRANQUE
+
+La predicción fijó la ventana de observación en **8 min** «porque un arranque son
+6–10 min». **Medido hoy: no lo son.** `p12` mostraba el instalador ya en la
+captura de los **90 s**. La ventana baja a **420 s**, que sigue siendo **4,6×** el
+arranque bueno observado.
+
+**Y se retira la prórroga que iba a llevar el guion.** La idea era mirar en vivo
+a mitad de ventana y alargar si aún no había escritorio; se descarta porque daría
+**trato distinto a los brazos** —sólo se alargaría en los fallos— y la carga del
+anfitrión es justo la variable que hay que mantener constante. **Ventana fija e
+idéntica para los tres.** El criterio de señal de (a) **no cambia**: sigue siendo
+Fisher exacta de una cola con `p ≤ 0,05`, sea cual sea el N que se alcance.
+
+#### (d) EL ANALIZADOR, TAMBIÉN ANTES DE VER UN DATO — Y UNA CORRECCIÓN A (a)
+
+`scripts/veredicto-conteo.py` lee el TSV y aplica **el criterio de (a) y nada
+más**. Fisher exacta por la hipergeométrica con `math.comb`, sin dependencias.
+Su banco (`--banco`): **8 correctas, 0 fallos**, con casos de respuesta conocida
+calculada a mano, **control por columna** —si devolviera siempre «señal» o
+siempre «ruido», los casos 1 y 4 lo cazan— y una comprobación de que **la cola
+es la declarada**: `10/10` frente a `0/5` da `p = 1,0000`, no señal.
+
+**Y AL EJECUTARLO SALTÓ UN ERROR MÍO DE (a), que se corrige ahora que todavía no
+hay datos y dejando al lado lo que decía.** (a) ilustró el umbral así:
+
+> «Con N=5 por brazo (5 vs 10) eso exige `p10 ≤ 1/5` con los controles a `10/10`,
+> o `p10 = 0/5` con los controles a `9/10`.»
+
+**La ilustración era más estricta que el criterio.** Calculado:
+
+```
+0 de 5 frente a 10 de 10   p = 0,000333   señal
+1 de 5 frente a 10 de 10   p = 0,003663   señal
+2 de 5 frente a 10 de 10   p = 0,021978   señal  <- ESTE me lo dejé fuera
+3 de 5 frente a 10 de 10   p = 0,095238   ruido
+```
+
+**El criterio operativo sigue siendo el mismo y no se toca: Fisher de una cola
+con `p ≤ 0,05`.** Lo que estaba mal era el ejemplo, no la regla; pero un ejemplo
+mal puesto es un umbral movido a mano después, y por eso queda escrito. La regla
+la aplica el guion, no yo.
