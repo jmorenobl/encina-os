@@ -2394,6 +2394,16 @@ capturas negras seguidas dieron **exactamente 112 446 bytes** las tres, que adem
 es señal de que la pantalla no cambia entre ellas. Un `stat -f %z` cuesta cero y
 ahorra abrir capturas que no dicen nada.
 
+> **ENMIENDA DEL MISMO DÍA, y la tumbó una captura: LOS TAMAÑOS SÓLO VALEN A
+> ESCALA FIJA.** Una pantalla **gráfica** dio **309 568 bytes** —dentro del rango
+> que esta trampa asignaba a «registro de texto»— porque la ventana se capturó a
+> **1280×840** y las anteriores a **2560×1680**. `capturar-vm.sh` toma el tamaño
+> **de la ventana**, y la ventana cambia. **Compara tamaños sólo entre capturas de
+> la MISMA sesión y la misma ventana**, y si la escala cambió, el número no dice
+> nada: hay que abrirla. Lo que sí se sostiene es lo otro —tres capturas idénticas
+> al byte significan que la pantalla no se mueve—. Escribí la regla sin este
+> control y era demasiado ancha.
+
 **40. `grep -r` SIN `-a` SE SALTA LOS BINARIOS Y DEVUELVE UN CERO FALSO.** Cazada
 el 2026-08-19 buscando quién lee `.disk/info` dentro del snap del instalador. La
 conclusión fue «sólo dos ficheros Python», **y era falsa**:
