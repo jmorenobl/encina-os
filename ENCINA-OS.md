@@ -401,7 +401,77 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-20 (cierre): **LA CAPA SE MONTA. La casilla 3 está HECHA salvo los `[OJOS]`**
+> ### LA TAREA EN CURSO, 2026-08-21: **EL FALLO INTERMITENTE ES DEL BANCO, MEDIDO: 33 % Y LOS TRES MEDIOS. La capa queda LIMPIA**
+>
+> **18 arranques, 6 rondas intercaladas, veredicto contado y no mirado**
+> (`MEDICIONES.md` §4.59). Era el `[OMIT]` que contaminaba **cualquier** medición
+> de arranque en este anfitrión, y ya no lo es:
+>
+> ```
+>  brazo   la capa                        arranco
+>  p10     entera, montada                4 de 6
+>  p11     vacia, montada                 5 de 6
+>  p9      presente pero INERTE           3 de 6
+>
+>  Fisher exacta de una cola, p10 contra p11+p9:  p = 0,6942   (umbral 0,05)
+>  [OMIT]  NO hay senal. Tasa global de fallo del anfitrion: 6 de 18 = 33 %
+> ```
+>
+> **LOS TRES BRAZOS FALLAN**, incluido `p9`, que lleva el squashfs dentro pero el
+> núcleo **no lo nombra** —o sea que arranca como un medio sin capa—. **La capa no
+> afecta a la probabilidad de arrancar**, y el brazo que sale peor en bruto es
+> justo el de la capa **inerte**.
+>
+> **Y SE CAE DEL TODO LA CORRELACIÓN DE `ubuntu-text.plymouth`:** era «los dos
+> medios que necesitaron reintento son los dos que lo llevan», y hoy `p11` y `p9`
+> lo necesitaron **sin llevarlo**. Con un 33 % de fallo, la tabla de §4.58 —`1 de
+> 3` en `p10`, `1 de 1` en tres medios— **es lo que se espera por azar**: la
+> probabilidad de que un medio bueno dé `1 de 1` es 0,67. **Los cuatro bisecados
+> de ayer no midieron nada del producto.**
+>
+> **EL MÉTODO, y es lo que hizo que esto valga:** la predicción con sus
+> probabilidades y su umbral se escribió **antes de arrancar nada**, y el
+> veredicto y su banco **antes del experimento** —commit `6f04353`, fechado antes
+> del primer dato—. El criterio lo aplica `veredicto-conteo.py`, no yo: quince
+> arranques con tasas cerca del 50 % se leen después como uno quiera.
+>
+> **CUATRO INSTRUMENTOS NUEVOS**, todos con su banco y sus sabotajes:
+>
+> | guion | qué hace | su banco |
+> |---|---|---|
+> | `scripts/veredicto-pantalla.py` | `NEGRA`/`GRAFICA`/`INDETERMINADA` contando **colores**, no bytes | `banco-veredicto.sh`: **9 correctas, 0 fallos** |
+> | `scripts/banco-veredicto.sh` | control por columna, prueba de escala, 3 sabotajes | — |
+> | `scripts/contar-arranques.sh` | las rondas intercaladas, con la guarda de la trampa 13 | — |
+> | `scripts/veredicto-conteo.py` | aplica el criterio preinscrito, Fisher sin dependencias | `--banco`: **8 correctas, 0 fallos** |
+>
+> **DOS COSAS QUE EL DÍA PRODUJO Y NO ESTABAN PREVISTAS, y las dos son mías:**
+>
+> 1. **Un fallo EXACTO en cada una de las seis rondas** —ni cero, ni dos—, que
+>    bajo independencia es **una entre 130**. Es **post-hoc**, así que es
+>    hipótesis y no resultado, pero es la pista concreta para arreglar el banco en
+>    vez de rodearlo: los fallos **no son independientes entre sí**.
+> 2. **Un fallo de diseño mío (trampa 44):** intercalar siempre en el mismo orden
+>    **confunde el brazo con la posición**. Hoy no cambia la conclusión —no hay
+>    efecto que esconder—, pero si hubiera salido señal no habría sabido de qué
+>    era. **La próxima vez se baraja el orden dentro de la ronda.**
+>
+> **LO SIGUIENTE, en este orden, y el primero ya no está bloqueado:**
+>
+> 1. **`construir-todo.sh` sigue SIN completarse** con el árbol de hoy —todos los
+>    medios salieron de `fabricar-iso.sh --repo`, la vuelta entre las dos máquinas
+>    está **sin ejercitar**— y **la segunda pasada de reproducibilidad sigue sin
+>    pagarse**. Su definición de terminado no es «sale una ISO».
+> 2. **Los dos `[OJOS]` de Jorge** y las dos últimas casillas de
+>    `tareas/aspecto/5-cierre.md`. **Ahora hay de verdad qué mirar**, y las
+>    capturas de los 18 arranques están en `medios/conteo-arranques/capturas/`.
+> 3. **`[OMIT]` P5**, el título de la ventana del instalador, sin medir.
+>
+> **Y EL DISCO SIGUE MANDANDO:** ~12 GiB y nueve ISOs. Este experimento **no
+> fabricó ninguna**: los tres medios ya estaban en disco y las VMs registradas.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-20 (cierre): **LA CAPA SE MONTA. La casilla 3 está HECHA salvo los `[OJOS]`**
 >
 > **LO QUE SE PEDÍA, HECHO Y MEDIDO DENTRO DE LA SESIÓN VIVA** (`MEDICIONES.md`
 > §4.58e). Del 2026-08-15 al 20 esa orden devolvía **cero líneas**:

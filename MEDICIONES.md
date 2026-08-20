@@ -14401,3 +14401,129 @@ hay datos y dejando al lado lo que decía.** (a) ilustró el umbral así:
 con `p ≤ 0,05`.** Lo que estaba mal era el ejemplo, no la regla; pero un ejemplo
 mal puesto es un umbral movido a mano después, y por eso queda escrito. La regla
 la aplica el guion, no yo.
+
+#### (e) EL CONTEO: 18 ARRANQUES, 6 RONDAS INTERCALADAS, VEREDICTO CONTADO
+
+`./scripts/contar-arranques.sh --rondas 6 --ventana 420`, de 17:18 a 19:27, con
+cadencia de **7 min 11 s por arranque** y **ninguna** línea `FALLO-SIN-CAPTURA`
+—o sea que UTM reescribió el framebuffer las 18 veces y no se leyó dos veces el
+mismo dato—:
+
+```
+R1  p10 GRAFICA   p11 GRAFICA   p9  NEGRA
+R2  p10 NEGRA     p11 GRAFICA   p9  GRAFICA
+R3  p10 GRAFICA   p11 GRAFICA   p9  NEGRA
+R4  p10 GRAFICA   p11 GRAFICA   p9  NEGRA
+R5  p10 GRAFICA   p11 NEGRA     p9  GRAFICA
+R6  p10 NEGRA     p11 GRAFICA   p9  GRAFICA
+```
+
+| brazo | qué lleva la capa | arrancó |
+|---|---|---|
+| `p10` | entera, montada | **4 de 6** |
+| `p11` | vacía, montada | **5 de 6** |
+| `p9` | presente pero **inerte** | **3 de 6** |
+
+**EL CRITERIO DE (a), APLICADO POR `veredicto-conteo.py` Y NO POR MÍ:**
+
+```
+== 1. EL OBJETIVO PRIMARIO
+  [OK]    un control conocido-bueno FALLA (p11: 1, p9: 3)
+          -> el fallo intermitente existe SIN la capa entera de por medio
+
+== 2. SENAL DE EFECTO DE LA CAPA: p10 contra la union de p11+p9
+  p10        arranco 4, fallo 2
+  controles  arranco 8, fallo 4
+  Fisher exacta de una cola: p = 0.6942   (umbral 0.05)
+  [OMIT]  p > 0.05: NO hay senal.
+```
+
+**LO QUE QUEDA MEDIDO, y era el `[OMIT]` que bloqueaba todo lo demás:**
+
+1. **EL FALLO INTERMITENTE ES DEL BANCO.** Tasa global: **6 fallos de 18, un
+   33 %**. Y **los TRES brazos fallan** —capa entera, capa vacía y capa inerte—,
+   incluido `p9`, que lleva el squashfs dentro pero **el núcleo no lo nombra**, o
+   sea que arranca como un medio sin capa.
+2. **LA CAPA NO AFECTA A LA PROBABILIDAD DE ARRANCAR.** `p = 0,6942`, ni de
+   lejos. Y el brazo que sale **peor en bruto es `p9`, el de la capa inerte**:
+   justo el que la hipótesis del efecto habría puesto el mejor.
+3. **LA CORRELACIÓN DE `ubuntu-text.plymouth` SE CAE DEL TODO.** Era «los dos
+   medios que necesitaron reintento son los dos que lo llevan». Hoy `p11` y `p9`
+   lo necesitaron **sin llevarlo**. Ya no queda ni la correlación.
+
+**Y ASÍ QUEDA LA TABLA DE §4.58, QUE ERA LA QUE PEDÍA CAUSA:** con una tasa de
+fallo del anfitrión del 33 %, ver `1 de 3` en `p10` y `1 de 1` en tres medios de
+bisección **es lo que se espera por azar** — la probabilidad de que un medio
+bueno dé `1 de 1` es 0,67, y `1 de 3` en otro no pide explicación ninguna. **Los
+cuatro bisecados de ayer no midieron nada del producto.**
+
+#### (f) UN HALLAZGO QUE NO SE BUSCABA, Y ES POST-HOC: UN FALLO EXACTO POR RONDA
+
+Se dice **post-hoc** porque el patrón se vio **después** de mirar los datos, y
+eso lo baja de resultado a hipótesis. Pero es demasiado limpio para no escribirlo:
+
+```
+ronda 1: 1 fallo de 3      ronda 4: 1 fallo de 3
+ronda 2: 1 fallo de 3      ronda 5: 1 fallo de 3
+ronda 3: 1 fallo de 3      ronda 6: 1 fallo de 3
+```
+
+**Ni una ronda con cero, ni una con dos.** Con la tasa medida (1/3) y arranques
+independientes, la probabilidad de que una ronda dé exactamente un fallo es
+0,4444, y la de que **las seis** lo den es **0,0077 — una entre 130**.
+
+**Lo que sugiere, y es DEDUCCIÓN, no medición:** los fallos **no son
+independientes entre sí**. Algo del anfitrión se agota y se repone, de forma que
+cada tres arranques hay uno que cae, en vez de que cada arranque tire un dado por
+su cuenta. **No está medido qué**, y `debug.log` no lo separa: en los 18
+arranques se queda en el rellano de ~92 KB tanto si la pantalla acaba negra como
+si acaba en el instalador (91 935 – 92 402), **que es la trampa 38 confirmada
+otra vez**. Para el conteo de hoy da igual —la tasa es la tasa, y el intercalado
+reparte esa estructura entre los tres brazos por igual—, pero **es la pista
+concreta para el día que se quiera arreglar el banco en vez de rodearlo**.
+
+**Y EL POST-HOC QUE ME OBLIGUÉ A CALCULAR, porque es la trampa de este día:**
+`p9` sale `3 de 6`, el peor. Si la hipótesis se hubiera escrito señalando a `p9`
+en vez de a `p10`, ¿habría «señal»? **No: `p = 0,2943`.** Es la comprobación de
+que el resultado no depende de a qué brazo se apuntara.
+
+#### (g) UN FALLO DE DISEÑO DEL EXPERIMENTO, MÍO, Y NO LO INVALIDA PERO HAY QUE DECIRLO
+
+**El orden intercalado fue SIEMPRE el mismo: `p10`, `p11`, `p9`.** Eso resuelve
+lo que se quería resolver —la deriva de carga le cae a los tres por igual, que
+era el motivo de no ir por bloques— pero **confunde perfectamente el brazo con la
+posición dentro de la ronda**. `p10` fue siempre el 1.º, `p11` siempre el 2.º y
+`p9` siempre el 3.º, así que un efecto de **posición** («el tercero de cada ronda
+falla más») sería indistinguible de un efecto **del medio**.
+
+**Hoy no cambia la conclusión**, porque la conclusión es que **no** hay
+diferencia: si ni siquiera separando se ve efecto, la confusión no puede estar
+escondiendo uno. Pero **si hubiera salido señal, no habría podido decir de qué
+era**, y me habría llevado a bisecar un producto por un artefacto del banco —que
+es exactamente el error del 2026-08-20 con otra cara—. **Lo que hay que hacer la
+próxima vez: barajar el orden dentro de cada ronda.** Queda escrito en la
+trampa 44 y sin implementar: `contar-arranques.sh` sigue recorriendo `BRAZOS` en
+orden fijo, y no se toca hoy porque cambiarlo ahora invalidaría la comparación
+con estos 18 arranques.
+
+#### (h) EL MARCADOR DE LAS PREDICCIONES DE (a)
+
+| # | qué predije, antes de arrancar nada | resultado |
+|---|---|---|
+| ~70 % | **es el banco**: tasas parecidas y los controles fallan también | **ACIERTO**, y por el camino más fuerte: fallan **los tres** brazos |
+| ~25 % | hay efecto de grado: la capa entera hace el arranque más frágil | **NO**: `p = 0,6942`, y el peor brazo es el de capa inerte |
+| ~5 % | el banco no falla hoy y no se prueba nada | **NO**: falló 6 de 18 |
+| criterio 1 | basta con que un control falle para cerrar el `[OMIT]` | **se cumplió en la RONDA 1**, con `p9` |
+| criterio 3 | «una diferencia de un solo arranque no es nada» | **hizo falta**: `p11` 5/6 y `p9` 3/6 se leerían como efecto sin él |
+
+**Acerté la predicción principal, y aun así el día produjo dos cosas que no
+estaban previstas:** el patrón de (f) y el fallo de diseño de (g). Como el
+2026-08-20: acertar lo que se predice **no protege** de lo que no se predijo.
+
+**LO QUE QUEDA `[OMIT]` Y NO SE CUELA:**
+
+- **Qué causa el fallo del 33 %.** Está **acotado** —es del anfitrión, no del
+  producto— pero **no explicado**. La pista es (f).
+- **Si el patrón de un fallo por ronda se sostiene**, que es post-hoc y necesita
+  su propia predicción escrita antes.
+- **El efecto de la posición dentro de la ronda**, indistinguible hoy por (g).

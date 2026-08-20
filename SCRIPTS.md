@@ -2632,3 +2632,44 @@ declarada.
 **Por qué un guion y no yo:** quince arranques con tasas cerca del 50 % se leen
 después como uno quiera. `3 de 5` frente a `5 de 5` **parece** peor y da
 `p = 0,095`. El guion no negocia.
+
+## Y una más, contando arranques (2026-08-21)
+
+**44. INTERCALAR SIEMPRE EN EL MISMO ORDEN CONFUNDE EL BRAZO CON LA POSICIÓN.**
+Cazada en el propio experimento de §4.59, y es mía. Ir por rondas —`p10`, `p11`,
+`p9`, `p10`, `p11`, `p9`…— en vez de por bloques resuelve la deriva de carga del
+anfitrión, que era el motivo de hacerlo. Pero si el orden **dentro** de la ronda
+no cambia nunca, cada brazo ocupa **siempre la misma posición**, y entonces:
+
+```
+p10 fue el 1.º las seis veces  ->  4 de 6
+p11 fue el 2.º las seis veces  ->  5 de 6
+p9  fue el 3.º las seis veces  ->  3 de 6
+```
+
+**Un efecto de posición** —«el tercero de cada ronda arranca peor porque algo del
+anfitrión aún no se ha soltado»— **daría exactamente la misma tabla** que un
+efecto del medio, y no hay forma de separarlos después. Aquel día no cambió la
+conclusión porque la conclusión fue que **no** hay diferencia (`p = 0,6942`), y
+una confusión no puede esconder un efecto que tampoco aparece separando. Pero si
+hubiera salido señal, habría llevado a bisecar un producto por un artefacto del
+banco — la trampa 42 con otra cara.
+
+**Se arregla barajando el orden dentro de cada ronda**, y **está sin arreglar a
+propósito**: `contar-arranques.sh` recorre `BRAZOS` en orden fijo, y cambiarlo
+invalidaría la comparación con los 18 arranques ya medidos. **El día que se
+vuelva a contar, primero se baraja.**
+
+> **ENMIENDA A LA TRAMPA 42, del día siguiente y en su favor.** «Un negro
+> repetido una vez sigue sin ser un resultado» se queda corta: medida la tasa,
+> **este anfitrión falla el 33 % de los arranques** (6 de 18, con los tres medios
+> fallando). Con esa tasa hacen falta **cinco** arranques limpios seguidos para
+> que la probabilidad de que sea suerte baje del 15 %, y **un `1 de 1` no dice
+> prácticamente nada**: la probabilidad de que un medio bueno lo dé es 0,67. La
+> regla operativa ya no es «repite una vez», es **cuenta, y con un control
+> conocido-bueno corriendo en el mismo rato**.
+
+> **Y LA TRAMPA 38 CONFIRMADA POR TERCERA VEZ, ahora con 18 arranques.**
+> `debug.log` se queda en el rellano de ~92 KB **tanto si la pantalla acaba negra
+> como si acaba en el instalador** (91 935 – 92 402 en los 18). No separa nada, y
+> ya no hay que volver a comprobarlo.

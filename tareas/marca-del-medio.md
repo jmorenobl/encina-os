@@ -85,8 +85,25 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       > escribe: se compone** de fuentes ya verificadas, así que el nombre sigue en
       > un solo sitio.
       >
-      > **SIGUE ABIERTA por lo de siempre:** la **capa no se monta** (§4.54e), o sea
-      > que no hay marca en la sesión viva; y el **`[OJOS]`** es de Jorge.
+      > **LA CAPA SE MONTA DESDE EL 2026-08-20** (§4.58e): `layerfs-path=` en la
+      > línea del núcleo y la capa renombrada a la cadena de `casper`. En la sesión
+      > viva `NAME="Encina OS"`, `/usr/share/desktop-provision/` con su
+      > `whitelabel.yml`, el **fondo es el nuestro** y el instalador arranca en
+      > «Disposición del teclado» en español.
+      >
+      > **Y LO QUE LA MANTENÍA ABIERTA SE MIDIÓ EL 2026-08-21 y era el BANCO**
+      > (§4.59): con la capa entera el medio parecía arrancar sólo a veces. **18
+      > arranques en 6 rondas intercaladas**: `p10` (capa entera) **4 de 6**, `p11`
+      > (capa vacía) **5 de 6**, `p9` (capa **inerte**) **3 de 6**; Fisher de una
+      > cola **`p = 0,6942`**, sin señal. **Este anfitrión falla el 33 % de los
+      > arranques y los tres medios fallan**, incluido el que arranca como si no
+      > llevara capa. **La capa no afecta a la probabilidad de arrancar, y no queda
+      > ni un fichero bajo sospecha.**
+      >
+      > **SIGUE ABIERTA SÓLO POR EL `[OJOS]`, QUE ES DE JORGE**, y ahora hay de
+      > verdad qué mirar: las capturas de los 18 arranques están en
+      > `medios/conteo-arranques/capturas/`, y las buenas de `p10` llevan el fondo
+      > de Encina (3 618–3 640 colores frente a los 570–595 del púrpura de Ubuntu).
       >
       > **LO ANTERIOR, del 2026-08-19 por la tarde, al lado:**
 
