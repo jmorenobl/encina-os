@@ -13770,3 +13770,27 @@ EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release arm64 (20260210)
 **`[OMIT]` que sigue sin medir:** si un codename de **una sola palabra** vale
 —los tres que han arrancado llevan dos—, y si un codename con **tildes o eñes**
 vale. Ninguna de las dos hace falta para el producto tal como queda.
+
+**h) ARRANCA, Y ES UN MEDIO DE PRODUCTO COMPLETO.** `71f7958c7f19b256…`,
+3 721 265 152 bytes, fabricado **sin `--info-crudo`**: **0 fallos, 0 avisos de
+diagnóstico**, `1 1 1 1`. Y la composición del `Volume id` se ve en la salida:
+
+```
+[OK]  el Volume id se compone: nombre «EncinaOS» (.disk/info) + version «0.2.1»
+      (encina-meta, cotejado por huella) + «arm64»
+volid: EncinaOS 0.2.1 arm64   (lo que se ve al conectar el USB)
+```
+
+Arrancado: **«Disposición del teclado», en español**. O sea que el medio lleva a
+la vez **el `.disk/info` que hace arrancar al instalador** y **un `Volume id`
+propio con nuestro nombre y NUESTRA versión** —las dos cosas que hasta hoy eran
+incompatibles—.
+
+**i) Y UNA REGLA MÍA DE HOY, TUMBADA EL MISMO DÍA POR UNA CAPTURA.** La trampa 41
+decía que el tamaño del PNG distingue negra / texto / gráfica. **Esta captura
+gráfica pesó 309 568 bytes**, dentro del rango que yo había asignado a «registro
+de texto». La causa: `capturar-vm.sh` captura **el tamaño de la ventana**, y ésta
+era de **1280×840** mientras las anteriores eran de **2560×1680**. **La regla sólo
+vale a escala fija**, y la escribí sin ese control. Enmendada en `SCRIPTS.md`.
+Es la segunda vez hoy que un instrumento mío pasa por bueno algo que no había
+mirado —la otra fue el `grep -r` sin `-a`—.
