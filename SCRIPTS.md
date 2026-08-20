@@ -2063,8 +2063,9 @@ avisa de que se ha dejado la mitad**. El tema de arranque está en la segunda.
 
 ## Poner la marca del medio: `imagen/capa-marca.sh` (2026-08-15)
 
-**Se ejecuta en el Mac.** Fabrica **un solo fichero**, `zz-encina.squashfs`, que
-es **toda la marca de la sesión viva y del instalador** del medio. Lo mete
+**Se ejecuta en el Mac.** Fabrica **un solo fichero**,
+`minimal.standard.live.encina.squashfs`, que es **toda la marca de la sesión viva
+y del instalador** del medio. Lo mete
 después `fabricar-iso.sh` en `/casper/`. Es el instrumento de `MEDICIONES.md`
 §4.52 y la forma de `ENCINA-OS.md` **D23**.
 
@@ -2077,15 +2078,36 @@ Necesita `xorriso`, `osirrox`, `unsquashfs`, `mksquashfs`, `sips` y `python3`.
 verdad— y **~14 s** con `--trabajo` ya poblado. El directorio de `--trabajo` es
 **el mismo que usa `inventario-marca.sh`**, a propósito.
 
-**Lo que hay que entender antes de tocarlo, y es UNA cosa: la capa manda por su
-NOMBRE.** El medio **no lleva `layerfs-path=`** en la línea del núcleo, así que
-`casper` monta **todos** los `*.squashfs` de `/casper` —21— y los va poniendo
-delante uno a uno, con lo que **el último por orden alfabético acaba el primero
-de `lowerdir=` y es el que manda**. `zz-encina` va detrás de los `minimal.*`.
-**Si alguien la renombra, la capa deja de tapar y no falla nada:** el medio
-vuelve a decir Ubuntu en silencio. El control (a) del guion reproduce ese bucle
-tal cual está en `casper` y sabe decir que **no** con un nombre que empiece por
-`aa-`.
+**Lo que hay que entender antes de tocarlo, y son DOS cosas: el nombre de la
+capa no es tipografía, es la CADENA — y la capa no se monta sola.**
+
+`casper` entra por su rama de **multi‑capa**, porque el initrd trae
+`LAYERFS_PATH` puesto en `/conf/conf.d/default-layer.conf`. Esa rama **no
+enumera el directorio**: construye la lista **quitando puntos del nombre**, un
+eslabón cada vez, y **hace `panic` si un eslabón no existe como fichero**. Luego
+las antepone dos veces, con lo que **la más larga acaba la primera de
+`lowerdir=`**, que en `overlayfs` es la que manda. Por eso la capa se llama
+`minimal.standard.live.encina.squashfs` y **no puede llamarse de otra forma**:
+cuelga de la cadena que el medio ya tiene. Un nombre mal puesto no da una capa
+que no tapa — da **un medio que no arranca**.
+
+Y **que la capa viaje no basta**: hay que nombrarla en la línea del núcleo con
+`layerfs-path=`, que lo pone `fabricar-iso.sh` (§4.58). Sin esa bandera el medio
+la lleva dentro y **no la monta nunca**, en silencio y sin fallar nada — que es
+exactamente lo que pasó del **2026-08-15 al 20**.
+
+El control (a) del guion reproduce ese bucle tal cual está en `casper` y sabe
+decir que **no** con `zz-encina.squashfs`, que no tiene ni un punto que quitar.
+Y hay banco aparte, `banco-cadena.sh`, más abajo.
+
+> **LO QUE ESTE PÁRRAFO DECÍA HASTA EL 2026-08-20, y se deja al lado porque era
+> falso:** *«el medio no lleva `layerfs-path=`, así que `casper` monta todos los
+> `*.squashfs` de `/casper` —21— y el último por orden alfabético acaba el
+> primero de `lowerdir=`; `zz-encina` va detrás de los `minimal.*`»*. El cero que
+> lo sostenía era **verdadero**: se buscó `layerfs-path` —la grafía de la línea
+> de órdenes— y **la variable de dentro se llama `LAYERFS_PATH` y vive en un
+> `cpio` comprimido**. El orden alfabético **no pinta nada** en la rama que
+> corre, y el `zz-` no servía de nada.
 
 **La fuente está versionada en [imagen/marca/](imagen/marca/)** y no dentro del
 guion:
@@ -2284,7 +2306,11 @@ clavados. Desde hoy hay **una bandera por mecanismo**:
 ./imagen/construir-todo.sh … --sin-capa        # las pasa tal cual, no las interpreta
 ```
 
-- `--sin-capa` — no se fabrica ni se añade `/casper/zz-encina.squashfs`
+- `--sin-capa` — no se fabrica ni se añade
+  `/casper/minimal.standard.live.encina.squashfs`, **y tampoco se pone el
+  `layerfs-path=`**. Las dos cosas van juntas a propósito: un `layerfs-path=`
+  apuntando a una capa que no viaja hace que `casper` haga **`panic`**, o sea un
+  medio que no arranca por culpa del bisecado y no de lo que se bisecaba
 - `--sin-volid` — el `Volume id` sigue siendo `Ubuntu 24.04.4 LTS arm64`
 - `--sin-info` — el `/.disk/info` viaja **intacto**, el oficial
 - `--sin-menu` — el `menuentry` sigue diciendo `Try or Install Ubuntu`
@@ -2313,10 +2339,61 @@ estaría de acuerdo con el guion por construcción.
 
 Los casos son **medios reales con su arranque ya medido**, y el control va dentro:
 tres tienen que dar `0 0 0 0` —la oficial, `ac0a5721…` y `1224b5b1…`, que son las
-**tres cuyo instalador funciona**— y una `1 1 1 1` —`e8a0ead2…`, la que **se
-cae**—. Un lector mudo falla ahí. **Gastado el control:** con un directorio de
-medios trucado por enlaces duros —la ISO oficial con el nombre de la que lleva los
-cuatro— el banco dice `[FALLO]` **en los dos sentidos** y sale con código 1.
+**tres cuyo instalador funciona**—. Un lector mudo falla ahí. **Gastado el
+control:** con un directorio de medios trucado por enlaces duros —la ISO oficial
+con el nombre de la que lleva los cuatro— el banco dice `[FALLO]` **en los dos
+sentidos** y sale con código 1.
+
+**El 2026-08-20 cambia la REGLA de la columna «capa», y con ella dos casillas**
+(§4.58). Hasta ese día el lector daba la capa por presente con sólo ver un
+`squashfs` de más en `/casper`; desde ese día exige **además** que el núcleo la
+nombre con `layerfs-path=`, porque **un fichero que nadie monta no es un
+mecanismo**. Con la regla nueva `e8a0ead2…` y `71f7958c…` pasan de `1 1 1 1` a
+`0 1 1 1`, y **eso es una descripción más verdadera de lo que llevaban**. Se deja
+escrito al lado lo que las casillas esperaban antes, dentro del propio banco.
+
+> **Y se lleva por delante una premisa de §4.54i:** el bisecado que dejó la
+> regresión «dentro del grupo de D23» varió una capa **inerte**, así que lo que
+> allí se llamó «la capa» significaba sólo *«un fichero de más en `/casper`»*. No
+> invalida el bisecado —la regresión sigue dentro del grupo— pero sí lo que se
+> creía que era una de sus cuatro piezas.
+
+**Y el banco estrena un control por COLUMNA, que le faltaba desde el principio:**
+que haya ejecutado casos no basta; si **una** de las cuatro columnas sale
+constante entre los casos que de verdad corrieron, un lector que contestara
+siempre lo mismo **en esa columna** pasaría en verde. Lo primero que dijo al
+estrenarlo fue justo eso —sin un medio con `layerfs-path=` no podía distinguir un
+lector bueno de uno mudo en la columna de la capa—, y se calló al fabricar
+`p10-capa`. **Ese control no suma a «correctas»**: describe la tabla de casos, no
+una lectura, y sumarlo daba un «correctas: 3» con los cinco casos en rojo.
+
+## El banco de la cadena de capas: `imagen/banco-cadena.sh` (2026-08-20)
+
+**Es el banco más caro de no tener.** `casper` construye la lista de capas
+**quitando puntos del nombre** y hace **`panic`** si un eslabón no existe como
+fichero. Un nombre mal calculado no da una capa que no tapa: da **un medio que no
+arranca**, y eso se descubre veinte minutos de construcción y un arranque más
+tarde. Esto son **segundos**.
+
+```bash
+./imagen/banco-cadena.sh
+```
+
+**Extrae `cadena_de` y `lowerdir_de` de `capa-marca.sh`** en vez de recopiarlas, y
+**se niega a medir si la extracción sale corta** —menos de dos funciones o menos
+de doce líneas—, porque un banco sobre un guion vacío contesta que sí a todo.
+
+**El caso que manda es el primero y no es inventado:** es el `lowerdir=` que el
+invitado imprimió de verdad en `/proc/mounts` el 2026-08-17 (§4.54e) con el
+`LAYERFS_PATH` que trae el initrd. Si la reproducción no saca **esa** cadena, no
+reproduce nada y lo demás no vale. Y hay un caso que comprueba que el orden
+**no** es el alfabético: si pasara, la reproducción estaría copiando la **rama
+muerta** de `casper`.
+
+**Gastado con tres sabotajes**, los tres cazados y con código 1 —el sano da 0—:
+`cadena_de` anexando en vez de anteponer (3 fallos, y uno es el caso medido),
+`lowerdir_de` sin invertir (2 fallos, igual), y las funciones renombradas en el
+guion, que dispara el rechazo de la extracción.
 
 ## Cuatro más, bisecando la marca del medio (2026-08-19)
 
@@ -2422,3 +2499,40 @@ de un ejecutable, `strings -a` **con su control** —una cadena inventada tiene 
 dar 0 y una que sabes que está tiene que dar más de 0—. Es la misma familia que
 `timeout` en §4.54 y el banco de §4.51: **el instrumento contestó que no había
 nada porque ni siquiera miró.**
+
+## Y una más, montando la capa (2026-08-20)
+
+**42. UNA PANTALLA NEGRA REPETIDA UNA VEZ SIGUE SIN SER UN RESULTADO. En este
+anfitrión el arranque gráfico del medio FALLA A VECES.** Es la trampa 38 subida
+de nivel, y hoy costó una causa escrita y dos horas de bisecado.
+
+`p14-plymouth` dio **pantalla negra** en su primer arranque: dos capturas
+idénticas, `debug.log` estabilizado en el **rellano de ~92 KB** —el mismo al que
+llegan los medios que sí arrancan—, `systemd` entero en `[ OK ]` en la captura de
+texto e **IP en el `arp`**. Con eso se escribió que `ubuntu-text.plymouth` era la
+causa, **por suficiencia**, con los otros 24 ficheros constantes. **El segundo
+arranque del MISMO medio, sin tocar nada, fue al escritorio entero** con el
+instalador en español.
+
+```
+p14, arranque 1 -> NEGRA
+p14, arranque 2 -> ESCRITORIO            <- mismo medio, mismo bundle, nada tocado
+```
+
+**Lo que hay que hacer distinto, y es caro:** un arranque **no es** una medición
+y dos tampoco cuando el fallo es intermitente. Un «arranca» vale a la primera
+—es un positivo—; un **«no arranca» hay que CONTARLO**, con N arranques del medio
+en cuestión y N de un control conocido-bueno en el mismo rato. Un bisecado
+construido sobre «negras» sueltas **no es un bisecado**: las cuatro comparaciones
+de §4.58 se cayeron a la vez cuando cayó la primera.
+
+**Y las dos señales de la trampa 38 no sirven para separar esto**, porque las dos
+dicen «viva» en los dos casos. Lo único que separó fue **repetir**.
+
+**43. El tamaño del `squashfs` NO dice que el contenido sea el mismo.** Quitando
+seis ficheros de texto de la capa, `mksquashfs` dio **exactamente los mismos
+3 084 288 bytes** que la capa entera —relleno de bloque—. Si se hubiera dado por
+hecho que «pesa igual, será la misma», el bisecado entero habría medido dos veces
+la misma capa. Se comprueba **por contenido y por huella**: `unsquashfs -ll` con
+la ruta de cada fichero que tiene que faltar, **más un control** de uno que tiene
+que seguir estando, y `shasum` de las dos capas.

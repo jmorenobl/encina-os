@@ -175,6 +175,50 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       > tiene **precio de producto y es de Jorge**: esa palabra manda a la vez en el
       > canal, en el rótulo del icono y en el `Volume id`.
       >
+      > **EL MECANISMO, RESUELTO EL 2026-08-20 (`MEDICIONES.md` §4.58): LA CAPA
+      > SE MONTA.** Leído dentro de la sesión viva, que es la única señal que
+      > vale:
+      >
+      > ```
+      > encinaos@encinaos:~$ grep encina /proc/mounts
+      > /cow / overlay rw,relatime,lowerdir=/minimal.standard.live.encina.squashfs:
+      > /minimal.standard.live.squashfs:/minimal.standard.squashfs:/minimal.squashfs,…
+      > ```
+      >
+      > **Dos cambios y nada más:** la capa se llama
+      > `minimal.standard.live.encina.squashfs` —el nombre **es la cadena** de
+      > `casper`, que quita puntos y hace `panic` si un eslabón falta— y el
+      > `grub.cfg` lleva **`layerfs-path=`**, que **pisa** al `LAYERFS_PATH` del
+      > initrd (`/init:94` lo lee, `casper:909` lo reexporta).
+      >
+      > **PERO LA CASILLA NO SE CIERRA, porque con la capa REAL la sesión gráfica
+      > no llega:** `p10` da pantalla negra con el cursor de Xorg en **dos**
+      > arranques, con `systemd` entero en `[ OK ]` y con IP en el `arp`. **Y eso
+      > está bisecado quitando piezas, no leyendo:**
+      >
+      > | medio | capa | resultado |
+      > |---|---|---|
+      > | `p10-capa` | los 30 ficheros | **NEGRA**, dos arranques |
+      > | `p11-vacia` | 1 fichero que no tapa nada | escritorio entero |
+      > | `p12-sintexto` | 24: los 6 de texto **fuera** | escritorio + **fondo de Encina** |
+      > | `p13-desktop` | 24 + `ubuntu.desktop` | escritorio + fondo de Encina |
+      > | `p14-plymouth` | 24 + `ubuntu-text.plymouth` | negra, y al **2º** arranque ESCRITORIO |
+      > | `p10-capa` | los **30**, otra vez | negra, negra, y al **3º** **ESCRITORIO** |
+      >
+      > **Y ESAS DOS ÚLTIMAS FILAS SE LLEVAN EL BISECADO ENTERO (§4.58k–l):** la
+      > pantalla negra era **el banco**, no el producto —el arranque gráfico falla
+      > a veces en este anfitrión—, así que **todos los «NEGRA» eran negativos no
+      > fiables**. `ubuntu-text.plymouth` estuvo escrito como causa dos horas.
+      > **No queda ni un fichero bajo sospecha.**
+      >
+      > **LA CASILLA ESTÁ HECHA SALVO LOS `[OJOS]`:** la capa **se monta** —cuatro
+      > eslabones, el nuestro el primero—, **`/usr/share/desktop-provision/`
+      > existe** con su `whitelabel.yml`, **`/etc/os-release` dice
+      > `NAME="Encina OS"`**, el fondo de la sesión viva es el nuestro y **el
+      > instalador arranca en español**. Todo leído dentro de `p10`, el medio de
+      > producto entero. **`[OMIT]`:** el título de la ventana del instalador
+      > (P5), y la causa del fallo intermitente del banco.
+
       > **REABIERTA EL 2026-08-17 AL ARRANCARLA POR PRIMERA VEZ
       > (`MEDICIONES.md` §4.54): LA CAPA NO SE MONTA NUNCA, y con ella no llega
       > NADA de lo de abajo.** Medido dentro de la sesión viva:

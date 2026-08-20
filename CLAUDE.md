@@ -56,7 +56,8 @@ Imagen (`imagen/`), desde el Mac:
                            --salida medios/encina-os.iso
 ./imagen/comprobar-propios.sh <paquete> [--manifiesto X]   # huella del .deb contra repo-manifiesto.tsv
 ./imagen/inventario-marca.sh <iso> [--trabajo D]    # dónde dice Ubuntu un medio, leyéndolo (no lo arranca)
-./imagen/capa-marca.sh <iso> --salida <dir>         # fabrica zz-encina.squashfs, la marca del medio (D23)
+./imagen/capa-marca.sh <iso> --salida <dir>         # fabrica la capa de marca del medio (D23)
+./imagen/banco-cadena.sh                            # el banco de la cadena de capas de casper (segundos)
 ./imagen/fabricar-iso.sh --repo D --salida X [--sin-capa|--sin-volid|--sin-info|--sin-menu]
                                                    # una bandera por mecanismo de D23: es para BISECAR, no el producto
 ./imagen/fabricar-iso.sh --leer-mecanismos <iso>   # qué mecanismos lleva un medio, leídos de él

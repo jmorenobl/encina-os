@@ -401,7 +401,82 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-20: **HAY MEDIO DE PRODUCTO QUE ARRANCA, CON NOMBRE Y VERSIÓN PROPIOS** — lo que queda es la capa, la reproducibilidad y los `[OJOS]`
+> ### LA TAREA EN CURSO, 2026-08-20 (cierre): **LA CAPA SE MONTA. La casilla 3 está HECHA salvo los `[OJOS]`**
+>
+> **LO QUE SE PEDÍA, HECHO Y MEDIDO DENTRO DE LA SESIÓN VIVA** (`MEDICIONES.md`
+> §4.58e). Del 2026-08-15 al 20 esa orden devolvía **cero líneas**:
+>
+> ```
+> encinaos@encinaos:~$ grep encina /proc/mounts
+> /cow / overlay rw,relatime,lowerdir=/minimal.standard.live.encina.squashfs:
+> /minimal.standard.live.squashfs:/minimal.standard.squashfs:/minimal.squashfs,…
+> ```
+>
+> **SON DOS CAMBIOS Y NADA MÁS.** La capa se llama
+> `minimal.standard.live.encina.squashfs` —**el nombre es la CADENA**: `casper`
+> la construye quitando puntos y **hace `panic` si un eslabón no existe**, así
+> que el nombre no se elige, se hereda— y el `grub.cfg` lleva **`layerfs-path=`**,
+> que **pisa** al `LAYERFS_PATH` del initrd (`/init:94` lo lee, `casper:909` lo
+> reexporta: **no hay que tocar el initrd**).
+>
+> **Y LA MARCA YA LLEGA:** en `p12` y `p13` el fondo de la sesión viva **ya no es
+> el de Ubuntu**, es el nuestro. Es lo que la casilla 3 perseguía desde el 15.
+>
+> **LO QUE NO ESTÁ CERRADO, y no se cuela:** con la capa **entera** (30 ficheros)
+> la sesión gráfica **no llega** —pantalla negra con el cursor de Xorg, **dos**
+> arranques, con `systemd` entero en `[ OK ]` y con IP en el `arp`—. Bisecado
+> **quitando piezas**, que es la única forma que produce causas aquí:
+>
+> | medio | qué lleva la capa | resultado |
+> |---|---|---|
+> | `p10-capa` | los **30** ficheros | **NEGRA**, dos arranques |
+> | `p11-vacia` | **1** fichero que no tapa nada | escritorio entero + instalador |
+> | `p12-sintexto` | **24**: los 6 de texto **fuera** | escritorio + **fondo de Encina** |
+> | `p13-desktop` | 24 + `ubuntu.desktop` | escritorio + fondo de Encina |
+> | `p14-plymouth` | 24 + `ubuntu-text.plymouth` | negra, y al **2º** arranque ESCRITORIO |
+> | `p10-capa` | los **30**, otra vez | negra, negra, y al **3º** **ESCRITORIO** |
+>
+> **LAS DOS ÚLTIMAS FILAS SON LA LECCIÓN DEL DÍA: la pantalla negra era el BANCO,
+> no el producto.** En este anfitrión el arranque gráfico **falla a veces**, y
+> falla igual que un fallo de producto —negra, `systemd` entero en `[ OK ]`, IP
+> en el `arp`, `debug.log` en el rellano de ~92 K—. Con un solo arranque negro se
+> escribió que `ubuntu-text.plymouth` era la causa; **duró dos horas y la tumbó
+> repetir el arranque** (§4.58j–l). **No queda ni un fichero bajo sospecha.**
+>
+> **LAS CINCO PREDICCIONES, escritas antes de fabricar nada: cuatro aciertos y
+> una sin medir.** Leído dentro de `p10`, el medio de producto entero:
+>
+> ```
+> PRETTY_NAME="Encina OS 24.04 LTS"     images  slides  whitelabel.yml
+> NAME="Encina OS"   LOGO=encina-logo
+> ```
+>
+> El 2026-08-17 esas mismas órdenes daban `NAME="Ubuntu"` y «No existe el
+> archivo». **`[OMIT]`: P5**, el título de la ventana del instalador — las
+> capturas enseñan el título de la **página**, no el `app-name`.
+>
+> **LO SIGUIENTE, en este orden:**
+>
+> 1. **Acotar el fallo intermitente del banco.** Contamina **cualquier** medición
+>    de arranque que se haga aquí, y hoy costó una causa falsa. Mientras siga, un
+>    «no arranca» **hay que contarlo** —N arranques y N de un control—; un
+>    «arranca» vale a la primera.
+> 2. **`construir-todo.sh` sigue SIN completarse** con el árbol de hoy, y **la
+>    segunda pasada de reproducibilidad sigue sin pagarse**. Los medios de hoy
+>    salieron todos de `fabricar-iso.sh --repo`.
+> 3. **Los dos `[OJOS]` de Jorge** y las dos últimas casillas de
+>    `tareas/aspecto/5-cierre.md`. **Ahora hay de verdad qué mirar:** la sesión
+>    viva ya lleva marca.
+>
+> **Y EL DISCO MANDA:** quedan ~10 GiB y `medios/` tiene **nueve** ISOs. No cabe
+> otra bisección sin borrar, y **qué se borra es de Jorge** (`p6-trozo` está
+> marcada como gastada). Ojo: borrar VMs no libera nada si su ISO es enlace duro,
+> y `fabricar-vm-medio.py` **se niega a fabricar** si quedan menos de dos bundles
+> con `F6223E90`.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-20 (mañana): **HAY MEDIO DE PRODUCTO QUE ARRANCA, CON NOMBRE Y VERSIÓN PROPIOS** — lo que queda es la capa, la reproducibilidad y los `[OJOS]`
 >
 > **`71f7958c…` ARRANCA** y enseña «Disposición del teclado» en español, fabricada
 > **sin `--info-crudo`**: **0 fallos, 0 avisos**, `1 1 1 1` (`MEDICIONES.md`

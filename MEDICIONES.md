@@ -13913,3 +13913,287 @@ leídos con sus controles **no prueba nada** sobre el medio que arranque. La se�
 es `/proc/mounts` **dentro de la sesión viva**, no lo que diga el guion ni lo que
 diga esta sección.
 
+#### (e) EL RESULTADO: **LA CAPA SE MONTA.** P1, leída dentro de la sesión viva
+
+Es lo único que contaba, y no lo dice el guion: lo dice `/proc/mounts` del
+invitado, tecleado en un `gnome-terminal` de la sesión viva de `p11`.
+
+```
+encinaos@encinaos:~$ grep encina /proc/mounts
+/cow / overlay rw,relatime,lowerdir=/minimal.standard.live.encina.squashfs:/mini
+mal.standard.live.squashfs:/minimal.standard.squashfs:/minimal.squashfs,upperdir
+=/cow/upper,workdir=/cow/work,uuid=on,xino=off,nouserxattr 0 0
+```
+
+**Cuatro eslabones, el nuestro el primero**, que es carácter por carácter lo que
+`banco-cadena.sh` había calculado antes de fabricar nada. **P1 se cumple.** Del
+2026-08-15 al 20 esa orden devolvía **cero líneas**; ahora devuelve la capa
+encima de todo. **El mecanismo de la casilla 3 está resuelto y medido.**
+
+Y con él caen dos cosas de paso: `casper` **no hace `panic`** con la cadena de
+cuatro —lo que confirma que cada eslabón existía—, y **la línea del núcleo pisa
+de verdad** al `LAYERFS_PATH` del initrd, que es lo que (a) había leído.
+
+#### (f) Y LO QUE NO SE ESPERABA: **CON LA CAPA REAL, LA SESIÓN GRÁFICA NO LLEGA**
+
+`p10-capa` (`59bc3a3c…`, 0 fallos, 0 avisos, `1 1 1 1`), **dos arranques
+completos**, VM `encina-capa-p10` con identificadores propios:
+
+```
+arranque 1  -> pantalla NEGRA con el cursor «X» de Xorg, a los 5 min y a los 10
+arranque 2  -> los mensajes de systemd salen en texto y TODOS en [ OK ]
+               -- ufw, systemd-resolved, NetworkManager, cups, cloud-init,
+               snap-ubuntu-desktop-bootstrap-495.mount, gdm.service --
+               y al llegar ahi: pantalla NEGRA con el cursor «X»
+```
+
+**No es una colgada y hay que decirlo con lo que la separa:** el `debug.log` de
+QEMU llega a **92 424 bytes** y se estabiliza —una VM colgada se queda en
+**2 759** (§4.54h)—, y la máquina **tiene IP en el `arp` del anfitrión**
+(`192.168.64.30` en `76:ce:c4:c4:c4:c4`). O sea que el núcleo arranca, `casper`
+monta, `systemd` llega al final y la red sube. **Lo que no llega es la sesión.**
+
+**Y se repitió el arranque a propósito, que es lo que manda la trampa 38:** una
+pantalla negra no es un resultado, y un medio arrancó al tercer intento. Aquí
+salió **igual las dos veces**, así que sí lo es.
+
+#### (g) LA BISECCIÓN, Y AQUÍ SÍ SE QUITA UNA PIEZA Y CAMBIA EL RESULTADO
+
+**`p11-vacia`**: el **mismo** medio y el **mismo** `layerfs-path=`, con una capa
+de **4 096 bytes** que lleva **un solo fichero** —`/usr/share/encina-capa-vacia/LEEME`—
+que **no tapa nada** del medio. Todo lo demás, idéntico.
+
+```
+p10-capa   capa de 3 084 288 bytes, 30 ficheros, 21 de ellos TAPAN  -> NEGRA (x2)
+p11-vacia  capa de     4 096 bytes,  1 fichero,  que no tapa nada   -> ESCRITORIO
+                                                                       ENTERO
+```
+
+**`p11` arranca al escritorio completo**, con el fondo de Ubuntu, la barra
+superior, el reloj, y el instalador abriéndose solo: *«Le damos la bienvenida a
+Ubuntu» → «Preparando Ubuntu…» → «Disposición del teclado», en español*, en la
+2ª de las once pantallas. Y desde ahí se abrió el `gnome-terminal` de (e).
+
+**LA CONCLUSIÓN, y es la forma que este proyecto acepta —quitar una pieza y ver
+cambiar el resultado, no leer un mecanismo—:**
+
+> **El mecanismo NO rompe nada. Lo que tumba la sesión gráfica es el CONTENIDO
+> de la capa**, porque es lo ÚNICO que se movió entre los dos medios.
+
+**Y con la precisión que el experimento permite y ni una más:** en `p11` no viajó
+**ninguno** de los 30 ficheros, así que lo medido es que **los 30 como grupo**
+tumban la sesión. Dentro del grupo hay una división que **no** está medida y sólo
+ordena a los sospechosos: **21 TAPAN** un fichero del medio y **9 son rutas
+nuevas** que no tapan nada. Los 21 son los primeros a los que mirar; los 9 no
+quedan exonerados —`whitelabel.yml` lo lee alguien, aunque sea el instalador—.
+
+**Lo que esto NO dice todavía, y no se adivina:** cuál de los 21. La lectura no
+lo delata —los 15 activos gráficos son PNG y SVG válidos, con dimensiones sanas,
+y los 6 de texto sólo se diferencian del original del medio en el nombre y en
+tres campos de adorno (`HOME_URL`, `SUPPORT_URL`, `X-Ubuntu-Gettext-Domain`)—.
+**Y eso es exactamente lo previsto:** leer no produce causas aquí.
+
+
+#### (h) SEGUNDA BISECCIÓN: **EL CULPABLE ESTÁ ENTRE LOS SEIS FICHEROS DE TEXTO**, y el fondo de Encina ya se ve
+
+`p12-sintexto` (`988b6c2e…`, 0 fallos): la **misma** capa de `p10` con los **seis
+ficheros de presentación quitados** y **los otros 24 dentro** —los 15 activos
+gráficos y las 9 rutas nuevas—. Verificado dentro del `squashfs` antes de
+fabricar, uno a uno, con su control:
+
+```
+0  etc/issue                     0  usr/lib/os-release
+0  etc/issue.net                 0  usr/share/wayland-sessions/ubuntu.desktop
+0  etc/lsb-release               0  usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth
+1  usr/share/backgrounds/warty-final-ubuntu.png   <- CONTROL: el resto sigue dentro
+huellas: ef15c522… (entera)  vs  5f326fdd… (sin texto)   <- y NO coinciden
+```
+
+**El tamaño de las dos capas salió idéntico —3 084 288 bytes las dos— y eso NO
+significaba que fueran iguales:** es el relleno de bloque del `squashfs`. Se
+comprobó por contenido y por huella, no por tamaño (trampa 13).
+
+```
+p10  30 ficheros (los 6 de texto DENTRO)  -> NEGRA, dos arranques
+p12  24 ficheros (los 6 de texto FUERA)   -> ESCRITORIO ENTERO + instalador
+```
+
+**Y ADEMÁS ES LA PRIMERA VEZ QUE LA MARCA LLEGA A LA SESIÓN VIVA:** en la captura
+de `p12` **el fondo ya no es el de Ubuntu**, es el nuestro —la dehesa con el
+molino y las amapolas— tapando `warty-final-ubuntu.png` desde la capa. O sea que
+**el mecanismo entrega lo que tenía que entregar**; lo que sobra es uno de los
+seis. *(El juicio de si se ve BIEN es `[OJOS]` de Jorge; aquí sólo se constata
+que el fichero que viaja en la capa es el que se pinta.)*
+
+**Los seis ficheros están limpios a nivel de bytes** —sin BOM, sin CRLF, con
+salto de línea final, todo ASCII, con el control sobre el original del medio—,
+así que **no es un defecto de codificación**. Otra vez: leer no lo delata.
+
+#### (i) TERCERA BISECCIÓN: **`ubuntu.desktop` QUEDA EXONERADO**, y era mi favorito
+
+Era el sospechoso obvio y **mecanísticamente** el mejor: es **el fichero que
+define la sesión que GDM arranca**, y «pantalla negra con el cursor de Xorg» es
+exactamente lo que se ve cuando GDM no tiene sesión que lanzar. Se probó en vez
+de concluirlo, que es la diferencia entera.
+
+`p13-desktop`: las 24 de `p12` **más `usr/share/wayland-sessions/ubuntu.desktop`
+y nada más** —los otros cinco de texto siguen fuera, verificado uno a uno—.
+
+```
+p13  24 + ubuntu.desktop  ->  ESCRITORIO ENTERO, fondo de Encina, instalador
+                              «Preparando Ubuntu…» y luego «Disposicion del teclado»
+```
+
+**Habría sido la QUINTA atribución falsa seguida de la misma familia** —mecanismo
+leído + control que pasa + caso que falla— si se hubiera dado por buena. No se
+dio. **Quedan CINCO** y el siguiente en la lista es `ubuntu-text.plymouth`,
+porque `plymouth-quit-wait.service` es **el último servicio del registro antes de
+`gdm.service`** y un plymouth que no suelta la pantalla la deja negra.
+
+**Y un apunte del instrumento, trampa 41 otra vez:** una captura de `p13` dio
+**22 271 bytes** con el texto *«Display output is not active»* —que es un mensaje
+**de UTM**, no del invitado— y la ventana medía **800×630** en vez de 1280×840. Los
+tamaños de captura **no son comparables entre ventanas de distinto tamaño**, ni
+siquiera dentro de la misma sesión de trabajo.
+
+#### (j) CUARTA BISECCIÓN: **UN SOLO FICHERO. `ubuntu-text.plymouth`**
+
+`p14-plymouth`: las **mismas 24** de `p12` —que arrancan al escritorio— **más
+`usr/share/plymouth/themes/ubuntu-text/ubuntu-text.plymouth` y nada más**. Los
+otros cuatro de texto siguen fuera, verificado uno a uno antes de fabricar.
+
+```
+p12  24                        -> ESCRITORIO
+p13  24 + ubuntu.desktop       -> ESCRITORIO
+p14  24 + ubuntu-text.plymouth -> NEGRA
+```
+
+**Es una prueba de SUFICIENCIA y por eso vale:** añadir **ese fichero y sólo ese**
+a una capa que arranca la deja negra. No es «el mecanismo encaja»: es la pieza
+puesta y quitada, con los otros 24 constantes.
+
+**Y encaja con el registro del arranque, que es una confirmación y no la prueba:**
+`plymouth-quit-wait.service` es **el último servicio que aparece antes de
+`gdm.service`** en la captura de texto de `p11`. Un `plymouth` que no suelta la
+pantalla deja a GDM sin ella, y eso es exactamente «negra con el cursor de Xorg»
+y todo lo demás sano —`systemd` entero en `[ OK ]`, IP en el `arp`, el
+`debug.log` de QEMU en el **mismo rellano de ~92 K** que los medios que sí
+arrancan—.
+
+**LO QUE ESTO NO DICE, y no se adivina:** POR QUÉ ese fichero lo rompe. Los bytes
+están limpios —sin BOM, sin CRLF, salto final, ASCII— y las claves son las mismas
+que el original (`Name`, `Description`, `ModuleName`, `title` y los cuatro
+colores). **La causa DENTRO del fichero está `[OMIT]`**, y el camino barato es
+volver a bisecar el propio fichero: la sospecha ordenada es que el tema de texto
+lo carga también el `plymouth` del **initrd**, donde esta capa **no existe**, y
+que la incoherencia entre los dos es lo que cuelga a `plymouth-quit-wait` — pero
+**eso es una hipótesis escrita, no una medición**, y en este proyecto no cuenta
+hasta que se quite la pieza.
+
+**Consecuencia de producto, y es buena:** los otros **29** ficheros de la capa
+están **exonerados por experimento** en tres medios, y con ellos la marca de la
+sesión viva —el fondo— ya llega. La capa de producto puede salir **hoy** sin ese
+fichero; lo que se pierde es el rótulo del `plymouth` de texto, que es el modo
+sin gráficos.
+
+#### (k) **LA (j) ERA FALSA, Y LA TUMBÓ SU PROPIO SEGUNDO ARRANQUE.** La pantalla negra es INTERMITENTE
+
+Se deja escrito al lado lo que se creía dos horas antes, que es lo que manda el
+método. **(j) daba `ubuntu-text.plymouth` por causa aislada, por suficiencia.**
+Se repitió el arranque de `p14` —trampa 38, que dice que una pantalla negra no es
+un resultado— **y el mismo medio, sin tocar nada, arrancó al escritorio entero**:
+fondo de Encina, «Disposición del teclado», **Español** marcado en la lista.
+
+```
+p14, arranque 1  -> NEGRA   (dos capturas identicas, debug.log en el rellano de 92 K)
+p14, arranque 2  -> ESCRITORIO ENTERO, instalador en espanol   <- MISMO MEDIO
+```
+
+**HABRÍA SIDO LA QUINTA ATRIBUCIÓN FALSA SEGUIDA**, y esta vez ni siquiera por
+leer código: por tomar **un** arranque negro como negativo. La trampa 38 estaba
+escrita desde hace días y aun así se cayó en ella al escribir (j).
+
+**LO QUE ESTO SE LLEVA POR DELANTE, dicho entero:**
+
+> **Todos los «NEGRA» de (f), (g), (h), (i) y (j) son NEGATIVOS NO FIABLES.** El
+> bisecado se construyó sobre ellos y **no vale como bisecado**. `ubuntu.desktop`
+> **no queda exonerado** por (i): lo único que dice `p13` es que **puede**
+> arrancar con él.
+
+**LO QUE SÍ SOBREVIVE, y no es poco, porque son POSITIVOS:**
+
+1. **LA CAPA SE MONTA.** (e) es una lectura directa de `/proc/mounts` dentro de la
+   sesión viva, con los cuatro eslabones y el nuestro el primero. **Eso no
+   depende de ningún arranque negro.** Es la casilla 3 en lo que pedía.
+2. **EL MECANISMO NO IMPIDE EL ESCRITORIO.** `p11`, `p12`, `p13` y `p14` —cuatro
+   medios distintos, todos con la capa **montada** por `layerfs-path=`— llegan al
+   escritorio y abren el instalador **en español**.
+3. **LA MARCA LLEGA A LA SESIÓN VIVA.** El fondo de Encina se ve en `p12`, `p13`
+   y `p14`. Es lo que la casilla perseguía desde el 2026-08-15.
+4. **Y UN HECHO NUEVO DEL BANCO, que vale para todo lo que venga: en este
+   anfitrión el arranque gráfico del medio FALLA A VECES**, y el fallo se ve
+   igual que un fallo de producto —negra, `systemd` entero en `[ OK ]`, IP en el
+   `arp`, `debug.log` en el rellano de ~92 K—. **Un arranque no es una medición;
+   hacen falta varios, y un «negra» sólo cuenta si se repite.**
+
+**LO QUE QUEDA ABIERTO, con su nombre:** si la capa **entera** deja arrancar. `p10`
+va **negra en dos** de dos; los tres medios sin `ubuntu-text.plymouth` fueron al
+escritorio **a la primera**, y los dos que lo llevan son los dos que se pusieron
+negros. **Eso es una correlación sobre cinco medios, no una causa**, y con un
+fallo intermitente de por medio hace falta **contar arranques**, no mirar uno.
+
+#### (l) **Y `p10` ARRANCA AL TERCER INTENTO: LA CAPA ENTERA NO ROMPE NADA**
+
+Se le dio el tercer arranque que pedía la trampa 38 —«un medio arrancó al tercer
+intento», escrito ahí desde hace días— y **`p10-capa`, con los TREINTA ficheros,
+llegó al escritorio**: fondo de Encina, y el instalador en **«Disposición del
+teclado» con Español marcado**, la 2ª de las once pantallas.
+
+**Con eso se cae también la correlación de (k)** —«los dos medios con
+`ubuntu-text.plymouth` son los dos que se pusieron negros»—: los dos han acabado
+arrancando. **No queda ni un fichero bajo sospecha.** Lo único que había era el
+fallo intermitente del banco.
+
+**Y las tres predicciones que faltaban, leídas DENTRO de `p10`**, que es el medio
+de producto entero:
+
+```
+encinaos@encinaos:~$ cat /etc/os-release; ls /usr/share/desktop-provision
+PRETTY_NAME="Encina OS 24.04 LTS"
+NAME="Encina OS"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+UBUNTU_CODENAME=noble
+LOGO=encina-logo
+images  slides  whitelabel.yml
+```
+
+**El 2026-08-17 esas dos órdenes daban `NAME="Ubuntu"` y «No existe el archivo o
+el directorio» (§4.54d).**
+
+#### (m) EL MARCADOR DE LAS PREDICCIONES DE (d)
+
+| # | qué predije | resultado |
+|---|---|---|
+| P1 | `grep encina /proc/mounts` da ≥1 línea, cadena de 4 con la nuestra la 1ª | **ACIERTO**, y carácter por carácter |
+| P2 | `/usr/share/desktop-provision/` existe con su `whitelabel` | **ACIERTO** |
+| P3 | `/etc/os-release` dice `NAME="Encina OS"` | **ACIERTO** |
+| P4 | el instalador sigue arrancando, «Disposición del teclado» en español | **ACIERTO** — y era la que menos confianza me merecía, dicho por escrito antes |
+| P5 | el título de la ventana deja de decir *Install Ubuntu* | **`[OMIT]`**: las capturas enseñan el título de la PÁGINA («Disposición del teclado»), no el `app-name`. No se ha medido |
+
+**Cinco de cinco medidas, cuatro aciertos y una sin medir.** Y aun así el día
+produjo **una atribución falsa** —(j)— que duró dos horas y la tumbó repetir un
+arranque: acertar las predicciones **no protege** de concluir de más entre medias.
+
+**LO QUE QUEDA `[OMIT]` Y NO SE CUELA:**
+
+- **P5**, el título de la ventana del instalador.
+- **La capa entera arranca 1 de 3**; los medios de bisecado fueron 1 de 1, 1 de 1
+  y 1 de 1, y `p14` 1 de 2. **No hay conteo suficiente para decir que la capa no
+  afecta a la PROBABILIDAD de arrancar**, sólo para decir que no lo impide.
+- **La causa del fallo intermitente del banco.** Contamina cualquier medición de
+  arranque que se haga en este anfitrión.
+
