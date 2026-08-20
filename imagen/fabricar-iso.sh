@@ -632,12 +632,48 @@ case "$ARQ" in
     *) fallo "la ultima palabra del Volume id oficial es «${ARQ}» y esperaba una arquitectura" ;;
 esac
 INFO_L=$(head -1 "$TMP/info.encina")   # el NUESTRO, lo lleve el medio o no
+# EL SEPARADOR SIGUE COMPROBANDOSE, pero YA NO ES LO QUE DELIMITA EL VOLUME ID:
+# es una comprobacion de la FORMA del fichero, que casper y 57pollinate esperan.
 case "$INFO_L" in
     *" - "*) : ;;
-    *) fallo "el .disk/info no tiene el separador « - »: «${INFO_L}»
-        sin el no se puede saber donde acaba el nombre del producto" ;;
+    *) fallo "el .disk/info no tiene el separador « - »: «${INFO_L}»" ;;
 esac
-VOLID_ENCINA="${INFO_L%% - *} $ARQ"
+# --- DE DONDE SALE AHORA EL VOLUME ID, y por que cambio (§4.57e) --------------
+# HASTA EL 2026-08-19 era «todo lo de antes del " - "» + la arquitectura, y §4.53
+# lo unio a proposito para que el nombre no se escribiera en dos sitios. Se rompe
+# porque quedo MEDIDO que no cabe: el instalador exige un nombre en clave
+# ENTRECOMILLADO en .disk/info (§4.57e, probado quitandolo y poniendolo) y
+# «<nombre> <version> LTS "<codename>" arm64» se pasa de los 32 bytes del PVD con
+# cualquier codename de verdad -- §4.56q midio que con el de Ubuntu no cabe NI LA
+# CADENA VACIA de nombre.
+#
+# Y NO SE REINTRODUCE «EL NOMBRE EN DOS SITIOS», que es lo que §4.53 evitaba: las
+# dos piezas salen de fuentes que YA EXISTEN Y YA ESTAN VERIFICADAS.
+#   nombre  <- la 1a palabra de .disk/info, que sigue siendo la unica fuente
+#   version <- la del encina-meta que el paso 2 acaba de cotejar POR HUELLA,
+#              o sea NUESTRA version y no la de Ubuntu -- que es lo que §4.53
+#              obligaba a ceder y ahora se recupera
+#   arq     <- la ultima palabra del Volume id OFICIAL, como siempre
+NOMBRE_PRODUCTO=$(cut -d' ' -f1 "$TMP/info.encina")
+printf '%s' "$NOMBRE_PRODUCTO" | grep -qE '^[A-Za-z][A-Za-z0-9]*$' \
+    || fallo "la 1a palabra de .disk/info es «${NOMBRE_PRODUCTO}» y tiene que ser el nombre del producto en UNA palabra"
+extraer_version() {   # extraer_version <encina-meta_X_all.deb> -> X
+    printf '%s' "$1" | sed -n 's/^encina-meta_\(.*\)_all\.deb$/\1/p'
+}
+# EL CONTROL DE ESA EXTRACCION VA DELANTE: un sed que no case da CADENA VACIA sin
+# quejarse, y un Volume id con un hueco en medio pasaria los 32 bytes sin
+# problema. Tiene que saber dar sus dos respuestas.
+[ -n "$(extraer_version "encina-meta_9.9.9_all.deb")" ] \
+    || fallo "CONTROL ROTO: la extraccion no saca la version de un nombre que SI la tiene"
+[ -z "$(extraer_version "otra-cosa_9.9.9_all.deb")" ] \
+    || fallo "CONTROL ROTO: la extraccion saca version de un nombre que NO es encina-meta"
+VER_NUESTRA=$(extraer_version "${FICHEROS[3]}")
+[ -n "$VER_NUESTRA" ] \
+    || fallo "no pude sacar nuestra version de «${FICHEROS[3]}» (el paso 2 la coteja por huella)"
+printf '%s' "$VER_NUESTRA" | grep -qE '^[0-9]+(\.[0-9]+)*$' \
+    || fallo "nuestra version sale «${VER_NUESTRA}» y no es un numero de version"
+ok "el Volume id se compone: nombre «${NOMBRE_PRODUCTO}» (.disk/info) + version «${VER_NUESTRA}» (encina-meta, cotejado por huella) + «${ARQ}»"
+VOLID_ENCINA="$NOMBRE_PRODUCTO $VER_NUESTRA $ARQ"
 # El limite del campo del PVD son 32 BYTES, y no se trunca en silencio. Se miden
 # bytes y no caracteres a proposito: ${#var} contaria una «ñ» como uno y en el
 # fichero ocupa dos.
