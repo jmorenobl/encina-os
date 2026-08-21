@@ -14966,3 +14966,195 @@ estuviera mal: era que no se podía ver.**
 **Un dato del entorno que sale de la misma orden y conviene tener escrito:** la
 sesión viva es **Wayland** —aparece `mutter-x11-frames`—, y el instalador es un
 cliente **XWayland**, que es justo por lo que `xwininfo` puede verlo.
+
+#### (l) LA INSTALACIÓN, y las cinco pantallas las contestó Jorge
+
+Yo no toqué el ratón. La secuencia, con las horas del `telemetry` de la propia
+máquina, que es quien lo cuenta y no yo:
+
+```
+tick 0     keyboard        22:53:18Z  testigo-entorno-instalador
+tick 1407  network
+tick 1410  storage
+tick 1414  identity
+tick 1460  timezone
+tick 1462  confirm
+tick 1611  install
+tick 2088  done            22:55:24Z  encina-seed llego al final
+```
+
+**I2, ACIERTO, y por partida doble.** En «Revise sus elecciones», mirado en
+pantalla antes de pulsar «Instalar»: **«Aplicaciones» vacío**, «Cifrado del
+disco: Ninguna», «Software propietario: None», `vda1 fat32 /boot/efi` y `vda2
+ext4 /`. Y el `telemetry` lo confirma por el otro lado: **las ocho etapas
+exactas**, sin `locale` ni `source`.
+
+**Un sitio donde el medio sigue diciendo «Ubuntu», previsto y no sorpresa:**
+«Configuración del disco: **Borrar disco e instalar Ubuntu**». Es
+`UbuntuFlavor.displayName`, **constante compilada dentro del snap firmado**, y
+la cabecera de `imagen/marca/whitelabel.yml` ya lo dejaba escrito como lo que no
+se puede cambiar desde fuera. Va al inventario de marca, no a la lista de
+fallos.
+
+**Y una inconsistencia nuestra que sale de paso, en la pantalla final:**
+*«**EncinaOS** 24.04.4 LTS está instalado y listo para usarse»*, **sin espacio**.
+No es del snap: sale de `/cdrom/.disk/info`, y el `telemetry` lo transcribe en su
+campo `Media`.
+
+```
+imagen/marca/disk-info        EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release arm64
+imagen/marca/.../os-release   NAME="Encina OS"
+telemetry                     "Media": "EncinaOS 24.04.4 LTS"
+```
+
+**Dos grafías del nombre del producto en el mismo medio.** No rompe nada; hay que
+elegir una.
+
+**I5, ACIERTO:** la instalación termina y la máquina **arranca de su disco**.
+Contado: **2 de 2** arranques desde el disco llegaron a GDM. Antes de arrancar se
+quitó la unidad de CD, que es lo que el instalador pide.
+
+**El disco, contra lo predicho en (d):**
+
+```
+predicho:  quedaran >= 20 GiB          medido: 25,37 GiB libres
+disco.img: 8 601 MiB                   (el precedente de §4.34b llego a 11 065)
+```
+
+#### (m) **I6 FALLA, Y NO POR POCO: 20 `[FALLO]`. LA MÁQUINA NO LLEVA NI UNO DE LOS CUATRO PAQUETES**
+
+`imagen/verificar-instalacion.sh --forma e3 --visibles 27`, como root, por el
+canal FAT de la trampa 20:
+
+```
+[OK] 41   [FALLO] 20   [AVISO] 1   [OMIT] 0
+```
+
+**Y los veinte cuelgan de uno solo.** La primera orden que se tecleó dentro, antes
+del verificador, ya lo decía:
+
+```
+dpkg -l encina-branding encina-meta encina-firefox-native autofirma
+  dpkg-query: no se ha encontrado ningun paquete que corresponda con encina-branding.
+                                                                     encina-meta.
+                                                                     encina-firefox-native.
+                                                                     autofirma.
+```
+
+**El síntoma se vio ANTES de entrar, en la primera pantalla**, y por eso vale
+como control independiente: **el logotipo de GDM es el de Ubuntu**, y en
+`design/capturas/despues/03-gdm.png` —la máquina del 2026-08-14— es **la encina
+verde**. Mismo sitio, mismo tamaño. **Repetido en los dos arranques.**
+
+**Lo que la máquina SÍ tiene, y es lo que hace que el diagnóstico sea fino:**
+
+```
+[OK]  /etc/apt/sources.list.d/encina-local.list: deb [trusted=yes] file:/srv/encina-repo ./
+[OK]  firefox 153.0.4~build1 (sin epoch: es el de Mozilla)   <- INSTALADO, y sale
+      de  file:/srv/encina-repo ./
+[OK]  las OCHO etapas del telemetry           [OK]  los tres testigos del seed
+[OK]  systemctl is-system-running: running    [OK]  ninguna unidad fallida
+```
+
+O sea que **el repo del medio llegó al objetivo y `apt` lo usó**. No es «el
+repositorio no viajó».
+
+#### (n) **LA CAUSA, MEDIDA Y CON NOMBRE Y VERSIÓN: falta `libnss3` en los 28 `.deb` del medio**
+
+Está en `/etc/encina-seed.log`, que el seed escribe paso a paso. **La simulación
+de `apt` lo dice antes de que falle nada** —paso 9, `apt-get -s install
+encina-meta`—: de las **22** líneas `Inst`, **veintiuna** dicen `localhost` y
+**una no**.
+
+```
+Inst libnss3 [2:3.98-1build1] (2:3.98-1ubuntu0.2 Ubuntu:24.04/noble-updates,
+                               Ubuntu:24.04/noble-security [arm64])
+                              ^ SIN «localhost»: esta NO esta en el medio
+```
+
+Y la orden de verdad falla exactamente ahí:
+
+```
+E: Failed to fetch http://ports.ubuntu.com/.../libnss3_3.98-1ubuntu0.2_arm64.deb
+   Temporary failure resolving 'ports.ubuntu.com'
+E: Unable to fetch some archives...
+```
+
+**Un `apt install` que no puede traer un solo `.deb` aborta la transacción
+ENTERA.** Por eso no entró ninguno de los otros veintiuno.
+
+**Y el manifiesto lo confirma sin ambigüedad:**
+
+```
+imagen/repo-manifiesto.tsv, 28 paquetes:
+  ... libatk-wrapper-java-jni  libnss3-tools  libplymouth5 ...
+                               ^^^^^^^^^^^^^ 2:3.98-1ubuntu0.2
+  libnss3   NO APARECE
+```
+
+**`libnss3-tools` viaja y `libnss3` no, y `libnss3-tools 2:3.98-1ubuntu0.2` exige
+`libnss3` en esa misma versión**, mientras que la base del medio trae
+`2:3.98-1build1`. La cosecha se llevó al hermano y dejó al otro.
+
+#### (o) **Y LO QUE ESTO DESTAPA ES MÁS GRANDE QUE UN `.deb`: EL MEDIO NO ES AUTOSUFICIENTE, Y NADIE LO SABÍA PORQUE NADIE HABÍA INSTALADO SIN RED**
+
+**Una instalación sin DNS en el `chroot` no es la excepción: es lo normal**, y el
+propio seed lo mide en su paso 7 y lo deja escrito:
+
+```
+=== 7. HAY RED DESDE EL CHROOT? ===
+curtin in-target -- getent hosts ports.ubuntu.com       rc=2
+curtin in-target -- getent hosts packages.mozilla.org   rc=2
+curtin in-target -- cat /etc/resolv.conf
+    nameserver 127.0.0.53          <- el stub de systemd-resolved, que DENTRO
+    options edns0 trust-ad            del chroot no esta corriendo
+```
+
+*Y hay que decir que el control de ese paso no discrimina* —el nombre inventado
+`nombre-que-no-existe.encina.invalid` también da `rc=2`, o sea que el par no
+demuestra que la comprobación sepa contestar `0`—. **Lo que sí discrimina es el
+`apt` de verdad**, que trae la cadena literal *«Temporary failure resolving»*:
+esa no la produce un nombre inexistente, la produce no tener resolutor. Es la
+trampa 40 otra vez, y se dice en vez de apoyarse en el control flojo.
+
+**La máquina instalada SÍ tiene red** —responde al `ping` en `192.168.64.30`—, o
+sea que la red del anfitrión funciona. **Lo que no hay es resolución dentro del
+`chroot` mientras `curtin` instala**, y eso es del diseño de `subiquity`, no de
+esta VM.
+
+> **Consecuencia, y es la buena noticia dentro de la mala:** el producto **ya
+> estaba pensado** para no necesitar red —por eso el medio lleva su
+> `/encina-repo` con 28 `.deb`—. **El defecto no es de concepto: es que la lista
+> tiene un hueco de un paquete.** Y ese hueco **sólo lo podía encontrar una
+> instalación desde cero**, que es exactamente lo que esta casilla existe para
+> hacer.
+
+**Por qué no salió el 2026-08-13 (§4.34c, 51 correctas y un fallo):** aquella ISO
+llevaba **otra cosecha**, y `libnss3-tools` no arrastraba entonces la versión de
+`-updates`. **El archivo de Ubuntu se mueve y el manifiesto no**, así que esto es
+**deriva**, no una regresión de un cambio nuestro. *Esto último es deducción y no
+medición: no he vuelto a montar la ISO del 13 para comprobarlo, y se dice.*
+
+#### (p) EL MARCADOR DE LAS PREDICCIONES
+
+| # | qué predije | resultado |
+|---|---|---|
+| K1 | las teclas llegan al instalador | **ACIERTO** — 100 524 px, la caja es la lista |
+| K2 | `Tab` **no** recorre hasta «Siguiente» | **ACIERTO** — cicla entre dos paradas; `Intro` abrió «Detectar», que es la prueba de dónde estaba el foco |
+| I1 | entra directo en «Disposición del teclado», en español | **ACIERTO** |
+| I2 | cinco pantallas y «Aplicaciones» vacío | **ACIERTO**, y confirmado por las ocho etapas del `telemetry` |
+| I3 | las ocho páginas con marca llevan el logotipo de Encina | **PARCIAL**: la de `done` sí, con la encina. Las otras siete **no se vieron** (se entra en `keyboard`) → `[OMIT]` |
+| I4 | el título de la ventana dice «Encina OS» | **ACIERTO** — `WM_NAME` leído con `xwininfo`, con otra ventana como control |
+| I5 | la instalación termina y la máquina arranca de su disco | **ACIERTO** — 2 de 2 arranques |
+| I6 | `--forma e3 --visibles 27`: **0 fallos** | **FALLA: 20 fallos**, todos colgando de que no hay ningún paquete de Encina |
+| I7 | las seis pantallas con la identidad | **`[OJOS]` de Jorge**, y con un `[FALLO]` ya visible: el logotipo de GDM es el de Ubuntu |
+
+**Y las del banco, de (b) y (d):** el criterio de los arranques negros **no llegó
+a usarse** —ni uno—; el disco quedó en **25,37 GiB**, por encima de los 20 GiB
+predichos.
+
+**`--visibles 27` dio `[AVISO]`, no `[FALLO]`, y salieron 26.** Es lo previsto en
+(e): lo que decide es que el inventario sepa contar, y su control salió en verde
+(«26 visibles de 92 totales»). **Cuál falta no se nombra todavía**, y con la
+máquina sin `encina-meta` la comparación no significa nada: se vuelve a declarar
+cuando la máquina esté entera.
