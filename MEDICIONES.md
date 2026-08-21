@@ -14813,3 +14813,156 @@ dentro de la maquina   verificador, P5 y las tres capturas que faltan -> 30 min
   15 %.
 - **Que el instalador no se deje teclear** como defecto del producto. Sería un
   límite **del banco** —el pilotaje sin manos—, y así se escribirá.
+
+#### (h) EL ARRANQUE, contado: **1 de 1**, y la trampa 45 mordió ANTES del primer arranque
+
+```
+22:11:36Z  utmctl start encina-capa-p10 -> «OSStatus error -1712», codigo de salida 0
+           y la VM sigue stopped                         <- trampa 45 y trampa 28 juntas
+22:13    CONTROL, y costo un minuto: utmctl start encina-capa-p11 -> el MISMO error
+           p11 arranco 5 de 6 la noche del 20, asi que no era p10: era UTM
+22:16:50Z  utmctl start encina-capa-p10 -> started
+22:19:13Z  captura: GRAFICA (2681 colores, brillo 188,2) — el instalador, en espanol
+```
+
+**El control es lo único que separa esto de la sexta atribución falsa**, y era
+exactamente la trampa que §4.60a dejó escrita ayer. Se aplicó tal cual.
+
+**Y UNA ENMIENDA A LA TRAMPA 45, porque su receta no funcionó tal como está
+escrita:** `open -a UTM` **solo** volvió a dar `-609`. Lo que destrabó fue
+**`osascript -e 'tell application "UTM" to activate'` primero**, y **después**
+`open -a UTM`, que ya salió con 0. Se deja escrito con el intento fallido al
+lado, que es como se corrigen aquí las recetas.
+
+```
+open -a UTM                       -> _LSOpenURLsWithCompletionHandler ... error -609
+osascript ... to activate         -> 0
+open -a UTM   (despues)           -> 0     <- y a partir de aqui start funciona
+```
+
+**Arranque limpio a la primera.** Con el 33 % de §4.59 eso es lo esperable (2 de
+3), y **no dice nada nuevo del medio**: un `1 de 1` tiene probabilidad 0,67 en un
+medio sano (trampa 42). Se apunta como lo que es, un arranque contado.
+
+#### (i) **I1: ACIERTO.** El instalador entra directo en «Disposición del teclado», en español
+
+Y con el fondo de Encina detrás —la dehesa con el molino y las amapolas—, que es
+lo que §4.58h vio por primera vez. La lista trae **«Español» marcado en naranja**
+y la variante también **«Español»**. **No hubo pantalla de idioma ni de
+bienvenida.**
+
+#### (j) **K1 y K2: LAS TECLAS LLEGAN, PERO EL INSTALADOR NO SE RECORRE CON TECLADO**
+
+**El control del instrumento va primero, y es el que faltaba en las medidas de
+teclado anteriores:** dos capturas seguidas **sin tocar nada**.
+
+```
+k0 vs k0b, sin pulsar nada  ->  IGUALES: 0 pixeles distintos     <- suelo de ruido
+```
+
+**K1, y sale como predije:**
+
+```
+flecha Abajo sobre la lista
+  -> 100 524 pixeles distintos
+  -> caja x 1146..2077  y 604..1037     <- es EXACTAMENTE la caja de la lista
+```
+
+**Las teclas llegan y el widget responde.** Sin esto, todo lo de abajo sería
+«no llegan las teclas» disfrazado de «no se recorre». Se restauró con tres
+`Arriba` y se comprobó en la captura que el resalte volvía a «Español» y que la
+variante seguía intacta.
+
+**K2, doce `Tab` seguidos, con la caja de cada cambio:**
+
+```
+tab 1   88 448 px   x 1146..2077  y  656.. 751
+tab 2   10 180 px   x 1904..2077  y  494.. 559     <- el boton «Detectar»
+tab 3   10 336 px   x 1370..2077  y  102.. 559
+tab 4   10 180 px   x 1904..2077  y  494.. 559
+tab 5   10 180 px   x 1904..2077  y  494.. 559
+tab 6   10 392 px   x 1370..2077  y  100.. 559
+tab 7..11  10 180 px  x 1904..2077  y 494..559   (identicas)
+tab 12  10 408 px   x 1370..2077  y  100.. 559
+
+la caja de «Siguiente» esta en  x 1945..2200   y 1475..1545
+NINGUN cambio baja de y = 559.
+```
+
+**El foco cicla entre DOS paradas y nunca sale de la mitad de arriba.** Ni
+«Siguiente» ni «Atrás» se tocan jamás.
+
+**Y las cajas de `y 100..…` no son foco: son el reloj del invitado.** Se
+comprobó por separado —el `Esc` de más abajo dejó **204 píxeles** en `x
+1372..1385, y 100..119`, que es el último dígito del minuto—, así que esa parte
+de la caja es ruido conocido y no una parada de foco.
+
+**EL CONTROL QUE CIERRA K2, y es el que convierte «no veo el foco» en «sé dónde
+está el foco»:** se pulsó `Intro`.
+
+```
+Intro  ->  1 974 836 pixeles, caja x 320..2239  y 232..1591
+       ->  se abrio «Detectar disposicion de teclado» — «Pulse una de estas teclas:»
+Esc    ->  204 pixeles contra el estado previo (el digito del reloj). Restaurado.
+```
+
+**`Intro` activa el widget CON FOCO, no el botón primario**, y de paso demuestra
+que el foco **estaba** en «Detectar»: las 10 180 píxeles repetidas eran su anillo
+apareciendo y desapareciendo. **Esto es más de lo que decía §4.35i sobre la
+tienda** —allí el foco no aterrizaba **nunca** en un botón—: aquí sí aterriza,
+pero en el conjunto equivocado.
+
+**CONCLUSIÓN, y con la etiqueta que le toca:** *el instalador de 24.04 no se
+puede recorrer de pantalla en pantalla sólo con `teclear-vm.sh`*. **Es un límite
+del BANCO —el pilotaje sin manos—, no un defecto del producto**, y así estaba
+escrito en (g) antes de medirlo.
+
+**Y se cierra también la vía que no estaba en §4.35i: un clic desde DENTRO del
+invitado.** El medio no trae con qué:
+
+```
+which xprop xwininfo wmctrl xdotool
+  /usr/bin/xprop
+  /usr/bin/xwininfo
+  (wmctrl y xdotool: no estan)
+```
+
+**LA DECISIÓN, la que estaba escrita en (c) y se ejecuta sin cambiarla:** las
+cinco pantallas las contesta Jorge. No se cambia a
+`autoinstall-unattended.yaml`, porque eso convertiría la casilla en la forma E2 y
+`--forma e3` fallaría por las ocho etapas.
+
+#### (k) **I4 / P5: EL TÍTULO DE LA VENTANA DICE «Encina OS».** El `[OMIT]` del 20 queda cerrado
+
+Medido **desde dentro** de la sesión viva, en el `gnome-terminal` que abre
+`Alt`+`F2` (trampa 36), y transcrito literal de la pantalla:
+
+```
+0x2a00003 "Encina OS": ("ubuntu_bootstrap" "Ubuntu_bootstrap")  1012x732+134+53  +134+53
+```
+
+**`1012x732` es el tamaño de la ventana del instalador que se ve en la captura**,
+y `ubuntu_bootstrap` su `WM_CLASS`: no hay duda de qué ventana es. **Dice «Encina
+OS», no «Install Ubuntu»** — que es lo que diría sin la línea `app-name` de
+`imagen/marca/whitelabel.yml`, según la propia cabecera del fichero.
+
+**Y SU CONTROL, en la misma salida y sin pedirlo:** otra ventana da otro nombre.
+
+```
+0x2c00001 "Terminal": ("gnome-terminal-server" "Gnome-terminal-server")
+0x400001  "GNOME Shell": ()
+0x400007  "mutter guard window": ()
+```
+
+**`xwininfo` no está imprimiendo la misma cadena para todo**, y «Encina OS» no es
+el nombre de la sesión ni del sistema: es el de **esa** ventana. Sin este
+control, el resultado no valdría.
+
+**Por qué las capturas no lo enseñaban, resuelto de paso:** la barra de la
+ventana pinta el título de la **página** («Disposición del teclado»); el
+`WM_NAME` no se dibuja en ningún sitio de la pantalla. **No era que el título
+estuviera mal: era que no se podía ver.**
+
+**Un dato del entorno que sale de la misma orden y conviene tener escrito:** la
+sesión viva es **Wayland** —aparece `mutter-x11-frames`—, y el instalador es un
+cliente **XWayland**, que es justo por lo que `xwininfo` puede verlo.
