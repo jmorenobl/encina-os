@@ -115,3 +115,48 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       `scripts/teclear-vm.sh` y se lee con `scripts/leer-pantalla.m` —con el
       control de mirar la captura con los ojos—, y **dos caracteres más que no
       llegan al invitado: `|` y `&`**, que se suman a `=` y `@`.
+
+      ---
+
+      **HECHA EL 2026-08-22 POR FIN —LA INSTALACIÓN OCURRIÓ— Y LA CASILLA SIGUE
+      ABIERTA, PERO YA NO POR LO MISMO** (`MEDICIONES.md` §4.61). El medio
+      `p10-capa` arrancó, el instalador salió en español, Jorge contestó las
+      cinco pantallas, la instalación **terminó** y la máquina **arranca de su
+      disco**, 2 de 2. O sea que lo que bloqueaba desde el 2026-08-17 —«no hay
+      instalación»— **está resuelto**.
+
+      **Lo que la casilla encontró, y es para lo que existía:**
+
+      ```
+      verificar-instalacion.sh --forma e3 --visibles 27, como root:
+      [OK] 41   [FALLO] 20   [AVISO] 1   [OMIT] 0
+      ```
+
+      **La máquina instalada no lleva NI UNO de los cuatro paquetes de Encina**,
+      y los veinte fallos cuelgan de ahí. El síntoma se vio en la **primera
+      pantalla**, antes de entrar: **el logotipo de GDM es el de Ubuntu**, y en
+      `design/capturas/despues/03-gdm.png` es la encina.
+
+      **La causa está medida, con nombre y versión:** falta **`libnss3
+      2:3.98-1ubuntu0.2`** en los 28 `.deb` de `/encina-repo`. `libnss3-tools`
+      **sí** viaja y exige a su hermano en esa misma versión; sin él, `apt
+      install encina-meta` tiene que salir a la red, **y en el `chroot` de
+      `curtin` no hay DNS** —lo normal, y el propio seed lo mide en su paso 7—.
+      Un `.deb` que no se puede traer aborta la **transacción entera**.
+
+      *Lo que esto NO era, y conviene decirlo porque era lo primero que se pensó:*
+      no es que el repositorio no viajara —`encina-local.list` está puesto y el
+      Firefox nativo 153.0.4 **sí** se instaló desde él—, ni una regresión del
+      aspecto.
+
+      **Qué falta para cerrarla, y ahora es corto y concreto:**
+
+      1. Meter `libnss3` en `imagen/repo-manifiesto.tsv` y rehacer la cosecha.
+         Y de paso **buscar más huecos del mismo tipo**: un `-tools` sin su
+         biblioteca es un patrón, no un caso.
+      2. Que la cosecha lo compruebe sola: **`apt-get -s install encina-meta`
+         contra el repo del medio no debe nombrar ni una fuente que no sea
+         `localhost`**. Es una comprobación barata y habría cazado esto sin
+         gastar una instalación.
+      3. Volver a instalar y volver a pasar el verificador, buscando **0
+         fallos**, y **entonces** mirar las seis pantallas.
