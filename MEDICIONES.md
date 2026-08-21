@@ -15158,3 +15158,114 @@ predichos.
 («26 visibles de 92 totales»). **Cuál falta no se nombra todavía**, y con la
 máquina sin `encina-meta` la comparación no significa nada: se vuelve a declarar
 cuando la máquina esté entera.
+
+#### (q) **EL BANCO: LA EXPLICACIÓN DE LA TRAMPA 45 ERA FALSA, Y LA TUMBAN DOS INFORMES DE CAÍDA**
+
+Se deja escrito al lado lo que se creía ayer, que es lo que manda el método.
+**§4.60a decía: «Se destrabó con `open -a UTM`».** Hoy, al empezar, la trampa
+volvió a morder **antes del primer arranque** y se aplicó su receta… y **la receta
+no funcionó**:
+
+```
+00:11:36  utmctl start encina-capa-p10 -> «OSStatus error -1712», salida 0, VM stopped
+00:13     CONTROL (el de la trampa 45): utmctl start encina-capa-p11 -> el MISMO error
+          p11 arranco 5 de 6 la noche del 20  ->  no era la VM, era UTM
+00:14     open -a UTM            -> _LSOpenURLsWithCompletionHandler ... error -609
+00:15     osascript ... activate -> 0    ;   open -a UTM (despues) -> 0
+00:16:50  utmctl start           -> started
+```
+
+**Y lo que pasó de verdad entre medias sólo se supo por los informes de caída de
+macOS**, que Jorge encontró:
+
+```
+~/Library/Logs/DiagnosticReports/
+  UTM-2026-08-21-163421.ips   pid 35881  lanzado 12:01:39  SEGFAULT 16:34:17
+                              hilo principal, CoreGraphics/QuartzCore
+  UTM-2026-08-22-001616.ips   pid 47537  lanzado 23:52:48  SEGFAULT 00:16:12
+                              hilo principal, SwiftUI
+```
+
+**El `35881` es exactamente el PID que §4.60a anotó** («el proceso seguía vivo
+todo el rato, PID 35881»). Y el `47537` es el que yo medí con `pgrep` a las
+00:11, cuando estaba sordo.
+
+```
+00:16:12  UTM 47537 SEGFAULTEA
+00:16:50  utmctl start -> started        <- 38 SEGUNDOS DESPUES
+```
+
+> **El UTM sordo no se recupera: se muere.** Lo que devolvió el `start` no fue
+> `open -a UTM` — fue que el proceso cayó y arrancó otro. **Habría sido la sexta
+> atribución falsa del proyecto**, y de la familia más barata: dar por causa lo
+> último que uno tecleó antes de que la cosa empezara a funcionar.
+
+**Lo que está MEDIDO y lo que es DEDUCCIÓN, separado:** medido, que los dos
+procesos que se quedaron sordos segfaltearon, y que el arranque bueno fue 38 s
+después de la caída del segundo. Deducido —y no probado—, que `open -a UTM` no
+puede arreglarlo por sí solo: para probarlo haría falta un UTM sordo al que **no**
+se le toque y ver si revive, y eso no se ha hecho.
+
+**Y ABRE UN CANDIDATO PARA EL 33 % DE §4.59, que llevaba «acotado pero no
+explicado»:** un UTM que se degrada y acaba cayéndose en el hilo de dibujo. **Es
+post-hoc, así que es hipótesis y no resultado**, y para que cuente necesita su
+propia predicción escrita antes: p. ej. *«los arranques que salen negros caen
+desproporcionadamente en los minutos anteriores a un `.ips` de UTM»*, que se puede
+contrastar con los 18 arranques de §4.59 **si** hay informes de aquella noche.
+
+#### (r) UNA FORMA NUEVA DEL FALLO DEL BANCO: la pantalla se muere CON LA SESIÓN YA ABIERTA
+
+No estaba descrita. Con Jorge dentro de la sesión, la pantalla pasó a
+«**Display output is not active**» —que es un rótulo **de UTM**, no del invitado
+(§4.58i)— y no volvió; Jorge lo intentó también.
+
+**El control que separa «se murió la máquina» de «se murió la pantalla», y es el
+mismo de §4.58f:**
+
+```
+utmctl status        started
+ping 192.168.64.30   responde        <- y esa MAC, 76:ce:c4:c4:c4:c4, es la que
+                                        declara el debug.log de esta VM
+```
+
+**La máquina estaba viva; lo muerto era la pantalla.** Se arregló parando y
+arrancando: arranque 2 llegó a GDM. **Es del banco**, y encaja con (q).
+
+#### (s) DOS ENMIENDAS MÁS DEL ENTORNO, las dos con su medida
+
+**1. `debug.log` DEJA DE SERVIR PARA NADA COMO SEÑAL, y esto se lleva por delante
+media trampa 38.** El arranque de hoy —el que **instaló entero**— dejó el
+`debug.log` en **2 727 bytes**, y su contenido es **una sola línea**: la orden de
+`qemu-system-aarch64`. Ni un byte de ejecución.
+
+```
+lo que se creia:  ~92 K estabilizado = arranco  ·  2 759 = VM colgada (§4.54h)
+lo medido hoy:    2 727 bytes = arranque PERFECTO, instalacion completa
+```
+
+**O sea que el rellano bajo NO significa «colgada».** El tamaño de `debug.log` no
+separa nada en ninguna de las dos direcciones, y las lecturas de §4.58f y §4.59
+que lo citaban como confirmación **se quedan sin ese apoyo** (no cambian de
+conclusión: aquéllas se sostenían en el `arp` y en las capturas).
+
+*Y un aviso de método que casi cuela un verde falso:* el `debug.log` es **una
+sola línea**, así que `grep -c` cuenta **líneas** y devuelve `1` como máximo. La
+casilla «dos unidades y ni una más» se contó con `grep -o | wc -l`:
+
+```
+media=disk 1 · media=cdrom 1 · CIDATA 0 · -kernel 0 · -initrd 0 · -append 0
+CONTROL: edk2 -> 1   ·   una cadena inventada («bellota») -> 0
+las unidades, literales: disco.img (Disk) y medio.iso (CD)
+```
+
+**2. UN CD NO SE «EXPULSA» VACIANDO SU NOMBRE EN `config.plist`.** Se puso
+`ImageName` a la cadena vacía y QEMU se quedó apuntando **al directorio**:
+
+```
+qemu-aarch64-softmmu: -drive ...,file.filename=/…/encina-capa-p10.utm/Data/,…:
+  'file' driver requires '/…/Data/' to be a regular file
+```
+
+y **la VM no arranca**, con `utmctl start` devolviendo **0** otra vez (trampa 28).
+Lo que funciona es **borrar la entrada `Drive` entera**, con UTM cerrado. Va como
+trampa nueva.
