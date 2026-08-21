@@ -2673,3 +2673,31 @@ vuelva a contar, primero se baraja.**
 > `debug.log` se queda en el rellano de ~92 KB **tanto si la pantalla acaba negra
 > como si acaba en el instalador** (91 935 – 92 402 en los 18). No separa nada, y
 > ya no hay que volver a comprobarlo.
+
+## Y una cuadragésima quinta, yendo a por el constructor (2026-08-21)
+
+**45. UTM SE QUEDA SORDO A LOS `start` Y SIGUE CONTESTANDO `list` Y `status`.**
+`utmctl start <vm>` devuelve `OSStatus error -1712` —el timeout de los Apple
+Events— y la VM se queda `stopped`. Lo que hace peligrosa a esta trampa es que
+**los comandos de lectura siguen funcionando perfectamente**, así que la
+aplicación parece sana y el dedo apunta a la VM:
+
+```
+utmctl list      ->  19 VMs, bien
+utmctl status X  ->  stopped, bien
+utmctl start X   ->  OSStatus error -1712   y X sigue stopped
+```
+
+**La conclusión fácil es «esa VM está rota», y es falsa.** El 2026-08-21 falló
+`encina-dev` dos veces seguidas y estuvo a punto de escribirse así. **El control
+cuesta un minuto: arrancar otra VM que se sepa buena.** `encina-capa-p11`, que
+había arrancado **5 de 6** veces esa misma noche, **tampoco arrancó y dio el
+mismo error** — o sea que el sordo era UTM y no la máquina.
+
+**Se destraba con `open -a UTM`**, que lo trae al frente; el proceso está vivo
+todo el rato y `quit` por AppleScript **tampoco** funciona (`error -609`).
+Después, `start` responde a la primera.
+
+Es de la misma familia que la 28 —`utmctl start` **devuelve 0 cuando falla**— y
+se defiende igual: **el estado es lo que vale, no el código de salida ni el
+mensaje**, y si algo no arranca, **antes de acusar a la VM se prueba otra**.

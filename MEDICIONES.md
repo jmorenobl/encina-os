@@ -14529,3 +14529,92 @@ estaban previstas:** el patrón de (f) y el fallo de diseño de (g). Como el
 - **Si el patrón de un fallo por ronda se sostiene**, que es post-hoc y necesita
   su propia predicción escrita antes.
 - **El efecto de la posición dentro de la ronda**, indistinguible hoy por (g).
+
+---
+
+### 4.60 `construir-todo.sh` ENTERO Y LA REPRODUCIBILIDAD, PAGADA (2026-08-21)
+
+**Era lo más viejo sin pagar.** Todos los medios del 20 salieron de
+`fabricar-iso.sh --repo`, o sea por el camino corto y local: **la vuelta entre
+las dos máquinas estaba sin ejercitar**, y la definición de terminado del guion
+—`AGENTS.md`— no es «sale una ISO» sino que **dos pasadas den la misma huella**.
+
+**LOS INGREDIENTES, cotejados antes y no supuestos:**
+
+```
+constructor : jorge@192.168.64.3 -> encina-dev, aarch64, Ubuntu 24.04, por clave
+autofirma   : el manifiesto pide 1.9.1+encina4 con huella faeca3a9...
+              y el .deb presente da faeca3a9...  -> cuadra
+arbol       : limpio, commit 48bc1e49
+```
+
+**LAS DOS PASADAS, cada una completa y con sus controles internos:**
+
+```
+pasada 1 -> medios/encina-os-r1.iso   sha256 59bc3a3c...e946e1d4   0 fallos
+pasada 2 -> medios/encina-os-r2.iso   sha256 59bc3a3c...e946e1d4   0 fallos
+
+[OK]    DOS PASADAS, LA MISMA HUELLA        <- la definicion de terminado
+```
+
+**Y UNA COINCIDENCIA QUE NO SE BUSCABA Y VALE MÁS QUE LAS DOS PASADAS:** esa
+huella **es la de `p10-capa`**, el medio de producto que se fabricó el 20 **por
+el otro camino**, con `fabricar-iso.sh --repo` en local. Comprobado a mano:
+
+```
+r1        : 59bc3a3c3b86cda3b15958aff2fe744d45733f290e9772aa214446eae946e1d4
+p10-capa  : 59bc3a3c3b86cda3b15958aff2fe744d45733f290e9772aa214446eae946e1d4
+IGUALES      3 721 265 152 bytes los dos
+```
+
+**Dos caminos distintos, en días distintos, dan el mismo medio bit a bit.** El
+largo pasa por `git archive HEAD`, `ssh` al constructor Ubuntu para los tres
+`.deb`, la cosecha de 28 por huella, el `Packages` generado allí y la vuelta al
+Mac; el corto no sale de aquí. **Es una reproducibilidad cruzada**, y es más
+fuerte que repetir la misma orden dos veces: descarta que la huella dependa del
+camino. Lo que la segunda pasada añade —y por eso se pagó igual— es que el
+**camino largo** es reproducible **consigo mismo**, que es lo que dice la
+definición de terminado.
+
+**LO QUE PASARON LOS CONTROLES INTERNOS, y son suyos, no míos:**
+
+```
+[FALLO] el repositorio NO esta completo: 0 no cuadran, 1 ausentes
+        <- ES EL CONTROL: la 1a orden sale incompleta A PROPOSITO
+[OK]    los 28 .deb estan y sus huellas cuadran con el manifiesto
+[OK]    las 28 huellas cuadran a los dos lados            <- la ida y vuelta
+[OK]    control: con una huella cambiada en UN caracter, el cotejo la senala
+[OK]    30 ficheros de la capa, ni uno mas ni uno menos
+[OK]    modificados exactamente 3: /md5sum.txt /boot/grub/grub.cfg /.disk/info
+[OK]    las 267 lineas de md5sum.txt cuadran con la ISO construida
+[OK]    control: con el md5sum.txt OFICIAL fallan exactamente 2 lineas
+[OK]    control: sobre la ISO oficial el lector no encuentra ninguno de los cuatro
+[OK]    el medio lleva exactamente lo pedido (capa volid info menu): 1 1 1 1
+```
+
+**LO QUE SIGUE `[OMIT]` Y EL PROPIO GUION LO DICE:** **que arranque**. Esto no lo
+puede decir `construir-todo.sh`, y con el 33 % de §4.59 de por medio, decirlo
+exige **contar**, no un arranque. Como `r1` es **bit a bit** `p10-capa`, lo que
+§4.59 midió de `p10` —**4 de 6**— es exactamente lo que se sabe de este medio.
+
+#### (a) UNA TRAMPA DEL ENTORNO, CAZADA POR SU CONTROL Y NO POR MIRAR
+
+Al ir a arrancar el constructor, `utmctl start encina-dev` falló **dos veces**
+con `OSStatus error -1712` y la VM se quedó `stopped`. **La conclusión fácil era
+«`encina-dev` está rota»** —y habría sido la quinta atribución falsa del
+proyecto, por el mismo camino que las otras cuatro—.
+
+**El control costó un minuto:** arrancar una VM que se sabía buena. **`p11`
+tampoco arrancó**, con el mismo error, y `p11` había arrancado **5 de 6** veces
+esa misma noche. O sea que **no era la VM: era UTM**, sordo a los `start`
+mientras seguía contestando `list` y `status` sin protestar.
+
+```
+utmctl list / status  ->  contestan bien, 19 VMs
+utmctl start <la que sea>  ->  OSStatus error -1712, y la VM sigue stopped
+quit por AppleScript  ->  no cierra;  open -a UTM  ->  error -609
+```
+
+**Se destrabó con `open -a UTM`** —el proceso seguía vivo todo el rato, PID
+35881— y a partir de ahí `start` volvió a funcionar a la primera. Queda escrito
+como trampa 45.

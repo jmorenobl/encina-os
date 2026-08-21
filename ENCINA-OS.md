@@ -401,7 +401,58 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-20 (noche): **EL FALLO INTERMITENTE ES DEL BANCO, MEDIDO: 33 % Y LOS TRES MEDIOS. La capa queda LIMPIA**
+> ### LA TAREA EN CURSO, 2026-08-21: **LA REPRODUCIBILIDAD, PAGADA — y por partida doble**
+>
+> **`construir-todo.sh` entero, dos pasadas, la misma huella** (`MEDICIONES.md`
+> §4.60). Era lo más viejo sin pagar: todos los medios salían de
+> `fabricar-iso.sh --repo`, y **la vuelta entre las dos máquinas estaba sin
+> ejercitar**.
+>
+> ```
+> pasada 1 -> medios/encina-os-r1.iso   sha256 59bc3a3c...e946e1d4   0 fallos
+> pasada 2 -> medios/encina-os-r2.iso   sha256 59bc3a3c...e946e1d4   0 fallos
+>
+> [OK]    DOS PASADAS, LA MISMA HUELLA     <- la definicion de terminado
+> ```
+>
+> **Y LA COINCIDENCIA QUE NO SE BUSCABA VALE MÁS QUE LAS DOS PASADAS:** esa huella
+> **es la de `p10-capa`**, fabricada el 20 **por el otro camino**, con
+> `fabricar-iso.sh --repo` en local. **Dos caminos distintos, en días distintos,
+> el mismo medio bit a bit** — el largo pasa por `git archive HEAD`, `ssh` al
+> constructor Ubuntu, la cosecha de 28 `.deb` por huella y el `Packages` generado
+> allí; el corto no sale del Mac. Es **reproducibilidad cruzada**: descarta que la
+> huella dependa del camino, que es más de lo que pedía la casilla.
+>
+> **`[OMIT]`, y lo dice el propio guion: que arranque.** Con el 33 % de §4.59 de
+> por medio eso exige **contar**, no un arranque. Como `r1` es bit a bit
+> `p10-capa`, lo que se sabe de este medio es lo que §4.59 midió: **4 de 6**.
+>
+> **Y UNA TRAMPA DEL ENTORNO, cazada por su control** (trampa 45): `utmctl start`
+> empezó a dar `OSStatus error -1712` con `encina-dev` parada, mientras `list` y
+> `status` contestaban tan tranquilos. **La conclusión fácil era «encina-dev está
+> rota».** El control —arrancar `p11`, que había arrancado 5 de 6 esa noche—
+> **falló igual**: el sordo era **UTM**, y se destrabó con `open -a UTM`. Habría
+> sido la quinta atribución falsa por el mismo camino.
+>
+> **EL DISCO, y hay una decisión de Jorge esperando:** quedan **17 GiB** tras
+> borrar `p6-trozo`, `p12`, `p13` y `p14` con sus VMs (14 GiB liberados). Pero
+> **`r1`, `r2` y `p10-capa` son el MISMO fichero tres veces** —misma huella,
+> 10,5 GiB entre las tres—: sobran dos, y cuál se queda es suyo.
+>
+> **LO SIGUIENTE:**
+>
+> 1. **Los dos `[OJOS]` de Jorge** y las dos últimas casillas de
+>    `tareas/aspecto/5-cierre.md`. **Es lo único que queda del incremento**, y ya
+>    no hay nada delante: la capa se monta, la marca llega, el medio es
+>    reproducible y el banco está acotado. Capturas en
+>    `medios/conteo-arranques/capturas/`.
+> 2. **`[OMIT]` P5**, el título de la ventana del instalador, sin medir.
+> 3. **Qué causa el 33 % del banco** — acotado, no explicado, con la pista de
+>    §4.59f (un fallo exacto por ronda, post-hoc).
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-20 (noche): **EL FALLO INTERMITENTE ES DEL BANCO, MEDIDO: 33 % Y LOS TRES MEDIOS. La capa queda LIMPIA**
 >
 > **18 arranques, 6 rondas intercaladas, veredicto contado y no mirado**
 > (`MEDICIONES.md` §4.59). Era el `[OMIT]` que contaminaba **cualquier** medición
