@@ -434,10 +434,11 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > **falló igual**: el sordo era **UTM**, y se destrabó con `open -a UTM`. Habría
 > sido la quinta atribución falsa por el mismo camino.
 >
-> **EL DISCO, y hay una decisión de Jorge esperando:** quedan **17 GiB** tras
-> borrar `p6-trozo`, `p12`, `p13` y `p14` con sus VMs (14 GiB liberados). Pero
-> **`r1`, `r2` y `p10-capa` son el MISMO fichero tres veces** —misma huella,
-> 10,5 GiB entre las tres—: sobran dos, y cuál se queda es suyo.
+> **EL DISCO, resuelto: de 10 GiB a 26.** Se borraron `p6-trozo`, `p12`, `p13` y
+> `p14` con sus VMs (14 GiB), y después `r1` y `r2` (7 GiB más), porque **eran el
+> mismo fichero que `p10-capa`** —misma huella—. **Se conserva `p10-capa`**: es la
+> que citan §4.58 y §4.59 por nombre y **la única con VM registrada**, así que se
+> puede volver a arrancar sin fabricar nada. Quedan **ocho** ISOs.
 >
 > **LO SIGUIENTE:**
 >

@@ -14618,3 +14618,20 @@ quit por AppleScript  ->  no cierra;  open -a UTM  ->  error -609
 **Se destrabó con `open -a UTM`** —el proceso seguía vivo todo el rato, PID
 35881— y a partir de ahí `start` volvió a funcionar a la primera. Queda escrito
 como trampa 45.
+
+#### (b) EL DESENLACE DEL DISCO, para que no quede una decisión colgando
+
+Terminadas las dos pasadas había **tres ficheros con la misma huella** —`r1`,
+`r2` y `p10-capa`, 10,5 GiB entre los tres—. **Se conserva `p10-capa` y se
+borran `r1` y `r2`**, decidido por Jorge: es la que citan por nombre §4.58 y
+§4.59 y **la única con VM registrada** (`encina-capa-p10`), así que es la que se
+puede volver a arrancar sin fabricar nada. Comprobado antes de borrar que `r1` y
+`r2` tenían **un solo enlace** y ninguna VM detrás, y que `p10-capa` conserva
+sus **dos** (fichero + bundle).
+
+```
+libre al empezar la sesion : 10 GiB   (nueve ISOs)
+tras borrar p6/p12/p13/p14 : 24 GiB   (y sus VMs, por utmctl delete)
+tras las dos pasadas       : 17 GiB
+tras borrar r1 y r2        : 26 GiB   (ocho ISOs)
+```
