@@ -2701,3 +2701,81 @@ Después, `start` responde a la primera.
 Es de la misma familia que la 28 —`utmctl start` **devuelve 0 cuando falla**— y
 se defiende igual: **el estado es lo que vale, no el código de salida ni el
 mensaje**, y si algo no arranca, **antes de acusar a la VM se prueba otra**.
+
+---
+
+## Tres más, instalando desde cero (2026-08-22)
+
+**ENMIENDA A LA 45, y es la mitad que importa: «se destraba con `open -a UTM`»
+ERA FALSO. El UTM sordo NO se recupera: SE MUERE.** Se deja escrito al lado lo
+que decía arriba, que es como se corrigen aquí las deducciones.
+
+El 2026-08-22 la trampa volvió a morder y se aplicó su receta. **`open -a UTM`
+solo dio `-609` otra vez.** Lo que sí devolvió el `start` no fue ninguna orden
+mía: fue que **el proceso segfalteó y arrancó otro**. Lo dicen los informes de
+caída de macOS, que son de fuera y no míos:
+
+```
+~/Library/Logs/DiagnosticReports/
+  UTM-2026-08-21-163421.ips   pid 35881   SEGFAULT 16:34:17   CoreGraphics
+                              ^ es EL PID que la 45 anoto como «vivo todo el rato»
+  UTM-2026-08-22-001616.ips   pid 47537   SEGFAULT 00:16:12   SwiftUI
+
+00:11:36  start -> -1712, sordo      00:16:12  UTM 47537 SEGFAULTEA
+00:13     control: p11 igual         00:16:50  start -> started   (38 s despues)
+```
+
+**Lo que se conserva de la 45 y sigue siendo bueno:** el síntoma, y sobre todo
+**el control** —antes de acusar a una VM, arranca otra que sepas buena—. Eso
+funcionó las dos veces. **Lo que cambia es qué hacer después:** no hay conjuro;
+lo que hay es un proceso que se está muriendo. Mira si hay un `.ips` reciente
+antes de inventarte una causa, y cuenta con perder el UTM que tengas delante.
+
+**46. UN CD NO SE «EXPULSA» VACIANDO `ImageName` EN `config.plist`.** Al quitar
+el medio después de instalar —que es lo que el instalador pide— se puso
+`ImageName` a la cadena vacía con `PlistBuddy`. QEMU se queda apuntando **al
+directorio del bundle** y la VM **no arranca**:
+
+```
+qemu-aarch64-softmmu: -drive ...,file.filename=/…/encina-capa-p10.utm/Data/,…:
+  'file' driver requires '/…/Data/' to be a regular file
+```
+
+y, cómo no, `utmctl start` devuelve **0** (trampa 28). **Lo que funciona es
+borrar la entrada `Drive` entera**, con UTM cerrado:
+
+```
+osascript -e 'tell application "UTM" to quit'      # y comprobar con pgrep
+/usr/libexec/PlistBuddy -c "Delete :Drive:1" config.plist
+plutil -lint config.plist                          # el control barato
+open -a UTM
+```
+
+*Y el añadido funciona igual de bien por ese camino:* copiar el `.img` dentro de
+`Data/` y añadir un `:Drive:N` con `ImageName`, `ImageType Disk`, `Interface
+VirtIO`. Sale como `/dev/vdb`. **Con UTM cerrado**, o se lo come.
+
+**47. EL TAMAÑO DE `debug.log` NO SEPARA NADA, Y ESTO ENMIENDA LA 38 Y A §4.54h.**
+Se creía que **~92 K estabilizado** era «arrancó» y **2 759 bytes** era «VM
+colgada». El arranque del 2026-08-22 —el que **instaló el sistema entero**— dejó
+`debug.log` en **2 727 bytes**, y su contenido es **una sola línea**: la orden de
+`qemu-system-aarch64`, sin un byte de ejecución.
+
+```
+2 727 bytes  =  arranque perfecto, instalacion completa    <- medido
+2 759 bytes  =  «VM colgada»                               <- lo que se creia
+```
+
+**No uses el tamaño de `debug.log` para decidir si una VM arrancó**, ni hacia
+arriba ni hacia abajo. Lo que sí discrimina, medido: el `arp`/`ping` del
+anfitrión, y la captura del framebuffer con `veredicto-pantalla.py`.
+
+**Y una trampa de lectura dentro de la misma trampa:** `debug.log` es **una sola
+línea**, así que **`grep -c` cuenta líneas y devuelve 1 como máximo**. Para contar
+unidades declaradas hay que usar `grep -o … | wc -l`, y con su control:
+
+```
+grep -o 'media=cdrom' debug.log | wc -l      # ocurrencias, no lineas
+grep -o 'edk2'    debug.log | wc -l  -> 1    # control: sabe decir que si
+grep -o 'bellota' debug.log | wc -l  -> 0    # control: sabe decir que no
+```
