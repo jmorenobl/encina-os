@@ -14635,3 +14635,181 @@ tras borrar p6/p12/p13/p14 : 24 GiB   (y sus VMs, por utmctl delete)
 tras las dos pasadas       : 17 GiB
 tras borrar r1 y r2        : 26 GiB   (ocho ISOs)
 ```
+
+
+---
+
+### 4.61 INSTALAR DESDE CERO Y MIRAR LA PANTALLA: la predicción, escrita ANTES de arrancar nada (2026-08-22)
+
+Es **la última casilla del incremento que no ha empezado**
+([tareas/aspecto/5-cierre.md](tareas/aspecto/5-cierre.md)), y el motivo por el
+que no se pudo el 2026-08-17 **ya no existe**: aquel día el instalador se caía
+con «Se produjo un problema» (§4.54d/f) y hoy el medio llega al instalador
+(§4.58l).
+
+**Esto va delante por la misma razón de siempre y ya no hace falta defenderla:**
+van **cinco atribuciones falsas** en el proyecto, y la última —§4.58j, que duró
+dos horas— se construyó **sin leer una línea de código**, sólo por tomar un
+arranque negro como negativo. Lo de abajo se escribe **antes del primer dato** y
+se marca después, acierte o falle.
+
+#### (a) EL MEDIO Y EL BANCO, cotejados y no supuestos
+
+```
+medio : medios/encina-os-p10-capa.iso
+        sha256 59bc3a3c3b86cda3b15958aff2fe744d45733f290e9772aa214446eae946e1d4
+        3 721 265 152 bytes · inodo 90350889 · 2 enlaces (el fichero y el bundle)
+        los cuatro mecanismos de D23: capa volid info menu = 1 1 1 1
+VM    : encina-capa-p10 (A1C0DE01-…-0000000000C4), 4 CPU, 8 GiB,
+        disco.img de 40 GiB declarados y 0 ocupados, medio.iso como CD USB
+disco : 35 380 800 KiB libres = 33,742 GiB al empezar
+arbol : limpio, commit 99e0e39
+```
+
+**Lo que este medio ya tiene medido y NO se vuelve a preguntar:** la capa se
+monta la primera del `lowerdir`, `NAME="Encina OS"`, existe
+`/usr/share/desktop-provision/` con su `whitelabel.yml`, el fondo es el nuestro y
+el instalador entra en «Disposición del teclado» en español (§4.58e/l/m). La
+huella es además reproducible por dos caminos distintos (§4.60).
+
+#### (b) EL RIESGO 0, EL BANCO, y su criterio escrito ANTES de gastar un arranque
+
+**Este anfitrión falla el 33 % de los arranques y fallan los TRES medios
+probados** (§4.59). **Un arranque negro no es un resultado del producto**, y un
+«no arranca» **hay que contarlo**: aquí se cuentan todos, ganen o pierdan.
+
+El criterio se fija ahora, con su aritmética, para que no lo fije el cansancio:
+
+```
+p(negra) = 0,33 por arranque, medido sobre 18 arranques
+dos negras seguidas    p = 0,111    <- banco, se repite
+tres negras seguidas   p = 0,036    <- banco, se repite
+cuatro seguidas        p = 0,012    <- banco, se repite y se dice en voz alta
+cinco seguidas         p = 0,004    <- SE PARA. Hay algo nuevo y se investiga
+```
+
+**Y la señal que separa un negro del banco de una caída del producto ya está
+medida, así que no hay que inventarla:** el negro del banco trae `systemd` entero
+en `[ OK ]`, IP en el `arp` del anfitrión y el `debug.log` de QEMU en el rellano
+de ~92 K (§4.58f, trampa 38). Una caída del **producto** se ve distinta: la
+sesión gráfica **sí** llega y sale el diálogo «Se produjo un problema» (§4.54d).
+El veredicto de cada captura no lo doy yo: lo da `scripts/veredicto-pantalla.py`,
+que tiene su banco de 9 correctas y 3 sabotajes.
+
+#### (c) EL RIESGO 1, y va PRIMERO porque puede tumbar la sesión: ¿se recorre el instalador SÓLO CON TECLADO?
+
+**Está sin medir**, y lo que hay alrededor **no apunta a favor**:
+
+```
+§4.35i  el raton del anfitrion NO llega: 0 pixeles cambian sobre un blanco
+        inequivoco, comparado pixel a pixel con diferencia.py. Cinco vias
+        descartadas (System Events, input scan code de UTM, at-spi, teclas del
+        raton de GNOME).
+§4.35i  en la TIENDA (GTK): Tab SI mueve el anillo, pero el foco no aterriza
+        NUNCA en el boton, y Return y Espacio no lo activan.
+§4.56   en el dialogo de error del INSTALADOR: Tab y Shift+Tab no movieron el
+        foco visible.
+```
+
+Ninguna de las tres es sobre las **páginas** del instalador de 24.04, que es lo
+que hay que medir. **La predicción honrada es que NO se deja**, y se escribe así:
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **K1** | **Las teclas LLEGAN**: una flecha Abajo sobre la lista de disposiciones cambia la pantalla — `diferencia.py` da **> 0** píxeles distintos | da **0**: entonces no llegan las teclas y **no se ha medido nada del instalador**; es el banco, no el producto |
+| **K2** | **Tab NO recorre**: tras hasta 15 `Tab` y un `Intro`, la página sigue siendo «Disposición del teclado» | cambia de página: **sí se recorre**, y entonces la instalación la piloto yo entera |
+
+**K1 es el control de K2 y va delante.** Sin K1, un K2 que «no cambia nada»
+significaría «no llegan las teclas», que es **otra cosa** y la conclusión sería
+falsa. Es la regla de la casa: ninguna comprobación vale sin su control, y el
+control va delante.
+
+**Y LA DECISIÓN, ESCRITA ANTES CON SU RAZÓN, para que no se tome por comodidad
+cuando lleve dos horas peleándome con `Tab`:**
+
+- **Si K2 sale como predigo, la vía NO es `imagen/autoinstall-unattended.yaml`.**
+  Y no es prudencia: **la casilla pide `--forma e3`**, y esa forma comprueba que
+  el `telemetry` traiga las **OCHO** etapas
+  —`confirm,done,identity,install,keyboard,network,storage,timezone`—. Un seed
+  desatendido deja `done,loading` y esa comprobación **falla**. No es que mida
+  menos: **mide otra cosa**, la forma E2. Cambiar de seed sería cambiar la
+  casilla y llamarla igual.
+- **La vía es la que ya tiene precedente y no afloja nada: las cinco pantallas
+  las contesta Jorge** (§4.34b, *«Las contestó Jorge; yo no toqué el ratón»*, con
+  esta misma forma E3 el 2026-08-13). La casilla **ya pide** de todas formas que
+  una persona mire las seis pantallas: `[OJOS]` es de Jorge. Lo que un `[OJOS]`
+  prohíbe es que yo dé por bueno lo que se ve, no que él toque el ratón.
+- **Lo que yo entrego en ese caso** es la máquina arrancada en la primera
+  pantalla, la lista escrita de qué teclear en cada una y qué esperar, y todo lo
+  demás medido.
+
+#### (d) EL RIESGO 2, el disco, con su número y su corte
+
+Una instalación de verdad llegó a **11 065 MiB** de `disco.img` (§4.34b). Con
+**33,742 GiB** libres cabe con margen; predigo que al terminar quedarán **≥ 20
+GiB**. **Si `df` baja de 3 GiB se para**: un disco lleno se ve exactamente igual
+que un instalador que se cae, y sería la sexta atribución falsa por el mismo
+camino. **No hay que fabricar ninguna ISO** — el medio y su VM ya están.
+
+#### (e) LAS PREDICCIONES DEL PRODUCTO, numeradas y falsables
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **I1** | El instalador entra **directo** en «Disposición del teclado», **en español**, sin pantalla de idioma ni de bienvenida | sale la de idioma, o sale en inglés |
+| **I2** | Enseña **exactamente cinco** pantallas —teclado, red, disco, usuario, zona horaria— y «Revise sus elecciones» trae **«Aplicaciones» vacío** | sale una sexta, o «Aplicaciones» trae algo (sería `source` preguntándose) |
+| **I3** | Las páginas con marca de Canonical llevan **el logotipo de Encina**: son las ocho de `whitelabel.yml` (`locale`, `try-or-install`, `refresh`, `done`, `ubuntu-pro`×3, `storage-icon`) | sale el logotipo de Canonical en alguna |
+| **I4** | **P5, `[OMIT]` desde el 20:** el **título de la ventana** dice **«Encina OS»** y no «Install Ubuntu» | dice «Install Ubuntu» |
+| **I5** | La instalación **termina** y la máquina arranca **de su disco** | no termina, o no arranca del disco |
+| **I6** | `verificar-instalacion.sh --forma e3 --visibles 27`, como root: **0 fallos** | cualquier `[FALLO]` |
+| **I7** | Las seis pantallas de la máquina instalada llevan la identidad | **no lo digo yo: es `[OJOS]` de Jorge.** Yo entrego la lista y las capturas |
+
+**Sobre I4, cómo se mide, porque la trampa está escrita:** las capturas enseñan
+el título de la **página** («Disposición del teclado»), no el `app-name`
+(§4.58m). Se mide **desde dentro**, con dos vías independientes, y se transcribe
+la salida literal de la que conteste:
+
+```
+1.  xprop -root _NET_CLIENT_LIST  +  xprop -id <id> WM_NAME
+    desde el gnome-terminal que abre Alt+F2 (trampa 36)
+2.  si x11-utils no esta: la vista de Actividades (Cmd = Super) rotula cada
+    ventana con su WM_NAME, y eso SI sale en captura
+```
+
+**Y su control, que es lo que lo convierte en medición:** la misma orden sobre
+**otra** ventana —el propio `gnome-terminal`— tiene que dar un título **distinto
+y conocido**. Sin ese control, «Encina OS» podría ser el nombre de la sesión, o
+del sistema, y no el de la ventana.
+
+**Sobre I6, lo que ya sé que pasó la última vez y no se cuela como sorpresa:** el
+precedente §4.34c dio **51 correctas y un fallo**, y el fallo era `loading`
+ausente del `telemetry`. **Eso ya está corregido en el verificador** (§4.40c
+bis): `loading` se aparta antes de comparar y se dice como `[DATO]`, no como
+casilla. Si vuelve a faltar, **no debe fallar nada**.
+
+**Sobre I2 y `--visibles 27`:** 27 es el número del precedente, con
+`encina-branding` 0.1.8. Hoy va 0.1.15. **Un número distinto es `[AVISO]`, no
+`[FALLO]`** —así está escrito el guion, y lo que decide la casilla no es acertar
+el número sino que el inventario **sepa contar** (§4.19c)—. Si sale otro, se
+nombra cuál sobra o cuál falta.
+
+#### (f) EL PRESUPUESTO DE TIEMPO, dicho antes de gastarlo
+
+```
+llegar al instalador   ~110 s por arranque bueno; con el 33 %, hasta 4 arranques
+                       -> 25 min como mucho
+medir K1 y K2          10 min.  AQUI SE DECIDE, y se dice ANTES de gastar una hora
+la instalacion         el precedente §4.34b fue 21:11:57 -> 21:26:17 = 14 min 20 s
+                       doy 45 min; si a los 45 no ha terminado se dice la hora y
+                       se sigue esperando, no se da por caida
+dentro de la maquina   verificador, P5 y las tres capturas que faltan -> 30 min
+```
+
+#### (g) LO QUE NO VOY A CONTAR COMO RESULTADO, pase lo que pase
+
+- **Que yo diga que una pantalla «se ve bien».** I7 es `[OJOS]` y se entrega como
+  lista, no como aprobado.
+- **Un solo arranque de cualquier cosa.** Con el 33 % medido, un `1 de 1` no dice
+  casi nada (trampa 42) y hacen falta **cinco** limpios seguidos para bajar del
+  15 %.
+- **Que el instalador no se deje teclear** como defecto del producto. Sería un
+  límite **del banco** —el pilotaje sin manos—, y así se escribirá.
