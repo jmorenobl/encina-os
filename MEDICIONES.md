@@ -15092,6 +15092,17 @@ imagen/repo-manifiesto.tsv, 28 paquetes:
   libnss3   NO APARECE
 ```
 
+**Y no se deja en «lo dice el manifiesto»: se lee EL MEDIO**, que es la fuente
+que de verdad viajó, con sus dos controles:
+
+```
+xorriso -indev medios/encina-os-p10-capa.iso -find /encina-repo -type f
+  -> 29 ficheros
+  el UNICO que casa con «nss»:  libnss3-tools_2%3a3.98-1ubuntu0.2_arm64.deb
+  CONTROL: «encina-meta» -> 1        (la busqueda sabe decir que si)
+  CONTROL: un nombre inventado -> 0  (y sabe decir que no)
+```
+
 **`libnss3-tools` viaja y `libnss3` no, y `libnss3-tools 2:3.98-1ubuntu0.2` exige
 `libnss3` en esa misma versión**, mientras que la base del medio trae
 `2:3.98-1build1`. La cosecha se llevó al hermano y dejó al otro.
