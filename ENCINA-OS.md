@@ -401,7 +401,83 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-21: **LA REPRODUCIBILIDAD, PAGADA — y por partida doble**
+> ### LA TAREA EN CURSO, 2026-08-22: **LA INSTALACIÓN OCURRE — Y SALE SIN NINGÚN PAQUETE DE ENCINA. Falta UN `.deb` en el medio**
+>
+> **La última casilla del incremento por fin se pagó**, y encontró exactamente lo
+> que existía para encontrar (`MEDICIONES.md` §4.61). El medio `p10-capa` arrancó,
+> el instalador salió en español, **Jorge contestó las cinco pantallas**, la
+> instalación terminó y la máquina **arranca de su disco, 2 de 2**. Lo que
+> bloqueaba desde el 2026-08-17 —«no hay instalación»— **está resuelto**.
+>
+> ```
+> verificar-instalacion.sh --forma e3 --visibles 27, como root:
+> [OK] 41   [FALLO] 20   [AVISO] 1   [OMIT] 0
+>
+> dpkg -l encina-branding encina-meta encina-firefox-native autofirma
+>   no se ha encontrado ningun paquete que corresponda con ...  (los CUATRO)
+> ```
+>
+> **Y el síntoma se vio en la PRIMERA pantalla, antes de entrar: el logotipo de
+> GDM es el de Ubuntu**, donde `design/capturas/despues/03-gdm.png` tiene la
+> encina. Repetido en los dos arranques.
+>
+> **LA CAUSA, MEDIDA, CON NOMBRE Y VERSIÓN — y es UN paquete:**
+>
+> ```
+> Inst libnss3 [2:3.98-1build1] (2:3.98-1ubuntu0.2 Ubuntu:24.04/noble-updates ...)
+>       ^ la UNICA de las 22 lineas de la simulacion que NO dice «localhost»
+> E: Failed to fetch .../libnss3_3.98-1ubuntu0.2_arm64.deb
+>    Temporary failure resolving 'ports.ubuntu.com'
+> ```
+>
+> `imagen/repo-manifiesto.tsv` lleva **`libnss3-tools 2:3.98-1ubuntu0.2`** y **no
+> lleva `libnss3`**; el `-tools` exige a su hermano en esa misma versión, así que
+> `apt install encina-meta` tiene que salir a la red — **y en el `chroot` de
+> `curtin` no hay DNS**, que es lo normal y **el propio seed lo mide en su paso
+> 7**. Un solo `.deb` que no se puede traer **aborta la transacción entera**.
+>
+> **Lo que esto destapa es más grande que un `.deb`: el medio NO es
+> autosuficiente, y nadie lo sabía porque nadie había instalado sin red.** El
+> concepto está bien —el medio lleva su `/encina-repo` para no necesitarla—; la
+> **lista** tiene un hueco. *No es regresión de un cambio nuestro: es deriva del
+> archivo de Ubuntu, que se mueve mientras el manifiesto no.*
+>
+> **DE PASO, DOS CASILLAS QUE SÍ SE CIERRAN:**
+>
+> - **`[OMIT]` P5, cerrado.** El título de la ventana del instalador dice
+>   **«Encina OS»**, leído con `xwininfo` dentro de la sesión viva y con otra
+>   ventana como control. Las capturas no lo enseñaban porque pintan el título de
+>   la **página**.
+> - **El instalador NO se recorre sólo con teclado**, medido con su control
+>   delante: las teclas llegan, pero `Tab` cicla entre dos paradas y nunca toca
+>   «Siguiente»; `Intro` abre «Detectar». **Es un límite del banco, no del
+>   producto**, y por eso las cinco pantallas las contestó Jorge.
+>
+> **Y EL BANCO SE LLEVA DOS CORRECCIONES, las dos tumbando algo que se creía:**
+>
+> - **La trampa 45 estaba mal explicada.** «Se destrabó con `open -a UTM`» es
+>   falso: los informes de caída de macOS enseñan que **el UTM sordo segfaltea** y
+>   arranca otro (`pid 35881` a las 16:34 del 21 — el que la trampa daba por «vivo
+>   todo el rato» — y `pid 47537` a las 00:16 del 22, **38 s antes** del arranque
+>   bueno). Habría sido la **sexta** atribución falsa. Y deja un **candidato
+>   post-hoc** para el 33 % de §4.59.
+> - **El tamaño de `debug.log` no separa nada.** El arranque que instaló el
+>   sistema entero lo dejó en **2 727 bytes** —donde se creía que eso era «VM
+>   colgada»—. Trampa 47.
+>
+> **LO SIGUIENTE, en este orden:**
+>
+> 1. **`libnss3` al manifiesto** y rehacer la cosecha. Y **buscar más huecos del
+>    mismo patrón**: un `-tools` sin su biblioteca no tiene por qué ser el único.
+> 2. **Que la cosecha lo compruebe sola:** `apt-get -s install encina-meta` contra
+>    el repo del medio **no debe nombrar ni una fuente que no sea `localhost`**.
+>    Es barato y habría cazado esto sin gastar una instalación entera.
+> 3. **Reinstalar y volver a pasar el verificador buscando 0 fallos**, y
+>    **entonces** los `[OJOS]` de Jorge sobre las seis pantallas.
+>
+> ---
+>
+> ### LO ANTERIOR, 2026-08-21: **LA REPRODUCIBILIDAD, PAGADA — y por partida doble**
 >
 > **`construir-todo.sh` entero, dos pasadas, la misma huella** (`MEDICIONES.md`
 > §4.60). Era lo más viejo sin pagar: todos los medios salían de
