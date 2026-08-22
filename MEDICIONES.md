@@ -16187,3 +16187,95 @@ Lo que **sí** queda cerrado, y es lo que se buscaba: **el `; true` que se quit�
 él, una `late-command` que sale distinto de cero **para la instalación y lo
 enseña**. La máquina de §4.61 —sin ninguno de los cuatro paquetes— **no se habría
 entregado diciendo «listo para usarse»**.
+
+#### (p) EL MEDIO BUENO `cd84d2ec…`, INSTALADO CON LAS MANOS DE JORGE: 20 FALLOS → 0
+
+Forma E3, las cinco pantallas contestadas a mano, y **el canal FAT conectado
+DESPUÉS** (trampa 20).
+
+```
+10:37  arranca el instalador (2.o intento: el 1.o salio NEGRO, trampas 41/42, contado)
+10:51:01Z  encina-seed llego al final  estado=COMPLETO   ENCINA_FALTA= (vacio)
+           REPO ELEGIDO -> /cdrom/encina-repo        <- la via de E3, dentro del medio
+10:53  «EncinaOS 24.04.4 LTS esta instalado y listo para usarse», con la encina
+13:06  arranca de su disco: GDM en español, usuario Encina, LOGOTIPO DE LA ENCINA
+```
+
+**Y esa frase, «listo para usarse», hoy significa algo**: es la que (l) acaba de
+demostrar que **no sale** si el seed devuelve distinto de cero. En §4.61 salía
+igual con la máquina vacía.
+
+**El síntoma de §4.61 —el logotipo de GDM era el de Ubuntu— ya no está.** Y los
+cuatro paquetes:
+
+```
+[OK] encina-meta 0.2.1        [OK] encina-firefox-native 0.2.1
+[OK] encina-branding 0.1.15   [OK] autofirma 1.9.1+encina4  (la que espera por raiz, M20)
+```
+
+**PRIMERA PASADA DEL VERIFICADOR: `[OK] 61  [FALLO] 1  [AVISO] 0  [OMIT] 0`**,
+donde §4.61 daba **41 y 20**. Los veinte colgaban todos de los cuatro paquetes
+ausentes, como estaba escrito.
+
+#### (q) EL ÚNICO FALLO ERA DEL INSTRUMENTO, Y LLEVABA OCHO DÍAS SIN EJECUTARSE NUNCA
+
+```
+[FALLO]  el tema propio ha roto la herencia
+         |  folder=/usr/share/icons/Yaru-sage/16x16/places/folder.png
+```
+
+El bloque 8.5 aceptaba **sólo** `/usr/share/icons/Yaru/` y `…/hicolor/`. Pero
+**nuestro propio paquete pide Yaru-sage EL PRIMERO**:
+
+```
+debian-packages/encina-branding/src/usr/share/icons/Encina/index.theme
+    Inherits=Yaru-sage,Yaru,hicolor
+```
+
+…y el `gtk-theme` del sistema **es** `Yaru-sage`, cosa que dice **el control de la
+propia comprobación tres líneas más arriba**. O sea que el icono salía de donde
+tenía que salir y la lista blanca estaba corta.
+
+**Lo que lo convierte en hallazgo y no en excusa, y está medido con `git`:** el
+`Inherits` (`1d24ac2`) y la comprobación (`c675c5d`) **se escribieron EL MISMO
+DÍA**, el 2026-08-14, contradiciéndose. Y **en todo `MEDICIONES.md` no aparece ni
+una vez** el `[OK]` ni el `[FALLO]` de esa línea: **nunca se había ejecutado
+sobre una máquina con el tema instalado**. Es, otra vez, una comprobación que no
+se había visto pasar.
+
+**Corregida, y ensanchar una lista blanca es fácil de ensanchar de más, así que
+lleva control nuevo** —probado en el Mac antes de meterlo en la máquina—:
+
+```
+ACEPTA   /usr/share/icons/Yaru-sage/16x16/places/folder.png
+ACEPTA   /usr/share/icons/Yaru/16x16/x.png        ACEPTA  /usr/share/icons/hicolor/x.png
+RECHAZA  /usr/share/icons/Adwaita/x.png           RECHAZA <vacio>
+RECHAZA  /usr/share/icons/YaruSuplantado/x.png    <- solo EMPIEZA por Yaru
+```
+
+**SEGUNDA PASADA, sobre LA MISMA MÁQUINA:**
+
+```
+[OK] 63   [FALLO] 0   [AVISO] 0   [OMIT] 0
+  [OK] con el tema puesto, los iconos ajenos siguen saliendo de la familia Yaru (Inherits funciona)
+  [OK] control: el comparador rechaza Adwaita, la respuesta vacia y un nombre que solo EMPIEZA por Yaru
+  [OK] control: 27 aplicaciones visibles de 95 totales   [OK] coincide con las 27 declaradas
+```
+
+*63 y no 62 porque la corrección **añade** un control.* **Cero fallos.**
+
+#### (r) UN INSTRUMENTO DE PROPINA: LEER LA PANTALLA DEL INVITADO CON OCR
+
+A mitad de la vuelta dejó de poder mirarse una captura, y con ella la regla que
+más cara se ha pagado aquí: *captura la pantalla ANTES de pulsar Intro*. Se
+recuperó con `tesseract`, que está instalado en este Mac, **y con su control
+delante**: se le pasó primero una captura **cuyo texto ya se conocía** —el
+diálogo «Ejecutar una orden» con `gnome-terminal` dentro— y lo leyó bien.
+
+*Y su límite, medido en la misma vuelta:* sobre la tipografía del terminal a
+tamaño pequeño **no es fiable** —leyó `--forma e5` donde ponía `e3`—, así que la
+orden **no se dio por buena por ahí**: se comprobó **después**, en el registro
+que deja `script`, que graba lo tecleado. Ahí se ve además que el `bash /mnt/v.sh
+--forma e3 --visib les 27` del registro **no lleva un espacio de verdad**: es el
+ajuste a 80 columnas, y lo demuestra que el verificador contestó
+`coincide con las 27 declaradas`.

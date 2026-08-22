@@ -628,18 +628,43 @@ icono, no que sea el nuestro."
         fi
     done
     # 8.5 la herencia no rompe el resto del escritorio
+    #
+    # LA FAMILIA ES 'Yaru*', NO 'Yaru' A SECAS, Y ESTO SE CORRIGIO EL 2026-08-22
+    # CON LA MAQUINA DELANTE (MEDICIONES.md 4.63p). Esta linea aceptaba solo
+    # /usr/share/icons/Yaru/ y /usr/share/icons/hicolor/, y dio [FALLO] con
+    #     folder=/usr/share/icons/Yaru-sage/16x16/places/folder.png
+    # que es EXACTAMENTE lo que pide nuestro propio paquete: el index.theme de
+    # encina-branding dice 'Inherits=Yaru-sage,Yaru,hicolor', con Yaru-sage EL
+    # PRIMERO, y el gtk-theme del sistema es Yaru-sage -- lo dice el control de
+    # tres lineas mas arriba. La comprobacion y el Inherits se escribieron EL
+    # MISMO DIA (1d24ac2 y c675c5d, 2026-08-14) y se contradecian; nadie lo vio
+    # porque esta comprobacion NUNCA se habia ejecutado sobre una maquina con el
+    # tema instalado. El defecto era del INSTRUMENTO, no del producto.
+    familia_yaru() {   # 0 si el icono sale de la familia Yaru o de hicolor
+        case "$1" in
+            /usr/share/icons/Yaru/*|/usr/share/icons/Yaru-*/*|/usr/share/icons/hicolor/*) return 0 ;;
+            *) return 1 ;;
+        esac
+    }
     ROTOS=""
     for n in folder system-run-symbolic; do
         R=$(lee Encina "$n")
-        case "$R" in
-            /usr/share/icons/Yaru/*|/usr/share/icons/hicolor/*) ;;
-            *) ROTOS="$ROTOS $n=${R:-<nada>}" ;;
-        esac
+        familia_yaru "$R" || ROTOS="$ROTOS $n=${R:-<nada>}"
     done
     if [ -z "$ROTOS" ]; then
-        ok "con el tema puesto, los iconos ajenos siguen saliendo de Yaru (Inherits funciona)"
+        ok "con el tema puesto, los iconos ajenos siguen saliendo de la familia Yaru (Inherits funciona)"
     else
         fallo "el tema propio ha roto la herencia" "$ROTOS"
+    fi
+    # CONTROL DE ESE COMPARADOR, que es lo que lo convierte en comprobacion:
+    # ensanchar una lista blanca es facil de ensanchar DE MAS, asi que aqui se
+    # comprueba que sigue sabiendo decir que NO -- con un icono de otro tema y
+    # con la respuesta vacia, que son las dos formas de romperse la herencia.
+    if familia_yaru "/usr/share/icons/Adwaita/16x16/places/folder.png" \
+       || familia_yaru "" || familia_yaru "/usr/share/icons/YaruSuplantado/x.png"; then
+        fallo "CONTROL ROTO: el comparador de la familia Yaru dice que si a cualquier cosa"
+    else
+        ok "control: el comparador rechaza Adwaita, la respuesta vacia y un nombre que solo EMPIEZA por Yaru"
     fi
     # CONTROL de que el resolvedor sabe decir que NO
     igual "control: un icono inventado no resuelve" "NO-RESUELVE" "$(lee Encina icono-que-no-existe-jamas)"
