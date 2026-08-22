@@ -15800,3 +15800,80 @@ que da el mismo «sin DNS» conservando el dispositivo.
 
 **Y lo que NO se va a concluir aunque N4 acierte:** que el medio bueno esté bien.
 Eso es otra instalación y otra casilla.
+
+#### (p) **LA VUELTA SIN RED: N4 NO SE PUEDE CANTAR, Y EL CONTROL N3 ES LO QUE LO IMPIDE**
+
+**Salió la pantalla.** «Se produjo un problema», en español, con «Mostrar
+registro» y «Cerrar», y encima el diálogo de `apport` —*«Se ha detectado un
+problema en un programa del sistema»*, `sudo ubuntu-bug ubuntu-desktop-bootstrap`—.
+Era exactamente lo que N4 predecía **y no cuenta como N4**, porque N3 —que se
+escribió como su control y va delante— dice que no:
+
+```
+$ sudo cat /target/etc/encina-estado
+cat: No existe el archivo o el directorio
+$ findmnt /target
+/target /dev/vda2 ext4 rw,relatime          <- /target SI esta montado, y el sistema esta ahi
+$ sudo tail -n 18 /target/var/log/encina-seed.log
+tail: no se puede abrir ... No existe el archivo o el directorio
+$ sudo grep -n -m2 'encina-seed' /var/log/installer/subiquity-server-debug.log
+                                            <- NADA. Ni una linea.
+```
+
+**El seed NO LLEGÓ A EJECUTARSE.** No hay estado, no hay registro propio, y el
+registro de `subiquity` no lo nombra ni una vez. La instalación se cayó **antes**
+de la `late-command`:
+
+```
+ERROR ... subiquity/Install/install/curtin-install/run-curtin-step: FAIL:
+INFO  ... saving crash report 'curthooks crashed with CurtinInstallError'
+ERROR subiquity.server.server:494 top level error
+Traceback ... install.py line 240, in run-curtin-step -> await run-curtin-command(
+```
+
+**Se cayó `curtin`, en `curthooks`.** La pantalla es verdadera y el fallo es
+verdadero, pero **no es nuestro `exit 1`**: es el instalador reventando por otra
+causa. Cantar N4 aquí habría sido **la séptima atribución falsa**, y de la forma
+más tentadora que ha habido en este proyecto —el resultado *tenía la cara* de la
+predicción—. Lo único que lo impidió fue haber escrito **antes** que N3 va
+delante, y haberlo escrito **por lo que pasó dos horas antes**: que un
+«listo para usarse» no distinguía una red de seguridad rota de que no hubiera
+nada que avisar.
+
+**LA CAUSA, Y ES EL RIESGO DE (o) CUMPLIDO — EN UNA FORMA MÁS FUERTE DE LA
+ESCRITA.** En (o) quedó: *«quitar la tarjeta puede cambiar las pantallas del
+instalador»*. No cambió las pantallas: **tumbó `curtin`**. Quitar la tarjeta
+entera es **demasiado bruto**: la instalación de §4.61 tenía red **en la sesión
+viva** y sólo le faltaba **DNS dentro del `chroot`**, que son dos cosas
+distintas, y esta noche se le quitaron las dos.
+
+**Marcador de la vuelta, y no se maquilla:**
+
+| # | Predicción | Resultado |
+|---|---|---|
+| **N1** | el paso 7 dice que no hay DNS | **NO MEDIDO** — el seed no llegó a correr |
+| **N2** | `apt` aborta sobre `libnss3` | **NO MEDIDO** |
+| **N3** | `ENCINA_ESTADO=INCOMPLETO` | **NO** — no existe el fichero: el seed no corrió |
+| **N4** | sale «Se produjo un problema» | **la pantalla SALE, pero por `curthooks`, no por el seed. NO cuenta** |
+| **N5** | la máquina sigue arrancando de su disco | **no comprobado** (el fallo es anterior a `postinstall`) |
+
+**LO QUE SÍ SE LLEVA ESTA VUELTA, y no es poco ni es consuelo:**
+
+1. **La pantalla existe, se ve así, y en forma E3.** Hasta hoy `«An error
+   occurred during installation»` era **una lectura de código** de §4.27-nivel-2
+   (`installprogress.py:189`). Ahora hay **captura**, en español y con sus dos
+   botones. Lo que sigue sin demostrarse es **el disparador**: que la
+   `late-command` saliendo distinto de cero lleve hasta ella.
+2. **Una forma nueva de romper el banco, con nombre:** sin tarjeta de red,
+   `curtin` **no completa** una instalación de este medio. Va a `SCRIPTS.md`.
+
+**LA RED DE SEGURIDAD SIGUE SIN EJERCITARSE**, y ahora se sabe por qué es difícil:
+el fallo de §4.61 necesita **red en la sesión viva y sin DNS en el `chroot`**, que
+es un estado que ocurrió solo y que no se sabe forzar.
+
+**LA VÍA QUE QUEDA, Y ES MEJOR QUE PELEARSE CON LA RED:** la pregunta de la red de
+seguridad **no es sobre `libnss3`**. Es sobre el instrumento: *¿una `late-command`
+que sale distinto de cero enseña la pantalla?* Eso se contesta **con red puesta**
+—para que `curtin` termine— y con **un seed que salga 1 a propósito**, que es un
+sabotaje deliberado, de los que este repositorio ya usa como control en todas
+partes. Aísla el mecanismo y no depende del azar de nada.
