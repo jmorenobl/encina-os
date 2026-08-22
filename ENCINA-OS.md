@@ -646,10 +646,51 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > «Instalar desde cero y mirar la pantalla» **se queda sin marcar a propósito**,
 > con las otras dos terceras partes de su condición pagadas y medidas.
 >
-> **LO SIGUIENTE, y ya no es del aspecto:** lo que bloquea publicar
-> —[tareas/alojamiento.md](tareas/alojamiento.md), 3,46 GB que no caben en un
-> release de GitHub, y [tareas/publicar.md](tareas/publicar.md)—, que es además lo
-> que **desbloquea a Plymouth**: sin ISO publicada no hay instalación en hierro.
+> ---
+>
+> ### LA TAREA SIGUIENTE, 2026-08-22 (cierre): **`amd64` (E6), Y NO PUBLICAR TODAVÍA**
+>
+> **Esto cambia el orden que tenía escrito este documento hace tres horas, y lo
+> cambia un dato de Jorge, no una opinión:** el portátil donde puede instalar en
+> hierro **es Intel/AMD**. Y el medio que existe es **`arm64` puro** —`bootaa64.efi`,
+> `Volume Id: EncinaOS 0.2.1 arm64`—, **así que en ese portátil no arranca**.
+>
+> Las consecuencias, en cadena:
+>
+> 1. **Plymouth no se puede contestar sin `amd64`.** Su única condición de salida
+>    es el hierro, y el hierro que hay es Intel.
+> 2. **`tareas/despues-de-publicar.md` dice de E6: *«No es prioridad. Necesita con
+>    qué probarlo»*. Esa razón ha CADUCADO** — ya hay con qué probarlo. Una
+>    despriorización escrita cuyo motivo se cae **se revisa, no se hereda**.
+> 3. **Publicar primero sería publicar algo que su propio autor no puede probar en
+>    su máquina.** No está prohibido, pero hay que decidirlo a sabiendas.
+>
+> **LO QUE CUESTA E6, MEDIDO ESTA NOCHE Y NO ESTIMADO — y es menos de lo que
+> parecía:**
+>
+> ```
+> los CUATRO paquetes de Encina son _all.deb   -> NO HAY QUE RECONSTRUIRLOS
+>     autofirma_1.9.1+encina4_all   encina-branding_0.1.15_all
+>     encina-firefox-native_0.2.1_all   encina-meta_0.2.1_all
+> el repo offline: 29 .deb = 14 _all + 15 _arm64  -> hay que cosechar QUINCE para amd64
+> fabricar-iso.sh nombra la arquitectura en 14 lineas (bootaa64/grubaa64/mmaa64 -> x64)
+> en todos los guiones: 29 lineas
+> ```
+>
+> Falta además la ISO base `amd64` y **un constructor `amd64`** —el actual es una
+> VM arm64—, que puede ser el propio portátil.
+>
+> **Y UN RIESGO QUE HAY QUE NOMBRAR ANTES DE TOCAR HIERRO, y que en una VM nunca
+> importó:** `tareas/despues-de-publicar.md` declara que **la instalación exige
+> red** y que meter el núcleo y `linux-firmware` en el medio cuesta **1 089 MB**,
+> de los cuales `linux-firmware` son **655**. En una máquina virtual eso no se
+> nota; **en un portátil de verdad es el WiFi**. No está medido aquí — está
+> declarado allí—, y conviene medirlo antes de dar por fallida una instalación en
+> hierro por un motivo que no sea el producto.
+>
+> *Lo que bloquea publicar sigue donde estaba* —[tareas/alojamiento.md](tareas/alojamiento.md),
+> 3,46 GB que no caben en un release de GitHub, y [tareas/publicar.md](tareas/publicar.md)—,
+> **pero deja de ser lo siguiente.**
 >
 > **Disco:** 26,3 GiB. La VM `encina-control-sinred` (8,2 GiB) lleva la
 > instalación reventada de `curthooks` y **ya no hace falta**: es la única que
