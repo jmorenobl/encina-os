@@ -548,6 +548,58 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > 3. **Y ENTONCES** —y no antes— los `[OJOS]` de Jorge y la foto del «después».
 >    Siguen **bloqueados**: sin `encina-branding` sería una captura que miente.
 >
+> ---
+>
+> ### AL DÍA, 2026-08-22 (mañana): **LA RED DE SEGURIDAD FUNCIONA. Ejercitada por sabotaje, con su control delante**
+>
+> El detalle en `MEDICIONES.md` §4.63, con la predicción escrita **antes** en
+> `81568ca`. **Aciertos 6 de 6.**
+>
+> **LO QUE SE DEMUESTRA, y es la casilla que llevaba desde el 20 sin poder
+> pagarse:** un seed que sale distinto de cero **para la instalación y lo
+> enseña**. Sobre una **copia** del seed —nunca sobre `imagen/encina-seed.sh`—
+> con la última línea cambiada a `exit 1` incondicional:
+>
+> ```
+> CONTROL   (seed sin sabotear)   el seed acaba 09:33:03Z -> SE APAGA SOLA 09:33:18Z
+> SABOTAJE  (una linea distinta)  el seed acaba 09:53:57Z -> SIGUE ENCENDIDA a las 10:00
+>                                 y en la pantalla: «Se produjo un problema»
+> ```
+>
+> **Y lo que lo convierte en medición y no en susto: la máquina del sabotaje está
+> COMPLETA.** `ENCINA_ESTADO=COMPLETO`, `ENCINA_FALTA` vacío, los cuatro paquetes
+> dentro, `curtin` terminado. No falta un `.deb`, no falla el repo, no hace falta
+> DNS: **la única diferencia con el control es el código de salida**. Los dos
+> registros del seed son el mismo trabajo —**14 líneas distintas de 1906**—.
+>
+> Y **arranca de su disco después de la pantalla**, con GDM en español y **el
+> logotipo de la encina**: la consecuencia 2 del comentario del propio seed, que
+> hasta hoy sólo estaba **leída en el código**.
+>
+> **LO QUE NO DEMUESTRA, y se dice:** está medido **en forma E2**. Que la pantalla
+> salga igual en **forma E3** sigue siendo una **deducción** —`server.py:487,513`
+> pone `ERROR` en las dos formas, y las 23 capas `squashfs` de la ISO oficial y
+> del medio de Encina son **idénticas byte a byte**, medido con su control—. Y
+> **E3 de las premisas** (que `subiquity` nombre a `encina-seed` en su registro)
+> quedó **NO MEDIDO**: ese registro vive en la sesión viva y no se copia al
+> objetivo si no hay final bueno.
+>
+> **DOS COSAS MÁS QUE SE LLEVA LA VUELTA:**
+>
+> - **El control hizo su trabajo y cazó un fallo del banco** antes de gastar el
+>   sabotaje: **dos discos `virtio` del mismo bundle anuncian el MISMO `serial`**
+>   —UTM lo saca de los 20 primeros dígitos del `Identifier`, y los nuestros sólo
+>   se diferencian en el último—, y con eso el instalador **borró la cabecera del
+>   volumen del seed a los 64 s**. Trampa 49.
+> - **Un instrumento nuevo que quita manos: el registro de una instalación se lee
+>   en los BYTES de `disco.img`, desde el Mac.** Las 1906 líneas del `seed.log`,
+>   el estado y los testigos, sin entrar en la máquina y sin canal FAT. Trampa 50.
+>   *Para **ejecutar** dentro —el verificador— el canal sigue haciendo falta.*
+>
+> **LO QUE QUEDA, y no ha cambiado de orden:** el medio bueno `cd84d2ec…`
+> instalándose con las manos de Jorge buscando **0 fallos**, y **entonces** los
+> `[OJOS]` y la foto del «después».
+>
 > **Disco:** 26,3 GiB. La VM `encina-control-sinred` (8,2 GiB) lleva la
 > instalación reventada de `curthooks` y **ya no hace falta**: es la única que
 > sobra, y borrarla es de Jorge.
