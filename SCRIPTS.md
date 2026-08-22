@@ -2884,3 +2884,57 @@ que la sostiene y que borrarlo sí devuelve los 3,5 GiB. Ya estaba escrito en el
 `DIARIO.md` del 20 —«borrar VMs no libera nada si la ISO es enlace duro»— y aquí
 se vio por el otro lado: **borrar la ISO tampoco libera nada si la VM sigue**.
 Son las dos mitades de lo mismo, y el inventario que las distingue es `stat -f %l`.
+
+## Dos más, y un instrumento, ejercitando la red de seguridad (2026-08-22)
+
+**49. DOS DISCOS `virtio` DEL MISMO BUNDLE PUEDEN ANUNCIAR EL MISMO `serial`, Y
+EL INVITADO SE COME UNO.** Es la trampa 32 en una forma nueva y peor: allí el
+problema eran identificadores **iguales**; aquí son **distintos** y aun así
+chocan. UTM fabrica el `serial=` de cada disco con **los 20 primeros dígitos hex
+del `Identifier` sin guiones**, y los que reparte `scripts/fabricar-vm-medio.py`
+sólo se diferencian en el **último**:
+
+```
+Identifier A1C0DE01-0000-4000-9000-000000000C01  ->  serial A1C0DE01000040009000
+Identifier A1C0DE01-0000-4000-9000-000000000C03  ->  serial A1C0DE01000040009000   <- EL MISMO
+Identifier B2D15EED-0000-4000-9000-000000000C03  ->  serial B2D15EED000040009000   <- el arreglo
+```
+
+**Sólo muerde con DOS unidades `Disk`**, que es justo lo que pide E2 (el disco de
+destino y el volumen `CIDATA`); con un disco y un CD no pasa, porque el CD va por
+`usb-storage`. **Lo que hizo, medido:** el instalador **borró la cabecera FAT del
+volumen del seed a los 64 s de arrancar**, `blkid` dejó de ver `/dev/vdb`, el
+seed no encontró el repo y entregó `ENCINA_ESTADO=INCOMPLETO` con siete paquetes
+sin instalar — **con una pantalla negra y contestando al ping**, o sea sin
+parecerse a un fallo. Cambiado sólo el prefijo del identificador del seed, la
+etiqueta `CIDATA` sobrevive y el invitado la ve. *El mecanismo —que `curtin`
+resuelva el destino por `by-id`— es hipótesis; lo medido es que el serial separa
+las dos respuestas.* El control estaba ya en el banco: los dos discos de
+`encina-E2-2vias`, que instaló bien, llevan UUID sin parentesco.
+
+**50. EL REGISTRO DE UNA INSTALACIÓN SE LEE DESDE EL ANFITRIÓN, SIN ENTRAR EN LA
+MÁQUINA.** `disco.img` es una imagen **cruda**: lo que el seed escribe en
+`/target` está en esos bytes, y se saca con `grep -a` o con un volcado por
+desplazamiento. **Esto tumba un coste que se daba por fijo:** para *leer* ya no
+hace falta el canal FAT, ni `Alt+F2`, ni pelearse con los caracteres que no
+llegan al invitado (trampas 35 y 36).
+
+```
+grep -a -o "ENCINA_ESTADO=[A-Z]*" disco.img
+grep -a -o "encina-seed llego al final [0-9TZ:-]* estado=[A-Z]*" disco.img
+# y el registro entero: buscar "=== 0. ENTORNO DEL INSTALADOR" y volcar hasta "=== 15. FIN ==="
+```
+
+**Con su control, o no vale:** una cadena que no puede estar en ningún disco
+—`CADENA-QUE-NO-PUEDE-ESTAR-EN-NINGUN-DISCO`— tiene que salir **0 veces**. Y
+**lo que NO alcanza**: lo que vive en la sesión viva y nunca toca el disco —el
+`subiquity-server-debug.log`, el informe de `apport`—, porque el instalador copia
+sus registros al objetivo **sólo si termina bien**. Para *ejecutar* algo dentro
+(el verificador) sigue haciendo falta el canal FAT.
+
+**Y una nota sobre la 31, que sigue viva:** el diálogo `QEMU error … Invalid
+argument` salió **en las dos** instalaciones de E2 de esta noche, y **se despacha
+desde el anfitrión** —`osascript` activando UTM y `key code 36`—, porque es un
+panel de UTM y se lleva la tecla él. Se verifica **por el crecimiento del disco**,
+no por la pantalla. Cuidado con pulsarlo a ciegas cuando la instalación ya puede
+haber terminado: ahí la tecla **sí** llegaría al invitado.
