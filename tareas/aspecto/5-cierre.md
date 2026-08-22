@@ -67,11 +67,20 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       descartadas y medidas en §4.35i—, así que abrir la rejilla necesita una
       mano, y eso se escribe **al escribir la casilla**, no al llegar a ella.
 
-- [ ] **La foto del «después», y el par en el README.** Las seis capturas contra
-      las seis del «antes».
-      *Hecha cuando:* están en `design/capturas/despues/` y el par sale en el
-      README — que es donde de verdad sirve, porque es lo único que le dice a un
-      desconocido qué está mirando.
+- [x] **La foto del «después», y el par en el README.** **HECHA el 2026-08-22**
+      (`MEDICIONES.md` §4.63s). Las seis salen de la **máquina de la entrega**
+      —instalada desde `encina-os-libnss3.iso` `cd84d2ec…`, verificada dentro con
+      **63 correctas y 0 fallos**— y no del banco, que es lo que las anteriores
+      no podían decir. Están en
+      [../../design/capturas/despues/entrega-cd84d2ec/](../../design/capturas/despues/entrega-cd84d2ec/)
+      **con el control de dos pasadas** —02 y 03 idénticas byte a byte, y los 400
+      píxeles de GDM caen en la franja del reloj—, y el par «antes / después» de
+      la primera sesión sale en el README.
+      **Jorge las aprobó**, con dos salvedades que se escriben en vez de
+      disimularse: el **recuadro naranja de GDM se acepta como mal menor**, y
+      **Plymouth queda APLAZADO CON CONDICIÓN** —la pantalla está apagada todo el
+      arranque y las dos hipótesis, banco o producto, dan la misma captura; **se
+      desbloquea instalando en hierro**—.
 
 - [ ] **La oferta de fuente, al día.** Si entra un tema de terceros, es una fila
       nueva en la tabla «Licencia y fuentes» con su repositorio y su etiqueta, y

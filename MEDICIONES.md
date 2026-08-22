@@ -16279,3 +16279,49 @@ que deja `script`, que graba lo tecleado. Ahí se ve además que el `bash /mnt/v
 --forma e3 --visib les 27` del registro **no lleva un espacio de verdad**: es el
 ajuste a 80 columnas, y lo demuestra que el verificador contestó
 `coincide con las 27 declaradas`.
+
+#### (s) LOS `[OJOS]` DE JORGE: APROBADAS, CON UNA SALVEDAD ACEPTADA Y UN APLAZAMIENTO CON CONDICIÓN
+
+Las seis se tomaron sobre **la máquina de la entrega** —no sobre el banco, que es
+lo que las de `despues/` de agosto no podían decir— y **con el control que exige
+este instrumento: dos pasadas seguidas sin tocar nada**.
+
+```
+                       pasada 1      pasada 2     diferencia.py
+01 firmware            1 fotograma   1 fotograma  22 510 px -> TRANSITORIA, no es una pantalla
+02 pantalla apagada    5 fotogramas  5 fotogramas  sha256 6c8d7117… IDENTICO, 0 px
+03 GDM                18 fotogramas 19 fotogramas  sha256 76c97e89… IDENTICO, 400 px en y 100..119
+```
+
+Los 400 píxeles de GDM **caen dentro de la franja de 130 px de arriba**, donde
+vive el reloj — que es el criterio que `design/capturas/LEEME.md` fijó el
+2026-08-14 midiendo, no a ojo.
+
+**EL VEREDICTO, y es de Jorge:**
+
+- **`04` escritorio, `05` rejilla, `06` archivos, `01` firmware: BIEN.**
+- **`03` GDM: bien, con salvedad.** *«Es cierto que el recuadro en GDM es
+  naranja, pero es un mal menor.»* **Se acepta como está**, y con eso el recuadro
+  naranja **deja de ser una casilla** y pasa a ser una decisión escrita.
+- **`02` Plymouth: SIN VEREDICTO, y aplazado con condición.** *«No lo voy a poder
+  probar hasta que no tengamos la ISO y lo pueda instalar en hierro.»*
+
+**Y ese aplazamiento no es un pendiente suelto: es el único desenlace honesto,
+porque las dos hipótesis producen la MISMA captura.** Si la pantalla apagada es
+de UTM, el producto está bien; si es del producto, **el arranque de Encina OS es
+más feo que el de Ubuntu, no más bonito**. Aquí no se pueden separar. Se
+desbloquea con **una sola cosa: instalar en hierro**. Hasta entonces
+`02-pantalla-apagada.png` **no cuenta ni a favor ni en contra**, y así queda
+escrito en su `LEEME.md`.
+
+*Es la misma advertencia que `design/capturas/LEEME.md` dejó el 2026-08-14 —«es
+lo primero que hay que medir fuera de esta VM»— y sigue en pie ocho días después.
+La diferencia es que hoy tiene condición de salida y fecha de nacimiento.*
+
+**Con esto se cierra la última casilla del bloque `aspecto/`:** las seis capturas
+están, el par «antes / después» de la primera sesión sale en el README —«Le damos
+la bienvenida a **Ubuntu**» contra el escritorio de **Encina OS** entrando
+directo—, y de paso se corrige una frase del README que había quedado vieja:
+decía que *«el medio de instalación todavía no se ve así, lleva marca de
+Ubuntu»*, y el medio de esta noche **sale con el paisaje detrás y termina
+diciendo «EncinaOS 24.04.4 LTS está instalado y listo para usarse»**.

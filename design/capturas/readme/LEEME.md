@@ -49,3 +49,26 @@ por algo que no se distingue.
   izquierda. No se recorta porque recortarla se llevaría por delante la barra de
   GNOME, que sí es el producto. Es el mismo criterio que el
   [LEEME de las capturas](../LEEME.md): esos 130 px de arriba no cuentan.
+
+## El par «antes / después» de la primera sesión — 2026-08-22
+
+| Fichero | Sale de | Huella del original (sha256) |
+|---|---|---|
+| `primera-sesion-antes.jpg` | `../antes/04-bienvenida-dice-ubuntu.png` | `65fe7028…` |
+| `primera-sesion-despues.jpg` | `../despues/entrega-cd84d2ec/04-escritorio.png` | `a5101b2c…` |
+
+**Y estas dos llevan un paso más que las de arriba: se les recorta la franja de
+130 px de la barra de UTM** —la misma franja que `capturar-aspecto.sh` no cuenta
+al agrupar fases, porque no es el producto—. Sin eso, en la mitad de la
+izquierda se leería el nombre de la VM del banco.
+
+```bash
+cd design/capturas
+sips -c 1280 2560 --cropOffset 130 0 antes/04-bienvenida-dice-ubuntu.png --out /tmp/a.png
+sips -c 1550 2560 --cropOffset 130 0 despues/entrega-cd84d2ec/04-escritorio.png --out /tmp/b.png
+sips -Z 1400 -s format jpeg -s formatOptions 85 --out readme/primera-sesion-antes.jpg   /tmp/a.png
+sips -Z 1400 -s format jpeg -s formatOptions 85 --out readme/primera-sesion-despues.jpg /tmp/b.png
+```
+
+*Los dos originales miden distinto (2560×1410 y 2560×1680) porque son de dos
+máquinas y dos pasadas distintas, y eso no se disimula: se dice.*

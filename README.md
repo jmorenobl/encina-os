@@ -38,11 +38,29 @@ solo. Nada más. Todo lo que hace está medido y escrito.
 <p align="center">
   <sub><b>El sistema ya instalado</b>, con <code>encina-branding</code> 0.1.13, en UTM arm64 el 2026-08-15.
   El fondo oscuro no es el claro atenuado: es el mismo paisaje de noche.<br>
-  <b>El medio de instalación todavía no se ve así</b> —lleva marca de Ubuntu—, y esa es la tarea que bloquea publicar.<br>
+  <b>Y el medio de instalación ya se ve así también</b>: el instalador sale con este paisaje detrás y termina diciendo
+  «EncinaOS 24.04.4 LTS está instalado y listo para usarse» (<code>MEDICIONES.md</code> §4.63p).<br>
   En el dock de estas dos capturas sale la «A» naranja del Centro de aplicaciones: <b>desde la 0.1.15 lleva icono propio</b>
   (<a href="design/capturas/despues/07-icono-tienda-aplicaciones.png">se ve aquí</a>). El «?» de la ayuda se queda como está, a propósito.<br>
   Los originales, en <a href="design/capturas/fondo-0.1.13/">design/capturas/fondo-0.1.13/</a>; aquí van reducidas.
   La aprobación visual es <code>[OJOS]</code> y no la da un guion.</sub>
+</p>
+
+<p align="center">
+  <img src="design/capturas/readme/primera-sesion-antes.jpg" width="49%" alt="Ubuntu recién instalado: una ventana a pantalla completa que dice «Le damos la bienvenida a Ubuntu 24.04.4 LTS», con la corona naranja en el centro">
+  <img src="design/capturas/readme/primera-sesion-despues.jpg" width="49%" alt="Encina OS recién instalado: el escritorio directamente, con el paisaje de la encina y la marca «ENCINA OS, Edición La Mancha» abajo a la izquierda">
+</p>
+
+<p align="center">
+  <sub><b>La primera sesión, antes y después.</b> A la izquierda, lo primero que veía un desconocido:
+  <b>una pantalla completa que dice «Ubuntu»</b>. A la derecha, la misma primera sesión en la máquina que sale
+  del medio que se entrega —instalada desde <code>encina-os-libnss3.iso</code> el 2026-08-22 y verificada dentro
+  con <b>63 correctas y 0 fallos</b>—: entra <b>directa al escritorio</b>.<br>
+  Las seis del par completo, en <a href="design/capturas/despues/entrega-cd84d2ec/">design/capturas/despues/entrega-cd84d2ec/</a>,
+  con el control de dos pasadas. Aquí van recortadas por arriba —esa franja es la barra de UTM, no el producto— y reducidas.<br>
+  <b>Aprobadas por Jorge el 2026-08-22</b>, con dos salvedades escritas: el recuadro de usuario de GDM
+  <b>sigue siendo naranja</b> y se acepta como mal menor, y <b>Plymouth no se ve</b> —la pantalla está apagada todo el
+  arranque— sin que se sepa aún si es del producto o de la máquina virtual: <b>queda aplazado hasta poder instalar en hierro</b>.</sub>
 </p>
 
 ## Cómo probarlo

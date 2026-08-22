@@ -47,3 +47,38 @@ UTM— y **una fase de un solo fotograma no es una pantalla**.
 
 **Y el veredicto de las cuatro `[OJOS]` NO ESTÁ DADO.** Estas capturas se toman,
 se guardan y se ponen delante; quien dice si valen es Jorge.
+
+---
+
+## EL VEREDICTO DE JORGE, 2026-08-22
+
+**Las seis, vistas. Aprobadas, con dos salvedades y ninguna de ellas oculta.**
+
+| | Qué dijo |
+|---|---|
+| `04` escritorio · `05` rejilla · `06` archivos · `01` firmware | **Bien** |
+| `03` GDM | **Bien, con salvedad:** *«es cierto que el recuadro en GDM es naranja, pero es un mal menor»*. **Se acepta como está** y deja de ser una casilla |
+| `02` Plymouth | **NO SE PUEDE JUZGAR AQUÍ. Aplazado por escrito**, ver abajo |
+
+### El aplazamiento de Plymouth, con su condición de salida
+
+*«No lo voy a poder probar hasta que no tengamos la ISO y lo pueda instalar en
+hierro.»*
+
+**No es un pendiente suelto: es un aplazamiento con condición.** Lo que se sabe,
+medido dos veces esta noche y byte a byte idéntico entre las dos pasadas: **del
+segundo 8 al 21 la pantalla del invitado está apagada** («Display output is not
+active») y el tema de arranque de Encina **no se ve**. Lo que **no** se sabe es
+de quién es el fallo:
+
+- **si es del banco**, es un artefacto de la máquina virtual de UTM y el producto
+  está bien;
+- **si es del producto**, el arranque de Encina OS es **más feo** que el de
+  Ubuntu, no más bonito.
+
+**Y no se puede separar aquí**, porque las dos hipótesis producen exactamente la
+misma captura. **Se desbloquea con una sola cosa: instalar en hierro.** Hasta
+entonces, `02-pantalla-apagada.png` se queda **sin veredicto** y no cuenta ni a
+favor ni en contra. *Es la misma advertencia que ya dejó escrita
+`../../LEEME.md` el 2026-08-14 —«es lo primero que hay que medir fuera de esta
+VM»— y sigue siendo verdad ocho días después.*
