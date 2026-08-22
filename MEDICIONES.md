@@ -16325,3 +16325,55 @@ directo—, y de paso se corrige una frase del README que había quedado vieja:
 decía que *«el medio de instalación todavía no se ve así, lleva marca de
 Ubuntu»*, y el medio de esta noche **sale con el paisaje detrás y termina
 diciendo «EncinaOS 24.04.4 LTS está instalado y listo para usarse»**.
+
+#### (t) LA PREGUNTA DEL WIFI, Y UNA RELECTURA QUE PUEDE CAMBIAR UNA TRAMPA DE SITIO
+
+La levantó Jorge al plantear las **dos pruebas en hierro, una con WiFi y otra
+sin** —que es un control, y por eso vale la pena contestarlo bien—.
+
+**LO MEDIDO, esta misma noche y sobre el disco de la máquina entregada:**
+
+```
+linux-firmware                 Status: install ok installed     <- SI esta dentro
+linux-generic-hwe-24.04        Status: install ok installed
+linux-image-generic-hwe-24.04  Status: install ok installed
+```
+
+Así que la máquina que sale del medio **tiene el firmware y el núcleo**. El WiFi
+tiene sus binarios.
+
+**LO MEDIDO TAMBIÉN, y es lo que abre la pregunta: ESO NO VIAJA EN LA PARTE DEL
+MEDIO QUE SE INSTALA.**
+
+```
+casper/filesystem.manifest      (la sesion VIVA)   1788 paquetes  -> SI lleva linux-firmware y nucleo
+casper/minimal.manifest         (lo que se instala) 1486 paquetes -> NI nucleo NI firmware
+casper/minimal.standard.manifest                                  -> tampoco
+pool/ (345 ficheros)                                              -> solo linux-headers, NI firmware NI imagen
+imagen/autoinstall.yaml:71   source.id: ubuntu-desktop-minimal    <- pedimos justo esa fuente
+```
+
+**LO DEDUCIDO, y va marcado como deducción porque NO está medido:** si el núcleo
+no está en las capas que se instalan ni en el `pool`, **`curtin` tiene que
+traerlo de algún sitio**, y la instalación de anoche **tenía red**. De ahí que
+**nunca se haya completado una instalación de este medio sin red**.
+
+**Y la relectura, que es lo que hay que dejar escrito:** el único intento sin red
+—§4.62(p), quitando la tarjeta— **se cayó en `curthooks`**, que es exactamente
+donde `curtin` instala el núcleo. Aquello se anotó como **trampa del banco**
+(«sin tarjeta de red `curtin` no completa una instalación de este medio»). A la
+luz de esto **puede ser una limitación del PRODUCTO** y no del banco, y coincide
+con lo que `tareas/despues-de-publicar.md` lleva declarado desde hace tiempo:
+*«hoy la instalación exige red»*, con el coste de arreglarlo puesto —**1 089 MB,
+de los cuales `linux-firmware` son 655**—.
+
+**No se cambia la trampa todavía, porque no está medido:** hacen falta las dos
+pruebas de Jorge. Lo que sí se hace es **dejar la hipótesis escrita con su sitio
+donde mirar** —el registro de `curthooks`— para que la prueba de «sin red» no se
+lea como un fallo del portátil.
+
+*Y ojo con lo que esto NO dice:* `banco-autosuficiencia.sh` sigue siendo válido y
+sigue midiendo lo que dice medir —que **los paquetes de Encina** se instalan sin
+red desde `/encina-repo`—. **Nunca prometió el sistema base.** Es otra vez la
+misma forma: una comprobación que pasa, y una pregunta contigua que nadie le
+había hecho.
