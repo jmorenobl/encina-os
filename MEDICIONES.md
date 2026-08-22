@@ -15763,3 +15763,40 @@ rompía en §4.61 era el acceso a `libnss3`**.
 contestó «no se ha encontrado ningún paquete» sobre los cuatro. **Esa salida no
 mide el objetivo y no se usa**: quien dice que la máquina está entera es
 `ENCINA_FALTA`, que lo comprueba dentro.
+
+#### (o) LA VUELTA DE C3, SIN RED: la predicción, escrita antes de desconectar nada (2026-08-22)
+
+Va otra vez delante, y hoy con más motivo que nunca: **la premisa se ha caído una
+vez ya**. Lo de (c) daba por hecho que un medio sin `libnss3` falla, y resultó que
+**sólo falla si además no hay DNS en el `chroot`** — que es lo que ahora se fija a
+mano en vez de dejarlo al azar.
+
+**Qué cambia, y es UNA cosa:** se le quita a la VM la entrada `Network` del
+`config.plist`, o sea **la tarjeta de red entera**. El medio es **el mismo**
+(`19587dd4…`, `; true` fuera y repo de 28 sin `libnss3`) y la forma es **la misma**
+(E3, cinco pantallas). No se cambia nada más a propósito: si cambiara el medio,
+esto ya no sería el control de nada.
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **N1** | El paso 7 del seed dice que **NO hay DNS**: `getent hosts ports.ubuntu.com` con `rc` distinto de 0, y su control —el nombre inválido— fallando también | resuelve igual: entonces quitar la tarjeta no basta y hay que buscar de dónde sale el DNS |
+| **N2** | `apt install encina-meta` **aborta**: `Temporary failure resolving` sobre `libnss3`, y **no entra ninguno** de los otros | entra: entonces `libnss3` no hacía falta y la causa de §4.61 era otra |
+| **N3** | `ENCINA_ESTADO=INCOMPLETO`, con `ENCINA_FALTA` **nombrando lo que falta** | sale `COMPLETO` |
+| **N4** | **Y ENTONCES SÍ: sale «Se produjo un problema»**, con «Reiniciar ahora» habilitado | **dice «listo para usarse» con `ESTADO=INCOMPLETO` detrás: la red de seguridad NO funciona, el `; true` no era la única causa, y ÉSE es el hallazgo** |
+| **N5** | La máquina **sigue arrancando de su disco** después de esa pantalla | no arranca |
+
+**N3 es el control de N4 y va delante.** Es la lección de esta misma noche: sin
+comprobar `ENCINA_ESTADO` primero, un «listo para usarse» no distingue *«la red de
+seguridad no funciona»* de *«no había nada que avisar»*, y esta noche era lo
+segundo. **No se mira la pantalla sin mirar antes el estado.**
+
+**EL RIESGO QUE LE VEO, ESCRITO ANTES DE VERLO** —y es de la forma, no del
+producto—: **quitar la tarjeta puede cambiar las pantallas del instalador**. La
+casilla es forma E3 y exige las **ocho** etapas del `telemetry`, `network` entre
+ellas. Predigo que la página de red **sale igual, con la lista vacía**. Si no
+saliera, el arreglo **no** es cambiar de seed —eso sería forma E2, la trampa de
+§4.61— sino **dejar la tarjeta puesta y romper sólo la salida** (`IsolateFromHost`),
+que da el mismo «sin DNS» conservando el dispositivo.
+
+**Y lo que NO se va a concluir aunque N4 acierte:** que el medio bueno esté bien.
+Eso es otra instalación y otra casilla.
