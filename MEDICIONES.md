@@ -14567,6 +14567,19 @@ p10-capa  : 59bc3a3c3b86cda3b15958aff2fe744d45733f290e9772aa214446eae946e1d4
 IGUALES      3 721 265 152 bytes los dos
 ```
 
+> **ENMIENDA DEL 2026-08-22 — `59bc3a3c…` YA NO ES LA HUELLA QUE PRODUCE ESTE
+> REPOSITORIO, y no es un fallo: es lo que pasa.** Aquel día se arreglaron las dos
+> causas de §4.61 y **las dos entran en el medio**: la `late-command` perdió su
+> `; true` (cambia `/autoinstall.yaml`, que viaja dentro) y el repo pasó de 28 a
+> 29 `.deb` al entrar `libnss3` (cambia `/encina-repo` y su `Packages`). Ya pasó
+> antes con `95758c9e…`. **Lo que esta medición demostró sigue en pie** —que dos
+> caminos distintos dan el mismo medio bit a bit—, porque lo que se midió es *la
+> reproducibilidad*, no *ese número*. Lo que caduca es el número.
+>
+> El único ejemplar de `59bc3a3c…` que queda es `medios/encina-os-p10-capa.iso`,
+> y por eso el 22 **no se borró** cuando se hizo sitio en el disco: es lo que
+> midieron §4.60 y §4.61, y este árbol ya no lo sabe rehacer.
+
 **Dos caminos distintos, en días distintos, dan el mismo medio bit a bit.** El
 largo pasa por `git archive HEAD`, `ssh` al constructor Ubuntu para los tres
 `.deb`, la cosecha de 28 por huella, el `Packages` generado allí y la vuelta al

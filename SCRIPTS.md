@@ -2779,3 +2779,108 @@ grep -o 'media=cdrom' debug.log | wc -l      # ocurrencias, no lineas
 grep -o 'edk2'    debug.log | wc -l  -> 1    # control: sabe decir que si
 grep -o 'bellota' debug.log | wc -l  -> 0    # control: sabe decir que no
 ```
+
+---
+
+## El medio se instala sin red: `imagen/banco-autosuficiencia.sh` (2026-08-22)
+
+**Contesta UNA pregunta, en segundos, sin arrancar nada:** al instalar **sin
+red** —que es lo normal, porque en el `chroot` de `curtin` **no hay DNS** y el
+propio seed lo mide en su paso 7—, ¿todo lo que `apt install encina-meta`
+necesita sale del medio?
+
+**La respuesta es una línea de `apt`:** de `apt-get -s install …`, **toda** línea
+`Inst` tiene que nombrar `localhost`. Una que no lo nombre es un `.deb` que habría
+que traer de internet, **y uno solo aborta la transacción entera**: no entra
+ninguno de los otros. Eso es exactamente lo que pasó en §4.61.
+
+```
+./imagen/banco-autosuficiencia.sh --repo <dir> --constructor jorge@192.168.64.3
+```
+
+**Las dos cosas que hay que clavar, y las dos se midieron equivocándose primero:**
+
+| | Lo que parecía valer | Por qué es CIEGO | Lo que vale |
+|---|---|---|---|
+| **`dpkg status`** | el de la máquina donde corre `apt` | el constructor ya tiene medio escritorio instalado: la simulación no pide casi nada y **da verde sobre un repo roto** | el de **la base que se instala**, sacado de `/casper/minimal.es.squashfs` de la **ISO oficial** |
+| **listas de `apt`** | las cacheadas dentro del squashfs | con ellas `apt` dice `0 not upgraded` y **no pide `libnss3`** | **las de hoy**, refrescadas contra el archivo. La instalación de verdad decía `356 not upgraded` |
+
+**Por qué las listas tienen que ser las de hoy, y no es un defecto del banco:** el
+instalador refresca las listas por la red **de la sesión viva** (que sí tiene red;
+el que no la tiene es el `chroot`). Así que **la respuesta depende del día** — y
+eso *es* la deriva del archivo de Ubuntu que causó el fallo, no un ruido del
+instrumento.
+
+**Qué le pide a `apt` por defecto:** las **tres** transacciones que el seed hace
+de verdad contra el repo del medio, en una sola —paso 9 `encina-meta`, paso 11bis
+`firefox=<la versión del repo local>` y paso 12 `firefox-l10n-es-es`—.
+
+**La que NO está, y no es un olvido: `full-upgrade` del paso 11.** Ésa **no puede**
+ser autosuficiente y no se pretende que lo sea: querría actualizar los ~360
+paquetes que el archivo ha movido desde que se cortó la ISO. **Está medido que
+falla** con `rc=100` sin red (el `seed.log` de §4.61, línea 67803), y el bloque
+11bis existe justo para eso.
+
+**Y `firefox` va con versión exacta** por el mismo motivo que en 11bis: pedirlo
+por nombre a secas hace que `apt` elija el `.deb` de transición al Snap del
+archivo —**que gana por epoch (`1:`)**— y el banco denunciaría una fuente de fuera
+que el producto no usa. Una alarma falsa gasta la guarda.
+
+**Su control, y va detrás del veredicto pero antes de creérselo:** se le quita al
+índice **una copia** un paquete que **sí** está en el archivo de Ubuntu
+(`simple-scan` por defecto, `--control-paquete` para otro), y el paso 4 tiene que
+señalarlo. Si no sabe decir que no, su `[OK]` no demuestra nada.
+
+```
+[OK] control: quitado simple-scan del indice, el paso 4 lo senala
+       Inst simple-scan (46.0-0ubuntu2.1 Ubuntu:24.04/noble-updates [arm64])
+```
+
+**Por qué cruza a una VM:** no hay `apt` en macOS. Y **no se imita el resolutor de
+`apt` a mano a propósito** — un resolutor casero se equivoca **dando verdes**, que
+es justo el fallo que este guion existe para no repetir.
+
+---
+
+## Y una cuadragésima octava, borrando ISOs para hacer sitio (2026-08-22)
+
+**48. `ls` PUEDE CONTESTAR «(empty)» SOBRE UN DIRECTORIO QUE TIENE FICHEROS.**
+Es la misma familia que la trampa de `git` que ya está en `CLAUDE.md` —el hook de
+`rtk` filtra la salida de las órdenes— pero mordió en un sitio mucho peor: justo
+después de borrar seis ISOs, `ls -1 medios/*.iso` contestó **`(empty)`**, o sea
+«no queda ninguna». Durante unos segundos eso se leyó como *«me he cargado
+también `p10-capa`, la oficial y el medio de control»*.
+
+```
+$ ls -1 medios/*.iso
+(empty)                                   <- la salida filtrada
+
+$ /bin/ls -l medios/*.iso                 <- la de verdad
+-rw-r--r--@ 2 jorge staff 3721265152 medios/encina-os-control-sin-libnss3.iso
+-rw-r--r--@ 2 jorge staff 3721265152 medios/encina-os-p10-capa.iso
+-rw-r--r--@ 1 jorge staff 3540299776 medios/ubuntu-24.04.4-desktop-arm64.iso
+```
+
+**La regla, y ya vale para tres órdenes distintas:** para **medir** —no para
+mirar por encima— hay que usar la ruta absoluta del binario: `/usr/bin/git`,
+`/bin/ls`, `/usr/bin/grep`. Un inventario es una medición.
+
+**Y de paso, lo que ese mismo minuto enseñó y no es de `rtk`: BORRAR UNA ISO DE
+`medios/` NO LIBERA DISCO SI UN BUNDLE DE UTM LA RETIENE.** `fabricar-vm-medio.py`
+mete la ISO en la VM **por enlace duro** (a propósito: 3,7 GB por VM no caben).
+Borrar seis ISOs de 3,5 GiB liberó **0,06 GiB**, porque cada una seguía con un
+enlace vivo dentro de su bundle.
+
+```
+for b in ~/Library/.../Documents/*.utm; do
+    m=$(/usr/bin/find "$b" -name '*.iso' | head -1); [ -z "$m" ] && continue
+    printf '%-30s inodo=%s enlaces=%s\n' "$(basename "$b" .utm)" \
+           "$(stat -f %i "$m")" "$(stat -f %l "$m")"
+done
+```
+
+**`enlaces=1` es lo que hay que mirar**: significa que ese bundle es el **último**
+que la sostiene y que borrarlo sí devuelve los 3,5 GiB. Ya estaba escrito en el
+`DIARIO.md` del 20 —«borrar VMs no libera nada si la ISO es enlace duro»— y aquí
+se vio por el otro lado: **borrar la ISO tampoco libera nada si la VM sigue**.
+Son las dos mitades de lo mismo, y el inventario que las distingue es `stat -f %l`.

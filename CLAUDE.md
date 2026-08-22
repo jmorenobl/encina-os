@@ -58,6 +58,9 @@ Imagen (`imagen/`), desde el Mac:
 ./imagen/inventario-marca.sh <iso> [--trabajo D]    # dónde dice Ubuntu un medio, leyéndolo (no lo arranca)
 ./imagen/capa-marca.sh <iso> --salida <dir>         # fabrica la capa de marca del medio (D23)
 ./imagen/banco-cadena.sh                            # el banco de la cadena de capas de casper (segundos)
+./imagen/banco-autosuficiencia.sh --repo D --constructor usuario@vm-linux
+                                                   # ¿el medio se instala SIN RED? apt de verdad contra
+                                                   # el repo, con el dpkg status de la base. Segundos
 ./imagen/fabricar-iso.sh --repo D --salida X [--sin-capa|--sin-volid|--sin-info|--sin-menu]
                                                    # una bandera por mecanismo de D23: es para BISECAR, no el producto
 ./imagen/fabricar-iso.sh --leer-mecanismos <iso>   # qué mecanismos lleva un medio, leídos de él
