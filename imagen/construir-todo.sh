@@ -42,7 +42,13 @@ export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
 RAIZ=$(cd "$AQUI/.." && pwd)
-MANIFIESTO="$AQUI/repo-manifiesto.tsv"
+# LA ARQUITECTURA NO SE DECLARA AQUI: sale de la ISO oficial que se le da, igual
+# que en fabricar-iso.sh (§4.64). Lo que hace este guion es PASARLA a los dos
+# hijos que si la necesitan -- cosechar-repo.sh (que archivo, que manifiesto) --
+# leyendola del nombre del fichero, que es lo unico que hay antes de tocar la
+# ISO. fabricar-iso.sh la vuelve a deducir POR HUELLA y para si no cuadran.
+ARQ=""
+MANIFIESTO=""
 
 CONSTRUCTOR=""; ISO_OFICIAL=""; AUTOFIRMA=""; SALIDA=""
 TRABAJO=""; VM=""; LLAVE=""; PERMITIR_SUCIO=0; CONSERVAR=0
@@ -75,6 +81,14 @@ done
 # imagen/traer-iso-oficial.sh. Ese directorio esta en .gitignore: la ISO son
 # 3,3 GiB y no viaja en el clon, pero la ORDEN de traerla si (medios/LEEME.md).
 [ -n "$ISO_OFICIAL" ] || ISO_OFICIAL="$RAIZ/medios/ubuntu-24.04.4-desktop-arm64.iso"
+case "$(basename "$ISO_OFICIAL")" in
+    *-amd64.iso) ARQ=amd64 ;;
+    *-arm64.iso) ARQ=arm64 ;;
+    *) echo "[FALLO] no se que arquitectura es «$(basename "$ISO_OFICIAL")»"; exit 1 ;;
+esac
+[ -n "$MANIFIESTO" ] || { [ "$ARQ" = amd64 ] \
+    && MANIFIESTO="$AQUI/repo-manifiesto-amd64.tsv" \
+    || MANIFIESTO="$AQUI/repo-manifiesto.tsv"; }
 [ -n "$CONSTRUCTOR" ] && [ -n "$AUTOFIRMA" ] && [ -n "$SALIDA" ] || uso
 
 fallo() { echo "[FALLO] $*"; exit 1; }
@@ -275,13 +289,13 @@ N_MAN=$(grep -cE '^(ARCHIVO|PROPIO)'"$(printf '\t')" "$MANIFIESTO")
 # es EL CONTROL de que cosechar-repo.sh sabe dar la respuesta mala antes de
 # escribir nada, y va anunciado para que nadie aprenda a saltarse los [FALLO].
 echo "        (la 1a orden SALE INCOMPLETA a proposito: falta autofirma. Su [FALLO] es el control)"
-"$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
+"$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
     | sed 's/^/        /' | tail -6
 N_PARCIAL=$(contar_deb "$TRABAJO")
 [ "$N_PARCIAL" -eq $((N_MAN - 1)) ] || fallo "CONTROL ROTO: sin autofirma esperaba $((N_MAN - 1)) .deb y hay $N_PARCIAL"
 ok "control: sin autofirma la cosecha se queda en $((N_MAN - 1)) y se niega"
 echo "        (la 2a orden la completa con autofirma, POR HUELLA entre tres casi homonimos)"
-"$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
+"$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
     | sed 's/^/        /' | tail -6
 N=$(contar_deb "$TRABAJO")
 [ "$N" -eq "$N_MAN" ] || fallo "en la cosecha hay $N .deb y el manifiesto pide $N_MAN"

@@ -2,7 +2,8 @@
 # Encina OS - Bloque 0. TRAE LA ISO OFICIAL DE UBUNTU, Y LA COMPRUEBA CONTRA LA
 # FIRMA DE CANONICAL.
 #
-#     ./traer-iso-oficial.sh [--medios <dir>] [--verificador usuario@maquina]
+#     ./traer-iso-oficial.sh [--arq arm64|amd64] [--medios <dir>]
+#                            [--verificador usuario@maquina]
 #
 # POR QUE EXISTE: la ISO oficial es LA ENTRADA de fabricar-iso.sh y es el unico
 # insumo del producto que no viaja en el clon -- son 3,3 GiB, no caben en git y
@@ -33,6 +34,15 @@
 # la exige, para que no puedan separarse. Y el NOMBRE del fichero tampoco se
 # escribe: se DEDUCE buscando esa huella dentro del SHA256SUMS firmado, que es
 # lo que permite distinguir [RETIRADO] de [OTROS BYTES].
+#
+# EL SERVIDOR TAMPOCO SE ESCRIBE AQUI, y eso es del 2026-08-22 (§4.64 P1): la
+# prediccion decia que la ISO amd64 estaria en el mismo directorio de cdimage
+# que la arm64 y ES FALSO -- cdimage.ubuntu.com/ubuntu/releases sirve arm64,
+# ppc64el, riscv64 y s390x, y amd64 vive en releases.ubuntu.com/24.04 --. Asi
+# que la direccion va en la MISMA tabla de fabricar-iso.sh que la huella, por
+# arquitectura, y aqui no hay ninguna escrita. Lo que NO cambia es la confianza:
+# los dos servidores firman con la misma «Ubuntu CD Image Automatic Signing Key
+# (2012)», medido con su control negativo.
 
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
@@ -42,16 +52,18 @@ RAIZ=$(cd "$AQUI/.." && pwd)
 MEDIOS="$RAIZ/medios"
 VERIFICADOR=""
 LLAVE=""
-BASE=https://cdimage.ubuntu.com/ubuntu/releases/24.04/release
+BASE=""      # sale de la tabla de fabricar-iso.sh; --base solo para diagnostico
+ARQ=arm64
 
 uso() { sed -n '2,5p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
     case "$1" in
+        --arq)         ARQ="$2";         shift 2 ;;
         --medios)      MEDIOS="$2";      shift 2 ;;
         --verificador) VERIFICADOR="$2"; shift 2 ;;
         --llave)       LLAVE="$2";       shift 2 ;;
         --base)        BASE="$2";        shift 2 ;;
-        -h|--help)     sed -n '1,35p' "$0"; exit 0 ;;
+        -h|--help)     sed -n '1,45p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
 done
@@ -65,12 +77,23 @@ elif command -v sha256sum >/dev/null; then HUELLA() { sha256sum "$1" | cut -d' '
 else fallo "no hay ni shasum ni sha256sum"; fi
 
 # --- 1. la huella, leida de quien la exige ----------------------------------
-echo "== 1. que ISO hace falta, segun quien la exige"
+echo "== 1. que ISO hace falta para $ARQ, segun quien la exige"
 GUION="$AQUI/fabricar-iso.sh"
 [ -f "$GUION" ] || fallo "no existe $GUION"
-H_ISO=$(grep -E '^H_ISO=' "$GUION" | head -1 | cut -d= -f2)
-[ ${#H_ISO} -eq 64 ] || fallo "no pude leer H_ISO de $GUION (lei '$H_ISO')"
-ok "fabricar-iso.sh exige ${H_ISO:0:16}…"
+# la tabla vive entre ISOS_OFICIALES="\ y la comilla que la cierra
+FILA=$(sed -n '/^ISOS_OFICIALES="/,/^[a-z0-9]* [0-9a-f]\{64\} [^ ]*"$/p' "$GUION" \
+       | sed 's/"$//' | awk -v a="$ARQ" '$1==a {print $2, $3}')
+H_ISO=$(printf '%s' "$FILA" | cut -d' ' -f1)
+B_TABLA=$(printf '%s' "$FILA" | cut -d' ' -f2)
+if [ ${#H_ISO} -ne 64 ]; then
+    echo "[FALLO] $GUION no acepta la arquitectura «$ARQ». Las que acepta:"
+    sed -n '/^ISOS_OFICIALES="/,/^[a-z0-9]* [0-9a-f]\{64\} [^ ]*"$/p' "$GUION" \
+        | sed 's/"$//' | awk 'NF==3 {printf "          %-6s %s\n", $1, $3}'
+    exit 1
+fi
+[ -n "$BASE" ] || BASE="$B_TABLA"
+[ -n "$BASE" ] || fallo "la tabla no dice de que servidor sale la ISO $ARQ"
+ok "fabricar-iso.sh exige ${H_ISO:0:16}…  para $ARQ, desde $BASE"
 
 mkdir -p "$MEDIOS" || fallo "no pude crear $MEDIOS"
 
@@ -87,8 +110,18 @@ done
 # --- 3. LA FIRMA, con su control negativo ------------------------------------
 echo "== 3. la firma de Canonical -- y su control, que va delante"
 LLAVERO=/usr/share/keyrings/ubuntu-archive-keyring.gpg
-# el sabotaje se prepara AQUI y se comprueba que sabotea (trampa de §4.37c)
-sed 's/^0/f/; s/^1/f/' "$TMP/SHA256SUMS" > "$TMP/SHA256SUMS.malo"
+# el sabotaje se prepara AQUI y se comprueba que sabotea (trampa de §4.37c).
+#
+# NO ES «s/^0/f/; s/^1/f/», Y ESO ESTUVO MAL HASTA EL 2026-08-22 (§4.64): ese
+# sabotaje solo mordia si ALGUNA linea empezaba por 0 o por 1, o sea que dependia
+# del contenido del fichero. Con las 32 lineas de cdimage siempre habia alguna;
+# con las SEIS de releases.ubuntu.com no hay ninguna, y el guion se planto con
+# «CONTROL ROTO: el sabotaje no cambia el fichero». Paro en vez de fingir --que
+# es lo que tenia que hacer-- pero un control que se apaga solo segun el dia no
+# es un control. Este cambia el primer caracter de la primera linea SIEMPRE, y
+# ademas por uno distinto del que hubiera.
+awk 'NR==1 { c=substr($0,1,1); print (c=="0" ? "1" : "0") substr($0,2); next } { print }' \
+    "$TMP/SHA256SUMS" > "$TMP/SHA256SUMS.malo"
 cmp -s "$TMP/SHA256SUMS" "$TMP/SHA256SUMS.malo" \
     && fallo "CONTROL ROTO: el sabotaje no cambia el fichero"
 
@@ -140,8 +173,8 @@ LINEA=$(grep -E "^$H_ISO \*" "$TMP/SHA256SUMS" || true)
 if [ -z "$LINEA" ]; then
     echo "[RETIRADO] el SHA256SUMS firmado de hoy NO contiene ${H_ISO:0:16}…"
     echo "        Canonical retira los point releases viejos cuando sale el siguiente."
-    echo "        Lo que ofrece hoy ese directorio para escritorio arm64:"
-    grep -E '\*ubuntu-[0-9.]+-desktop-arm64\.iso$' "$TMP/SHA256SUMS" | sed 's/^/          /'
+    echo "        Lo que ofrece hoy ese directorio para escritorio $ARQ:"
+    grep -E "\\*ubuntu-[0-9.]+-desktop-${ARQ}\\.iso$" "$TMP/SHA256SUMS" | sed 's/^/          /'
     echo
     echo "        ESTO ES UN HALLAZGO, NO UN FALLO DE ESTE GUION, y NO se coge la"
     echo "        version nueva por cuenta propia: cambiar la ISO de partida cambia"

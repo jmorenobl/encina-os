@@ -274,9 +274,19 @@ aviso "$(printf '%-52s %s' "/encina-repo/" "$N_REPO ficheros: lo unico de Encina
 PART=$(xorriso -indev "$ISO" -report_system_area plain 2>/dev/null | /usr/bin/grep -c "^MBR partition  ")
 ok "la tabla de particiones es MBR y no lleva nombres ($PART entradas): lo unico visible es el Volume id"
 
-for e in /efi/boot/bootaa64.efi /efi/boot/grubaa64.efi /efi/boot/mmaa64.efi; do
-    /usr/bin/grep -q "^$e$" "$ARBOL" && omitido "$e: firmado, NO se toca (regla dura de E3, §4.21)"
-done
+# LOS BINARIOS FIRMADOS SE LLAMAN DISTINTO EN CADA ARQUITECTURA -- bootaa64 /
+# grubaa64 / mmaa64 en arm64, bootx64 / grubx64 / mmx64 en amd64 --, asi que NO
+# se escriben aqui: se LEEN del arbol del medio. Una lista escrita a mano habria
+# dado [OMIT] silencioso -- o sea nada -- sobre un medio amd64 (§4.64).
+N_EFI=0
+while read -r e; do
+    [ -n "$e" ] || continue
+    omitido "$e: firmado, NO se toca (regla dura de E3, §4.21)"
+    N_EFI=$((N_EFI+1))
+done <<EOF
+$(/usr/bin/grep -E '^/efi/boot/.*\.efi$' "$ARBOL")
+EOF
+[ "$N_EFI" -gt 0 ] || aviso "no hay ni un /efi/boot/*.efi en el arbol: ?es esto un medio arrancable?"
 
 # --------------------------------------------------------------------------
 titulo "3. PLANO 2 - EL INSTALADOR VIVO"

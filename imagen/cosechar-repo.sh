@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Encina OS - Bloque 0. Reconstruye /encina-repo DESDE CERO, EN MACOS.
 #
-#     ./cosechar-repo.sh --salida <dir> [--propios <dir>] [--manifiesto <tsv>]
+#     ./cosechar-repo.sh --salida <dir> [--arq arm64|amd64] [--propios <dir>]
+#                        [--manifiesto <tsv>]
 #
 # POR QUE EXISTE: hasta hoy los .deb del repositorio offline SOLO vivian
 # dentro de la ISO, y para fabricar la ISO hacia falta la ISO anterior. Este
@@ -12,6 +13,17 @@
 #
 # LA FUENTE ES imagen/repo-manifiesto.tsv, Y NUNCA UNA ISO. Si algun dia hay que
 # volver a sacar la lista de un medio, la circularidad ha vuelto.
+#
+# HAY UN MANIFIESTO POR ARQUITECTURA, y no es duplicar por gusto: el manifiesto
+# guarda NOMBRE DE FICHERO Y HUELLA, y esos son distintos en cada arquitectura.
+# Lo que NO puede ser distinto es LA LISTA -- que paquetes y en que version --,
+# porque un hueco en una lista es exactamente lo que costo la instalacion del
+# 2026-08-22 (libnss3, §4.61). Por eso el paso 1bis coteja los dos manifiestos
+# entre si y PARA si dejan de decir lo mismo.
+#
+# Y EL ARCHIVO NO ES EL MISMO SERVIDOR, que es donde se equivoco la prediccion
+# §4.64 P1: arm64 vive en ports.ubuntu.com/ubuntu-ports (que es donde Ubuntu
+# pone TODO lo que no es x86) y amd64 en archive.ubuntu.com/ubuntu.
 #
 # LOS CUATRO DE ORIGEN 'PROPIO' NO SE COSECHAN, y no es un olvido:
 #     encina-branding        scripts/03-construir.sh
@@ -50,10 +62,9 @@ set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
-MANIFIESTO="$AQUI/repo-manifiesto.tsv"
-SALIDA=""; PROPIOS=""; CACHE=""
+MANIFIESTO=""
+SALIDA=""; PROPIOS=""; CACHE=""; ARQ=arm64
 
-UBUNTU=http://ports.ubuntu.com/ubuntu-ports
 MOZILLA=https://packages.mozilla.org/apt
 SUITES="noble noble-updates noble-security"
 COMPONENTES="main universe"
@@ -62,6 +73,7 @@ uso() { sed -n '2,4p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
     case "$1" in
         --salida)     SALIDA="$2";     shift 2 ;;
+        --arq)        ARQ="$2";        shift 2 ;;
         --propios)    PROPIOS="$2";    shift 2 ;;
         --manifiesto) MANIFIESTO="$2"; shift 2 ;;
         --cache)      CACHE="$2";      shift 2 ;;
@@ -70,6 +82,13 @@ while [ $# -gt 0 ]; do
     esac
 done
 [ -n "$SALIDA" ] || uso
+# el archivo de donde se baja depende de la arquitectura, y el manifiesto tambien
+case "$ARQ" in
+    arm64) UBUNTU=http://ports.ubuntu.com/ubuntu-ports; PORDEF="$AQUI/repo-manifiesto.tsv" ;;
+    amd64) UBUNTU=http://archive.ubuntu.com/ubuntu;     PORDEF="$AQUI/repo-manifiesto-amd64.tsv" ;;
+    *) echo "[FALLO] arquitectura desconocida: $ARQ (arm64 o amd64)"; exit 2 ;;
+esac
+[ -n "$MANIFIESTO" ] || MANIFIESTO="$PORDEF"
 [ -f "$MANIFIESTO" ] || { echo "[FALLO] no existe el manifiesto: $MANIFIESTO"; exit 1; }
 [ -n "$CACHE" ] || CACHE="$SALIDA/.indices"
 
@@ -91,6 +110,32 @@ N_PROP=$(printf  '%s\n' "$DATOS" | grep -c "^PROPIO$TAB")
     || fallo "hay lineas con un origen que no es ARCHIVO ni PROPIO"
 ok "$N_TOTAL paquetes: $N_ARCH de ARCHIVO (se bajan) y $N_PROP PROPIO (se construyen)"
 
+# --- 1bis. LOS DOS MANIFIESTOS DICEN LA MISMA LISTA (§4.64) ------------------
+# Un manifiesto por arquitectura significa DOS listas que pueden separarse, y una
+# lista con un hueco es lo que costo la instalacion del 2026-08-22. Asi que se
+# cotejan: mismos paquetes, mismas versiones, mismos origenes. Lo que SI tiene
+# que ser distinto -- fichero y huella de los que no son _all -- no se compara.
+HERMANO="$AQUI/repo-manifiesto.tsv"
+[ "$ARQ" = arm64 ] && HERMANO="$AQUI/repo-manifiesto-amd64.tsv"
+if [ -f "$HERMANO" ]; then
+    echo "== 1bis. los dos manifiestos, cotejados entre si"
+    lista_de() { grep -vE '^(#|origen'"$TAB"'|$)' "$1" | cut -f1,2,3 | sort; }
+    A=$(lista_de "$MANIFIESTO"); B=$(lista_de "$HERMANO")
+    # EL CONTROL VA DELANTE: el cotejo tiene que saber decir que NO.
+    if [ "$(printf '%s\n' "$A" | sed '1s/$/-SABOTAJE/')" = "$B" ]; then
+        fallo "CONTROL ROTO: el cotejo no distingue una lista alterada"
+    fi
+    if [ "$A" = "$B" ]; then
+        ok "$(printf '%s\n' "$A" | grep -c .) paquetes, y los dos manifiestos dicen la misma lista"
+    else
+        echo "        estas lineas NO estan en los dos, o no a la misma version:"
+        diff <(printf '%s\n' "$A") <(printf '%s\n' "$B") | grep -E '^[<>]' | sed 's/^/          /'
+        fallo "repo-manifiesto.tsv y repo-manifiesto-amd64.tsv se han separado"
+    fi
+else
+    echo "        [AVISO] no existe $HERMANO: no hay con que cotejar la lista"
+fi
+
 # --- 2. los indices del archivo ---------------------------------------------
 # Se guardan en cache: son 33 MB y no cambian entre dos vueltas del mismo dia.
 echo "== 2. los indices del archivo (en cache: $CACHE)"
@@ -107,12 +152,12 @@ traer_indice() {   # <destino> <url> <comprimido si|no>
 }
 declare -a IDX_FICHERO IDX_BASE
 for s in $SUITES; do for c in $COMPONENTES; do
-    d="$CACHE/ubuntu-$s-$c-arm64.Packages"
-    traer_indice "$d" "$UBUNTU/dists/$s/$c/binary-arm64/Packages.gz" si \
+    d="$CACHE/ubuntu-$s-$c-$ARQ.Packages"
+    traer_indice "$d" "$UBUNTU/dists/$s/$c/binary-$ARQ/Packages.gz" si \
         || fallo "no pude traer el indice $s/$c"
     IDX_FICHERO+=("$d"); IDX_BASE+=("$UBUNTU")
 done; done
-for a in arm64 all; do
+for a in "$ARQ" all; do
     d="$CACHE/mozilla-$a.Packages"
     traer_indice "$d" "$MOZILLA/dists/mozilla/main/binary-$a/Packages" no \
         || fallo "no pude traer el indice de Mozilla ($a)"
@@ -152,8 +197,8 @@ while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
     [ "$origen" = ARCHIVO ] || continue
     # la arquitectura sale del nombre del fichero, y de paso lo valida
     case "$fichero" in
-        *_all.deb)   arq=all   ;;
-        *_arm64.deb) arq=arm64 ;;
+        *_all.deb)      arq=all    ;;
+        *_"$ARQ".deb)   arq="$ARQ" ;;
         *) echo "        [FALLO] no se de que arquitectura es: $fichero"; MALAS=$((MALAS+1)); continue ;;
     esac
     destino="$SALIDA/$fichero"

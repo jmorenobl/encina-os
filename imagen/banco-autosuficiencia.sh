@@ -2,6 +2,7 @@
 # Encina OS - Bloque 0. EL MEDIO ES AUTOSUFICIENTE? Se contesta con apt, no leyendo.
 #
 #     ./banco-autosuficiencia.sh --repo <dir> --constructor usuario@vm-linux
+#                                [--arq arm64|amd64]
 #
 # LA PREGUNTA, Y ES UNA SOLA: al instalar SIN RED -- que es lo normal, porque en
 # el chroot de curtin NO HAY DNS y el propio seed lo mide en su paso 7 --, todo
@@ -44,6 +45,14 @@
 # POR QUE CRUZA A UNA VM: no hay 'apt' en macOS. Y no se imita el resolutor de
 # apt a mano a proposito -- un resolutor casero se equivoca DANDO VERDES, que es
 # justo el fallo que este guion existe para no repetir.
+#
+# EL CONSTRUCTOR NO TIENE QUE SER DE LA ARQUITECTURA QUE SE MIDE, y eso esta
+# medido y no supuesto (§4.64 P2, 2026-08-22): sobre la VM arm64 de siempre,
+# 'apt-get -s' con APT::Architecture=amd64, un dpkg status amd64 y los indices
+# amd64 resolvio 394 paquetes, todos '[amd64]' o '[all]'. El control -- pedirle
+# lo mismo con APT::Architecture=arm64 e indices SOLO amd64 -- no resuelve nada,
+# asi que la bandera manda de verdad. Antes de eso estaba escrito en dos sitios
+# que E6 necesitaba «un constructor amd64»: NO lo necesita.
 
 set -uo pipefail
 export LC_ALL=C   # trampa 2
@@ -51,6 +60,7 @@ export LC_ALL=C   # trampa 2
 AQUI=$(cd "$(dirname "$0")" && pwd)
 REPO=""; CONSTRUCTOR=""; PAQUETE=""
 ISO_OFICIAL=""; CAPA="minimal.es.squashfs"; CONTROL_PKG="simple-scan"; CACHE=""
+ARQ=arm64
 
 uso() { sed -n '3,4p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
@@ -58,6 +68,7 @@ while [ $# -gt 0 ]; do
         --repo)            REPO="$2";         shift 2 ;;
         --constructor)     CONSTRUCTOR="$2";  shift 2 ;;
         --paquete)         PAQUETE="$2";      shift 2 ;;
+        --arq)             ARQ="$2";          shift 2 ;;
         --iso-oficial)     ISO_OFICIAL="$2";  shift 2 ;;
         --capa)            CAPA="$2";         shift 2 ;;
         --control-paquete) CONTROL_PKG="$2";  shift 2 ;;
@@ -67,7 +78,14 @@ while [ $# -gt 0 ]; do
     esac
 done
 [ -n "$REPO" ] && [ -n "$CONSTRUCTOR" ] || uso
-[ -z "$ISO_OFICIAL" ] && ISO_OFICIAL=$(ls -1 "$AQUI/../medios"/ubuntu-*-desktop-arm64.iso 2>/dev/null | head -1)
+# EL ARCHIVO DE UBUNTU NO ES EL MISMO SERVIDOR PARA LAS DOS ARQUITECTURAS: ports
+# es donde vive todo lo que no es x86, y archive es x86 (§4.64 P1).
+case "$ARQ" in
+    arm64) ARCHIVO_URI=http://ports.ubuntu.com/ubuntu-ports/ ;;
+    amd64) ARCHIVO_URI=http://archive.ubuntu.com/ubuntu/     ;;
+    *) echo "[FALLO] arquitectura desconocida: $ARQ (arm64 o amd64)"; exit 2 ;;
+esac
+[ -z "$ISO_OFICIAL" ] && ISO_OFICIAL=$(ls -1 "$AQUI/../medios"/ubuntu-*-desktop-"$ARQ".iso 2>/dev/null | head -1)
 [ -z "$CACHE" ] && CACHE="$REPO/.base"
 
 FALLOS=0
@@ -184,17 +202,26 @@ FIN
 R "sed -i \"s|REMOTO_REPO|\$HOME/$REMOTO/repo|\" ~/$REMOTO/sources.list"
 R "cat > ~/$REMOTO/partes/ubuntu.sources" <<'FIN'
 Types: deb
-URIs: http://ports.ubuntu.com/ubuntu-ports/
+URIs: ARCHIVO_URI
 Suites: noble noble-updates noble-backports
 Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 
 Types: deb
-URIs: http://ports.ubuntu.com/ubuntu-ports/
+URIs: ARCHIVO_URI
 Suites: noble-security
 Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 FIN
+# el heredoc va entrecomillado (nada se expande ahi dentro), asi que la direccion
+# del archivo se pone despues -- el mismo idioma que REMOTO_REPO de arriba --, y
+# SE VERIFICA LA MUTACION antes de seguir (trampa 13).
+R "sed -i \"s|ARCHIVO_URI|$ARCHIVO_URI|g\" ~/$REMOTO/partes/ubuntu.sources"
+R "grep -q ARCHIVO_URI ~/$REMOTO/partes/ubuntu.sources" \
+    && { echo "[FALLO] no se sustituyo la direccion del archivo en ubuntu.sources"; exit 1; }
+R "grep -c '$ARCHIVO_URI' ~/$REMOTO/partes/ubuntu.sources" >/dev/null \
+    || { echo "[FALLO] ubuntu.sources no nombra $ARCHIVO_URI"; exit 1; }
+ok "el archivo de Ubuntu para $ARQ: $ARCHIVO_URI"
 
 APTOPS="-o Dir::State=\$HOME/$REMOTO/estado \
         -o Dir::State::status=\$HOME/$REMOTO/estado/status \
@@ -202,7 +229,7 @@ APTOPS="-o Dir::State=\$HOME/$REMOTO/estado \
         -o Dir::Etc::SourceList=\$HOME/$REMOTO/sources.list \
         -o Dir::Etc::SourceParts=\$HOME/$REMOTO/partes \
         -o Dir::Cache=\$HOME/$REMOTO/cache \
-        -o APT::Architecture=arm64"
+        -o APT::Architecture=$ARQ"
 
 R "LC_ALL=C apt-get update $APTOPS" >/tmp/.autosuf-update 2>&1 \
     || { echo "[FALLO] apt-get update no paso en el constructor"; tail -5 /tmp/.autosuf-update; exit 1; }

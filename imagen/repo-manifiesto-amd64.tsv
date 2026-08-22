@@ -1,0 +1,39 @@
+# Los 29 .deb que viajan en /encina-repo de la ISO de Encina OS -- AMD64.
+# HERMANO de repo-manifiesto.tsv (arm64): la LISTA tiene que ser la misma y
+# cosechar-repo.sh lo coteja en su paso 1bis. Lo que cambia son los 15 que no
+# son _all: fichero, tamano y huella. Generado el 2026-08-22 desde los indices
+# de archive.ubuntu.com y packages.mozilla.org (§4.64 P5).
+# Generado desde el Packages del medio; a partir de aqui es LA FUENTE de esa lista,
+# para que cosechar-repo.sh no necesite una ISO anterior para saber que cosechar.
+# origen: PROPIO = se construye en este proyecto | ARCHIVO = se baja de Ubuntu/Mozilla
+#
+origen	paquete	version	fichero	tamano	sha256
+ARCHIVO	ca-certificates-java	20240118	ca-certificates-java_20240118_all.deb	11624	6d5859b713371c4725cf8deca131685067219ffa30129a6c5b09d53ff63d40e9
+ARCHIVO	firefox	153.0.4~build1	firefox_153.0.4~build1_amd64_53a2b3a7ba835b0b0d1df073b531a02a.deb	88763870	9ba3f780ac0bfcb922f676a84c7ea7e118d34e41f4a5c7e5d22a001b0b8f6ec4
+ARCHIVO	firefox-l10n-es-es	153.0.4~build1	firefox-l10n-es-es_153.0.4~build1_all.deb	436772	600efa563ce2f08d89ca1a325b0cbf956cfa8c654b164c3f71667fa5161d73f9
+ARCHIVO	fonts-dejavu-extra	2.37-8	fonts-dejavu-extra_2.37-8_all.deb	1947322	5502e5ccc416683e5251dc105b37be31158bc2e02133221e56524ea2a8e426fe
+ARCHIVO	gnome-software	46.0-1ubuntu2	gnome-software_46.0-1ubuntu2_amd64.deb	711052	338dacc6f5e73786c032fc25cf095e2ab671a3d0998c4b44db6c499e9417d1a2
+ARCHIVO	gnome-software-common	46.0-1ubuntu2	gnome-software-common_46.0-1ubuntu2_all.deb	14050	c81a594b8ced441f8fabb3dca8841cb4d9d208680b316103240cf24b352d5863
+ARCHIVO	gnome-software-plugin-snap	46.0-1ubuntu2	gnome-software-plugin-snap_46.0-1ubuntu2_amd64.deb	31052	546232971e6fc6504e5c6c641afdd6ed46ad839c316dd8d7dfe605a15b95172c
+ARCHIVO	hunspell-es	1:24.2.1-1	hunspell-es_1%3a24.2.1-1_all.deb	467444	7e40ad79d4922f153bcb3e6896fd910bfd024ea644111945560774168c1248d8
+ARCHIVO	hyphen-es	1:24.2.1-1	hyphen-es_1%3a24.2.1-1_all.deb	49458	89f55b2e28226a5977c2f10ac12865e5fc1d8e7c9ac0ce493f2a62962e7c6718
+ARCHIVO	java-common	0.75+exp1	java-common_0.75+exp1_all.deb	6798	9029d787c97f9b9e9bb04e7a4fb92bfc12fbd10b5809aab8694a8735b85bc070
+ARCHIVO	libatk-wrapper-java	0.40.0-3build2	libatk-wrapper-java_0.40.0-3build2_all.deb	54344	fd4e2ab59f2eedd61a26e711a0d49531d22838af1ed193fad7379560ad95e827
+ARCHIVO	libatk-wrapper-java-jni	0.40.0-3build2	libatk-wrapper-java-jni_0.40.0-3build2_amd64.deb	46412	3200676479bb0e3b6e860cd9cbdb50ad33800bed65dc449935763903d65747e8
+ARCHIVO	libnss3	2:3.98-1ubuntu0.2	libnss3_3.98-1ubuntu0.2_amd64.deb	1445132	4254f11d782dfb970e78113519a59d440112ed43c4b56f709da0aef81da8651a
+ARCHIVO	libnss3-tools	2:3.98-1ubuntu0.2	libnss3-tools_3.98-1ubuntu0.2_amd64.deb	615170	e5b42390b02c21851bc04e9557ec48539a913f9b09637220c4b1db0d1386b3fb
+ARCHIVO	libplymouth5	24.004.60-1ubuntu7.2	libplymouth5_24.004.60-1ubuntu7.2_amd64.deb	137470	3ebb74c8bafcef6967565c6b05e39d73484ebdd7bc98f8a8d7412024ddbde73d
+ARCHIVO	mythes-es	1:24.2.1-1	mythes-es_1%3a24.2.1-1_all.deb	612950	7aef0f9fff2a69f4d0edfe0d013ca17e767742e56102921d9c52e7a085c5bf76
+ARCHIVO	openjdk-17-jre	17.0.19+10-1~24.04.2	openjdk-17-jre_17.0.19+10-1~24.04.2_amd64.deb	233754	8002b24fd6c9c6e5e43e9e745f263104128da629127647b6f740b03d1237279c
+ARCHIVO	openjdk-17-jre-headless	17.0.19+10-1~24.04.2	openjdk-17-jre-headless_17.0.19+10-1~24.04.2_amd64.deb	48090566	ff074bca2b1ffa2a98a58011b815bc857bd94008ce5d126011b7845dd6bd9354
+ARCHIVO	plymouth	24.004.60-1ubuntu7.2	plymouth_24.004.60-1ubuntu7.2_amd64.deb	133888	75a9ed79b5af3544ad787e8c8660bb2d41a3bed11b23517eee3ff23a2e7f7d88
+ARCHIVO	plymouth-label	24.004.60-1ubuntu7.2	plymouth-label_24.004.60-1ubuntu7.2_amd64.deb	9366	2a0adfa69b71a526dedd730800c52bcab64ff0afaf0a862ec5de776f1737dbce
+ARCHIVO	plymouth-theme-spinner	24.004.60-1ubuntu7.2	plymouth-theme-spinner_24.004.60-1ubuntu7.2_amd64.deb	131722	63401bec15e55397afe76163f034916e78de28065a697279b954d1106361f377
+ARCHIVO	plymouth-theme-ubuntu-text	24.004.60-1ubuntu7.2	plymouth-theme-ubuntu-text_24.004.60-1ubuntu7.2_amd64.deb	9924	33b0a2c8034b8b6bbf74cb07294ba0b63d3ec037b96f8905b1e8ea567d5be37f
+ARCHIVO	plymouth-themes	24.004.60-1ubuntu7.2	plymouth-themes_24.004.60-1ubuntu7.2_amd64.deb	586230	928453710c773eff631bd320d6ed3b12b862451e3d336f895479708455a1332d
+ARCHIVO	simple-scan	46.0-0ubuntu2.1	simple-scan_46.0-0ubuntu2.1_amd64.deb	208368	558932622731601b31113ab0b73691f72a40307f8b3d76edd6e7676ac31a3bef
+ARCHIVO	wspanish	1.0.30	wspanish_1.0.30_all.deb	221694	00479a312b1268519b016f6d83ec66334f6231314eb13b67d8ca9b309bda4c39
+PROPIO	autofirma	1.9.1+encina4	autofirma_1.9.1+encina4_all.deb	39570056	faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
+PROPIO	encina-branding	0.1.15	encina-branding_0.1.15_all.deb	6948796	6d9fcd64aa409f6601dd165c6eb09df7154764c5335d830bb40ae92cf79dfee8
+PROPIO	encina-firefox-native	0.2.1	encina-firefox-native_0.2.1_all.deb	10876	640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
+PROPIO	encina-meta	0.2.1	encina-meta_0.2.1_all.deb	6904	204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6

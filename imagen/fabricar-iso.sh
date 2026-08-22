@@ -175,8 +175,23 @@ LEER=""   # --leer-mecanismos <iso>: solo lee y sale, no fabrica nada
 # justamente cadenas que el producto tiene que rechazar: sin esto, la eleccion
 # entre las hipotesis de §4.56j y §4.56m no se puede medir.
 INFO_CRUDO=""
-# la ISO oficial medida desde §4.14, comprobada en §4.21 antes de leer nada
-H_ISO=c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe
+# LAS ISOS OFICIALES QUE ESTE GUION ACEPTA. Una fila por arquitectura, y la
+# arquitectura NO SE DECLARA CON UNA BANDERA: se DEDUCE de cual de estas huellas
+# tiene la ISO que se le da -- igual que traer-iso-oficial.sh deduce el NOMBRE
+# buscando la huella dentro del SHA256SUMS firmado. Una bandera se puede poner
+# mal; una huella, no.
+#
+# EL SERVIDOR VA EN LA TABLA, y no es un adorno: §4.64 P1 se escribio prediciendo
+# que amd64 estaria en el mismo sitio que arm64 y ESO ES FALSO --
+# cdimage.ubuntu.com/ubuntu/releases sirve arm64, ppc64el, riscv64 y s390x, y
+# amd64 vive en releases.ubuntu.com--. Son dos servidores distintos con la MISMA
+# firma (Ubuntu CD Image Automatic Signing Key (2012), comprobada con su control
+# negativo en §4.64), asi que lo que cambia es la direccion y no la confianza.
+#
+#   arq    huella de la ISO oficial 24.04.4 de escritorio    donde vive
+ISOS_OFICIALES="\
+arm64 c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe https://cdimage.ubuntu.com/ubuntu/releases/24.04/release
+amd64 3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e https://releases.ubuntu.com/24.04"
 # EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
 # pila A de D22: presenta el producto ante el usuario, en la primera pantalla.
 MENU_ENCINA="Probar o instalar Encina OS"
@@ -279,13 +294,25 @@ if [ "$N_SIN" -gt 0 ]; then
     echo "        [AVISO] faltan $N_SIN de los 4: esto es un MEDIO DE BISECADO, no el producto"
 fi
 
-# --- 1. la ISO de partida es la medida, no otra -----------------------------
-echo "== 1. la ISO oficial, por huella"
+# --- 1. la ISO de partida es la medida, no otra, Y DE ELLA SALE LA ARQUITECTURA
+echo "== 1. la ISO oficial, por huella -- y la arquitectura, DEDUCIDA de ella"
 real=$(shasum -a 256 "$ISO" | cut -d' ' -f1)
-[ "$real" = "$H_ISO" ] || fallo "esta ISO no es la medida en §4.14/§4.21
-        esperada $H_ISO
-        real     $real"
-ok "ubuntu-24.04.4-desktop-arm64.iso  ${real:0:16}…"
+ARQ_ISO=$(printf '%s\n' "$ISOS_OFICIALES" | awk -v h="$real" '$2==h {print $1}')
+if [ -z "$ARQ_ISO" ]; then
+    fallo "esta ISO no es ninguna de las medidas en §4.14/§4.21/§4.64
+        real     $real
+        aceptadas:
+$(printf '%s\n' "$ISOS_OFICIALES" | awk '{printf "          %-6s %s\n", $1, $2}')"
+fi
+ok "ISO oficial de escritorio $ARQ_ISO  ${real:0:16}…  (arquitectura DEDUCIDA de la huella)"
+
+# LOS TRES BINARIOS FIRMADOS SE LLAMAN DISTINTO EN CADA ARQUITECTURA, y el
+# sufijo no se adivina: sale del mismo ARQ_ISO que acaba de deducirse.
+case "$ARQ_ISO" in
+    arm64) SUF_EFI=aa64 ;;
+    amd64) SUF_EFI=x64  ;;
+    *) fallo "no se que binarios EFI lleva la arquitectura «$ARQ_ISO»" ;;
+esac
 
 # --- 2. los cuatro .deb, con las huellas del guion que las comprueba dentro --
 echo "== 2. los cuatro .deb, por huella (§4.13: misma version != mismos bytes)"
@@ -366,7 +393,7 @@ fi
 # --- 4. las huellas de la cadena firmada, ANTES ------------------------------
 echo "== 4. los tres binarios firmados, antes"
 declare -a EFI ANTES
-EFI=(bootaa64.efi grubaa64.efi mmaa64.efi)
+EFI=("boot${SUF_EFI}.efi" "grub${SUF_EFI}.efi" "mm${SUF_EFI}.efi")
 for i in 0 1 2; do
     ANTES[$i]=$(tar -xOf "$ISO" "efi/boot/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
@@ -444,7 +471,49 @@ if [ -n "$INFO_CRUDO" ]; then
     echo "        # Las guardas de marca NO paran, pero SI se evaluan y se dicen."
     echo "        ####################################################################"
 else
-    cp "$AQUI/marca/disk-info" "$TMP/info.encina" || fallo "cp .disk/info"
+    # LA ARQUITECTURA NO SE ESCRIBE A MANO EN LA MARCA. marca/disk-info lleva
+    # «@ARQ@» y aqui se sustituye por la que el paso 1 DEDUJO de la huella de la
+    # ISO oficial. Antes de §4.64 ese fichero decia «arm64» literal, y un medio
+    # amd64 habria salido INCOHERENTE CONSIGO MISMO -- Volume id «… amd64»,
+    # .disk/info «… Release arm64» -- sin que nada parase: la prediccion P4 de
+    # §4.64 se escribio diciendo justo eso y quedo medida.
+    grep -q '@ARQ@' "$AQUI/marca/disk-info" \
+        || fallo "imagen/marca/disk-info ya no lleva la ranura «@ARQ@»: mira si alguien escribio una arquitectura a mano"
+    sed "s/@ARQ@/$ARQ_ISO/" "$AQUI/marca/disk-info" > "$TMP/info.encina" \
+        || fallo "sustitucion de @ARQ@ en .disk/info"
+    grep -q '@ARQ@' "$TMP/info.encina" \
+        && fallo "la sustitucion de @ARQ@ no se hizo (trampa 13: se verifica la mutacion)"
+fi
+
+# --- 5b-bis. LAS TRES ARQUITECTURAS TIENEN QUE SER LA MISMA (§4.64 P4) -------
+# Hay TRES fuentes independientes que dicen de que arquitectura es este medio, y
+# hasta hoy NINGUNA se comparaba con las otras:
+#   1. la HUELLA de la ISO oficial          -> $ARQ_ISO      (paso 1)
+#   2. el .disk/info OFICIAL                -> «- Release <arq> (fecha)»
+#   3. el .disk/info NUESTRO, el que viaja  -> lo mismo, ya sustituido
+# La cuarta -- la ultima palabra del Volume id oficial -- se coteja en 5e.
+arq_de_info() { sed -n 's/.* - Release \([a-z0-9]*\) .*/\1/p' "$1" | head -1; }
+ARQ_INFO_OFICIAL=$(arq_de_info "$TMP/info.oficial")
+ARQ_INFO_NUESTRO=$(arq_de_info "$TMP/info.encina")
+# EL CONTROL VA DELANTE: la extraccion tiene que saber decir que NO.
+printf 'Bellota 9.9 LTS "Prueba" - Release inventada64 (20260815)\n' > "$TMP/.arq-control"
+[ "$(arq_de_info "$TMP/.arq-control")" = inventada64 ] \
+    || fallo "CONTROL ROTO: la extraccion no saca la arquitectura de un .disk/info que SI la tiene"
+printf 'esto no es un .disk/info\n' > "$TMP/.arq-control2"
+[ -z "$(arq_de_info "$TMP/.arq-control2")" ] \
+    || fallo "CONTROL ROTO: la extraccion saca arquitectura de donde no la hay"
+[ -n "$ARQ_INFO_OFICIAL" ] \
+    || fallo "no pude leer la arquitectura del .disk/info OFICIAL: «$(head -1 "$TMP/info.oficial")»"
+[ "$ARQ_INFO_OFICIAL" = "$ARQ_ISO" ] \
+    || fallo "la huella de la ISO dice «$ARQ_ISO» y su propio .disk/info dice «$ARQ_INFO_OFICIAL»: parar y mirar que ISO es esta"
+if [ "$ARQ_INFO_NUESTRO" != "$ARQ_ISO" ]; then
+    if [ -n "$INFO_CRUDO" ]; then
+        echo "[AVISO] DIAGNOSTICO: el .disk/info dice «$ARQ_INFO_NUESTRO» y la ISO es «$ARQ_ISO». En el producto esto pararia la fabricacion."
+    else
+        fallo "el .disk/info que viajaria dice «$ARQ_INFO_NUESTRO» y la ISO oficial es «$ARQ_ISO»"
+    fi
+else
+    ok "arquitectura, y las TRES fuentes dicen lo mismo: huella=$ARQ_ISO  info oficial=$ARQ_INFO_OFICIAL  info nuestro=$ARQ_INFO_NUESTRO"
 fi
 # EL CONTROL, y es el calculo de casper-bottom/25adduser tal cual viaja en el
 # medio: no se comprueba que el fichero cambie, se comprueba QUE ROTULO SALE.
@@ -719,6 +788,11 @@ case "$ARQ" in
     arm64|amd64) : ;;
     *) fallo "la ultima palabra del Volume id oficial es «${ARQ}» y esperaba una arquitectura" ;;
 esac
+# LA CUARTA FUENTE, cotejada con la que dedujo el paso 1 (§4.64 P4). Si el
+# Volume id oficial y la huella de la ISO no dicen la misma arquitectura, el
+# medio saldria rotulado de una y arrancando de la otra.
+[ "$ARQ" = "$ARQ_ISO" ] \
+    || fallo "el Volume id oficial dice «${ARQ}» y la huella de la ISO dice «${ARQ_ISO}»"
 INFO_L=$(head -1 "$TMP/info.encina")   # el NUESTRO, lo lleve el medio o no
 # EL SEPARADOR SIGUE COMPROBANDOSE, pero YA NO ES LO QUE DELIMITA EL VOLUME ID:
 # es una comprobacion de la FORMA del fichero, que casper y 57pollinate esperan.
