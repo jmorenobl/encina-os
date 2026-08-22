@@ -2938,3 +2938,21 @@ desde el anfitrión** —`osascript` activando UTM y `key code 36`—, porque es
 panel de UTM y se lleva la tecla él. Se verifica **por el crecimiento del disco**,
 no por la pantalla. Cuidado con pulsarlo a ciegas cuando la instalación ya puede
 haber terminado: ahí la tecla **sí** llegaría al invitado.
+
+**51. LA PANTALLA DEL INVITADO SE PUEDE *LEER*, NO SÓLO MIRAR: `tesseract` está
+en este Mac.** Es lo que devuelve la regla más cara del banco —*captura la
+pantalla ANTES de pulsar Intro*— cuando no hay ojos disponibles.
+
+```
+sips -c <alto> <ancho> --cropOffset <y> <x> captura.png --out recorte.png
+tesseract recorte.png - -l spa
+```
+
+**Con su control, o no vale:** pásale primero un recorte **cuyo texto ya
+conozcas** y comprueba que lo lee. **Y su límite, medido el 2026-08-22:** sobre
+la tipografía del terminal a tamaño pequeño **no es fiable** —leyó `--forma e5`
+donde ponía `e3`—, así que una orden **no se da por buena por ahí**. Lo que sí
+vale para eso: `sudo script /mnt/salida.txt`, que **graba lo tecleado** y se lee
+luego desde el Mac. *Y ojo al leer ese registro: va a 80 columnas, así que un
+`--visibles 27` puede aparecer partido como `--visib les 27` sin que haya ningún
+espacio de verdad.*
