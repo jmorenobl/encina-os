@@ -264,34 +264,40 @@ ok "los tres .deb propios cuadran con el manifiesto, huella y tamano"
 paso "4. la cosecha -- 24 de fuera + autofirma, POR HUELLA"
 [ -n "$TRABAJO" ] || TRABAJO="$TMP_PROPIO/repo"
 mkdir -p "$TRABAJO" || fallo "no pude crear $TRABAJO"
+# CUANTOS .deb SON LO DICE EL MANIFIESTO, y no este guion. Estuvo escrito «28» a
+# mano hasta el 2026-08-22, y ese dia el manifiesto paso a 29 al meter libnss3
+# (§4.61): un numero repetido en dos sitios es un sitio donde se pueden separar,
+# y el que manda es el manifiesto, que es LA FUENTE de la lista (cosechar-repo.sh).
+N_MAN=$(grep -cE '^(ARCHIVO|PROPIO)'"$(printf '\t')" "$MANIFIESTO")
+[ "$N_MAN" -gt 0 ] || fallo "el manifiesto no tiene lineas de datos: $MANIFIESTO"
 # DOS ORDENES, y la PRIMERA TIENE QUE SALIR INCOMPLETA: en ese momento aun no
-# esta autofirma, que se construye en otro repositorio. Su «27 de 28 -> [FALLO]»
+# esta autofirma, que se construye en otro repositorio. Su «N-1 de N -> [FALLO]»
 # es EL CONTROL de que cosechar-repo.sh sabe dar la respuesta mala antes de
 # escribir nada, y va anunciado para que nadie aprenda a saltarse los [FALLO].
 echo "        (la 1a orden SALE INCOMPLETA a proposito: falta autofirma. Su [FALLO] es el control)"
 "$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
     | sed 's/^/        /' | tail -6
 N_PARCIAL=$(contar_deb "$TRABAJO")
-[ "$N_PARCIAL" -eq 27 ] || fallo "CONTROL ROTO: sin autofirma esperaba 27 .deb y hay $N_PARCIAL"
-ok "control: sin autofirma la cosecha se queda en 27 y se niega"
+[ "$N_PARCIAL" -eq $((N_MAN - 1)) ] || fallo "CONTROL ROTO: sin autofirma esperaba $((N_MAN - 1)) .deb y hay $N_PARCIAL"
+ok "control: sin autofirma la cosecha se queda en $((N_MAN - 1)) y se niega"
 echo "        (la 2a orden la completa con autofirma, POR HUELLA entre tres casi homonimos)"
 "$AQUI/cosechar-repo.sh" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
     | sed 's/^/        /' | tail -6
 N=$(contar_deb "$TRABAJO")
-[ "$N" -eq 28 ] || fallo "en la cosecha hay $N .deb y tenian que ser 28"
-ok "28 .deb cosechados sin tocar ninguna ISO"
+[ "$N" -eq "$N_MAN" ] || fallo "en la cosecha hay $N .deb y el manifiesto pide $N_MAN"
+ok "$N .deb cosechados sin tocar ninguna ISO, los que pide el manifiesto"
 
 # --- 5. el indice, que no se puede hacer aqui -------------------------------
 paso "5. el indice Packages (dpkg-scanpackages no existe en macOS)"
 R "rm -rf ~/$REMOTO-repo && mkdir -p ~/$REMOTO-repo"
 ( cd "$TRABAJO" && COPYFILE_DISABLE=1 tar -cf - *.deb ) \
-    | R "cd ~/$REMOTO-repo && tar -xf - 2>/dev/null" || fallo "no pude enviar los 28"
+    | R "cd ~/$REMOTO-repo && tar -xf - 2>/dev/null" || fallo "no pude enviar los $N_MAN"
 # el cotejo de huellas a los dos lados, que es la proteccion de verdad (trampa 24)
 ( cd "$TRABAJO" && shasum -a 256 *.deb ) | LC_ALL=C sort > "$TMP_PROPIO/h.aqui"
 R "cd ~/$REMOTO-repo && sha256sum *.deb" | LC_ALL=C sort > "$TMP_PROPIO/h.alli"
 D=$(diff "$TMP_PROPIO/h.aqui" "$TMP_PROPIO/h.alli" | grep -c '^[<>]')
-[ "$D" -eq 0 ] || fallo "los 28 no llegaron iguales: $D diferencias"
-ok "las 28 huellas cuadran a los dos lados"
+[ "$D" -eq 0 ] || fallo "los $N_MAN no llegaron iguales: $D diferencias"
+ok "las $N_MAN huellas cuadran a los dos lados"
 sed '1s/^./f/' "$TMP_PROPIO/h.aqui" > "$TMP_PROPIO/h.sab"
 cmp -s "$TMP_PROPIO/h.aqui" "$TMP_PROPIO/h.sab" && fallo "CONTROL ROTO: el sabotaje no saboteo"
 [ "$(diff "$TMP_PROPIO/h.sab" "$TMP_PROPIO/h.alli" | grep -c '^[<>]')" -ge 1 ] \
@@ -317,7 +323,7 @@ paste -d' ' <(sed -n 's|^Filename: \./||p' "$TRABAJO/Packages") \
 D=$(diff "$TMP_PROPIO/man" "$TMP_PROPIO/idx" | grep -c '^[<>]')
 [ "$D" -eq 0 ] || fallo "el indice y el manifiesto no dicen lo mismo: $D diferencias
 $(diff "$TMP_PROPIO/man" "$TMP_PROPIO/idx" | head -8)"
-ok "el indice y el manifiesto dicen lo mismo en las 28 lineas"
+ok "el indice y el manifiesto dicen lo mismo en las $N_MAN lineas"
 awk 'NR==1{$2=$2+1}1' "$TMP_PROPIO/man" > "$TMP_PROPIO/man.sab"
 [ "$(diff "$TMP_PROPIO/man.sab" "$TMP_PROPIO/idx" | grep -c '^[<>]')" -eq 2 ] \
     || fallo "CONTROL ROTO: con un tamano falseado, la comparacion no lo senala"

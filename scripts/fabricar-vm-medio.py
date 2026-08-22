@@ -7,11 +7,15 @@
 QUE HACE, y las cuatro cosas son las que costaron caro el 2026-08-17:
 
   1. IDENTIFICADORES DE UNIDAD PROPIOS (trampa 32). Dos bundles con el mismo
-     'Drive.Identifier' arrancan y se cuelgan antes de nada -- pantalla negra,
-     disco a 0 bloques y el debug.log de QEMU CONGELADO en ~2 700 bytes frente a
-     los ~110 KB de una que arranca --, y eso costo dos controles que parecian
-     decir que dos ISOs no arrancaban. Aqui se eligen libres y SE COMPRUEBA
-     contra TODOS los bundles del disco.
+     'Drive.Identifier' arrancan y se cuelgan antes de nada -- pantalla negra y
+     disco a 0 bloques --, y eso costo dos controles que parecian decir que dos
+     ISOs no arrancaban. Aqui se eligen libres y SE COMPRUEBA contra TODOS los
+     bundles del disco.
+     OJO: aqui decia ademas «y el debug.log CONGELADO en ~2 700 bytes frente a
+     los ~110 KB de una que arranca». ESO YA NO VALE Y ESTA MEDIDO que no vale
+     (trampa 47, 2026-08-22): el arranque que instalo un sistema ENTERO dejo el
+     debug.log en 2 727 bytes. El tamano del debug.log NO separa una VM colgada
+     de una que funciona; lo que separa es el ESTADO y la CAPTURA.
   2. LA ISO POR ENLACE DURO, no copiada: 3,7 GB por VM no caben. 'stat' tiene
      que decir 2 enlaces, y se comprueba DESPUES de hacerlo (trampa 13: una
      mutacion se verifica antes de leer su resultado).
@@ -196,7 +200,8 @@ def main():
         sys.exit(1)
     print()
     print("ARRANCARLA:  utmctl start %s   <- y OJO: devuelve 0 AUNQUE FALLE (trampa 28)." % vm_uuid)
-    print("             Comprueba 'utmctl status' Y que Data/debug.log crezca de los")
-    print("             ~2 700 bytes de una colgada a los ~110 KB de una que arranca.")
+    print("             Comprueba 'utmctl status' Y UNA CAPTURA. El tamano del")
+    print("             debug.log NO sirve para esto: una instalacion entera lo dejo")
+    print("             en 2 727 bytes (trampa 47).")
 
 main()

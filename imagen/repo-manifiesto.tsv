@@ -1,4 +1,4 @@
-# Los 28 .deb que viajan en /encina-repo de la ISO de Encina OS.
+# Los 29 .deb que viajan en /encina-repo de la ISO de Encina OS.
 # Generado desde el Packages del medio; a partir de aqui es LA FUENTE de esa lista,
 # para que cosechar-repo.sh no necesite una ISO anterior para saber que cosechar.
 # origen: PROPIO = se construye en este proyecto | ARCHIVO = se baja de Ubuntu/Mozilla
@@ -16,6 +16,7 @@ ARCHIVO	hyphen-es	1:24.2.1-1	hyphen-es_1%3a24.2.1-1_all.deb	49458	89f55b2e28226a
 ARCHIVO	java-common	0.75+exp1	java-common_0.75+exp1_all.deb	6798	9029d787c97f9b9e9bb04e7a4fb92bfc12fbd10b5809aab8694a8735b85bc070
 ARCHIVO	libatk-wrapper-java	0.40.0-3build2	libatk-wrapper-java_0.40.0-3build2_all.deb	54344	fd4e2ab59f2eedd61a26e711a0d49531d22838af1ed193fad7379560ad95e827
 ARCHIVO	libatk-wrapper-java-jni	0.40.0-3build2	libatk-wrapper-java-jni_0.40.0-3build2_arm64.deb	43538	b57b0b496d6e91c10fb71f55d7ac90fd2423a4867d6fcd83ed8bf070e58ee798
+ARCHIVO	libnss3	2:3.98-1ubuntu0.2	libnss3_2%3a3.98-1ubuntu0.2_arm64.deb	1405988	daf32de5e12139aa84fde7a3e2784d5d7277259e22f14affcd82d81545b5312e
 ARCHIVO	libnss3-tools	2:3.98-1ubuntu0.2	libnss3-tools_2%3a3.98-1ubuntu0.2_arm64.deb	598166	02d5f5e9d7a40d79fd23448b3f4016b7c83113f2b0df9f55efa16a39be33ce97
 ARCHIVO	libplymouth5	24.004.60-1ubuntu7.2	libplymouth5_24.004.60-1ubuntu7.2_arm64.deb	140178	2b6e091659ef9957db3b2257a7bdb739842ce6643d151098d801bb4ed8c4d3e6
 ARCHIVO	mythes-es	1:24.2.1-1	mythes-es_1%3a24.2.1-1_all.deb	612950	7aef0f9fff2a69f4d0edfe0d013ca17e767742e56102921d9c52e7a085c5bf76

@@ -3,10 +3,12 @@
 #
 #     ./cosechar-repo.sh --salida <dir> [--propios <dir>] [--manifiesto <tsv>]
 #
-# POR QUE EXISTE: hasta hoy los 28 .deb del repositorio offline SOLO vivian
+# POR QUE EXISTE: hasta hoy los .deb del repositorio offline SOLO vivian
 # dentro de la ISO, y para fabricar la ISO hacia falta la ISO anterior. Este
-# guion corta esa circularidad por el lado de los 24 que vienen de fuera: los
+# guion corta esa circularidad por el lado de los que vienen de fuera: los
 # baja del archivo publico y comprueba CADA UNO POR HUELLA al llegar.
+# CUANTOS SON lo dice el manifiesto y no este comentario: hoy 29 (eran 28 hasta
+# el 2026-08-22, que entro libnss3 -- §4.61).
 #
 # LA FUENTE ES imagen/repo-manifiesto.tsv, Y NUNCA UNA ISO. Si algun dia hay que
 # volver a sacar la lista de un medio, la circularidad ha vuelto.

@@ -15,7 +15,7 @@
 # POR QUE EXISTE, Y ES LA CASILLA QUE HABRIA AHORRADO UNA INSTALACION ENTERA
 # (MEDICIONES.md §4.61, §4.62): el 2026-08-22 una maquina se entrego SIN NINGUNO
 # de los cuatro paquetes de Encina porque faltaba UN .deb -- libnss3 -- en los 28
-# del medio. Y la simulacion YA LO CANTABA en el seed.log de aquella noche, en el
+# que llevaba el medio. Y la simulacion YA LO CANTABA en el seed.log de aquella noche, en el
 # paso 9, veintiuna lineas diciendo 'localhost' y una no. Nadie la miraba. Esto
 # es esa mirada, hecha guion, y corre en segundos sin arrancar nada.
 #
@@ -164,7 +164,7 @@ R "command -v apt-get >/dev/null" || { echo "[FALLO] el constructor no tiene apt
 REMOTO=".encina-autosuf"
 R "rm -rf ~/$REMOTO && mkdir -p ~/$REMOTO/repo ~/$REMOTO/estado/lists/partial ~/$REMOTO/partes ~/$REMOTO/cache" \
     || { echo "[FALLO] no pude preparar el sitio en el constructor"; exit 1; }
-# viaja el INDICE, no los 28 .deb: 'apt-get -s' no descarga nada, y son 40 KB
+# viaja el INDICE, no los .deb: 'apt-get -s' no descarga nada, y son 40 KB
 # contra 170 MB. Tambien viaja el status de la base y el sources.list del
 # escritorio de Ubuntu, que es el que tendra la maquina instalada.
 COPYFILE_DISABLE=1 tar -cf - -C "$REPO" Packages | R "cd ~/$REMOTO/repo && tar -xf -" || { echo "[FALLO] no pude enviar Packages"; exit 1; }
