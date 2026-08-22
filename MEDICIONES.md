@@ -15507,3 +15507,165 @@ borrar el bundle a mano deja la VM registrada sin nada detrás.
   corregirlo donde esté citada**.
 
 
+
+#### (h) EL MARCADOR, y una predicción se falsó: `libnss3` ERA el único
+
+Se marca lo medido; lo que depende de una instalación va aparte, en (m).
+
+| # | Predicción | Resultado |
+|---|---|---|
+| **C1** | la huella del medio de control **no** es `59bc3a3c…` | **ACIERTO** — `19587dd4…`, mismos 3 721 265 152 bytes |
+| **G1** | contra el repo de hoy la guarda **señala `libnss3`** | **ACIERTO**, y reproduce la línea de anoche **carácter por carácter** |
+| **G2** | contra el repo de 29 la guarda no nombra ninguna fuente de fuera | **ACIERTO** — 25 de 25 líneas `Inst` dicen `localhost` |
+| **G3** | `libnss3` **no** es el único hueco del patrón | **FALLA. Es el único.** Y no se midió sólo sobre `encina-meta`: sobre las **tres** transacciones que el seed hace contra el repo, la única línea de fuera era ésa |
+| **B1** | la cosecha da **29** `.deb` y el índice los describe | **ACIERTO** — `cuadran 29 de 29`, `bajados: 1` |
+
+**G3 falla, y falla en la dirección buena.** Queda escrito porque lo que se
+esperaba —«un `-tools` sin su biblioteca es un patrón, no un caso»— era una
+generalización razonable **y era falsa aquí**: no hay una familia de `.deb`
+partidos, hay **un** paquete que el archivo de Ubuntu movió. Lo que sí es
+patrón, y esto sí se sostiene, es **el mecanismo**: el archivo se mueve mientras
+el manifiesto no. La guarda no vale porque `libnss3` fuera uno de muchos; vale
+porque **el siguiente será otro y no habrá que gastar una instalación en verlo**.
+
+#### (i) LA GUARDA: el riesgo confesado en (d) era real, y el mecanismo era OTRO
+
+En (d) quedó escrito que `apt-get -s` resuelve contra el `dpkg status` de la
+máquina donde corre, que `encina-dev` no es una instalación recién hecha y que
+**G1 fallaría a la primera por eso**. Hay que separarlo:
+
+- **El riesgo era real y la defensa funcionó.** El `status` no se dejó nunca en
+  el del constructor: sale de `/casper/minimal.es.squashfs` de la **ISO
+  oficial**, que es la base que `curtin` instala (`casper/install-sources.yaml`
+  dice `id: ubuntu-desktop-minimal` → `path: minimal.squashfs`, con `langpack`).
+- **Y aun así la guarda salió CIEGA dos veces, por una causa que NO estaba
+  escrita.** Las dos primeras configuraciones dieron **«22 líneas `Inst`, las 22
+  con `localhost`»** sobre el repo roto. No era el `status`: eran **las listas de
+  `apt`**.
+
+```
+con las listas CACHEADAS dentro del squashfs:  0 not upgraded    <- y NO pide libnss3
+la instalacion de verdad, anoche:            356 not upgraded
+con las listas refrescadas contra el archivo: 360 not upgraded   <- y SI pide libnss3
+```
+
+**Lo que eso destapa, y es más que un ajuste del instrumento:** el instalador
+refresca las listas por la red **de la sesión viva** —que sí tiene red; el que no
+la tiene es el `chroot`—, así que **la respuesta depende del día en que se
+instale**. Eso no es ruido del banco: **es la deriva del archivo de Ubuntu, que
+es la causa raíz de §4.61**, vista por dentro. Una guarda con listas viejas
+habría dado verde sobre el medio que rompió la instalación.
+
+**La prueba de que la referencia es la buena no es un argumento, es una
+reproducción.** La guarda, desde fuera y en segundos, saca la misma línea que el
+`seed.log` escribió dentro de una máquina instalada:
+
+```
+anoche, /etc/encina-seed.log, paso 9, dentro de la maquina:
+Inst libnss3 [2:3.98-1build1] (2:3.98-1ubuntu0.2 Ubuntu:24.04/noble-updates,
+                               Ubuntu:24.04/noble-security [arm64])
+hoy, banco-autosuficiencia.sh, sin arrancar nada:
+Inst libnss3 [2:3.98-1build1] (2:3.98-1ubuntu0.2 Ubuntu:24.04/noble-updates,
+                               Ubuntu:24.04/noble-security [arm64])
+```
+
+Y su control sabe decir que no: quitado `simple-scan` del índice, lo señala.
+
+**Dos diferencias con anoche, dichas y no escondidas:** salen **25** líneas
+`Inst` y no 22 —porque se le piden las **tres** transacciones del seed y no sólo
+la primera—, y aparece `hunspell-es`, que anoche ya estaba instalado en el
+objetivo y en el `status` de la capa `es` no lo está. **Las dos van en la
+dirección segura:** el banco pide de más, no de menos, y las dos líneas de más
+dicen `localhost`.
+
+#### (j) LO QUE LA GUARDA NO PUEDE EXIGIR, Y ESTÁ MEDIDO QUE NO PUEDE: `full-upgrade`
+
+Buscando más huecos apareció algo que **no** es un hueco y habría sido la séptima
+atribución falsa si se cuenta como tal. El paso 11 del seed hace `full-upgrade
+--allow-downgrades`, y **también murió anoche**:
+
+```
+seed.log, linea 67803 y alrededores:
+E: Failed to fetch .../python3-idna_3.6-2ubuntu0.2_all.deb  Temporary failure resolving
+E: Failed to fetch .../snapd_2.76.3+ubuntu24.04_arm64.deb   Temporary failure resolving
+   ... (una docena mas)
+E: Unable to fetch some archives
+  rc=100
+```
+
+**Meter `libnss3` NO arregla eso, y no tiene que arreglarlo.** `full-upgrade`
+querría actualizar los ~360 paquetes que el archivo ha movido desde que se cortó
+la ISO; el medio no los lleva **ni debe llevarlos**. El bloque **11bis del seed
+existe exactamente para este caso** —lo dice su comentario, escrito antes de que
+esto se midiera: *«SIN RED el repo de Mozilla no se puede leer… sin él, una
+instalación sin red acabaría en el estado (d)»*— y el `ESTADO` final del seed no
+se calcula de ningún `rc` sino de **lo que hay instalado**.
+
+Por eso la guarda pide `encina-meta`, `firefox=<la del repo>` y
+`firefox-l10n-es-es`, **y no `full-upgrade`**. Exigírselo daría 300 líneas rojas
+permanentes, y una alarma que siempre suena es una alarma apagada.
+
+#### (k) LA OTRA MITAD DE LA CAUSA B: `fabricar-iso.sh` NO MIRABA LA COLA
+
+El `; true` salió de `imagen/fabricar-seed.sh:154` y los dos `yaml` se rehicieron
+con `--actualizar-yaml`. Pero **el guion que fabrica el medio no lo habría visto
+volver**: su paso 3 comparaba sólo el trozo del `base64`.
+
+```
+lo que habia:  grep -q "echo $B64 | base64 -d" "$YAML"     <- el GUION que se invoca
+lo que hay:    grep -qxF "$LINEA" "$YAML"                  <- COMO se invoca, entero
+```
+
+**Medido con su control, y el control es el que importa:** sobre un `yaml` con la
+cola de anoche devuelta a mano,
+
+```
+la comprobacion VIEJA  -> DA [OK]     <- esto es lo que dejo pasar el «; true»
+la comprobacion NUEVA  -> lo rechaza
+```
+
+Y lleva además un control explícito que busca la cola `; true` **por su nombre**,
+para que si vuelve tenga un `[FALLO]` con su historia al lado y no un silencio.
+
+#### (l) LO QUE COSTÓ EL DISCO, y una trampa nueva que casi cuesta un susto
+
+Se borraron seis ISOs superadas **y liberaron 0,06 GiB**: cada una seguía viva
+por **enlace duro** dentro de su bundle de UTM. Los 14 GiB aparecieron al borrar
+los cuatro bundles de sólo-medio con `utmctl delete`. Es la otra mitad de lo que
+el `DIARIO.md` del 20 ya decía por un lado —*«borrar VMs no libera nada si la ISO
+es enlace duro»*—: **borrar la ISO tampoco libera nada si la VM sigue**. El
+inventario que las distingue es `stat -f %l`, y está en la trampa 48.
+
+Y en el mismo minuto, la trampa que casi hace daño: **`ls -1 medios/*.iso`
+contestó `(empty)`** justo después de borrar —el filtro de `rtk`—, o sea *«te has
+cargado también `p10-capa` y la oficial»*. `/bin/ls` enseñó las tres intactas.
+Ya estaba escrito para `git` en `CLAUDE.md`; **un inventario es una medición**, y
+para medir va la ruta absoluta del binario.
+
+**`medios/encina-os-p10-capa.iso` NO se borró, y es una decisión con razón
+escrita:** su huella `59bc3a3c…` **ya no la reproduce este árbol** —los dos
+arreglos entran en el medio—, así que es el único ejemplar de lo que midieron
+§4.60 y §4.61. La enmienda está puesta donde estaba citada.
+
+#### (m) LO QUE ESTA SESIÓN NO PUEDE CERRAR, con nombre y sin colarse
+
+Los dos medios están fabricados y sus dos arreglos dentro:
+
+```
+control : medios/encina-os-control-sin-libnss3.iso  19587dd4…  (; true FUERA, repo de 28)
+bueno   : medios/encina-os-libnss3.iso              cd84d2ec…  (; true FUERA, repo de 29)
+```
+
+El de control **arrancó a la primera** —1 de 1— y está esperando en «Disposición
+del teclado», en español. **Y ahí se para, porque las cinco pantallas las
+contesta Jorge (K2 de §4.61): el instalador no se recorre con teclado.** Queda
+`[OMIT]`, y no se da por bueno nada de esto:
+
+- **C2, C3 y C4** — la instalación de control. **C3 es el punto entero del día**:
+  que salga «Se produjo un problema». Es la única vez que el fallo está
+  garantizado; si en vez de eso dice «listo para usarse», la lectura de
+  `subiquity` era falsa y **eso** es el hallazgo.
+- **B2, B3, B4 y B5** — el medio bueno, y los 0 fallos del verificador.
+- **Los `[OJOS]` de Jorge y la foto del «después»**, que siguen **bloqueados**
+  hasta que el verificador dé 0 fallos. Anoche no se tomó a propósito: sin
+  `encina-branding` sería una captura que miente. Hoy tampoco.
