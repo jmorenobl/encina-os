@@ -134,6 +134,41 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       disco**, 2 de 2. O sea que lo que bloqueaba desde el 2026-08-17 —«no hay
       instalación»— **está resuelto**.
 
+      ---
+
+      **AL DÍA 2026-08-22 (tarde): PAGADA ENTERA SALVO UNA COSA, Y ESA COSA NO SE
+      PUEDE PAGAR EN ESTE BANCO** (`MEDICIONES.md` §4.63p y §4.63s). La casilla
+      **sigue sin marcar a propósito**, y conviene leer por qué antes que el
+      historial de abajo.
+
+      Su condición eran tres cosas. **Dos están pagadas y medidas:**
+
+      ```
+      instalacion limpia desde encina-os-libnss3.iso (cd84d2ec…), forma E3
+      verificar-instalacion.sh --forma e3 --visibles 27, como root:
+      [OK] 63   [FALLO] 0   [AVISO] 0   [OMIT] 0        <- eran 41 y 20
+      ```
+
+      Y las seis capturas están, **con el control de dos pasadas**, en
+      [../../design/capturas/despues/entrega-cd84d2ec/](../../design/capturas/despues/entrega-cd84d2ec/).
+      **Jorge las miró y aprobó cinco**, con el recuadro naranja de GDM aceptado
+      **como mal menor**.
+
+      **LO QUE FALTA ES LA TERCERA, Y ES UNA SOLA PANTALLA: LA DEL ARRANQUE.** La
+      condición dice *«las seis pantallas con la identidad puesta»*, y la del
+      arranque **no enseña identidad ninguna**: del segundo 8 al 21 está apagada
+      —«Display output is not active»—, idéntica byte a byte en las dos pasadas,
+      y **Plymouth no se ve**. No se puede juzgar aquí porque **las dos hipótesis
+      dan la misma captura**: si es de UTM, el producto está bien; si es del
+      producto, el arranque de Encina OS es **más feo** que el de Ubuntu.
+
+      **Condición de salida, y es la única:** instalar en hierro. Palabras de
+      Jorge el 2026-08-22: *«no lo voy a poder probar hasta que no tengamos la
+      ISO y lo pueda instalar en hierro»*. Cuando eso ocurra, esta casilla se
+      cierra o abre trabajo de Plymouth, y no antes.
+
+      ---
+
       **Lo que la casilla encontró, y es para lo que existía:**
 
       ```

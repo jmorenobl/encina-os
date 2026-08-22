@@ -618,8 +618,38 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > Corregido **con control nuevo**, porque ensanchar una lista blanca es fácil de
 > ensanchar de más (§4.63q).
 >
-> **LO QUE QUEDA, y ya no está bloqueado:** los `[OJOS]` de Jorge sobre las seis
-> pantallas y la foto del «después» para el README.
+> **Y LOS `[OJOS]` TAMBIÉN, EL MISMO DÍA (§4.63s).** Las seis capturas salen de la
+> **máquina de la entrega** —no del banco— y **con el control de dos pasadas**:
+>
+> ```
+> 01 firmware   1 fotograma en las dos  -> TRANSITORIA, no es una pantalla
+> 02 apagada    sha256 6c8d7117… IDENTICO byte a byte
+> 03 GDM        sha256 76c97e89… IDENTICO; 400 px, todos en la franja del reloj
+> ```
+>
+> **Jorge aprobó cinco.** El **recuadro naranja de GDM** queda **aceptado como mal
+> menor** —deja de ser casilla y pasa a ser decisión escrita—. Y el par «antes /
+> después» de la primera sesión ya sale en el README: «Le damos la bienvenida a
+> **Ubuntu**» contra el escritorio de **Encina OS** entrando directo. De paso cayó
+> una frase vieja del README que decía que *el medio todavía lleva marca de
+> Ubuntu*.
+>
+> ### LO ÚNICO QUE QUEDA DEL BLOQUE, Y NO SE PUEDE PAGAR AQUÍ: **PLYMOUTH**
+>
+> Del segundo 8 al 21 la pantalla está **apagada** y el tema de arranque **no se
+> ve**. **Las dos hipótesis producen la misma captura:** si es de UTM, el producto
+> está bien; si es del producto, **el arranque de Encina OS es más feo que el de
+> Ubuntu, no más bonito**. Aquí no se separan.
+>
+> **Condición de salida, y es una sola: instalar en hierro.** Hasta entonces
+> `02-pantalla-apagada.png` **no cuenta ni a favor ni en contra**, y la casilla
+> «Instalar desde cero y mirar la pantalla» **se queda sin marcar a propósito**,
+> con las otras dos terceras partes de su condición pagadas y medidas.
+>
+> **LO SIGUIENTE, y ya no es del aspecto:** lo que bloquea publicar
+> —[tareas/alojamiento.md](tareas/alojamiento.md), 3,46 GB que no caben en un
+> release de GitHub, y [tareas/publicar.md](tareas/publicar.md)—, que es además lo
+> que **desbloquea a Plymouth**: sin ISO publicada no hay instalación en hierro.
 >
 > **Disco:** 26,3 GiB. La VM `encina-control-sinred` (8,2 GiB) lleva la
 > instalación reventada de `curthooks` y **ya no hace falta**: es la única que
