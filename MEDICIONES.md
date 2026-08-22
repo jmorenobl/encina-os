@@ -15280,3 +15280,54 @@ qemu-aarch64-softmmu: -drive ...,file.filename=/…/encina-capa-p10.utm/Data/,�
 y **la VM no arranca**, con `utmctl start` devolviendo **0** otra vez (trampa 28).
 Lo que funciona es **borrar la entrada `Drive` entera**, con UTM cerrado. Va como
 trampa nueva.
+
+#### (t) **Y LA RED DE SEGURIDAD NO EXISTE: un `; true` se traga el `exit 1` del seed**
+
+Esto es lo más grave del día y salió de una pregunta tonta: **si el seed sabía que
+la máquina estaba incompleta, ¿por qué el instalador dijo «listo para usarse»?**
+
+El seed termina así, y funcionó como está escrito:
+
+```
+imagen/encina-seed.sh, ultima linea:
+    [ "$ESTADO" = COMPLETO ] || exit 1
+y /etc/encina-estado dice        ENCINA_ESTADO=INCOMPLETO
+```
+
+Y encima lleva **veinte líneas de comentario** que explican, leídas en el código de
+`subiquity` de **esta misma ISO**, por qué ese `exit 1` tiene que verse:
+`cmd_check = True` en `cmdlist.py:50-61`, la excepción recogida en
+`install.py:628-639`, `ApplicationState.ERROR` en `server.py:487,513` y
+*«An error occurred during installation»* en `installprogress.py:189`. **Y el
+propio comentario avisa de que eso no está medido:** *«no se ha visto esta
+pantalla con los ojos. Lo leído es el código de ESTA ISO, no una captura.»*
+
+**Hoy se ha visto con los ojos, y es que no.** La pantalla final fue *«Finalizó la
+instalación — EncinaOS 24.04.4 LTS está instalado y listo para usarse»*, con
+«Reiniciar ahora». **La causa está en la línea que lo invoca**, en
+`imagen/autoinstall.yaml`:
+
+```
+- sh -c 'echo <base64> | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh; true'
+                                                                                  ^^^^
+```
+
+**El `; true` descarta el código de salida.** `sh -c` devuelve el de la última
+orden, y la última orden es `true`.
+
+> **Es la forma exacta contra la que este repositorio lleva avisando:** un
+> mecanismo **leído** con todo detalle en un lado, y **neutralizado** en el otro
+> por una línea que nadie volvió a mirar. Los veinte comentarios describen lo que
+> el guion *pedía*, no lo que *pasaba* — que es la trampa 13 aplicada a un código
+> de salida en vez de a un fichero.
+
+**Y por eso esto es más grave que el `.deb` que falta:** el `.deb` es un hueco en
+una lista y se arregla en una línea. Esto es **el producto entregándose roto y
+diciendo que está listo**, que es la única clase de fallo que se propaga sin que
+nadie se entere. Con la red de seguridad puesta, la instalación de hoy habría
+enseñado «Se produjo un problema» y el hueco del repo se habría cazado **en el
+minuto uno, sin verificador y sin canal FAT**.
+
+**Su control, cuando se arregle, y hay que pagarlo:** un medio con el `; true`
+quitado **y el repo todavía sin `libnss3`** tiene que enseñar la pantalla de
+error. Sin ese medio, «lo he arreglado» vuelve a ser una lectura de código.
