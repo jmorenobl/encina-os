@@ -329,10 +329,28 @@ ok "Packages describe $NIDX ficheros, viajan $NDEB, y las $NIDX huellas cuadran"
 # --- 3. el seed y el guion no se han separado -------------------------------
 echo "== 3. la late-command del seed == encina-seed.sh"
 B64=$(base64 -i "$GUION" | tr -d '\n')
-grep -q "echo $B64 | base64 -d" "$YAML" \
-    || fallo "$(basename "$YAML") y encina-seed.sh se han separado.
+# LA LINEA ENTERA, Y NO SOLO EL TROZO DEL BASE64. Hasta el 2026-08-22 esto era
+#     grep -q "echo $B64 | base64 -d" "$YAML"
+# o sea que comprobaba el GUION que se invoca y no COMO se invoca: la cola de la
+# linea podia decir cualquier cosa -- y decia «; true», que se tragaba el codigo
+# de salida del seed (§4.61, §4.62). Un medio con esa cola pasaba este paso con
+# un [OK] y entregaba maquinas rotas diciendo «listo para usarse». Ahora se
+# compara la linea COMPLETA, y es la MISMA cadena que construye fabricar-seed.sh,
+# escrita igual a proposito: si las dos se separan, esto lo dice.
+LINEA="    - sh -c 'echo $B64 | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh'"
+grep -qxF "$LINEA" "$YAML" \
+    || fallo "$(basename "$YAML") y encina-seed.sh se han separado, o la cola de la
+        late-command no es la que este guion espera. La linea del yaml es:
+$(grep -n "^    - sh -c 'echo " "$YAML" | sed 's/\(.\{110\}\).*/\1…/' | sed 's/^/            /')
         Rehazlo con: ./fabricar-seed.sh --yaml $YAML --actualizar-yaml ..."
-ok "coinciden ($(wc -c <"$GUION" | tr -d ' ') bytes de guion)"
+ok "coinciden LINEA ENTERA ($(wc -c <"$GUION" | tr -d ' ') bytes de guion, sin «; true»)"
+# CONTROL de esa comparacion, que es lo que la convierte en comprobacion: tiene
+# que saber decir que NO. Se le enfrenta la misma linea con la cola de antes --
+# el «; true» que causo §4.61 -- y no debe reconocerla.
+if grep -qxF "    - sh -c 'echo $B64 | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh; true'" "$YAML"; then
+    fallo "CONTROL: el yaml lleva la cola «; true», que se traga el exit 1 del seed"
+fi
+ok "control: la cola «; true» de §4.61 no esta, y esta comparacion sabria verla"
 # y que el seed de la entrega NO lleve credenciales, que es una casilla
 if grep -qE '^\s*(identity|ssh):|password|ssh-ed25519' "$YAML"; then
     fallo "el seed de la entrega lleva credenciales dentro"

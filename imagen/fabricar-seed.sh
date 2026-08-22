@@ -151,7 +151,17 @@ fi
 
 echo "== 3. la late-command del seed == encina-seed.sh"
 B64=$(base64 -i "$GUION" | tr -d '\n')
-LINEA="    - sh -c 'echo $B64 | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh; true'"
+# EL «; true» QUE ESTUVO AQUI HASTA EL 2026-08-22, Y POR QUE SE FUE.
+# La linea acababa en «; sh /tmp/encina-seed.sh; true'», y ese «true» se tragaba
+# el codigo de salida del seed. El seed termina en
+#     [ "$ESTADO" = COMPLETO ] || exit 1
+# con veinte lineas de subiquity leidas al lado explicando por que eso tiene que
+# enseñar «Se produjo un problema»... y NUNCA podia enseñarla, porque quien la
+# invocaba devolvia 0 pase lo que pase. Por eso la maquina de §4.61 se entrego
+# diciendo «listo para usarse» SIN NINGUNO de los cuatro paquetes de Encina.
+# Es el vicio de la casa aplicado a un codigo de salida: un [OK] que describe lo
+# que se PIDIO y no lo que PASO.
+LINEA="    - sh -c 'echo $B64 | base64 -d > /tmp/encina-seed.sh; sh /tmp/encina-seed.sh'"
 if [ "$ACTUALIZAR" = 1 ]; then
     LINEA="$LINEA" python3 - "$YAML" <<'PY'
 import os, sys
