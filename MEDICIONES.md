@@ -15331,3 +15331,166 @@ minuto uno, sin verificador y sin canal FAT**.
 **Su control, cuando se arregle, y hay que pagarlo:** un medio con el `; true`
 quitado **y el repo todavía sin `libnss3`** tiene que enseñar la pantalla de
 error. Sin ese medio, «lo he arreglado» vuelve a ser una lectura de código.
+
+---
+
+### 4.62 ARREGLAR EL MEDIO: la predicción, escrita ANTES de tocar un solo fichero (2026-08-22)
+
+Van **seis atribuciones falsas** en este proyecto, y la última fue anoche —la
+trampa 45, que llevaba escrito «se destrabó con `open -a UTM`» sobre un UTM que
+en realidad **se moría**—. Esto se escribe antes del primer dato y se marca
+después, acierte o falle.
+
+**Y hay una razón nueva para escribirla, que es la mejor que ha habido:** el
+fallo de anoche **nació de una lectura de código**. Veinte líneas de `subiquity`
+leídas en §4.27-nivel-2 explicaban por qué un `exit 1` del seed tenía que
+enseñar «Se produjo un problema»… y la línea que lo invocaba acababa en
+`; true`. La lectura era correcta y la conclusión falsa, porque **nadie había
+visto la pantalla**. La tarea de hoy consiste, precisamente, en no repetirlo.
+
+#### (a) EL PUNTO DE PARTIDA, cotejado y no supuesto
+
+```
+arbol : limpio, commit b310f51
+disco : 26 658 032 KiB libres = 25,423 GiB      <- LA RESTRICCION DEL DIA
+        8 ISOs en medios/ (7 de Encina + la oficial), 24,9 GiB entre las ocho
+        VM encina-capa-p10 = 12 GiB, con la instalacion ROTA de anoche dentro
+medio : medios/encina-os-p10-capa.iso
+        sha256 59bc3a3c…e946e1d4, el de §4.60 y §4.61
+repo  : imagen/repo-manifiesto.tsv, 28 .deb, SIN libnss3
+seed  : imagen/fabricar-seed.sh:154 genera la late-command y termina en «; true»
+        Los DOS yaml la llevan (autoinstall.yaml:83, autoinstall-unattended.yaml:63)
+```
+
+**Lo que NO se vuelve a preguntar** porque está medido en §4.61: el medio
+arranca, el instalador sale en español, la instalación termina, la máquina
+arranca de su disco (2 de 2), y sale **sin ninguno de los cuatro paquetes de
+Encina** con 41 `[OK]` y 20 `[FALLO]`.
+
+#### (b) EL RIESGO 0, EL BANCO, con su aritmética escrita antes
+
+Sin novedad respecto de §4.61(b) salvo lo que anoche corrigió: **este anfitrión
+falla el 33 % de los arranques** (§4.59) y falla con los tres medios, así que
+**un arranque negro no es del producto y hay que contarlo**. Cinco negras
+seguidas (p = 0,004) y se para.
+
+Lo que **sí** cambia, y son las dos correcciones de anoche:
+
+- **La trampa 45, enmendada.** Si `utmctl start` empieza a dar `-1712`, lo
+  primero es `ls -lt ~/Library/Logs/DiagnosticReports/UTM-*.ips`, **antes** de
+  acusar a una VM o a un medio. Lo que se conserva de la 45 es su **control**:
+  arrancar otra VM que se sepa buena.
+- **La trampa 47: el tamaño de `debug.log` NO separa nada.** El arranque que
+  instaló el sistema entero lo dejó en 2 727 bytes. **No se usa como señal**, y
+  para contar unidades va `grep -o … | wc -l`, nunca `grep -c` —es una sola
+  línea y `grep -c` da 1 como máximo—.
+
+**La señal que separa banco de producto en ESTA sesión es distinta de la de
+anoche, y por eso se escribe aparte:** hoy el producto **tiene que fallar** en
+la vuelta del punto 2. Un fallo del banco es **negro sin sesión gráfica**; el
+fallo que busco es **con la sesión gráfica viva y un diálogo dentro**. No se
+parecen, y `veredicto-pantalla.py` distingue NEGRA de GRÁFICA con su banco de 9
+correctas y 3 sabotajes.
+
+#### (c) LA PREDICCIÓN DEL PUNTO 2 — EL MEDIO DE CONTROL, que es lo único que hoy está GARANTIZADO
+
+Es la predicción principal del día. El medio de control lleva el `; true`
+**fuera** y el repo **todavía sin `libnss3`**: sé lo que tiene que pasar, y por
+eso vale.
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **C1** | El medio se fabrica y su huella **NO** es `59bc3a3c…`: cambiar la `late-command` cambia el `user-data`, que viaja dentro | sale `59bc3a3c…`, y entonces el yaml no llegó al medio |
+| **C2** | La instalación **llega igual de lejos** que anoche: las cinco pantallas, `curtin` termina, el disco queda hecho y el GRUB puesto | se cae antes: entonces el `; true` no era sólo un tragador de códigos |
+| **C3** | **Y ENTONCES SALE LA PANTALLA: «Se produjo un problema»**, con «Reboot Now» habilitado | **termina diciendo «listo para usarse»**: la lectura de `subiquity` era falsa y hay OTRA cosa tragándose el `exit 1` |
+| **C4** | La máquina **sigue arrancando de su disco** después de esa pantalla, y `/etc/encina-seed.log` y `/etc/encina-estado` están dentro con `ENCINA_ESTADO=INCOMPLETO` | no arranca: el fallo llega antes de lo que dice `install.py:628-639` |
+
+**C3 es el punto entero.** Es la única vez que el fallo está garantizado y sé
+qué debería salir; si me la salto, «arreglado» vuelve a ser una lectura de
+código —que es exactamente como nació este fallo—.
+
+**Lo que separa un C3 fallido del PRODUCTO de uno del BANCO**, escrito antes
+para no elegirlo luego:
+
+```
+BANCO    pantalla NEGRA, sin sesion grafica, systemd en [ OK ] por serie,
+         IP en el arp del anfitrion  ->  no es un resultado, se repite
+BANCO    UTM sordo a los start (-1712)  ->  mirar los .ips ANTES (trampa 45)
+PRODUCTO sesion grafica VIVA y el instalador dice que termino bien
+         ->  ESO es C3 fallado, y es un hallazgo grande
+PRODUCTO sesion grafica viva con el dialogo dentro  ->  C3 acertado
+```
+
+#### (d) LA PREDICCIÓN DEL PUNTO 4 — LA GUARDA, y el riesgo que le veo
+
+La guarda es `apt-get -s install encina-meta` contra el repo del medio: **no
+debe nombrar ni una fuente que no sea `localhost`**. Corre en segundos.
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **G1** | Contra el repo de **hoy** (28 `.deb`, sin `libnss3`) la guarda **señala `libnss3`** y una fuente que no es `localhost` | dice que todo está bien: la guarda es ciega y **no vale** |
+| **G2** | Contra el repo de **mañana** (29 `.deb`) la guarda **no nombra ninguna fuente que no sea `localhost`** | nombra otra: hay **más** huecos, y G3 dirá cuáles |
+| **G3** | `libnss3` **no es el único** hueco del patrón «un `-tools` sin su biblioteca» | es el único: mejor noticia, y queda escrito |
+
+**G1 es el control de G2 y va delante**, y es un control **gratis**: el repo de
+hoy está roto y se sabe con nombre y versión. Una guarda que no sabe decir que
+no, no es una guarda.
+
+**EL RIESGO QUE LE VEO, ESCRITO ANTES DE VERLO FALLAR** —y es la parte que
+puede tumbar la guarda entera—: `apt-get -s` **resuelve contra el `dpkg status`
+de la máquina donde corre**. La guarda tiene que correr en Linux (no hay `apt`
+en macOS) y el sitio natural es `encina-dev`, el constructor. **Pero
+`encina-dev` no es una instalación recién hecha:** si ya tiene `libnss3`
+instalado, la simulación **no lo pedirá** y la guarda dará verde sobre un repo
+roto. Predigo que **esto pasa** —`encina-dev` lleva navegador y escritorio— y
+que **G1 fallará a la primera por este motivo**. Si es así, la guarda **no se
+declara buena**: se le da el `dpkg status` de una instalación base como
+referencia (`-o Dir::State::status=…`), que es lo que reproduce el `chroot` de
+`curtin`, y **G1 se vuelve a pagar**. Un `[OK]` de la guarda que describe la
+máquina donde corre y no el medio que valida es **peor que no tenerla**.
+
+#### (e) LA PREDICCIÓN DEL PUNTO 5 — EL MEDIO BUENO
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **B1** | La cosecha da **29** `.deb` y el `Packages` los describe a los 29 | no cuadran |
+| **B2** | La instalación termina **sin** la pantalla de error | sale: queda algo por arreglar, y la guarda lo habrá dicho antes o **la guarda es ciega** |
+| **B3** | `verificar-instalacion.sh --forma e3 --visibles 27`, como root: **0 `[FALLO]`** | cualquier `[FALLO]`. Los 20 de anoche cuelgan todos de los cuatro paquetes ausentes, así que predigo que caen **los veinte de golpe** |
+| **B4** | El logotipo de **GDM es la encina** en la primera pantalla, donde anoche era el de Ubuntu | sigue siendo el de Ubuntu |
+| **B5** | `--visibles 27` sale **26 o 27**. Anoche salieron 26 **sin `encina-meta`**, o sea que ese número no medía nada | un número que no sea 26 ni 27 |
+
+**B4 no lo doy yo por bueno: es `[OJOS]` de Jorge.** Yo entrego la captura y la
+comparación con `design/capturas/despues/03-gdm.png`; quien dice que se ve bien
+es él.
+
+#### (f) EL RIESGO DEL DISCO, con su número y su corte
+
+```
+libres hoy            25,423 GiB
+una vuelta            ~3,5 GiB de ISO + ~8,6 GiB de instalacion = ~12,1 GiB
+dos vueltas (2 y 5)   ~24,2 GiB   <- NO CABEN A LA VEZ
+```
+
+**Hay que borrar entre medias, y qué se borra es de Jorge.** La VM
+`encina-capa-p10` lleva la instalación rota de anoche (12 GiB) y **es la prueba
+del fallo hasta que se pague el punto 2**; después sobra. **Se para si `df` baja
+de 3 GiB**: un disco lleno se ve igual que un instalador que se cae, y sería la
+séptima atribución falsa por el mismo camino que las otras.
+
+Una VM se borra con `utmctl delete` —que desregistra **y** borra el bundle—;
+borrar el bundle a mano deja la VM registrada sin nada detrás.
+
+#### (g) LO QUE ESTA SESIÓN NO VA A DECIR, escrito antes para que no se cuele
+
+- **Los `[OJOS]` de Jorge y la foto del «después» del README están BLOQUEADOS**
+  hasta que el verificador dé 0 fallos. Anoche no se tomó **a propósito**: sin
+  `encina-branding` sería una captura que miente.
+- **NO se cambia al seed desatendido** aunque el teclado no recorra el
+  instalador (K2 de §4.61). Eso convertiría la casilla en forma E2 y las **ocho**
+  etapas del `telemetry` fallarían: no mediría menos, **mediría otra cosa**.
+- **Meter `libnss3` cambia la huella del medio**, así que `59bc3a3c…` deja de ser
+  la que produce este repositorio. **No es un fallo, es lo que pasa** —ya pasó
+  con `95758c9e…`—, pero está citada en §4.60 y en `ENCINA-OS.md` §7 y **hay que
+  corregirlo donde esté citada**.
+
+
