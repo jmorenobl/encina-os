@@ -474,19 +474,62 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > entregó diciendo *«listo para usarse»*. Con la red puesta, el hueco del repo se
 > habría cazado en el minuto uno.
 >
-> **LO SIGUIENTE, en este orden:**
+> ---
 >
-> 0. **Quitar el `; true`.** Es una línea, y sin ella cualquier arreglo del repo
->    se entrega a ciegas. **Su control hay que pagarlo:** un medio con el `; true`
->    fuera **y el repo todavía sin `libnss3`** tiene que enseñar la pantalla de
->    error. Sin ese medio, «arreglado» vuelve a ser una lectura de código.
-> 1. **`libnss3` al manifiesto** y rehacer la cosecha. Y **buscar más huecos del
->    mismo patrón**: un `-tools` sin su biblioteca no tiene por qué ser el único.
-> 2. **Que la cosecha lo compruebe sola:** `apt-get -s install encina-meta` contra
->    el repo del medio **no debe nombrar ni una fuente que no sea `localhost`**.
->    Es barato y habría cazado esto sin gastar una instalación entera.
-> 3. **Reinstalar y volver a pasar el verificador buscando 0 fallos**, y
->    **entonces** los `[OJOS]` de Jorge sobre las seis pantallas.
+> ### AL DÍA, 2026-08-22 (tarde): **LOS DOS ARREGLOS Y LA GUARDA, HECHOS. FALTA LA PANTALLA**
+>
+> Los detalles y el marcador, en `MEDICIONES.md` §4.62. Lo hecho:
+>
+> - **El `; true`, fuera** de `imagen/fabricar-seed.sh` y de los dos `yaml`. Y la
+>   **otra mitad, que no estaba en la lista:** `fabricar-iso.sh` comparaba sólo el
+>   trozo del `base64` y **no la cola**, así que no habría visto volver el
+>   `; true`. Ahora compara la línea entera, **medido con su control**: sobre un
+>   `yaml` con la cola devuelta, la comprobación vieja **da `[OK]`** y la nueva lo
+>   rechaza.
+> - **`libnss3` al manifiesto** (28 → 29), cosecha rehecha, `29 de 29` cuadran. De
+>   paso, el número de `.deb` **sale del manifiesto** y ya no está escrito a mano
+>   en `construir-todo.sh`.
+> - **La guarda existe y funciona: `imagen/banco-autosuficiencia.sh`.** Corre en
+>   **segundos sin arrancar nada** y, desde fuera, saca **la misma línea** que el
+>   `seed.log` escribió dentro de la máquina de anoche. Su control quita
+>   `simple-scan` del índice y lo señala.
+> - **Los dos medios, fabricados:** `…control-sin-libnss3.iso` `19587dd4…` (el del
+>   punto 0, con el repo **todavía roto** a propósito) y `…libnss3.iso`
+>   `cd84d2ec…`.
+>
+> **Y DOS COSAS QUE TUMBAN LO QUE SE CREÍA:**
+>
+> - **`libnss3` ERA el único hueco**, y se predijo que no. Medido sobre las
+>   **tres** transacciones que el seed hace contra el repo, no sólo la primera.
+>   No hay una familia de `.deb` partidos: hay **un archivo que se mueve**.
+> - **La guarda salió CIEGA dos veces**, y no por donde se había escrito. No era
+>   el `dpkg status` del constructor: eran **las listas de `apt`**. Con las
+>   cacheadas en el squashfs, `apt` dice `0 not upgraded` y **no pide `libnss3`**;
+>   la instalación de verdad decía `356`. **El instalador refresca las listas por
+>   la red de la sesión viva**, así que la respuesta *depende del día* — que es la
+>   deriva del archivo, vista por dentro.
+> - **`full-upgrade` NO puede ser autosuficiente y no debe serlo.** También murió
+>   anoche (`rc=100`), y meter `libnss3` no lo arregla **ni tiene que**: querría
+>   los ~360 paquetes que el archivo ha movido. El bloque 11bis del seed existe
+>   para eso. Por eso la guarda no se lo exige.
+>
+> **LO QUE FALTA, Y ES LO QUE NO PUEDO HACER YO:**
+>
+> 1. **LA PANTALLA. `encina-control-sin-libnss3` está arrancada y esperando** en
+>    «Disposición del teclado», en español, a la primera. **Las cinco pantallas
+>    las contesta Jorge** (K2: el instalador no se recorre con teclado).
+>    **Tiene que salir «Se produjo un problema».** Es la única vez que el fallo
+>    está garantizado y se sabe qué debería salir. Si dice «listo para usarse»,
+>    **la lectura de `subiquity` era falsa y ése es el hallazgo del día.**
+> 2. **Instalar el medio bueno** y pasar el verificador buscando **0 fallos**.
+> 3. **Y ENTONCES** —y no antes— los `[OJOS]` de Jorge y la foto del «después».
+>    Siguen **bloqueados**: sin `encina-branding` sería una captura que miente.
+>
+> **Y una consecuencia que ya está escrita donde estaba citada:** `59bc3a3c…`
+> **deja de ser la huella que produce este repositorio**, porque los dos arreglos
+> entran en el medio. No es un fallo, es lo que pasa —ya pasó con `95758c9e…`—.
+> Por eso `medios/encina-os-p10-capa.iso` **no se borró** al hacer sitio: es el
+> único ejemplar de lo que midieron §4.60 y §4.61.
 >
 > ---
 >

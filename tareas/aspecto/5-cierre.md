@@ -149,14 +149,36 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       Firefox nativo 153.0.4 **sí** se instaló desde él—, ni una regresión del
       aspecto.
 
-      **Qué falta para cerrarla, y ahora es corto y concreto:**
+      **AL DÍA 2026-08-22 (tarde) — los tres puntos de abajo, hechos salvo la
+      instalación. Marcador y detalle en `MEDICIONES.md` §4.62.**
 
-      1. Meter `libnss3` en `imagen/repo-manifiesto.tsv` y rehacer la cosecha.
-         Y de paso **buscar más huecos del mismo tipo**: un `-tools` sin su
-         biblioteca es un patrón, no un caso.
-      2. Que la cosecha lo compruebe sola: **`apt-get -s install encina-meta`
-         contra el repo del medio no debe nombrar ni una fuente que no sea
-         `localhost`**. Es una comprobación barata y habría cazado esto sin
-         gastar una instalación.
-      3. Volver a instalar y volver a pasar el verificador, buscando **0
-         fallos**, y **entonces** mirar las seis pantallas.
+      1. ~~Meter `libnss3` en el manifiesto y rehacer la cosecha~~ **HECHO**:
+         28 → 29, `cuadran 29 de 29`. **Y la búsqueda de más huecos dio que NO
+         los hay:** medido sobre las **tres** transacciones que el seed hace
+         contra el repo, `libnss3` era **el único**. La predicción decía lo
+         contrario y se deja escrita: no hay una familia de `.deb` partidos,
+         hay **un archivo de Ubuntu que se mueve mientras el manifiesto no**.
+      2. ~~Que se compruebe solo~~ **HECHO: `imagen/banco-autosuficiencia.sh`.**
+         Corre en **segundos sin arrancar nada** y, desde fuera, saca **la misma
+         línea `Inst libnss3`** que el `seed.log` escribió dentro de la máquina.
+         Con el repo de 29: **25 de 25 líneas dicen `localhost`**. Su control
+         quita `simple-scan` del índice y lo señala.
+         **OJO al leerlo dentro de seis meses:** la guarda salió **ciega dos
+         veces**, y no por el `dpkg status` sino por **las listas de `apt` —con
+         las cacheadas en el squashfs no pide `libnss3`—. Y **no se le exige
+         `full-upgrade`**, que no puede ser autosuficiente ni debe.
+      3. **PENDIENTE, y es lo único que queda de la casilla.** Antes de
+         reinstalar hay **una vuelta que hay que pagar y no estaba en esta
+         lista**: un medio con el `; true` **fuera** y el repo **todavía sin
+         `libnss3`** tiene que enseñar «Se produjo un problema». Sin ese medio,
+         «arreglado» es otra lectura de código —que es como nació el fallo—.
+         Los dos medios están fabricados:
+
+         ```
+         control : encina-os-control-sin-libnss3.iso  19587dd4…   <- arrancado y esperando
+         bueno   : encina-os-libnss3.iso              cd84d2ec…
+         ```
+
+         **Las cinco pantallas las contesta Jorge** (K2: el instalador no se
+         recorre con teclado), y los `[OJOS]` y la foto del «después» siguen
+         **bloqueados** hasta que el verificador dé 0 fallos.
