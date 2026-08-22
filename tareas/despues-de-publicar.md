@@ -41,6 +41,27 @@
       el repo offline: 29 .deb = 14 _all + 15 _arm64  -> cosechar QUINCE
       fabricar-iso.sh nombra la arquitectura en 14 lineas; 29 en todos los guiones
       ```
-      Falta la ISO base `amd64` y **un constructor `amd64`** —el de hoy es una VM
-      arm64—, que puede ser el propio portátil. Y sigue haciendo falta **repetir
+      ~~Falta la ISO base `amd64` y **un constructor `amd64`** —el de hoy es una VM
+      arm64—, que puede ser el propio portátil.~~ Y sigue haciendo falta **repetir
       allí el positivo de extremo a extremo**.
+
+      **AL DÍA, 2026-08-22 (noche): CASI TODO ESTO YA ESTÁ HECHO, y una de las
+      dos cosas que faltaban NO hacía falta** (`MEDICIONES.md` §4.64):
+
+      - **La ISO base `amd64` está**, y de paso se descubrió que **no vive en el
+        servidor de la `arm64`**: `cdimage` no sirve `amd64`; es
+        `releases.ubuntu.com/24.04`, con la misma firma de Canonical.
+      - **NO hace falta un constructor `amd64`, y era una deducción falsa.**
+        Medido con su control: `dpkg-scanpackages` en la VM `arm64` indexó los
+        29 `.deb` (14 `all` + 15 `amd64`) y `apt-get -s` con
+        `APT::Architecture=amd64` resolvió **394 paquetes** desde esa misma
+        máquina. El portátil hace falta para **arrancar** el medio, no para
+        fabricarlo.
+      - **El medio existe:** `encina-os-amd64.iso` `8924f148…`, 49 correctas y 0
+        fallos, y **el `arm64` sigue saliendo `cd84d2ec…` byte a byte**.
+      - **Arranca, con la marca puesta y en español** — pero **el instalador se
+        cae** y de quién es no se sabe todavía. Los tres controles que lo
+        separarían están escritos en §4.64(l).
+      - **Y sube el listón de `alojamiento.md`:** la ISO oficial `amd64` pesa
+        **6,20 GiB** contra 3,30 de la `arm64`, así que el medio nuestro sale a
+        **6,38 GiB** y hay que publicar **dos**.

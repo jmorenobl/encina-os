@@ -16551,3 +16551,167 @@ libres hoy                      28,24 GiB
 Cabe **sin borrar nada** mientras no se intente instalar en la VM emulada —que
 es justo lo que P6 dice que no hay que intentar—. **Qué se borra, si hiciera
 falta, es de Jorge**, y las candidatas están listadas en la sesión.
+
+#### (g) EL MARCADOR DE LA PREDICCIÓN, sin maquillar
+
+Se escribió a las 20:0x y se marca ahora. **Cuatro aciertos, dos fallos y una a
+medias**, y los dos fallos enseñaron más que tres de los aciertos.
+
+| | qué decía | qué pasó |
+|---|---|---|
+| **P1** | la ISO `amd64` está en el mismo sitio firmado que la `arm64` | **FALLA.** `cdimage.ubuntu.com/ubuntu/releases` sirve `arm64`, `ppc64el`, `riscv64` y `s390x` **y ni una `amd64`**. Vive en `releases.ubuntu.com/24.04` |
+| **P2** | **no hace falta constructor `amd64`** | **ACIERTA, y entera.** `dpkg-scanpackages` en la VM `arm64` indexó los 29 `.deb` (14 `all` + 15 `amd64`) y `apt-get -s` resolvió **394 paquetes** para `amd64` |
+| **P3** | ≤5 líneas ejecutables en `fabricar-iso.sh` | **A MEDIAS.** Las tres previstas sí. Pero hicieron falta **otras cuatro** que no estaban en la lista, y tres de ellas son diferencias reales entre las dos ISOs |
+| **P4** | nada compara la arquitectura del `.disk/info` con la de la ISO | **ACIERTA.** No la comparaba nadie. Ahora se cotejan **cuatro** fuentes |
+| **P5** | (a) archivo distinto (b) manifiesto por arquitectura (c) al menos uno de los 15 no estará | (a) y (b) **aciertan**; **(c) FALLA**: los 15 salen a la primera |
+| **P6** | arranca, pero tarda **>10 min** a la primera pantalla | **FALLA, y por el lado bueno.** El control llegó al instalador en **286 s** y el medio nuestro en **338 s** |
+| **P7** | el `arm64` sigue dando `cd84d2ec…` | **ACIERTA**, y se pagó **tres veces** |
+
+#### (h) POR QUÉ FALLÓ P5(c), Y LA CORRECCIÓN AL MODELO
+
+Se predijo que la deriva del archivo —la que causó lo de `libnss3`— mordería
+también en `amd64`. **No muerde, y la razón deja el modelo mejor:** Ubuntu
+construye **todas las arquitecturas del mismo fuente y a la misma versión**, así
+que una versión que está en `arm64` está en `amd64`. Lo de `libnss3` **nunca fue
+una versión que se movió**: fue **un paquete que faltaba en la lista**. Son dos
+averías distintas y se habían metido en el mismo saco.
+
+*Lo que se creía, dejado al lado:* «el manifiesto se congeló mirando `arm64`, así
+que en `amd64` habrá huecos». El hueco no es por arquitectura: es por lista.
+
+#### (i) LAS CUATRO ATADURAS QUE NO ESTABAN EN LA LISTA, y tres son de la ISO
+
+**1. UN VERDE FALSO, Y ES EL HALLAZGO MÁS GRAVE DE LA NOCHE.** La `arm64` llama
+`efi/boot/` a lo que la `amd64` llama **`EFI/boot/`**, en mayúsculas. Con la ruta
+escrita a mano, `tar -xOf` **no sacaba nada** y las tres huellas de la cadena
+firmada salían:
+
+```
+[OK]    bootx64.efi  e3b0c44298fc1c14…
+[OK]    grubx64.efi  e3b0c44298fc1c14…
+[OK]    mmx64.efi    e3b0c44298fc1c14…
+                     ^ es la huella de la CADENA VACIA
+```
+
+Y el paso 12 comparaba **vacío contra vacío** y también daba `[OK]`. **Un medio
+con la cadena de arranque destrozada habría pasado las dos.** Arreglado por los
+dos lados: el directorio **se lee del medio** y una huella vacía **es un fallo**.
+
+**2. UNA ENTRADA DE MENÚ DE MÁS QUE DICE «Ubuntu».** La `amd64` trae
+`Ubuntu (safe graphics)` con **su propia línea de núcleo**. Es pila A de D22
+—sale en la primera pantalla— y además una entrada sin `locale=` arranca el
+instalador en inglés y otra sin `layerfs-path=` arranca **sin la marca**. Los
+títulos van ahora en una tabla y **un menuentry que diga «Ubuntu» y no esté en
+ella para la fabricación**: no se adivina.
+
+**3. LA ESP NO ESTÁ EN EL MISMO SITIO.** `arm64` la tiene en una entrada `0xef`
+del MBR; `amd64` lleva **MBR protector `0xee` + GPT** y la ESP es una partición
+GPT de tipo `C12A7328-F81F-11D2-BA4B-00A0C93EC93B`. El localizador mira ahora las
+dos tablas, con su control (sobre un fichero de ceros no encuentra ninguna).
+
+**4. `imagen/marca/disk-info` decía `arm64` a mano.** Ahora lleva `@ARQ@`.
+
+#### (j) EL `eltorito.img`: UN FICHERO QUE CAMBIA Y **NO ES NUESTRO** — con el control pagado
+
+El medio `amd64` lleva `/boot/grub/i386-pc/eltorito.img`, el arranque **BIOS
+heredado**, que en `arm64` no existe. **Y cambia**, en 7 bytes:
+
+```
+                pvd_lba   fichero_lba   suma        puntero de grub (2548)
+oficial            16         1329       0x290c4d00      5321
+nuestro            64          764       0x290c442c      3061
+```
+
+`fichero_lba` y el puntero cuadran con que **el fichero se ha movido** —764 es
+exactamente lo que `xorriso -report_el_torito` dice de nuestra imagen—. Pero
+`pvd_lba` pasando de 16 a 64 **no lo explica ningún movimiento**: el PVD sigue en
+el sector 16 en las dos (`CD001`, comprobado).
+
+**EL CONTROL, PAGADO Y TAJANTE:** un medio `amd64` fabricado con **los cuatro
+mecanismos de marca APAGADOS** (`--sin-capa --sin-volid --sin-info --sin-menu`)
+da un `eltorito.img` **IDÉNTICO BYTE A BYTE** al del producto. **De esos siete
+bytes no hay ni uno de Encina: los escribe `xorriso` al recolocar.**
+
+Así que no se declara como excepción muda: se declara **con la lista de lo que
+puede cambiar dentro** —`offsets 8..23` y `2548..2549`, y nada más— y con la
+comprobación de que el LBA escrito es el que El Torito dice. Además `md5sum.txt`
+**no lo lista** —ni en la oficial ni en la nuestra—, así que la comprobación de
+integridad del propio medio no se ve afectada.
+
+*Lo que queda sin contestar, y con su sitio:* si `pvd_lba=64` estorba a un
+arranque **BIOS heredado**. El UEFI no lo toca —la ESP es byte a byte la
+oficial—, y Jorge todavía no sabe en qué modo arranca su portátil.
+
+#### (k) EL HALLAZGO DE PROPINA: EL CONTROL NEGATIVO DE `traer-iso-oficial.sh` DEPENDÍA DEL DÍA
+
+El sabotaje era `sed 's/^0/f/; s/^1/f/'`, o sea que **sólo mordía si alguna línea
+empezaba por 0 o por 1**. Con las 32 de `cdimage` siempre había alguna; con las
+**seis** de `releases.ubuntu.com` **no hay ninguna**, y el guion se plantó:
+
+```
+[FALLO] CONTROL ROTO: el sabotaje no cambia el fichero
+```
+
+**Paró en vez de fingir, que es exactamente lo que tenía que hacer** — pero un
+control que se apaga solo según el fichero no es un control. Ahora cambia el
+primer carácter de la primera línea **siempre**, y está medido contra los dos.
+
+#### (l) LO QUE HAY: UN MEDIO `amd64` QUE ARRANCA CON LA MARCA, Y UN INSTALADOR QUE SE CAE
+
+```
+medios/encina-os-amd64.iso   8924f1484a74de93…   6 849 232 896 bytes
+fabricar-iso.sh: 49 correctas, 0 fallos
+banco-autosuficiencia.sh --arq amd64: 25 lineas Inst, las 25 «localhost»
+cosechar-repo.sh --arq amd64: 29 de 29, huellas cuadradas
+y el arm64 rehecho TRES veces: cd84d2ec… byte a byte las tres
+```
+
+En el banco emulado, y con **el control delante** (`design/capturas/amd64-e6/`):
+
+- **la ISO oficial `amd64`** llega a «Choose your language», **en inglés**, en
+  **286 s**;
+- **el medio nuestro** arranca, sale el **fondo de Encina**, el reloj dice
+  **«22 de ago»** —el `locale` se aplicó en las dos líneas de núcleo— y detrás
+  hay **una sesión viva de Encina OS entera**, con «ENCINA OS / Versión 24.04
+  LTS / Edición ‘La Mancha’» y su lanzador;
+- **y el instalador se cae**: «Se produjo un problema … `ubuntu-desktop-bootstrap`».
+
+**DE QUIÉN ES ESE FALLO NO SE SABE, Y EL CONTROL QUE HAY NO LO SEPARA.** Hay que
+decirlo así porque es donde se cometerían la octava y la novena atribución
+falsa: la ISO oficial se quedó en la primera pantalla **porque no lleva
+`autoinstall.yaml`**, así que **nunca recorrió el camino donde el nuestro se
+cae**. Un control que no ejercita el mismo camino no es el control de este fallo.
+
+**LOS CONTROLES QUE SÍ LO SEPARARÍAN, y en este orden:**
+
+1. **La ISO oficial `amd64` + NUESTRO seed**, en forma E2 (con `CIDATA`). Si
+   también se cae, el fallo **no es del medio**: es del seed o del `amd64`.
+2. **El medio `arm64` `cd84d2ec…` en un bundle E3 igual.** Ya se sabe que ese
+   instala (§4.63p), así que si aquí se cayera, el banco emulado estaría
+   metiendo la pata y no el medio.
+3. **El registro de `ubuntu-desktop-bootstrap` de dentro**, que es lo único que
+   dice *qué* se cayó. No se pudo leer esta noche: el clic del anfitrión no
+   llega al invitado emulado —el puntero del invitado no lo sigue— y el
+   `Shift+Tab` + espacio activó «Cerrar», que era el botón por defecto.
+
+**Y lo que este fallo NO puede ser**, porque está medido esta misma noche: que
+falte un `.deb` del repo. `banco-autosuficiencia.sh --arq amd64` dice `25 de 25`
+diciendo `localhost`, con su control.
+
+#### (m) LO QUE ESTA VUELTA **NO** HA DEMOSTRADO, sostenido igual que en (e)
+
+- **Que el medio `amd64` instale.** No instala todavía, y (l) dice qué falta por
+  medir para saber de quién es.
+- **Nada de Plymouth.** Sigue `[OJOS]` de Jorge y sigue necesitando hierro.
+- **Nada del núcleo.** La ausencia de §4.63(t) es la misma en `amd64`.
+- **Nada del arranque BIOS heredado**, por el `pvd_lba` de (j).
+
+#### (n) DOS COSAS DEL DÍA QUE NO SE PREDIJERON Y CAMBIAN CUENTAS DE OTROS SITIOS
+
+- **La ISO oficial `amd64` pesa 6,20 GiB contra 3,30 de la `arm64`** — casi el
+  doble. Nuestro medio `amd64` sale a **6,38 GiB**. Para
+  [alojamiento.md](alojamiento.md) eso **no es un grado más del mismo problema:
+  es que la entrega pasa de 3,46 GB a ~6,4 GB** y hay que publicar **dos**.
+- **El disco:** Jorge autorizó borrar nueve VMs y dos medios `arm64` viejos.
+  De 15,0 GiB se pasó a **92,5 GiB**. El medio bueno `cd84d2ec…` sigue con sus
+  bytes, comprobado después de borrar.

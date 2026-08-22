@@ -401,6 +401,55 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### LA TAREA EN CURSO, 2026-08-22 (noche): **HAY UN MEDIO `amd64` Y ARRANCA CON LA MARCA. EL INSTALADOR SE CAE, Y NO SE SABE DE QUIÉN ES**
+>
+> Todo con su control en `MEDICIONES.md` §4.64 —la predicción en (a)-(f), el
+> marcador en (g), los hallazgos en (h)-(k) y lo que hay en (l)—. Las tres
+> capturas, en `design/capturas/amd64-e6/`.
+>
+> ```
+> medios/encina-os-amd64.iso   8924f1484a74de93…   6,38 GiB
+> fabricar-iso.sh: 49 correctas, 0 fallos
+> y el arm64 rehecho TRES veces: cd84d2ec… BYTE A BYTE las tres
+> ```
+>
+> **LO QUE FUNCIONA, MEDIDO:** el medio arranca en un x86_64 emulado, sale el
+> **fondo de Encina**, el reloj dice **«22 de ago»** —el `locale` se aplicó en
+> las **dos** líneas de núcleo que la `amd64` tiene— y detrás del error hay una
+> **sesión viva de Encina OS entera**, con su lanzador. O sea que **la capa de
+> marca (D23) se monta en `amd64` igual que en `arm64`**.
+>
+> **LO QUE NO:** «Se produjo un problema … `ubuntu-desktop-bootstrap`».
+>
+> **Y DE QUIÉN ES ESE FALLO NO SE SABE. El control que hay NO lo separa**, y eso
+> se dice antes de que alguien lo dé por sabido: la ISO oficial `amd64` sí llegó
+> al instalador —en inglés, en 286 s— pero **se quedó en la primera pantalla
+> porque no lleva `autoinstall.yaml`**, así que nunca recorrió el camino donde
+> el nuestro se cae. **Lo siguiente son los tres controles de §4.64(l)**, en ese
+> orden: (1) la ISO oficial `amd64` + NUESTRO seed en forma E2; (2) el medio
+> `arm64` `cd84d2ec…` en un bundle igual, que ya se sabe que instala; (3) el
+> registro de dentro.
+>
+> **LO QUE SÍ SE DESCARTA, y está medido:** que falte un `.deb`.
+> `banco-autosuficiencia.sh --arq amd64` da `25 de 25` diciendo `localhost`.
+>
+> **DOS COSAS ESCRITAS QUE CADUCAN HOY:**
+>
+> - **NO hace falta un constructor `amd64`** (§4.64 P2), y `tareas/despues-de-publicar.md`
+>   decía que sí. Los cuatro `.deb` son `_all`, `dpkg-scanpackages` indexó los 29
+>   en la VM `arm64` y `apt-get -s` resolvió **394 paquetes** para `amd64` desde
+>   ella, con su control. El portátil hace falta para **arrancar**, no para
+>   fabricar.
+> - **La ISO oficial `amd64` pesa 6,20 GiB contra 3,30 de la `arm64`.** Para
+>   `alojamiento.md` eso no es un grado más del mismo problema: la entrega pasa
+>   de 3,46 GB a ~6,4 GB **y hay que publicar dos**.
+>
+> **Y UN VERDE FALSO CAZADO, que valía para las dos arquitecturas:** las tres
+> huellas de la cadena firmada salían `e3b0c442…` —la de la **cadena vacía**—
+> porque la `amd64` llama `EFI/boot` a lo que la `arm64` llama `efi/boot`. Un
+> medio con la cadena de arranque destrozada **habría pasado** esa comprobación
+> y la de después. Trampas 52-56 de `SCRIPTS.md`.
+
 > ### LA TAREA EN CURSO, 2026-08-22: **LA INSTALACIÓN OCURRE — Y SALE SIN NINGÚN PAQUETE DE ENCINA. Falta UN `.deb` en el medio**
 >
 > **La última casilla del incremento por fin se pagó**, y encontró exactamente lo

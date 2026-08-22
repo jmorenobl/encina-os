@@ -2956,3 +2956,54 @@ vale para eso: `sudo script /mnt/salida.txt`, que **graba lo tecleado** y se lee
 luego desde el Mac. *Y ojo al leer ese registro: va a 80 columnas, así que un
 `--visibles 27` puede aparecer partido como `--visib les 27` sin que haya ningún
 espacio de verdad.*
+
+## Cinco más, fabricando el primer medio `amd64` (2026-08-22, noche)
+
+Las cinco salieron en la misma sesión y **cuatro de ellas son la misma forma**:
+algo que en `arm64` era verdad y en `amd64` no, con el guion escrito como si lo
+fuera. `MEDICIONES.md` §4.64 lo tiene todo con su control.
+
+**52. LA ISO `amd64` NO ESTÁ EN EL SERVIDOR DE LA `arm64`, Y LA FIRMA SÍ ES LA
+MISMA.** `cdimage.ubuntu.com/ubuntu/releases/24.04/release` sirve `arm64`,
+`ppc64el`, `riscv64` y `s390x` — **ni una `amd64`**. Esa vive en
+`releases.ubuntu.com/24.04`. Lo que **no** cambia es la confianza: los dos firman
+con «Ubuntu CD Image Automatic Signing Key (2012)», medido con su control
+negativo. Por eso el servidor va **en la misma tabla que la huella**, dentro de
+`imagen/fabricar-iso.sh`, y `traer-iso-oficial.sh` lo lee de ahí con `--arq`.
+
+**53. UN CONTROL NEGATIVO QUE DEPENDE DEL CONTENIDO SE APAGA SOLO.** El sabotaje
+de `traer-iso-oficial.sh` era `sed 's/^0/f/; s/^1/f/'`: mordía con las 32 líneas
+de `cdimage` y **no mordía** con las 6 de `releases`, porque ninguna empieza por
+0 ni por 1. El guion **paró en vez de fingir** (`CONTROL ROTO: el sabotaje no
+cambia el fichero`), que es lo que tenía que hacer. Al escribir un sabotaje,
+**que cambie el fichero SIEMPRE**, y comprobarlo.
+
+**54. `efi/boot/` EN `arm64` ES `EFI/boot/` EN `amd64`, Y UNA HUELLA VACÍA NO ES
+UNA HUELLA.** Con la ruta escrita a mano, `tar -xOf` no sacaba nada y las tres
+huellas de la cadena firmada salían `e3b0c44298fc1c14…` — **la de la cadena
+vacía** — con `[OK]` las tres, y el paso de después comparaba vacío contra vacío
+y también pasaba. **La señal para reconocerla en cualquier guion es esa huella**:
+`e3b0c442…` (sha256) significa *no he leído nada*. El directorio se lee del medio
+y una huella vacía es `[FALLO]`.
+
+**55. LA `amd64` TRAE UNA SEGUNDA ENTRADA DE ARRANQUE, «Ubuntu (safe graphics)»,
+CON SU PROPIA LÍNEA DE NÚCLEO.** Todo lo que se pone «en la línea del núcleo»
+—`locale=`, `layerfs-path=`— hay que ponerlo en **las dos**, y contar cuántas
+hay en vez de exigir una. Una entrada sin `locale=` arranca el instalador en
+inglés; una sin `layerfs-path=` arranca **sin la marca de Encina**. Y el título
+dice «Ubuntu» en la primera pantalla, o sea pila A de D22.
+
+**56. LA ESP NO ESTÁ EN LA MISMA TABLA.** `arm64`: entrada `0xef` del MBR.
+`amd64`: **MBR protector `0xee` + GPT**, y la ESP es una partición GPT de tipo
+`C12A7328-F81F-11D2-BA4B-00A0C93EC93B`. Buscando `0xef` en el MBR de una `amd64`
+**no se encuentra nada**. Y de propina: `/boot/grub/i386-pc/eltorito.img` —que en
+`arm64` no existe— **cambia**, y **no es nuestro**: son 7 bytes que reescribe
+`xorriso` al recolocar el fichero. Está medido con su control (con los cuatro
+mecanismos de marca apagados sale idéntico byte a byte) y declarado con la lista
+de los offsets que pueden cambiar.
+
+**Y una advertencia del banco emulado, que no es trampa pero cuesta tiempo:** en
+un invitado **x86_64 emulado**, el clic del anfitrión **no llega** —el puntero
+del invitado no lo sigue— y `Shift+Tab` + espacio sobre un diálogo activa el
+botón **por defecto**, no el que se buscaba. Para leer el registro de un fallo
+del instalador hace falta otra vía.
