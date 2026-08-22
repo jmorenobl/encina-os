@@ -16023,3 +16023,167 @@ sabotaje) más la del **medio bueno** del punto 2: **~24 GiB de 26,3**. Cabe, pe
 sin holgura. **La VM `encina-control-sinred` (8,2 GiB) es la única que sobra** —su
 hallazgo ya está escrito y capturado en §4.62(p)—, y borrarla dejaría ~35 GiB.
 **Qué se borra es de Jorge: se pregunta, no se hace.**
+
+#### (h) EL CONTROL SE PAGÓ Y SALIÓ MAL — y por eso el sabotaje NO se gastó
+
+**La primera vuelta del control falló, y falló por el banco**, que es exactamente
+el caso que (d) tenía escrito. La instalación llegó a los 10,3 GB y se paró; la
+VM se quedó encendida veinte minutos con la pantalla negra y **contestando al
+ping, 3 de 3**, o sea que no era un cuelgue.
+
+**Lo que dijo el propio seed, y no una interpretación:**
+
+```
+CIDATA -> <no encontrado>
+REPO ELEGIDO -> <NINGUNO>
+blkid: solo /dev/vda1 (vfat) y /dev/vda2 (ext4)   <- NO HAY /dev/vdb
+ENCINA_ESTADO=INCOMPLETO
+ENCINA_FALTA=encina-meta encina-branding encina-firefox-native autofirma
+             firefox-l10n-es-es simple-scan firefox-de-transicion
+```
+
+**Y la causa, medida:** el `seed.img` **del bundle** tenía los primeros sectores
+**a cero** —la cabecera FAT, borrada— con fecha **un minuto después de arrancar
+la VM**. No llegó mal: **lo borró el invitado**. Se copió bien y su huella se
+había verificado al copiarlo.
+
+#### (i) UN INSTRUMENTO NUEVO, Y ES EL HALLAZGO QUE MÁS AHORRA: LEER EL DISCO CRUDO DESDE EL ANFITRIÓN
+
+Todo lo de (h) se midió **sin entrar en la máquina**: `disco.img` es una imagen
+cruda, y el registro que el seed deja en `/target` **está en esos bytes**.
+
+```
+grep -a -o "ENCINA_ESTADO=[A-Z]*" disco.img          -> INCOMPLETO
+grep -a -o "encina-seed llego al final .* estado=..." disco.img
+python3 …  # busca "=== 0. ENTORNO DEL INSTALADOR" y vuelca hasta "=== 15. FIN ==="
+                                                     -> EL REGISTRO ENTERO, 1906 lineas
+```
+
+**Con su control**, que es lo que lo hace una comprobación: una cadena imposible
+—`CADENA-QUE-NO-PUEDE-ESTAR-EN-NINGUN-DISCO`— **no** aparece.
+
+Esto **tumba un coste que este proyecto daba por fijo**: hasta hoy, mirar dentro
+de una máquina instalada costaba manos —el canal FAT, `Alt+F2`, las trampas 35 y
+36 de los caracteres que no llegan—. Para **leer**, ya no. Lo que sigue costando
+manos es **ejecutar** algo dentro (el verificador), no leer lo que quedó escrito.
+*Lo que este instrumento NO alcanza:* lo que vive en la sesión viva y nunca toca
+el disco —el `subiquity-server-debug.log`, el informe de `apport`—, porque el
+instalador copia sus registros al objetivo **al terminar bien**, y aquí no hubo
+final bueno: `curthooks crashed`, `CmdListController` y `late-commands failed`
+salen **0 veces** en los bytes del objetivo.
+
+#### (j) LA CAUSA DEL FALLO DEL BANCO: DOS DISCOS VIRTIO CON EL MISMO `serial`, QUE NO ES EL MISMO IDENTIFICADOR
+
+Leído en la orden real de QEMU, no supuesto:
+
+```
+virtio-blk-pci,drive=driveA1C0DE01-0000-4000-9000-000000000C01,serial=A1C0DE01000040009000
+virtio-blk-pci,drive=driveB2D15EED-…              -- el del seed, tras el arreglo
+```
+
+**UTM fabrica el `serial=` con los 20 primeros dígitos hex del `Identifier` sin
+guiones**, y los que reparte `fabricar-vm-medio.py` **sólo se diferencian en el
+último**. Con dos unidades `Disk` en el mismo bundle —que es justo lo que exige
+E2— los dos discos **anuncian el mismo número de serie**. Los de
+`encina-E2-2vias`, que instaló bien en agosto, eran UUID sin parentesco y **no
+chocaban**: ese es el control, y ya estaba en el banco.
+
+**Medido el efecto, con una sola variable cambiada; el mecanismo NO.** Con el
+prefijo del disco del seed cambiado entero, y nada más:
+
+| | serial del seed | etiqueta `CIDATA` a +4 min | `blkid` en el invitado | final |
+|---|---|---|---|---|
+| 1.ª vuelta | **igual** que el destino | **borrada a +64 s** | sin `/dev/vdb` | `INCOMPLETO` |
+| 2.ª vuelta | distinto | **intacta** | `CIDATA -> /dev/vdb` | `COMPLETO` |
+
+*Queda sin medir* **por qué** el invitado borra ese disco: que `curtin` resuelva
+el destino por `/dev/disk/by-id` y con dos seriales iguales lo aplique a los dos
+es **una hipótesis**, no una medición. Lo medido es que el número de serie
+separa las dos respuestas.
+
+#### (k) EL CONTROL, PAGADO Y VERDE
+
+Segunda vuelta, con el arreglo dentro y **nada más cambiado**:
+
+```
+09:19:07Z arranca   ->  09:33:03Z el seed llega al final  ->  09:33:18Z SE APAGA SOLA
+CIDATA -> /dev/vdb          REPO ELEGIDO -> /mnt/encina-seed/encina-repo
+ESTADO -> COMPLETO   FALTA -> nada
+testigo-in-target 2026-08-22T09:30:34Z uname=aarch64 id=0
+```
+
+**Quince segundos entre el fin del seed y el apagado.** Ésa es la señal binaria
+de (d), y ahora está calibrada. Y de paso cae una lectura precipitada de la
+primera vuelta: **en E2 el instalador SÍ dibuja su interfaz** —hay captura de la
+página «Ayuda y asistencia» en español, a mitad de instalación—, así que si la
+pantalla de error tuviera que salir, **aquí se vería**.
+
+#### (l) EL SABOTAJE: LA RED DE SEGURIDAD, EJERCITADA
+
+Mismo aparejo, mismo medio, mismo repo, mismo `yaml`. **Una línea distinta.**
+
+```
+09:39:57Z arranca
+09:51:33Z testigo-in-target        <- curtin TERMINO: curthooks paso
+09:53:57Z encina-seed llego al final  estado=COMPLETO
+          ENCINA_ESTADO=COMPLETO     ENCINA_FALTA=   (vacio)
+09:54:38Z el disco deja de crecer
+10:00:23Z LA VM SIGUE ENCENDIDA  (el control se habia apagado en 15 s)
+```
+
+**Y LA PANTALLA SALE: «Se produjo un problema»**, en español, con el diálogo de
+`apport` —*System program problem detected*— encima y el texto que nombra
+`sudo ubuntu-bug ubuntu-desktop-bootstrap`. Hay captura limpia.
+
+**LAS CUATRO PREMISAS DE (e), ANTES DE CANTARLA:**
+
+| | Premisa | Resultado |
+|---|---|---|
+| **E1** | el seed corrió | **SÍ** — `/target/etc/encina-estado` con `ENCINA_ESTADO=COMPLETO` |
+| **E2** | llegó al final | **SÍ** — testigo `estado=COMPLETO` a las 09:53:57Z, y el registro de 1906 líneas |
+| **E3** | `subiquity` lo nombra | **NO MEDIDO** — su registro vive en la sesión viva y no se copia al objetivo si no hay final bueno |
+| **E4** | falló la `late-command`, no `curthooks` | **SÍ, y medido**: las dos `late-commands` anteriores **dejaron sus testigos** en el disco, y la del seed es **la última línea del fichero** — detrás no hay nada |
+
+**LO QUE HACE QUE ESTO SEA UNA MEDICIÓN Y NO UN SUSTO: LA MÁQUINA ESTÁ COMPLETA.**
+`ENCINA_FALTA` vacío, los cuatro paquetes dentro, `curtin` terminado. No falta un
+`.deb`, no falla el repo, no se cayó `curtin`, no hace falta DNS. **La única
+diferencia con el control que se apagó diciendo que estaba listo es el código de
+salida del seed.** Los dos registros son el mismo trabajo: **14 líneas distintas
+de 1906**, quitadas fechas y números.
+
+#### (m) S5, QUE ERA UNA LECTURA DE CÓDIGO Y AHORA ES UNA FOTO
+
+Quitadas las unidades del núcleo y del medio —**borrando la entrada `Drive`, con
+UTM cerrado**, que es la trampa 46— la máquina **arranca de su disco**: GDM en
+español, usuario «Encina E2»… **y el logotipo es la encina**, donde en §4.61 era
+el de Ubuntu. O sea que `encina-branding` está dentro. Es la consecuencia 2 del
+comentario del propio seed (*«la máquina sigue ahí y arranca»*), que hasta hoy
+sólo estaba **leída en `install.py:628-639`**.
+
+#### (n) EL MARCADOR, SIN MAQUILLAR
+
+| | Predicción | Resultado |
+|---|---|---|
+| **S0** | mismo instrumento en las dos ISOs | **SÍ** — 23 de 23 capas idénticas, con su control (`.disk/info` y `grub.cfg` sí difieren) |
+| **S1** | el control termina y se apaga sola | **SÍ, a la segunda.** La primera falló **por el banco**, como (d) preveía |
+| **S2** | el seed saboteado llega al final igual | **SÍ** — `COMPLETO`, 14 líneas de diferencia en 1906 |
+| **S3** | sale la pantalla y la VM no se apaga | **SÍ**, las dos cosas |
+| **S4** | falla la `late-command`, no `curthooks` | **SÍ** — por los testigos y por ser la última línea |
+| **S5** | la máquina arranca y está completa | **SÍ**, con captura de GDM con la encina |
+
+**Aciertos 6 de 6, y uno de ellos —S1— sólo tras un fallo del banco que el propio
+control cazó.** Lo que **no** se lleva: **E3**.
+
+#### (o) LO QUE ESTO **NO** DEMUESTRA, dicho antes y sostenido después
+
+Está medido **en forma E2**. Que la misma pantalla salga en **forma E3** —la del
+producto, con `interactive-sections`— **sigue siendo una deducción**, apoyada en
+`server.py:487,513` (el manejador de último nivel pone `ApplicationState.ERROR`
+en las dos formas) y en S0 (el `subiquity` de las dos ISOs es el mismo byte a
+byte). **Se escribe como deducción y no como medida.**
+
+Lo que **sí** queda cerrado, y es lo que se buscaba: **el `; true` que se quitó en
+§4.62 era lo único que separaba una entrega rota de una entrega que avisa.** Sin
+él, una `late-command` que sale distinto de cero **para la instalación y lo
+enseña**. La máquina de §4.61 —sin ninguno de los cuatro paquetes— **no se habría
+entregado diciendo «listo para usarse»**.
