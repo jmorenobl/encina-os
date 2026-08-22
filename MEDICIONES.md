@@ -15877,3 +15877,149 @@ que sale distinto de cero enseña la pantalla?* Eso se contesta **con red puesta
 —para que `curtin` termine— y con **un seed que salga 1 a propósito**, que es un
 sabotaje deliberado, de los que este repositorio ya usa como control en todas
 partes. Aísla el mecanismo y no depende del azar de nada.
+
+---
+
+### 4.63 LA RED DE SEGURIDAD, POR SABOTAJE: la predicción, escrita ANTES de fabricar nada (2026-08-22, madrugada)
+
+Van **siete atribuciones falsas** evitadas o cometidas en este proyecto, y la
+séptima **se evitó anoche por un pelo y por escrito**: la pantalla «Se produjo un
+problema» salió, tenía la cara exacta de la predicción, y **no era nuestra** —era
+`curtin` cayéndose en `curthooks`, antes de la `late-command`—. Lo único que lo
+impidió fue haber escrito **antes** que `ENCINA_ESTADO` va **delante** de la
+pantalla. Esta predicción se escribe por eso, y se marca después, acierte o falle.
+
+**LA PREGUNTA DE ESTA VUELTA NO ES SOBRE `libnss3` NI SOBRE EL REPO. ES SOBRE EL
+INSTRUMENTO:** *¿una `late-command` que sale distinto de cero enseña la pantalla?*
+Hasta hoy eso es **una lectura de código** —`cmdlist.py:50-61`, `install.py:628-639`,
+`server.py:487,513`, `installprogress.py:189`— y una lectura de código ya produjo
+un fallo grave en §4.61: era **correcta** y la conclusión **falsa**, porque quien
+invocaba al seed acababa en `; true`.
+
+#### (a) EL PUNTO DE PARTIDA, cotejado y no supuesto
+
+```
+arbol : limpio, commit e32c150 (2026-08-22)
+disco : 27 604 176 KiB libres = 26,325 GiB       <- LA RESTRICCION DEL DIA
+repo  : medios/repo-trabajo, 29 .deb; imagen/repo-manifiesto.tsv lleva libnss3
+        2:3.98-1ubuntu0.2 (linea 19) y libnss3-tools (linea 20)
+seed  : imagen/encina-seed.sh termina en
+            [ "$ESTADO" = COMPLETO ] || exit 1
+            exit 0
+        y los dos yaml YA NO llevan «; true» (§4.62)
+rig E2: ~/Library/.../e2-medios/initrd  948d5f04… == casper/initrd de
+        medios/ubuntu-24.04.4-desktop-arm64.iso, BYTE A BYTE. El Image es el
+        nucleo descomprimido (casper/vmlinuz va en gzip), y eso se comprueba
+        antes de arrancar, no se supone.
+```
+
+**Lo que NO se vuelve a preguntar**, porque está medido: los dos arreglos están
+dentro y `fabricar-iso.sh` compara la **línea entera** con su control (§4.62);
+`banco-autosuficiencia.sh` da `25 de 25` diciendo `localhost` con el repo de 29;
+el fallo de §4.61 es **intermitente** y la frase «en el `chroot` no hay DNS»
+queda **derogada**; y **sin tarjeta de red `curtin` no completa** la instalación,
+así que esa vía para forzar el fallo **está descartada por medida**.
+
+#### (b) EL SABOTAJE, Y POR QUÉ ES EXACTAMENTE UNA LÍNEA
+
+Sobre una **copia** de `imagen/encina-seed.sh` —nunca sobre el original— se
+cambia la última línea, y **sólo** la última línea:
+
+```
+   [ "$ESTADO" = COMPLETO ] || exit 1        exit 1     # SABOTAJE: incondicional
+   exit 0                              ->
+```
+
+**La consecuencia buscada es la que convierte esto en una medición y no en un
+susto:** el seed hace **todo su trabajo de verdad** —los quince pasos, los
+cuatro `.deb`, el repo de 29—, la máquina sale **COMPLETA**
+(`ENCINA_ESTADO=COMPLETO`, `ENCINA_FALTA` vacío) **y aun así devuelve 1**. Así
+que si la pantalla sale, **no la puede explicar ningún paquete que falte, ni un
+repo roto, ni `curtin`**: la única diferencia con el control es el código de
+salida. Es el aislamiento del mecanismo que §4.61 y §4.62 no pudieron tener.
+
+**Y el sabotaje no puede salir del laboratorio.** Vive en el `scratchpad` de la
+sesión; el volumen y la VM llevan **`sabotaje` en el nombre**; y la protección
+del repositorio **se usa a favor, no se rodea**: `fabricar-iso.sh` y
+`fabricar-seed.sh` comparan la `late-command` con **su** `encina-seed.sh`, así
+que el laboratorio corre **una copia de `fabricar-seed.sh`** cuya autoridad es el
+seed saboteado —la comprobación sigue viva dentro del laboratorio— y **ningún
+medio fabricado desde `imagen/` puede llevar el sabotaje**, porque el paso 3 del
+guion de verdad lo rechazaría.
+
+#### (c) LA FORMA: E2, y por qué aquí no estorba
+
+Va con `autoinstall-unattended.yaml`, o sea **sin las cinco pantallas**, y por
+tanto **sin manos**: ISO oficial + volumen `CIDATA` + `-kernel`/`-initrd`
+`-append autoinstall -no-reboot`, que es el laboratorio de `SCRIPTS.md` §«E2».
+**La objeción a E2 era que cambiaba la forma DE LA CASILLA**, y esto no es la
+casilla: es una medición del instrumento. El teclado no recorre el instalador
+(K2), así que E3 aquí costaría **dos tandas de manos de Jorge** para medir algo
+que no las necesita.
+
+#### (d) QUÉ SEPARA UN FALLO DEL PRODUCTO DE UNO DEL BANCO — y va DELANTE
+
+**El control es esa separación, y por eso se corre PRIMERO y se paga entero:**
+el mismo montaje, el mismo medio, el mismo repo, el mismo yaml, con el seed
+**sin sabotear**.
+
+| Lo que pase | Lo que significa |
+|---|---|
+| El control **termina y la VM se apaga sola** | El banco está sano. Entonces la pantalla del sabotaje **sólo** puede venir del `exit 1` |
+| El control **enseña la pantalla**, o no termina | El fallo es **DEL BANCO** —el rig E2, el `CIDATA`, la ISO oficial, el anfitrión— y la vuelta del sabotaje **no se gasta**: no diría nada del instrumento |
+| Pantalla **negra**, sin sesión gráfica | **Ni banco ni producto: es el 33 % de §4.59.** Se cuenta y se repite. Cinco negras seguidas (p = 0,004) y se para |
+| `utmctl start` da `-1712` | Trampa 45 **enmendada**: `ls -lt ~/Library/Logs/DiagnosticReports/UTM-*.ips` **antes** de acusar a nadie |
+
+Y hay una segunda señal, **binaria y legible por máquina**, que no depende de
+mirar ninguna captura: con `-no-reboot`, **una instalación que termina apaga la
+VM**; una que acaba en la pantalla de error **se queda encendida**. Eso separa
+las dos respuestas sin interpretar píxeles.
+
+#### (e) LA PREMISA QUE HAY QUE COMPROBAR ANTES DE MIRAR LA PANTALLA
+
+**Es la lección de anoche, y es lo único que impidió la séptima atribución
+falsa.** Ninguna de estas cuatro se da por buena; las cuatro se miden con
+`/target` montado y comprobado (`findmnt`), para que «no existe» no se confunda
+con «no está montado»:
+
+| | La premisa | Cómo se mide |
+|---|---|---|
+| **E1** | El seed **corrió** | `/target/etc/encina-estado` existe |
+| **E2** | Y llegó al final | `/target/etc/encina-seed.log` y `/target/etc/encina-e2-testigo-seed` |
+| **E3** | Y `subiquity` **lo nombra** | `grep encina-seed` sobre `subiquity-server-debug.log` da líneas |
+| **E4** | Y lo que falló es **la `late-command`, no `curthooks`** | la traza dice `cmdlist`/`Late`/`install failed`, **no** `curthooks crashed with CurtinInstallError` |
+
+**Sin las cuatro, la pantalla NO se canta**, salga como salga y se parezca a lo
+que se parezca.
+
+#### (f) LA PREDICCIÓN, numerada para poder fallar
+
+| # | Qué predigo | Cómo se falsa |
+|---|---|---|
+| **S0** | El instrumento de la ISO oficial **es el mismo** que el del medio de Encina: las capas `squashfs` de las dos ISOs coinciden **huella a huella** (D3: no se remasteriza la base) | alguna difiere, y entonces medir en la oficial no dice nada del producto |
+| **S1** | **EL CONTROL termina y la VM se apaga sola**, con `ENCINA_ESTADO=COMPLETO`. Confianza alta pero **no segura**: el rig E2 no se usa desde el 2026-08-12 y el repo ha cambiado (29 `.deb`) | no termina: el banco está roto y hay que arreglarlo **antes** de gastar la otra vuelta |
+| **S2** | El seed saboteado **llega al final igual**: estado `COMPLETO`, registro y testigo escritos. Cambia el código de salida y **nada más** | el sabotaje altera algo más que el código de salida |
+| **S3** | **Y ENTONCES SALE «Se produjo un problema»**, en la misma forma que la captura de §4.62(p), y **la VM NO se apaga sola** | termina diciendo «listo para usarse»: la lectura de `subiquity` es **falsa** y hay otra cosa tragándose el `exit 1`. Sería el hallazgo grande de la noche |
+| **S4** | El discriminador de E4 sale **de la late-command**: `subiquity` nombra `encina-seed` y la traza **no** es de `curthooks` | es de `curthooks` otra vez, y entonces **no cuenta**, como anoche |
+| **S5** | La máquina del sabotaje **arranca de su disco y está COMPLETA** —la consecuencia 2 del comentario del seed, hoy sólo leída en código— | no arranca: el fallo llega antes de lo que dice `install.py:628-639` |
+
+#### (g) LO QUE ESTA VUELTA **NO** VA A DEMOSTRAR, escrito antes para no cantarlo después
+
+Mide el instrumento **en forma E2**. Que la misma pantalla salga en **forma E3**
+—la del producto, con `interactive-sections`— seguirá siendo una **deducción**,
+apoyada en `server.py:487,513`, que pone `ApplicationState.ERROR` en las dos
+formas. Se escribirá como deducción y **no** como medida, con S0 como lo único
+que la sostiene.
+
+Y no demuestra tampoco que el medio bueno instale bien: **eso es el punto 2 de la
+noche**, que **no está bloqueado** por éste —lo que la red de seguridad protege
+son las **entregas futuras**, no la validez de ésta, y para «¿se instala sin
+red?» ya está `banco-autosuficiencia.sh`—.
+
+#### (h) EL RIESGO DEL DISCO, con su aritmética escrita antes
+
+Quedan **26,3 GiB**. Cada instalación E2 come ~8 GiB, y son **dos** (control y
+sabotaje) más la del **medio bueno** del punto 2: **~24 GiB de 26,3**. Cabe, pero
+sin holgura. **La VM `encina-control-sinred` (8,2 GiB) es la única que sobra** —su
+hallazgo ya está escrito y capturado en §4.62(p)—, y borrarla dejaría ~35 GiB.
+**Qué se borra es de Jorge: se pregunta, no se hace.**
