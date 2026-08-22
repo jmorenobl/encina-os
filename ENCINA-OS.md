@@ -513,17 +513,44 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >   los ~360 paquetes que el archivo ha movido. El bloque 11bis del seed existe
 >   para eso. Por eso la guarda no se lo exige.
 >
-> **LO QUE FALTA, Y ES LO QUE NO PUEDO HACER YO:**
+> **Y LAS DOS INSTALACIONES DE LA NOCHE, QUE TUMBAN MÁS DE LO QUE CIERRAN**
+> (§4.62 (n) y (p)). Ninguna de las dos pagó la casilla, y las dos midieron algo:
 >
-> 1. **LA PANTALLA. `encina-control-sin-libnss3` está arrancada y esperando** en
->    «Disposición del teclado», en español, a la primera. **Las cinco pantallas
->    las contesta Jorge** (K2: el instalador no se recorre con teclado).
->    **Tiene que salir «Se produjo un problema».** Es la única vez que el fallo
->    está garantizado y se sabe qué debería salir. Si dice «listo para usarse»,
->    **la lectura de `subiquity` era falsa y ése es el hallazgo del día.**
-> 2. **Instalar el medio bueno** y pasar el verificador buscando **0 fallos**.
+> - **Con red: la máquina salió COMPLETA con el medio de 28.** `ENCINA_ESTADO=COMPLETO`,
+>   `ENCINA_FALTA` vacío. **Porque esa vez SÍ había DNS en el `chroot`**
+>   (`rc=0`, con su control). O sea que **el fallo de §4.61 es INTERMITENTE**: el
+>   mismo medio entrega una máquina entera una noche y una sin ningún paquete de
+>   Encina la siguiente, **diciendo «listo para usarse» las dos veces**. Se cae
+>   con ello una frase que este proyecto daba por establecida —*«en el `chroot` no
+>   hay DNS, y eso es lo normal»*—, que está en §4.61, aquí y en el propio seed.
+> - **Sin red: se cayó `curtin` en `curthooks`, ANTES de la `late-command`.** Salió
+>   «Se produjo un problema» —y hay captura, la primera de esa pantalla en forma
+>   E3— pero **no es nuestro `exit 1`**: el seed no dejó ni estado ni registro y
+>   `subiquity` no lo nombra. **No cuenta como control.** Lo impidió el haber
+>   escrito que `ENCINA_ESTADO` va delante de la pantalla.
+>
+> **ASÍ QUE LA RED DE SEGURIDAD SIGUE SIN EJERCITARSE**, y ahora se sabe por qué es
+> difícil: el fallo de §4.61 necesita **red en la sesión viva y sin DNS en el
+> `chroot`** a la vez, que es un estado que ocurrió solo y que no se sabe forzar.
+>
+> **LO QUE FALTA, EN ESTE ORDEN:**
+>
+> 1. **LA RED DE SEGURIDAD, POR SABOTAJE Y NO POR `libnss3`.** La pregunta no es
+>    sobre el repo: es sobre el instrumento —*¿una `late-command` que sale distinto
+>    de cero enseña la pantalla?*—. Se contesta **con red puesta** (para que
+>    `curtin` termine) y con **un seed que salga 1 a propósito**. Y **se puede
+>    hacer con el seed desatendido**, o sea **sin manos**: es una medición del
+>    instrumento, no la casilla, así que la forma E2 no estorba aquí.
+> 2. **Instalar el medio bueno** (`cd84d2ec…`, ya fabricado) y pasar el verificador
+>    buscando **0 fallos**. Esto **no** está bloqueado por lo anterior: lo que la
+>    red de seguridad protege son las entregas futuras, no la validez de ésta, y
+>    para «¿se instala sin red?» ya está `banco-autosuficiencia.sh`.
 > 3. **Y ENTONCES** —y no antes— los `[OJOS]` de Jorge y la foto del «después».
 >    Siguen **bloqueados**: sin `encina-branding` sería una captura que miente.
+>
+> **Disco:** 26,3 GiB. La VM `encina-control-sinred` (8,2 GiB) lleva la
+> instalación reventada de `curthooks` y **ya no hace falta**: es la única que
+> sobra, y borrarla es de Jorge.
 >
 > **Y una consecuencia que ya está escrita donde estaba citada:** `59bc3a3c…`
 > **deja de ser la huella que produce este repositorio**, porque los dos arreglos
