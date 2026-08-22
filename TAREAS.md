@@ -21,6 +21,7 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 | [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
 | [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |
 | [despues-de-publicar.md](tareas/despues-de-publicar.md) | E5, el núcleo en el medio, amd64 | 3 |
+| [refactorizacion.md](tareas/refactorizacion.md) | Ordenar lo que ya funciona: un solo vocabulario, documentos que se puedan leer | **10, y ninguna cambia el producto** — salen de leer el repositorio entero el 2026-08-22 sobre `99e0e39`. Va **después de publicar**, salvo cinco que no tocan el medio |
 | [sueltas.md](tareas/sueltas.md) | De un rato cada una, sin bloque | 5 |
 
 ## El orden, y por qué
@@ -81,6 +82,18 @@ la premisa era falsa:** `debian/copyright` las declaraba desde el 2026-08-08; lo
 que estaba desactualizado era `design/fondos/manifiesto.tsv`. **Ya no queda nada
 de lo visual bloqueando publicar** — lo que bloquea es la marca del medio y los
 3,46 GB.
+
+**Y la refactorización va DESPUÉS de publicar, por el mismo argumento de no
+pagar dos veces.** La definición de terminado de `construir-todo.sh` es que dos
+pasadas den la misma huella, así que tocar `imagen/fabricar-iso.sh` —la última
+tarea del bloque— invalida la huella que la release lleva dentro. Publicar
+primero, refactorizar después, y la siguiente vuelta de medio se paga una sola
+vez. **La excepción está escrita en el propio fichero:** las tareas 4, 5, 7 y 8
+—partir `MEDICIONES.md`, la tabla de vigencia, vaciar §7 y los bloques de
+`diario.sh`— no tocan ningún guion que fabrique el medio, y la 6 es aditiva, así
+que ésas no dependen de publicar. Y la 1 —`bancos/enlaces.sh`— va antes que todas
+porque es el instrumento con el que se mide el resto: **hay 1.857 referencias
+`§N.NN` en el repositorio** y dos tareas del bloque mueven ficheros.
 
 ## Cerrado
 
