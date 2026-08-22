@@ -596,9 +596,30 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >   el estado y los testigos, sin entrar en la máquina y sin canal FAT. Trampa 50.
 >   *Para **ejecutar** dentro —el verificador— el canal sigue haciendo falta.*
 >
-> **LO QUE QUEDA, y no ha cambiado de orden:** el medio bueno `cd84d2ec…`
-> instalándose con las manos de Jorge buscando **0 fallos**, y **entonces** los
-> `[OJOS]` y la foto del «después».
+> **Y ESO YA ESTÁ PAGADO, EL MISMO DÍA:** el medio bueno `cd84d2ec…` instalado en
+> forma E3 con las cinco pantallas contestadas a mano, el canal FAT conectado
+> **después** (trampa 20), y el verificador dentro como root:
+>
+> ```
+> [OK] 63   [FALLO] 0   [AVISO] 0   [OMIT] 0        <- §4.61 daba 41 y 20
+> encina-meta 0.2.1  encina-branding 0.1.15  encina-firefox-native 0.2.1  autofirma 1.9.1+encina4
+> ENCINA_ESTADO=COMPLETO   ENCINA_FALTA= (vacio)   REPO ELEGIDO -> /cdrom/encina-repo
+> ```
+>
+> El síntoma de §4.61 —**el logotipo de GDM era el de Ubuntu**— ya no está: la
+> máquina arranca de su disco con la encina.
+>
+> **El único `[FALLO]` de la primera pasada era del INSTRUMENTO**, y llevaba ocho
+> días sin ejecutarse nunca: el bloque 8.5 sólo aceptaba iconos de
+> `/usr/share/icons/Yaru/`, y **nuestro propio `index.theme` pide
+> `Inherits=Yaru-sage,Yaru,hicolor`**, con Yaru-sage el primero. Los dos se
+> escribieron **el mismo día** —`1d24ac2` y `c675c5d`, 2026-08-14— contradiciéndose,
+> y en `MEDICIONES.md` no aparece ni un `[OK]` ni un `[FALLO]` de esa línea.
+> Corregido **con control nuevo**, porque ensanchar una lista blanca es fácil de
+> ensanchar de más (§4.63q).
+>
+> **LO QUE QUEDA, y ya no está bloqueado:** los `[OJOS]` de Jorge sobre las seis
+> pantallas y la foto del «después» para el README.
 >
 > **Disco:** 26,3 GiB. La VM `encina-control-sinred` (8,2 GiB) lleva la
 > instalación reventada de `curthooks` y **ya no hace falta**: es la única que
