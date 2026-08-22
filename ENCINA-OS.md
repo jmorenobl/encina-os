@@ -465,8 +465,21 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 >   sistema entero lo dejó en **2 727 bytes** —donde se creía que eso era «VM
 >   colgada»—. Trampa 47.
 >
+> **Y HAY UNA TERCERA CORRECCIÓN, QUE ES LA MÁS GRAVE DEL DÍA: LA RED DE
+> SEGURIDAD NO EXISTE.** El seed acaba en `[ "$ESTADO" = COMPLETO ] || exit 1`,
+> con veinte líneas leídas en el código de `subiquity` que explican por qué eso
+> tiene que enseñar «An error occurred during installation»… y la línea que lo
+> invoca en `imagen/autoinstall.yaml` acaba en **`; true`**, que **se traga el
+> código de salida**. Por eso una máquina **sin ningún paquete de Encina** se
+> entregó diciendo *«listo para usarse»*. Con la red puesta, el hueco del repo se
+> habría cazado en el minuto uno.
+>
 > **LO SIGUIENTE, en este orden:**
 >
+> 0. **Quitar el `; true`.** Es una línea, y sin ella cualquier arreglo del repo
+>    se entrega a ciegas. **Su control hay que pagarlo:** un medio con el `; true`
+>    fuera **y el repo todavía sin `libnss3`** tiene que enseñar la pantalla de
+>    error. Sin ese medio, «arreglado» vuelve a ser una lectura de código.
 > 1. **`libnss3` al manifiesto** y rehacer la cosecha. Y **buscar más huecos del
 >    mismo patrón**: un `-tools` sin su biblioteca no tiene por qué ser el único.
 > 2. **Que la cosecha lo compruebe sola:** `apt-get -s install encina-meta` contra
