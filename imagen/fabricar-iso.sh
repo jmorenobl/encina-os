@@ -195,6 +195,15 @@ amd64 3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e https://r
 # EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
 # pila A de D22: presenta el producto ante el usuario, en la primera pantalla.
 MENU_ENCINA="Probar o instalar Encina OS"
+# LA ISO amd64 TRAE UNA ENTRADA DE MENU QUE LA arm64 NO TIENE: «Ubuntu (safe
+# graphics)», con SU PROPIA linea de nucleo. Medido el 2026-08-22 (§4.64), y no
+# es un detalle cosmetico: sale en la PRIMERA pantalla del medio, o sea pila A de
+# D22. Asi que los titulos van en una tabla -- oficial <TAB> nuestro -- y la
+# regla es «no se adivina»: si el grub.cfg oficial trae un menuentry que dice
+# «Ubuntu» y NO esta en esta tabla, la fabricacion PARA.
+TAB_T=$(printf '\t')
+MENUS_ENCINA="Try or Install Ubuntu${TAB_T}${MENU_ENCINA}
+Ubuntu (safe graphics)${TAB_T}Encina OS (modo seguro)"
 # el idioma del producto, que NO se pregunta (AGENTS.md §6ter.0). Va en el seed
 # como 'locale:' para la maquina que sale, y aqui en el grub.cfg para que el
 # INSTALADOR se vea en el mismo idioma. Los dos sitios dicen lo mismo a proposito.
@@ -391,11 +400,27 @@ else
 fi
 
 # --- 4. las huellas de la cadena firmada, ANTES ------------------------------
+# EL DIRECTORIO NO SE ESCRIBE: SE LEE DEL MEDIO, y esto costo un verde falso el
+# 2026-08-22 (§4.64). La ISO arm64 lo llama «efi/boot/» EN MINUSCULAS y la amd64
+# «EFI/boot/» EN MAYUSCULAS. Con la ruta escrita a mano, 'tar -xOf' no sacaba
+# NADA y las tres huellas salian e3b0c44298fc1c14… -- que es la huella de la
+# CADENA VACIA -- y el guion decia [OK] tres veces. Peor: el paso 12 comparaba
+# vacio contra vacio y tambien daba [OK], asi que un medio con la cadena de
+# arranque destrozada habria pasado las dos comprobaciones.
 echo "== 4. los tres binarios firmados, antes"
 declare -a EFI ANTES
 EFI=("boot${SUF_EFI}.efi" "grub${SUF_EFI}.efi" "mm${SUF_EFI}.efi")
+DIR_EFI=$(tar -tf "$ISO" 2>/dev/null | grep -iE "^efi/boot/${EFI[0]}$" | head -1)
+DIR_EFI="${DIR_EFI%/*}"
+[ -n "$DIR_EFI" ] || fallo "no encuentro ${EFI[0]} en la ISO: no es un medio $ARQ_ISO arrancable por UEFI"
+ok "la cadena firmada vive en «$DIR_EFI/» (leido del medio, no escrito aqui)"
+# LA HUELLA DE LA CADENA VACIA, para poder RECHAZARLA. Es el control de que lo
+# que viene son bytes de verdad y no un fichero que no se pudo leer.
+VACIO=$(printf '' | shasum -a 256 | cut -d' ' -f1)
 for i in 0 1 2; do
-    ANTES[$i]=$(tar -xOf "$ISO" "efi/boot/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
+    ANTES[$i]=$(tar -xOf "$ISO" "$DIR_EFI/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
+    [ "${ANTES[$i]}" != "$VACIO" ] \
+        || fallo "$DIR_EFI/${EFI[$i]} sale VACIO de la ISO: no lo he podido leer, y una huella de nada no es una huella"
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
 done
 
@@ -409,30 +434,51 @@ trap 'rm -rf "$TMP"' EXIT
 # --- 5a. grub.cfg: el idioma del instalador y el titulo del menu ------------
 tar -xOf "$ISO" boot/grub/grub.cfg > "$TMP/grub.cfg.oficial" \
     || fallo "no pude leer boot/grub/grub.cfg de la ISO"
-# §4.21d: en todo el medio hay UN solo grub.cfg y una sola linea de nucleo. Si
-# esto deja de ser verdad, la ISO no es la medida y hay que parar, no adivinar.
-n=$(grep -c '/casper/vmlinuz' "$TMP/grub.cfg.oficial")
-[ "$n" -eq 1 ] || fallo "esperaba UNA linea con /casper/vmlinuz y hay $n"
+# §4.21d: en todo el medio hay UN solo grub.cfg. LINEAS DE NUCLEO puede haber
+# mas de una -- la amd64 trae dos, §4.64 --, asi que se CUENTAN y el locale va en
+# TODAS: una entrada de menu sin locale arranca el instalador en ingles, que es
+# justo lo que este bloque existe para evitar.
+N_VMLINUZ=$(grep -c '/casper/vmlinuz' "$TMP/grub.cfg.oficial")
+[ "$N_VMLINUZ" -ge 1 ] || fallo "no hay ni una linea con /casper/vmlinuz en el grub.cfg oficial"
 grep -q 'locale=' "$TMP/grub.cfg.oficial" \
     && fallo "el grub.cfg oficial ya trae un locale=: parar y mirar por que"
-# el titulo del menu tambien es uno solo, y dice literalmente esto. Si algun dia
-# no lo dice, no se adivina: se para.
-n=$(grep -c '^menuentry "Try or Install Ubuntu" {$' "$TMP/grub.cfg.oficial")
-[ "$n" -eq 1 ] || fallo "esperaba UNA linea 'menuentry \"Try or Install Ubuntu\" {' y hay $n"
+# LOS TITULOS QUE DICEN «Ubuntu» TIENEN QUE ESTAR TODOS EN LA TABLA. Lo que se
+# comprueba no es que sean los de siempre, sino que NINGUNO se quede sin
+# renombrar por no haberlo previsto -- que es como se cuela una marca ajena en la
+# primera pantalla.
+TITULOS=$(sed -n 's/^menuentry "\(.*\)" {$/\1/p' "$TMP/grub.cfg.oficial" | grep Ubuntu || true)
+[ -n "$TITULOS" ] || fallo "el grub.cfg oficial no tiene ni un menuentry que diga Ubuntu: parar y mirar que ISO es esta"
+N_MENUS=0
+while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    printf '%s\n' "$MENUS_ENCINA" | cut -f1 | grep -qxF "$t" \
+        || fallo "el grub.cfg oficial trae el menuentry «$t» y no esta en la tabla MENUS_ENCINA: no se adivina como se llama en Encina OS"
+    N_MENUS=$((N_MENUS+1))
+done <<EOF
+$TITULOS
+EOF
+ok "grub.cfg oficial: $N_VMLINUZ lineas de nucleo y $N_MENUS menuentry que dicen Ubuntu, los $N_MENUS en la tabla"
 # la palabra va ANTES del '---', que es la ranura de casper. El locale va SIEMPRE
 # (no es marca y ya viajaba en una ISO que arranca); el titulo del menu si es
 # marca, y por eso tiene bandera.
 sed -e "s|/casper/vmlinuz|/casper/vmlinuz locale=$LOCALE|" \
     "$TMP/grub.cfg.oficial" > "$TMP/grub.cfg"
 if [ "$CON_MENU" = 1 ]; then
-    sed -e "s|^menuentry \"Try or Install Ubuntu\" {\$|menuentry \"$MENU_ENCINA\" {|" \
-        "$TMP/grub.cfg" > "$TMP/grub.cfg.paso" || fallo "sed del menuentry"
-    mv "$TMP/grub.cfg.paso" "$TMP/grub.cfg"
+    while IFS="$TAB_T" read -r oficial nuestro; do
+        [ -n "$oficial" ] || continue
+        printf '%s\n' "$TITULOS" | grep -qxF "$oficial" || continue
+        sed -e "s|^menuentry \"$oficial\" {\$|menuentry \"$nuestro\" {|" \
+            "$TMP/grub.cfg" > "$TMP/grub.cfg.paso" || fallo "sed del menuentry «$oficial»"
+        mv "$TMP/grub.cfg.paso" "$TMP/grub.cfg"
+    done <<EOF
+$MENUS_ENCINA
+EOF
 fi
-grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE .*---" "$TMP/grub.cfg" \
-    || fallo "la palabra no quedo en la linea del nucleo antes del ---"
+n=$(grep -c "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE .*---" "$TMP/grub.cfg")
+[ "$n" -eq "$N_VMLINUZ" ] \
+    || fallo "la palabra quedo en $n lineas de nucleo y hay $N_VMLINUZ"
 if [ "$CON_MENU" = 1 ]; then
-    D_GRUB=4
+    D_GRUB=$(( 2 * N_VMLINUZ + 2 * N_MENUS ))
     grep -q "^menuentry \"$MENU_ENCINA\" {\$" "$TMP/grub.cfg" \
         || fallo "el titulo del menu no quedo puesto"
     grep -q "Ubuntu" "$TMP/grub.cfg" \
@@ -441,7 +487,7 @@ else
     # --sin-menu: la comprobacion NO se omite, SE INVIERTE. Que el titulo oficial
     # siga ahi es lo unico que separa «lo he quitado» de «el sed no ha aplicado»,
     # y en un bisecado esa diferencia es la respuesta entera.
-    D_GRUB=2
+    D_GRUB=$(( 2 * N_VMLINUZ ))
     grep -q "^menuentry \"Try or Install Ubuntu\" {\$" "$TMP/grub.cfg" \
         || fallo "--sin-menu, pero el menuentry OFICIAL ya no esta en el grub.cfg"
     grep -q "$MENU_ENCINA" "$TMP/grub.cfg" \
@@ -450,7 +496,7 @@ fi
 d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
 [ "$d" -eq "$D_GRUB" ] || fallo "grub.cfg cambia en $d lineas y esperaba $D_GRUB"
 if [ "$CON_MENU" = 1 ]; then
-    ok "grub.cfg: locale=$LOCALE y menuentry «${MENU_ENCINA}», y no cambia nada mas"
+    ok "grub.cfg: locale=$LOCALE en $N_VMLINUZ lineas de nucleo y $N_MENUS menuentry renombrados, y no cambia nada mas"
 else
     ok "grub.cfg: locale=$LOCALE y NADA MAS (--sin-menu: el menuentry sigue siendo «Try or Install Ubuntu»)"
 fi
@@ -684,11 +730,17 @@ if [ "$CON_CAPA" = 1 ]; then
     mv "$TMP/grub.cfg.paso" "$TMP/grub.cfg"
     # trampa 13: la mutacion se verifica DESPUES de pedirla, y en su sitio -- antes
     # del '---', que es la ranura que casper lee.
-    grep -q "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE layerfs-path=$CAPA_N .*---" "$TMP/grub.cfg" \
-        || fallo "layerfs-path=$CAPA_N no quedo en la linea del nucleo antes del ---"
+    # UNO POR LINEA DE NUCLEO, no uno a secas: la ISO amd64 trae DOS entradas de
+    # arranque (§4.64) y la capa tiene que montarse en las dos. Una entrada sin
+    # layerfs-path= arranca un medio SIN la marca de Encina, que es justo el
+    # fallo del 2026-08-15 al 20 pero solo en la mitad de las veces -- o sea el
+    # peor de los dos.
+    n=$(grep -c "linux[[:space:]]*/casper/vmlinuz locale=$LOCALE layerfs-path=$CAPA_N .*---" "$TMP/grub.cfg")
+    [ "$n" -eq "$N_VMLINUZ" ] \
+        || fallo "layerfs-path=$CAPA_N quedo en $n lineas de nucleo antes del --- y hay $N_VMLINUZ"
     n=$(grep -c 'layerfs-path=' "$TMP/grub.cfg")
-    [ "$n" -eq 1 ] || fallo "hay $n layerfs-path= en el grub.cfg y esperaba UNO"
-    ok "grub.cfg: layerfs-path=$CAPA_N en la linea del nucleo (sin esto la capa viaja y NO se monta)"
+    [ "$n" -eq "$N_VMLINUZ" ] || fallo "hay $n layerfs-path= en el grub.cfg y hay $N_VMLINUZ lineas de nucleo"
+    ok "grub.cfg: layerfs-path=$CAPA_N en las $N_VMLINUZ lineas de nucleo (sin esto la capa viaja y NO se monta)"
 else
     # --sin-capa: la comprobacion NO se omite, SE INVIERTE. Y aqui importa mas que
     # en las otras banderas: un layerfs-path= apuntando a una capa que no viaja
@@ -975,7 +1027,9 @@ ok "escrita: $(stat -f %z "$SALIDA") bytes"
 # --- 7. y ahora la parte que importa: comprobar que solo se anadio ----------
 echo "== 7. la cadena firmada, DESPUES (si cambia una, este banco no lo notaria)"
 for i in 0 1 2; do
-    d=$(tar -xOf "$SALIDA" "efi/boot/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
+    d=$(tar -xOf "$SALIDA" "$DIR_EFI/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
+    [ "$d" != "$VACIO" ] \
+        || fallo "$DIR_EFI/${EFI[$i]} sale VACIO del medio fabricado: comparar nada con nada no es comparar"
     [ "$d" = "${ANTES[$i]}" ] || fallo "CAMBIO ${EFI[$i]}
         antes   ${ANTES[$i]}
         despues $d"
@@ -1042,15 +1096,38 @@ echo "  nuestra: $B"
 [ "$A" = "$B" ] || fallo "la FORMA de arranque no es la misma"
 ok "MBR hibrido, El Torito y plataforma UEFI, iguales"
 
-# el contenido de la ESP: se localiza en cada imagen por su propia tabla MBR
-esp() {  # imprime "inicio sectores" de la particion 0xef
+# EL CONTENIDO DE LA ESP: se localiza en cada imagen por su propia tabla, y LAS
+# DOS ARQUITECTURAS NO USAN LA MISMA (§4.64, y esto costo una fabricacion):
+#
+#   arm64: MBR de verdad, con una entrada de tipo 0xef -> ahi esta la ESP
+#   amd64: MBR PROTECTOR (una sola entrada 0xee que cubre el disco) + GPT, y la
+#          ESP es una particion de la GPT con el tipo C12A7328-F81F-11D2-BA4B-
+#          00A0C93EC93B. Buscando 0xef en el MBR no se encuentra NADA.
+#
+# Se miran las dos, en ese orden, y si no aparece por ninguna se PARA -- que es
+# lo que hizo la version vieja, y por eso el fallo se vio en vez de colarse.
+esp() {  # imprime "inicio sectores" de la ESP, o nada
     python3 - "$1" <<'PY2'
 import sys, struct
-mbr=open(sys.argv[1],'rb').read(512)
-for i in range(4):
+f=open(sys.argv[1],'rb')
+mbr=f.read(512)
+for i in range(4):                       # 1. el MBR, como siempre (arm64)
     e=mbr[446+16*i:446+16*i+16]
     if any(e) and e[4]==0xef:
-        print(struct.unpack('<I',e[8:12])[0], struct.unpack('<I',e[12:16])[0]); break
+        print(struct.unpack('<I',e[8:12])[0], struct.unpack('<I',e[12:16])[0]); sys.exit()
+cab=f.read(512)                          # 2. la GPT (amd64)
+if cab[:8]!=b'EFI PART': sys.exit()
+lba_ent=struct.unpack('<Q',cab[72:80])[0]
+n_ent  =struct.unpack('<I',cab[80:84])[0]
+t_ent  =struct.unpack('<I',cab[84:88])[0]
+TIPO_ESP=bytes.fromhex('28732ac11ff8d211ba4b00a0c93ec93b')
+f.seek(lba_ent*512)
+for _ in range(n_ent):
+    e=f.read(t_ent)
+    if len(e)<t_ent: break
+    if e[:16]==TIPO_ESP:
+        ini=struct.unpack('<Q',e[32:40])[0]; fin=struct.unpack('<Q',e[40:48])[0]
+        print(ini, fin-ini+1); sys.exit()
 PY2
 }
 read -r AI AN <<<"$(esp "$ISO")"
@@ -1131,11 +1208,54 @@ ok "$N_ESPERADOS ficheros anadidos, ni uno mas, y ninguno perdido"
 
 LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
     | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"
-printf '%s\n' /md5sum.txt "${MODIFICADOS[@]}" | LC_ALL=C sort > "$TMP/cambiados.esperados"
+# --- 10bis. EL FICHERO QUE CAMBIA Y NO LO CAMBIAMOS NOSOTROS -----------------
+# En amd64 -- y solo en amd64, porque arm64 no arranca por BIOS -- el medio lleva
+# /boot/grub/i386-pc/eltorito.img, el arranque BIOS heredado, Y CAMBIA. No es
+# nuestro: lo reescribe xorriso al recolocar el fichero dentro de la imagen.
+#
+# ESO NO SE DECLARA COMO EXCEPCION MUDA, que seria taparlo. Se declara CON LA
+# LISTA DE LO QUE PUEDE CAMBIAR DENTRO, y esta medido (§4.64, 2026-08-22):
+#
+#   offsets 8..23  la 'boot-info-table' que xorriso parchea: LBA del PVD, LBA
+#                  del propio fichero, tamano y suma de control
+#   offsets 2548..2549  el puntero de bloques de grub2-boot-info
+#
+# Y EL CONTROL ESTA PAGADO: un medio amd64 fabricado con los CUATRO mecanismos
+# de marca APAGADOS da un eltorito.img IDENTICO BYTE A BYTE al del producto, o
+# sea que de esos siete bytes no hay ni uno de Encina. Ademas md5sum.txt NO lo
+# lista -- ni en la ISO oficial ni en la nuestra --, asi que la comprobacion de
+# integridad del propio medio no se ve afectada.
+ELTORITO=/boot/grub/i386-pc/eltorito.img
+declare -a MOD_XORRISO
+MOD_XORRISO=()
+if LC_ALL=C grep -qx "$ELTORITO" "$TMP/rutas.oficial"; then
+    tar -xOf "$ISO"    "${ELTORITO#/}" > "$TMP/elt.ofi" 2>/dev/null
+    tar -xOf "$SALIDA" "${ELTORITO#/}" > "$TMP/elt.nue" 2>/dev/null
+    [ -s "$TMP/elt.ofi" ] && [ -s "$TMP/elt.nue" ] \
+        || fallo "no pude leer $ELTORITO de alguna de las dos ISOs"
+    # que los bytes que difieren caigan SOLO en las dos ventanas conocidas
+    FUERA=$(cmp -l "$TMP/elt.ofi" "$TMP/elt.nue" 2>/dev/null | awk '{o=$1-1} o<8 || (o>=24 && o<2548) || o>=2550 {print o}')
+    [ -z "$FUERA" ] \
+        || fallo "$ELTORITO cambia FUERA de la boot-info-table y del puntero de grub, en los offsets:
+$(printf '%s\n' "$FUERA" | head -20)"
+    # y que el LBA escrito sea el que El Torito dice de NUESTRA imagen
+    LBA_TAB=$(python3 -c 'import struct,sys;print(struct.unpack("<I",open(sys.argv[1],"rb").read(16)[12:16])[0])' "$TMP/elt.nue")
+    LBA_CAT=$(xorriso -indev "$SALIDA" -report_el_torito plain 2>/dev/null \
+              | awk '/El Torito boot img/ && /BIOS/ {print $NF}')
+    [ -n "$LBA_CAT" ] && [ "$LBA_TAB" = "$LBA_CAT" ] \
+        || fallo "la boot-info-table dice que el arranque BIOS esta en el LBA $LBA_TAB y El Torito dice $LBA_CAT"
+    tar -xOf "$SALIDA" md5sum.txt 2>/dev/null | grep -q eltorito \
+        && fallo "md5sum.txt lista el eltorito.img: entonces SI afectaria a la comprobacion de integridad del medio"
+    MOD_XORRISO=("$ELTORITO")
+    ok "$ELTORITO: cambia, y solo en la boot-info-table (LBA $LBA_CAT, que es donde El Torito dice) y el puntero de grub. No es nuestro: lo reescribe xorriso"
+fi
+
+printf '%s\n' /md5sum.txt "${MODIFICADOS[@]}" "${MOD_XORRISO[@]}" | LC_ALL=C sort > "$TMP/cambiados.esperados"
+N_CAMB=$(( N_MOD + 1 + ${#MOD_XORRISO[@]} ))
 diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
-    || fallo "los ficheros modificados no son los $((N_MOD+1)) declarados:
+    || fallo "los ficheros modificados no son los $N_CAMB declarados:
 $(diff "$TMP/cambiados.esperados" "$TMP/cambiados")"
-ok "modificados exactamente $((N_MOD+1)): /md5sum.txt ${MODIFICADOS[*]}"
+ok "modificados exactamente $N_CAMB: /md5sum.txt ${MODIFICADOS[*]} ${MOD_XORRISO[*]}"
 # CONTROL de la comparacion entera: tiene que saber ver un cambio donde lo hay.
 # Se compara la oficial consigo misma cambiandole una huella a mano.
 awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \

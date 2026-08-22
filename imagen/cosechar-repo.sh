@@ -196,9 +196,16 @@ RETIRADOS=""; OTROSBYTES=""; MALAS=0; BAJADOS=0; YAESTABAN=0
 while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
     [ "$origen" = ARCHIVO ] || continue
     # la arquitectura sale del nombre del fichero, y de paso lo valida
+    # LA ARQUITECTURA SALE DEL NOMBRE, Y NO SIEMPRE ES EL ULTIMO CAMPO: Mozilla le
+    # pega a veces un sufijo de huella DESPUES de la arquitectura. Y no lo hace
+    # igual en las dos -- hoy firefox_153.0.4~build1_arm64.deb va limpio y
+    # firefox_153.0.4~build1_amd64_53a2b3a7….deb no --, asi que un patron que
+    # solo mire el final funciona en arm64 y deja el paquete mas gordo del repo
+    # fuera en amd64. Medido el 2026-08-22: 28 de 29 (§4.64).
     case "$fichero" in
         *_all.deb)      arq=all    ;;
         *_"$ARQ".deb)   arq="$ARQ" ;;
+        *_"$ARQ"_*.deb) arq="$ARQ" ;;
         *) echo "        [FALLO] no se de que arquitectura es: $fichero"; MALAS=$((MALAS+1)); continue ;;
     esac
     destino="$SALIDA/$fichero"

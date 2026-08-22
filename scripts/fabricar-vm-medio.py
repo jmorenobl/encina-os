@@ -3,6 +3,24 @@
 """Encina OS - FABRICA UN BUNDLE DE UTM PARA ARRANCAR UN MEDIO, SIN TOCAR LA INTERFAZ.
 
     ./scripts/fabricar-vm-medio.py --iso medios/<x>.iso --nombre encina-bisec-sin-capa
+                                   [--arq arm64|amd64]
+
+CON --arq amd64 EL BUNDLE YA NO SE EJECUTA: SE EMULA, y eso no es un detalle de
+configuracion. Este Mac es Apple Silicon, asi que un invitado arm64 corre sobre
+el hipervisor del anfitrion --a velocidad de la maquina-- y uno x86_64 tiene que
+pasar por el traductor de QEMU. Lo que cambia en el bundle son CINCO cosas y
+ninguna se puede olvidar:
+
+    System.Architecture   aarch64        -> x86_64
+    System.Target         virt           -> q35
+    QEMU.Hypervisor       true           -> false   (no hay hipervisor x86 aqui)
+    Display.Hardware      virtio-gpu-pci -> virtio-vga
+    Data/efi_vars.fd      las de arm64   -> edk2-i386-vars.fd, de UTM
+
+LA CUARTA Y LA QUINTA SON LAS QUE DAN PANTALLA NEGRA SI SE OLVIDAN, y una
+pantalla negra en este proyecto ya ha costado dos controles que parecian decir
+que una ISO no arrancaba (trampa 32). El firmware EFI de arm64 NO arranca una
+maquina x86_64: son binarios distintos, no una opcion.
 
 QUE HACE, y las cuatro cosas son las que costaron caro el 2026-08-17:
 
@@ -35,6 +53,7 @@ import argparse, os, plistlib, shutil, sys, glob
 
 DOCS = os.path.expanduser("~/Library/Containers/com.utmapp.UTM/Data/Documents")
 PLANTILLA = os.path.join(DOCS, "encina-marca-e8a0ead2.utm")
+UTM_FW = "/Applications/UTM.app/Contents/Resources/qemu"
 N_OK = 0; N_FALLO = 0
 
 def ok(m):
@@ -65,6 +84,8 @@ def main():
     ap.add_argument("--nombre", required=True)
     ap.add_argument("--plantilla", default=PLANTILLA)
     ap.add_argument("--sufijo", default="", help="dos digitos hex, p.ej. C0; si no, se busca libre")
+    ap.add_argument("--arq", default="arm64", choices=["arm64", "amd64"],
+                    help="amd64 = x86_64 EMULADO sobre este Mac, no ejecutado")
     a = ap.parse_args()
 
     iso = os.path.abspath(a.iso)
@@ -125,6 +146,14 @@ def main():
             d["Identifier"] = d1; d["ImageName"] = "disco.img"
     for n in c.get("Network", []):
         n["MacAddress"] = mac
+    # --- 2bis. la arquitectura del INVITADO -------------------------------
+    if a.arq == "amd64":
+        c["System"]["Architecture"] = "x86_64"
+        c["System"]["Target"] = "q35"
+        c["QEMU"]["Hypervisor"] = False
+        for d in c.get("Display", []):
+            d["Hardware"] = "virtio-vga"
+        print("== invitado x86_64: EMULADO (Hypervisor=false, q35, virtio-vga)")
     os.makedirs(os.path.join(destino, "Data"))
     plistlib.dump(c, open(os.path.join(destino, "config.plist"), "wb"))
 
@@ -135,8 +164,15 @@ def main():
     disco = os.path.join(destino, "Data", "disco.img")
     with open(disco, "wb") as f:
         f.truncate(40 * 1024 * 1024 * 1024)
-    # las variables EFI de la plantilla, que es un arranque UEFI que ya funciono
-    efi_p = os.path.join(a.plantilla, "Data", "efi_vars.fd")
+    # LAS VARIABLES EFI. Para arm64, las de la plantilla, que son un arranque UEFI
+    # que YA funciono. Para x86_64 NO VALEN -- es otro firmware -- y se cogen las
+    # que trae UTM sin estrenar.
+    if a.arq == "amd64":
+        efi_p = os.path.join(UTM_FW, "edk2-i386-vars.fd")
+        if not os.path.isfile(efi_p):
+            morir("no esta el firmware x86 de UTM: " + efi_p)
+    else:
+        efi_p = os.path.join(a.plantilla, "Data", "efi_vars.fd")
     if os.path.isfile(efi_p):
         shutil.copy2(efi_p, os.path.join(destino, "Data", "efi_vars.fd"))
 
@@ -162,6 +198,31 @@ def main():
         ok("disco.img: %d bytes declarados y 0 bloques en disco (disperso y vacio)" % st_d.st_size)
     else:
         fallo("disco.img ocupa %d bloques y tenia que estar vacio" % st_d.st_blocks)
+
+    # LA ARQUITECTURA SE VUELVE A LEER DEL PLIST QUE SE ACABA DE ESCRIBIR, no de
+    # la variable (trampa 13: una mutacion se verifica antes de leer su resultado).
+    escrito = plistlib.load(open(os.path.join(destino, "config.plist"), "rb"))
+    esperada = "x86_64" if a.arq == "amd64" else "aarch64"
+    hiper = False if a.arq == "amd64" else True
+    if escrito["System"]["Architecture"] == esperada and escrito["QEMU"]["Hypervisor"] is hiper:
+        ok("el plist dice Architecture=%s, Target=%s, Hypervisor=%s"
+           % (escrito["System"]["Architecture"], escrito["System"]["Target"],
+              escrito["QEMU"]["Hypervisor"]))
+    else:
+        fallo("el plist dice Architecture=%s Hypervisor=%s y se pidio %s/%s"
+              % (escrito["System"]["Architecture"], escrito["QEMU"]["Hypervisor"],
+                 esperada, hiper))
+    # y el firmware: el de x86 y el de arm64 no pesan igual, asi que el tamano lo
+    # distingue sin abrir el fichero
+    fv = os.path.join(destino, "Data", "efi_vars.fd")
+    if os.path.isfile(fv):
+        n = os.stat(fv).st_size
+        if a.arq == "amd64" and n > 4 * 1024 * 1024:
+            fallo("efi_vars.fd pesa %d bytes: son las de arm64, y con esas un x86_64 no arranca" % n)
+        elif a.arq == "arm64" and n < 4 * 1024 * 1024:
+            fallo("efi_vars.fd pesa %d bytes: no son las de arm64" % n)
+        else:
+            ok("efi_vars.fd: %d bytes, las que le tocan a %s" % (n, a.arq))
 
     cidata = [p for p in glob.glob(os.path.join(destino, "Data", "*"))
               if "cidata" in os.path.basename(p).lower()]
