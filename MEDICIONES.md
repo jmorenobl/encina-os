@@ -15669,3 +15669,97 @@ contesta Jorge (K2 de §4.61): el instalador no se recorre con teclado.** Queda
 - **Los `[OJOS]` de Jorge y la foto del «después»**, que siguen **bloqueados**
   hasta que el verificador dé 0 fallos. Anoche no se tomó a propósito: sin
   `encina-branding` sería una captura que miente. Hoy tampoco.
+
+#### (n) **C3 NO SE HA FALSADO: NO SE HA PROBADO. LA PREMISA SE CAYÓ, Y LO QUE SE CAE CON ELLA ES MÁS GRANDE**
+
+La instalación de control terminó diciendo **«EncinaOS 24.04.4 LTS está instalado
+y listo para usarse»**, que es literalmente el texto que C3 daba por falsable. Y
+**no es la falsación de C3**, porque **el fallo no ocurrió**:
+
+```
+$ sudo cat /target/etc/encina-estado
+ENCINA_ESTADO=COMPLETO
+ENCINA_FALTA=                      <- vacio: no le falta nada
+ENCINA_FECHA=2026-08-22T01:27:14Z
+```
+
+**El seed salió 0 porque la máquina está entera. La pantalla de error no salió
+porque no tenía que salir.** C3 queda **`[OMIT]`**, y la red de seguridad **sigue
+sin ejercitarse**. Decir «arreglado» aquí sería exactamente el error que esta
+vuelta existía para no cometer.
+
+**POR QUÉ SALIÓ ENTERA CON UN MEDIO AL QUE LE FALTA `libnss3`, medido y con su
+control delante:**
+
+```
+=== 7. HAY RED DESDE EL CHROOT? ===
+$ curtin in-target -- getent hosts ports.ubuntu.com
+2606:4700:10::6814:1cf6 ports.ubuntu.com.cdn.cloudflare.net ports.ubuntu.com
+  rc=0                                            <- ANOCHE: Temporary failure resolving
+$ curtin in-target -- getent hosts packages.mozilla.org
+34.160.78.70 ... packages.mozilla.org
+  rc=0
+-- control: un nombre que no existe tiene que fallar
+$ curtin in-target -- getent hosts nombre-que-no-existe.encina.invalid
+                                                  <- y falla: el control funciona
+```
+
+**ESTA VEZ HABÍA DNS EN EL CHROOT.** Y eso tumba una frase que este proyecto daba
+por establecida —está en §4.61, en `ENCINA-OS.md` §7 y en el comentario del propio
+seed—: *«en el `chroot` de `curtin` no hay DNS, y eso es LO NORMAL»*. **Medido dos
+noches seguidas, con el mismo producto, ha dado las dos respuestas.** Se corrige
+dejando al lado lo que se creía: **la red del `chroot` no es una propiedad del
+producto, es no-determinista**, y no sabemos aún qué la decide.
+
+**Y LO QUE ESO SIGNIFICA ES PEOR QUE UN `.deb` QUE FALTA:** el fallo de §4.61 es
+**intermitente**. El mismo medio entrega una máquina entera una noche y una
+máquina sin ningún paquete de Encina la siguiente. Un fallo intermitente que
+además **se entrega diciendo «listo para usarse»** es más peligroso que uno
+determinista, no menos.
+
+**LA SEGUNDA CONSECUENCIA, Y ES LA QUE VALIDA LA GUARDA — con su número:**
+
+```
+                          upgraded  newly  not upgraded   Inst libnss3
+anoche (SIN red)             6       16        356            SI
+la guarda de hoy             -        -        360            SI
+esta noche (CON red)         5       16         93            NO
+```
+
+**La guarda no cuadra con la instalación de esta noche, y cuadra con la de
+anoche.** No es un defecto: es que **modela el mundo sin red**. Con red, `curtin`
+actualiza el objetivo durante la instalación —de ahí `93 not upgraded` frente a
+`356`— y en ese mundo `apt` no necesita `libnss3`. **El mundo contra el que hay
+que blindarse es el otro**, porque es el único en el que el medio tiene que
+bastarse solo. `356` frente a `360` dice que la referencia del banco es la buena
+**para el caso que le toca guardar**.
+
+**Meter `libnss3` sigue siendo correcto por la misma razón**, y ahora con más
+motivo: hace que el medio se baste **en los dos mundos**, en vez de depender de
+que aquella noche hubiera DNS.
+
+**LO QUE HAY QUE HACER PARA PAGAR C3, y ahora se sabe cómo:** repetir la
+instalación de control **con la red de la VM desconectada**. Eso hace el fallo
+**determinista** en vez de depender del azar, que es lo que esta noche faltó.
+Hasta entonces:
+
+- **La red de seguridad del seed sigue `[OMIT]`.** Quitar el `; true` es
+  necesario y está medido que la comparación de la línea entera lo protege
+  (apartado (k)), pero **que la pantalla de error salga sigue siendo una lectura
+  de código**, igual que el 2026-08-12.
+- **Y no se declara arreglado el medio bueno tampoco**: su instalación mediría lo
+  mismo que ésta —una máquina entera— sin distinguir si es por `libnss3` o porque
+  volvió a haber red.
+
+**Lo que sí queda medido de esta vuelta, y no es poco:** el medio de control
+**arrancó a la primera** (1 de 1), las cinco pantallas salieron en español, la
+instalación **terminó**, y la máquina que produce con red **está completa**
+—`ENCINA_FALTA` vacío—, lo que confirma por el otro lado que **lo único que
+rompía en §4.61 era el acceso a `libnss3`**.
+
+**Una trampa más del banco, cobrada en el mismo minuto (trampa 36):** además de
+`_ = @ | & > " [ ]`, se confirmó que **`=` no llega al invitado**, y por eso un
+`dpkg-query --admindir=/target/...` se ejecutó **contra la sesión viva** y
+contestó «no se ha encontrado ningún paquete» sobre los cuatro. **Esa salida no
+mide el objetivo y no se usa**: quien dice que la máquina está entera es
+`ENCINA_FALTA`, que lo comprueba dentro.
