@@ -16377,3 +16377,177 @@ sigue midiendo lo que dice medir —que **los paquetes de Encina** se instalan s
 red desde `/encina-repo`—. **Nunca prometió el sistema base.** Es otra vez la
 misma forma: una comprobación que pasa, y una pregunta contigua que nadie le
 había hecho.
+
+---
+
+### 4.64 E6 — UN MEDIO `amd64`: la predicción, escrita ANTES de tocar un solo fichero (2026-08-22, noche)
+
+Van **siete atribuciones falsas** en este proyecto y la séptima se evitó por un
+pelo y **por escrito** (§4.63). Esta vuelta empieza igual, y con más motivo: es
+la primera vez que se toca un guion que **ya funciona y da una huella conocida**,
+así que el riesgo no es equivocarse de diagnóstico —es **romper el `arm64` sin
+enterarse**.
+
+**LA PREGUNTA DE ESTA VUELTA, Y ES UNA SOLA:** *¿se fabrica un medio `amd64`
+reutilizando los instrumentos que ya existen, sin romper el `arm64`?* Todo lo
+demás —que instale, que arranque en el portátil, Plymouth— **es de otra vuelta**
+y está listado en (f) para no cantarlo después.
+
+#### (a) EL PUNTO DE PARTIDA, cotejado y no supuesto
+
+```
+arbol : limpio, commit 36ad650 (2026-08-22)
+disco : 29 614 208 KiB libres = 28,24 GiB      <- LA RESTRICCION DEL DIA
+medios: ubuntu-24.04.4-desktop-arm64.iso  3 540 299 776 B
+        encina-os-libnss3.iso  cd84d2ec…       <- EL MEDIO BUENO, y el CONTROL
+        repo-trabajo: 29 .deb (14 _all + 15 _arm64)
+UTM   : 4.7.5, y SI trae con que emular x86_64 -- medido, no supuesto:
+          Frameworks/qemu-x86_64-softmmu.framework
+          Resources/qemu/edk2-x86_64-code.fd
+        la plantilla de fabricar-vm-medio.py es aarch64/virt con Hypervisor
+VMs   : 15 bundles, ~150 GiB en total
+```
+
+Y lo que ata los guiones al `arm64`, **leído hoy y con número de línea**, que es
+lo que convierte «14 líneas» en una lista de trabajo:
+
+```
+imagen/fabricar-iso.sh:206   ISO por defecto  …-desktop-arm64.iso
+imagen/fabricar-iso.sh:369   EFI=(bootaa64.efi grubaa64.efi mmaa64.efi)
+imagen/fabricar-iso.sh:717   ARQ="${VOLID_OFICIAL##* }"  + case arm64|amd64  <- YA VALE
+imagen/fabricar-iso.sh       H_ISO=…  UNA sola huella, y traer-iso-oficial.sh
+                             la LEE DE AHI (no la escribe)
+imagen/marca/disk-info       «… - Release arm64 (20260210)»   <- DATO, no codigo
+imagen/cosechar-repo.sh:56   UBUNTU=http://ports.ubuntu.com/ubuntu-ports
+imagen/cosechar-repo.sh:110  binary-arm64 ; :115 «for a in arm64 all»
+                             :156 case *_arm64.deb
+imagen/repo-manifiesto.tsv   guarda FICHERO y SHA256 -> es POR ARQUITECTURA
+imagen/banco-autosuficiencia.sh:70  glob …-desktop-arm64.iso
+                             :190 URIs ports.ubuntu.com ; :205 APT::Architecture=arm64
+imagen/traer-iso-oficial.sh:144  el listado de [RETIRADO], solo desktop-arm64
+scripts/fabricar-vm-medio.py plantilla aarch64 (no nombra la arquitectura: la HEREDA)
+```
+
+#### (b) QUÉ SEPARA UN FALLO DEL PRODUCTO DE UNO DEL BANCO — y va DELANTE
+
+Aquí hay **dos bancos nuevos a la vez** (un QEMU emulado y, luego, hierro que
+nunca ha arrancado nada nuestro), así que el control **no es opcional y no se
+paga después**:
+
+1. **En la VM emulada:** antes de arrancar el medio nuestro, se arranca **la ISO
+   oficial `amd64` sin tocar**, en un bundle hecho igual. Si la oficial arranca y
+   la nuestra no → **es del producto**. Si **ninguna de las dos** arranca → es el
+   banco (la emulación, el firmware o el bundle) y del producto no se dice nada.
+2. **En el hierro:** el mismo control, en el mismo pincho y el mismo portátil —
+   **la ISO oficial `amd64` primero**. Sin eso, un «no arranca» no distingue el
+   medio de un arranque seguro activado, de un USB mal escrito o de la máquina.
+3. **Para el `arm64`, que es lo que no se puede romper:** el control es
+   **la huella**. `fabricar-iso.sh` con la ISO `arm64` tiene que seguir sacando
+   **`cd84d2ec…` byte a byte** después de parametrizar. Si cambia, el cambio no
+   es neutral y **se para**, aunque el `amd64` haya salido precioso.
+
+#### (c) LA PREMISA QUE HAY QUE COMPROBAR ANTES DE LEER EL RESULTADO
+
+Antes de anotar un solo «arranca» o «no arranca», hay que comprobar **que lo que
+arrancó es lo que se cree**, y es exactamente donde este proyecto ya se ha
+tropezado (la ISO se enlaza por enlace duro, los nombres se parecen y hay tres
+ISOs de 3,7 GB en `medios/`):
+
+```
+xorriso -indev <iso> -pvd_info   ->  Volume Id: EncinaOS 0.2.1 amd64   (no arm64)
+tar -tf <iso> efi/boot/          ->  bootx64.efi grubx64.efi mmx64.efi
+imagen/fabricar-iso.sh --leer-mecanismos <iso>  ->  los cuatro de D23
+```
+
+Y en el hierro, una premisa más que no existe en la VM: **que el pincho tiene los
+bytes de la ISO**, comprobado leyendo del dispositivo y comparando huella —no
+mirando el diálogo del grabador.
+
+#### (d) LA PREDICCIÓN, numerada para poder fallar
+
+**P1 — La ISO oficial `amd64` está en el MISMO sitio firmado que la `arm64`**
+(`cdimage.ubuntu.com/ubuntu/releases/24.04/release`, mismo `SHA256SUMS` con la
+misma firma de Canonical). Consecuencia: `traer-iso-oficial.sh` **no cambia de
+servidor ni de control de firma**; sólo necesita saber **qué huella exigir**.
+*Falla si `amd64` sólo vive en `releases.ubuntu.com`, que es otro servidor.*
+
+**P2 — NO HACE FALTA UN CONSTRUCTOR `amd64` PARA FABRICAR EL MEDIO, y esto
+contradice lo escrito.** `tareas/despues-de-publicar.md` dice «falta un
+constructor `amd64` … que puede ser el propio portátil», y el encargo de esta
+sesión lo repite. Predigo que **el constructor `arm64` de hoy vale entero**,
+por cuatro razones que se pueden comprobar por separado:
+- los cuatro `.deb` de Encina son `_all` → **no se reconstruyen** (ya medido);
+- `dpkg-scanpackages` **indexa ficheros**, y no le importa la arquitectura de lo
+  que indexa;
+- la cosecha es `curl` + `shasum` **en el Mac**;
+- `apt-get -s` **resuelve para una arquitectura ajena** con
+  `APT::Architecture=amd64` + un `status` `amd64` + índices `amd64`.
+El portátil hace falta para **arrancar** el medio, no para fabricarlo.
+*Falla si `dpkg-scanpackages` o `apt-get -s` se niegan a trabajar sobre una
+arquitectura que no es la suya.*
+
+**P3 — Lo que ata `fabricar-iso.sh` al `arm64` son TRES cosas ejecutables, no
+catorce.** Las catorce líneas incluyen comentarios y un bloque que **ya está
+parametrizado** (el Volume id se deriva del PVD oficial y su `case` ya acepta
+`amd64`, línea 717-721). Predigo **≤5 líneas ejecutables cambiadas** en ese
+guion: el array `EFI`, la ISO por defecto y la huella exigida.
+
+**P4 — Hay una CUARTA atadura, fuera del guion, y es un DATO: `imagen/marca/disk-info`
+dice literalmente `Release arm64`.** Y predigo lo que la hace peligrosa: que
+**hoy nada lo detiene**. Como el Volume id se compone con la arquitectura del PVD
+**oficial**, un medio `amd64` fabricado sin tocar ese fichero saldría
+**incoherente consigo mismo** —volid `EncinaOS 0.2.1 amd64`, `.disk/info`
+diciendo `arm64`— y `fabricar-iso.sh` **no lo comprobaría**, porque no compara
+las dos arquitecturas entre sí. Esa comprobación **hay que añadirla, con su
+control** (un `disk-info` de la arquitectura equivocada tiene que dar `[FALLO]`).
+
+**P5 — La cosecha `amd64` NO es una traducción mecánica de quince nombres.** Son
+tres cosas distintas y la tercera es la que muerde:
+- `ports.ubuntu.com/ubuntu-ports` **no sirve `amd64`**: eso vive en
+  `archive.ubuntu.com/ubuntu`. Es cambiar de archivo, no de ruta;
+- el manifiesto guarda **fichero y `sha256`**, o sea que es **por arquitectura**:
+  hace falta un **manifiesto `amd64`**, no una bandera;
+- y predigo que **al menos UNO de los 15 no estará en el archivo con la versión
+  que el manifiesto fija**. La deriva que causó lo de `libnss3` corre igual para
+  `amd64` y el manifiesto se congeló esta misma tarde, pero las versiones se
+  fijaron mirando `arm64`. *Si salen los 15 a la primera, esta predicción falla y
+  se anota como fallada.*
+
+**P6 — La emulación arranca, pero no sirve para instalar.** UTM **tiene** con qué
+(medido en (a)), así que predigo que el medio `amd64` **llega al menú de GRUB y a
+la primera pantalla del instalador**… y que tarda **más de 10 minutos** en
+llegar, contra los ~40 s del `arm64` nativo. Consecuencia, y es lo que decide el
+plan: la VM emulada contesta **«¿arranca, y sale el instalador en español?»** y
+**no** contesta «¿instala?». El positivo de extremo a extremo **se paga en el
+hierro de Jorge**, no aquí.
+
+**P7 — El `arm64` sale con la misma huella.** `cd84d2ec…`, byte a byte, después
+de todos los cambios. Es el control de (b3) y **es el que manda**: si falla,
+esta vuelta no ha terminado por bien que haya salido el `amd64`.
+
+#### (e) LO QUE ESTA VUELTA **NO** VA A DEMOSTRAR, escrito antes para no cantarlo después
+
+- **Que el medio `amd64` INSTALE.** Eso es hierro, y va después.
+- **Nada de Plymouth.** Sigue sin veredicto y sigue siendo `[OJOS]` de Jorge en
+  el hierro (§4.63s).
+- **Nada sobre el núcleo.** La ausencia de §4.63(t) —ni núcleo ni
+  `linux-firmware` en las capas que se instalan— **es la misma en `amd64`**, y
+  `banco-autosuficiencia.sh` **no la mide** porque nunca prometió el sistema
+  base. Si la prueba **sin red** del portátil se cae, **el sitio donde mirar ya
+  está escrito: `curthooks`**, y eso sería **el límite declarado del producto**,
+  no un fallo del portátil.
+- **Ni E5 ni publicar.** Siguen donde están.
+
+#### (f) EL RIESGO DEL DISCO, con su aritmética escrita antes
+
+```
+libres hoy                      28,24 GiB
+- ISO oficial amd64              ~3,30 GiB   ->  24,9
+- nuestra ISO amd64              ~3,47 GiB   ->  21,5
+- VM emulada que SOLO arranca    ~1    GiB   ->  20,5
+(si ademas se intentara instalar ~11 GiB     ->   9,5)
+```
+
+Cabe **sin borrar nada** mientras no se intente instalar en la VM emulada —que
+es justo lo que P6 dice que no hay que intentar—. **Qué se borra, si hiciera
+falta, es de Jorge**, y las candidatas están listadas en la sesión.
