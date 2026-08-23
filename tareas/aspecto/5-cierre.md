@@ -131,6 +131,10 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       salidas candidatas están nombradas en §4.70c y **no se elige aquí**; la
       primera (`dpkg-divert` sobre el SVG de Yaru, el mecanismo que R5 prescribe)
       exige medir antes si los acentos `Yaru-*` heredan ese fichero o llevan copia.
+      *Medido el 2026-08-24 (`MEDICIONES.md` §4.75):* **heredan, los 19** — el
+      fichero solo existe en `Yaru` y todas las cadenas de `Inherits` mueren en
+      `Yaru`, así que un solo desvío cubre todos los acentos y sus oscuros. La
+      salida *(1)* queda viable; la elección sigue sin hacerse aquí.
 
 - [ ] **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
       probado en la máquina donde se hizo.
