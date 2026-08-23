@@ -17073,3 +17073,59 @@ se deja escrita al lado.
    disposición del anfitrión (español) y el invitado los interpreta con la suya.**
    `teclear-vm.sh ... tecla <codigo> [shift]` ya sabe mandarlos; lo que faltaba
    era saberlo. Trampa 58.
+
+#### (o) LA VUELTA QUE CONVIERTE LA DEDUCCIÓN EN MEDIDA: FORZAR EL RELOJ — predicción escrita ANTES de fabricar el bundle
+
+(l) deja una hipótesis con su aritmética y sin probar. **Esperar a que un
+arranque se caiga solo es azar; hacerlo caer a propósito es un experimento**, y
+además trae su propio control. Se escribe antes, como las demás.
+
+**EL EXPERIMENTO, y es una perilla y sólo una:** el mismo medio, el mismo bundle,
+**la mitad de CPU** — `CPUCount` de **4 a 2**, y nada más (misma memoria, misma
+ISO por enlace duro, mismo firmware). Si el reloj de los 90 s es lo que mandaba,
+al doblar el tiempo del arranque del servidor **tiene que aparecer el diálogo del
+22**, y su registro tiene que enseñar los reintentos llegando a ~90 s.
+
+**EL CONTROL, Y VA DETRÁS PERO SE PAGA IGUAL:** el **mismo** bundle lento con la
+**ISO oficial** `amd64`. Es el que separa producto de banco:
+
+| lento con NUESTRO medio | lento con la OFICIAL | lo que se puede escribir |
+|---|---|---|
+| se cae | **se cae también** | El fallo es de **Ubuntu bajo lentitud**. Nuestro medio queda absuelto y la hipótesis del reloj, probada |
+| se cae | **no se cae** | Hay algo **nuestro**: nuestro medio cruza el reloj y la oficial no, y eso contradice (k) |
+| no se cae | — | La perilla no era bastante: se dice y **no se fuerza más** sin escribir otra predicción |
+
+**LA PREMISA QUE HAY QUE COMPROBAR ANTES DE LEER EL RESULTADO:** que el diálogo
+que salga sea **el del 22** —«Se produjo un problema … `ubuntu-desktop-bootstrap`»—
+y **no** el del arranque 1 de hoy —«Algo salió mal», que es la sesión gráfica
+muriéndose y es **otro fallo**—. Son dos pantallas distintas y confundirlas sería
+la novena.
+
+**LA PREDICCIÓN:**
+
+**L1 — Con 2 CPU el servidor tarda más de 90 s y sale el diálogo del 22.**
+Base: con 4 CPU tarda 82,03 s, y el arranque del snap es trabajo de CPU. *Falla
+si llega al instalador igual, y entonces la perilla no era la buena.*
+
+**L2 — El registro lo dirá con un número:** los reintentos del
+`ubuntu_bootstrap.log` llegarán a **~90** y ahí se acabará. *Falla si el registro
+enseña otra cosa —una traza, un paquete, la capa—, y entonces la hipótesis del
+reloj se tacha y se deja escrita al lado.*
+
+**L3 — El control lento con la ISO oficial SE CAE TAMBIÉN**, porque con 4 CPU ya
+va **peor** que la nuestra (84,26 contra 82,03). *Falla si la oficial aguanta:
+eso contradiría (k) y sería el hallazgo del día.*
+
+**L4 — Y el instrumento de (i) seguirá valiendo con el diálogo delante**, porque
+detrás hay sesión viva —se vio el 22— y `Alt+F2` es de GNOME, no del instalador.
+*Falla si con el diálogo puesto `Alt+F2` no abre nada; entonces el registro de un
+fallo sigue sin poder leerse y hay que decirlo.*
+
+**LO QUE ESTA VUELTA NO VA A DEMOSTRAR:** que el medio `amd64` **instale** —sigue
+haciendo falta que alguien conteste cinco pantallas—, nada de Plymouth, y nada
+del hierro.
+
+**EL COSTE, dicho antes:** dos arranques a media máquina, así que del orden de
+**20–40 min cada uno**, más la cosecha. Y dos bundles nuevos que **no cuestan
+disco** (la ISO va por enlace duro y el disco es disperso). **Si el primero no se
+cae, se para y se escribe**, no se baja a 1 CPU improvisando.
