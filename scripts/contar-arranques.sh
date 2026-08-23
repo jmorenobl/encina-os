@@ -28,6 +28,12 @@
 # EL VEREDICTO NO LO DA ESTE GUION: lo da veredicto-pantalla.py, que tiene su
 # banco (banco-veredicto.sh, 9 correctas y tres sabotajes cazados).
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Esto es una
+# HERRAMIENTA, no un instrumento: no tiene contadores ni resumen(), así que
+# no hay nada que apuntar y el primer problema para el guion.
+# El 'set' es el que este guion ya tenía; NO se ha unificado con el de
+# lib.sh, porque cambiar 'pipefail' aquí sin poder ejecutarlo sería una
+# mutación sin verificar. Queda [OMIT] declarado en §4.67.
 set -uo pipefail
 export LC_ALL=C
 AQUI=$(cd "$(dirname "$0")" && pwd)

@@ -27,6 +27,9 @@
 # marcadores 'INICIO REGLA' y 'FIN REGLA'. Si sale corta se NIEGA a medir,
 # porque un banco sobre una regla vacia contesta que si a todo.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta y SIGUE midiendo; morir() aborta; el código de salida lo fija el
+# resumen del final. Declarado aquí para no tener que deducirlo leyendo.
 set -uo pipefail
 export LC_ALL=C
 AQUI=$(cd "$(dirname "$0")" && pwd)

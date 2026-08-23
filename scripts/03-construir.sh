@@ -8,6 +8,12 @@
 # solo se manifiestan al reiniciar, o solo en máquinas con LUKS.
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa N_MAL y SIGUE midiendo; morir() aborta; quien fija el
+# código de salida es resumen(). El 'set' lo pone lib.sh:5 al hacer source: se
+# REAFIRMA aquí para que las opciones de shell de este guion no dependan de a
+# quién llame. Reafirmarlo no cambia ni una opción — control en §4.67.
+set -euo pipefail
 requiere_no_root
 requiere_cmd dpkg-buildpackage lintian
 
@@ -251,12 +257,19 @@ ok "Generado: $(basename "$DEB")"
 # coinciden: la comprobacion habria dado verde sobre el fallo que dice cazar.
 # Lo que separa los dos casos es OTRA cosa: que el arbol que se construye sea
 # el que tienes delante.
+#
+# ENMIENDA DEL 2026-08-23 (§4.67): LA CAUSA YA ESTA ARREGLADA, y este detector
+# se queda. raiz_repo() ya NO se inventa ~/encina: sin ENCINA_REPO devuelve el
+# arbol donde vive lib.sh, o muere. O sea que el caso del 2026-08-14 ya no
+# puede repetirse por descuido. Lo que este bloque sigue cazando es el caso que
+# queda: un ENCINA_REPO puesto A PROPOSITO y apuntando a donde no querias.
 if [[ -f "$INVOCADO_EN/debian-packages/encina-branding/debian/changelog" ]] \
    && [[ "$INVOCADO_EN/debian-packages/encina-branding" != "$PKG" ]]; then
     fallo "Se ha construido OTRO arbol, no el que tienes delante" \
 "aqui:       $INVOCADO_EN/debian-packages/encina-branding
 construido: $PKG
-raiz_repo() usa \$ENCINA_REPO, y si no esta, ~/encina. Vuelve a lanzarlo asi:
+Tienes ENCINA_REPO puesto y apunta a otro arbol. Sin esa variable se
+construye el de aqui; para forzar este, lanzalo asi:
     ENCINA_REPO=\"\$PWD\" ./scripts/03-construir.sh"
 else
     ok "El arbol construido es el de aqui ($PKG)"

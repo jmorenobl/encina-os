@@ -14,6 +14,12 @@
 # Y SIN PERMISO DE GRABACION DE PANTALLA no escribe fichero y dice
 # «could not create image from display», que al menos es un fallo ruidoso.
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Esto es una
+# HERRAMIENTA, no un instrumento: no tiene contadores ni resumen(), así que
+# no hay nada que apuntar y el primer problema para el guion.
+# El 'set' es el que este guion ya tenía; NO se ha unificado con el de
+# lib.sh, porque cambiar 'pipefail' aquí sin poder ejecutarlo sería una
+# mutación sin verificar. Queda [OMIT] declarado en §4.67.
 set -u
 VM="${1:?uso: capturar-vm.sh <nombre VM> <salida.png>}"
 SALIDA="${2:?uso: capturar-vm.sh <nombre VM> <salida.png>}"

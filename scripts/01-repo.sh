@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# 01-repo.sh — Crea ~/encina, coloca el esqueleto de encina-branding dentro
+# 01-repo.sh — Coloca el esqueleto de encina-branding dentro del repositorio
 # y verifica que el árbol de ficheros es el que exige AGENTS.md §4.1.
+#
+# ~~«Crea ~/encina»~~ — lo decía hasta el 2026-08-23 y era verdad: raiz_repo()
+# se inventaba esa ruta y este guion la creaba con mkdir -p. Ahora la raíz es
+# el árbol donde vive lib.sh, o ENCINA_REPO si la pones (§4.67).
 #
 # Uso:  ./scripts/01-repo.sh [ruta/a/encina-branding.tar.gz]
 #
@@ -8,6 +12,12 @@
 # Idempotente: si el repositorio ya existe, no lo destruye.
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa N_MAL y SIGUE midiendo; morir() aborta; quien fija el
+# código de salida es resumen(). El 'set' lo pone lib.sh:5 al hacer source: se
+# REAFIRMA aquí para que las opciones de shell de este guion no dependan de a
+# quién llame. Reafirmarlo no cambia ni una opción — control en §4.67.
+set -euo pipefail
 requiere_no_root
 requiere_cmd git
 

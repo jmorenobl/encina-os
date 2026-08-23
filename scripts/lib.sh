@@ -2,6 +2,10 @@
 # lib.sh — utilidades comunes de los scripts de Encina OS.
 # No se ejecuta directamente; se carga con:  source "$(dirname "$0")/lib.sh"
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR — es la biblioteca que lo define (tarea 2,
+# MEDICIONES.md §4.67). Los 17 guiones que hacen source heredan de aquí estas
+# opciones, y desde la tarea 2 TODOS las reafirman en su cabecera: se deja
+# esta línea porque es la que ellos reafirman, no porque nadie dependa de ella.
 set -euo pipefail
 
 # ---------------------------------------------------------------- colores ---
@@ -11,6 +15,10 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ $(tput colors 2>/dev/null
 else
     C_OK=""; C_MAL=""; C_AVI=""; C_TIT=""; C_TEN=""; C_FIN=""
 fi
+
+# Donde vive ESTE fichero, resuelto una sola vez al hacer source. De aqui sale la
+# raiz del repositorio, y por eso no depende del directorio actual ni de $HOME.
+ENCINA_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ------------------------------------------------------------- contadores ---
 N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0
@@ -35,6 +43,23 @@ fallo() {
         echo "${2}" | sed 's/^/          | /'
     fi
     FALLOS_DETALLE+=("$1")
+}
+
+# morir "por qué no se puede continuar"
+#
+# EL SEGUNDO NOMBRE, Y ES LO CONTRARIO QUE fallo() (§4.67). fallo() apunta,
+# incrementa N_MAL y SIGUE midiendo: es el modelo de este fichero y de los 19
+# guiones que lo usan, y quien decide el código de salida es resumen(). morir()
+# NO cuenta y NO vuelve: es «no se puede continuar», y por eso escribe a stderr.
+#
+# El nombre no se inventó aquí: 'imagen/capa-marca.sh' ya lo había inventado por
+# su cuenta, y 'scripts/contar-arranques.sh:43' ya escribía este cuerpo entero a
+# mano. Se elige el que el árbol ya votó, no 'abortar()', que era la propuesta de
+# la casilla: un nombre con dos usos en el árbol es un precedente, y uno sin
+# ninguno es una preferencia.
+morir() {
+    echo "  ${C_MAL}[FALLO]${C_FIN} $*" >&2
+    exit 1
 }
 
 # comprobar "descripción" comando args...
@@ -124,9 +149,41 @@ requiere_no_root() {
 }
 
 # Raíz del repositorio, se calcule desde donde se calcule.
+# LA RAIZ NO SE INVENTA: O LA DICES TU, O ES EL ARBOL DONDE VIVE ESTE FICHERO.
+#
+# Hasta el 2026-08-23 esto era  "${ENCINA_REPO:-$HOME/encina}"  y ese
+# "$HOME/encina" de reserva ha mordido DOS VECES, las dos en silencio:
+#
+#   - 2026-08-14: 03-construir.sh dijo [OK] sobre un .deb 0.1.7 con el changelog
+#     en 0.1.9. Se invoco sin ENCINA_REPO y construyo OTRO clon, de cuatro dias
+#     antes, entero y sin una queja (ver el bloque de las dos comprobaciones en
+#     03-construir.sh). Se le puso un detector A ESE GUION, no se arreglo esto.
+#   - 2026-08-23 (§4.67 h): al ejecutarse 01-repo.sh sin querer, FABRICO UN
+#     REPOSITORIO ENTERO en ~/encina y le hizo dos commits.
+#
+# Un valor por defecto que apunta a un sitio PLAUSIBLE Y DISTINTO es peor que no
+# tener valor por defecto: el guion no falla, acierta en otro sitio. Y el arreglo
+# no es un detector mas —03-construir.sh ya escribio por que: cuando la raiz se
+# desvia se lleva TODO al mismo sitio equivocado y las comprobaciones internas
+# cuadran—. Lo que separa los dos casos es cual es el arbol, y eso se sabe sin
+# preguntarle a nadie: ES EL ARBOL DONDE ESTA ESTE lib.sh.
+#
+# ENCINA_REPO sigue mandando, porque apuntar a otro arbol A PROPOSITO es legitimo
+# y asi lo invocan la CI ("$PWD") y la VM constructora (/mnt/encina). Lo que ya no
+# se puede es acabar en otro arbol SIN HABERLO PEDIDO.
 raiz_repo() {
-    local d="${ENCINA_REPO:-$HOME/encina}"
-    echo "$d"
+    if [[ -n "${ENCINA_REPO:-}" ]]; then
+        echo "$ENCINA_REPO"
+        return 0
+    fi
+    local raiz="${ENCINA_LIB_DIR%/*}"
+    # El centinela tiene que viajar con el arbol: AGENTS.md entra en
+    # 'git archive HEAD', asi que esta tambien en el constructor.
+    [[ -f "$raiz/AGENTS.md" ]] || morir \
+        "no encuentro la raiz del repositorio: '$raiz' no tiene AGENTS.md.
+          Este lib.sh vive en $ENCINA_LIB_DIR. Si querias otro arbol, dilo:
+              ENCINA_REPO=\"\$PWD\" $0"
+    echo "$raiz"
 }
 
 # XDG_DATA_DIRS tal como lo ve la sesión gráfica.

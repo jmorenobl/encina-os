@@ -11368,6 +11368,9 @@ Registro para no redescubrirlas. Todas verificadas en la investigación previa.
 | Fallos raros con software de terceros | Instaladores y scripts que no reconocen el sistema | Se cambió `ID` en `os-release` |
 | Fondo claro en modo oscuro | Solo en tema oscuro | Falta `picture-uri-dark` (GNOME 42+) |
 | Builds no reproducibles | Dos builds del mismo commit difieren | Falta fijar fecha de snapshot del mirror |
+| **Un valor por defecto que apunta a un sitio plausible y DISTINTO** | Ningún error: el guion dice `[OK]` **sobre otro árbol**. El 2026-08-14 `03-construir.sh` generó un `.deb` 0.1.7 con el changelog en 0.1.9; el 2026-08-23 `01-repo.sh` fabricó un repositorio entero en `~/encina` y le hizo dos commits | `raiz_repo()` devolvía `${ENCINA_REPO:-$HOME/encina}`. **No falla: acierta en otro sitio**, y se lleva allí las comprobaciones internas, que cuadran entre sí. Arreglado en §4.68: sin `ENCINA_REPO` la raíz es el árbol donde vive `lib.sh`, o `morir()`. **Y un detector por guion NO basta** —el de `03-construir.sh` no protegía a `01-repo.sh`— |
+| **`source` de un guion para leerle la cabecera LO EJECUTA** | Se quiere comparar el `set` de un guion antes y después de tocarlo; lo que se obtiene es el resultado de **haberlo corrido entero** | `source` no es leer. Entre los guiones de este árbol hay quien hace `git add -A && git commit` (`01-repo.sh:154`), quien crea repositorios y quien escribe en el diario. El 2026-08-23 (§4.67 h) costó un commit no pedido y un repositorio en `~/encina`. **Las opciones de shell de un guion se leen en su texto, no ejecutándolo** |
+| **Un comprobador de contenido que aprueba porque no hay contenido** | El filtro «¿hay líneas raras en el `diff`?» dice que no… porque el `diff` está **vacío** | «Ninguna línea rara sobre cero líneas» y «ninguna línea rara sobre 144» se imprimen igual. Todo comprobador que filtre un conjunto necesita **antes** uno que diga que el conjunto no está vacío (§4.67 h, CONTROL 0). Es la misma familia que la §4.66: un comprobador de referencias que no encuentre nada da la misma salida que un árbol sano |
 
 
 ---
@@ -17466,3 +17469,331 @@ el patrón de §4.65 partía en dos.
   fichero y **se tira el `#`**. El ancla no se resuelve.
 - **`[OMIT]` la tabla de vigencia**: la §4 sigue **parada** en la §4.54, así que
   esta sección tampoco tiene fila. Es la tarea 5, no ésta.
+
+### 4.67 TAREA 2: `fallo()` partido, y el árbol ya había votado el segundo nombre (2026-08-23)
+
+**Qué es esto.** La tarea 2 de [refactorizacion.md](tareas/refactorizacion.md):
+`fallo()` significa dos cosas opuestas según el guion, y ningún guion declara su
+`set`. Se hace **la mitad que no toca `imagen/`**, y el motivo de la mitad que
+falta está escrito abajo. **La casilla NO se marca.**
+
+#### (a) El control, antes de la medición
+
+Lo que se iba a hacer en 16 guiones era **reafirmar `set -euo pipefail` justo
+después del `source lib.sh`**. Eso sólo vale si es un no-op demostrado, porque
+un cambio de opciones de shell en 16 guiones que no se pueden ejecutar en este
+Mac no se ve hasta que muerde en una VM.
+
+```
+=== CONTROL: reafirmar 'set -euo pipefail' tras source lib.sh, ¿es no-op? ===
+[OK]    POSITIVO: identico -> la linea reafirmada NO cambia una sola opcion
+
+=== NEGATIVO: si el comparador esta ciego, tambien diria [OK] arriba ===
+[OK]    NEGATIVO: 'set +u' si se ve -> el comparador no esta ciego:
+          | 19c19
+          | < set -o nounset
+          | ---
+          | > set +o nounset
+```
+
+Comparando `set +o` —las 27 opciones— tras `source scripts/lib.sh` contra
+`source scripts/lib.sh; set -euo pipefail`. **Idénticas.** Y el negativo prueba
+que el comparador no está ciego: `set +u` sí produce diferencia.
+
+#### (b) EL REPARTO NO ES CINCO Y SEIS: SON SEIS Y SEIS, Y LA SEXTA NACIÓ AYER
+
+La enmienda de esta mañana decía «cinco que cuentan y seis que abortan».
+**Medido con `grep -rn '^\s*fallo()' --include='*.sh'`: son SEIS y SEIS.**
+
+| Modelo | Guiones |
+|---|---|
+| **Contar y seguir** (6) | `scripts/lib.sh`, `bancos/enlaces.sh`, `imagen/capa-marca.sh`, `imagen/inventario-marca.sh`, `imagen/verificar-instalacion.sh`, `imagen/banco-autosuficiencia.sh` |
+| **Abortar** (6) | `imagen/fabricar-iso.sh`, `construir-todo.sh`, `traer-iso-oficial.sh`, `cosechar-repo.sh`, `fabricar-seed.sh`, `comprobar-propios.sh` |
+
+**La enmienda no era falsa: era de ayer.** La sexta que cuenta es
+`bancos/enlaces.sh`, **que no existía cuando se escribió** —la creó la tarea 1
+esa misma tarde—. Es la primera vez que una cifra de este bloque caduca porque
+el propio bloque avanzó, y por eso se deja escrito: **en un plan que se ejecuta,
+una cuenta de guiones caduca en horas, no en meses.**
+
+#### (c) EL TERCER NOMBRE: `morir()`, y no se elige por gusto
+
+La casilla proponía `abortar()`. Se elige **`morir()`**, y el motivo es que **no
+hay que inventarlo, hay que reconocerlo**: el árbol ya lo tenía escrito en dos
+sitios y con este cuerpo exacto.
+
+- `imagen/capa-marca.sh:92` — `morir() { echo "[FALLO] $*" >&2; exit 1; }`, junto
+  a un `fallo()` que cuenta. **El guion que más lo necesitaba ya lo separó solo.**
+- `scripts/contar-arranques.sh:43` — `echo "[FALLO] argumento desconocido: $1"
+  >&2; exit 1`. **El cuerpo entero, escrito a mano**, sin nombre.
+
+Dos usos en el árbol es un precedente; cero usos es una preferencia. `morir()`
+queda definida en `scripts/lib.sh`, con el mismo cuerpo que `capa-marca.sh`
+—incluido el `>&2`, que es lo correcto para un error fatal— y con los colores y
+la sangría de la casa para que su línea se alinee con `ok`/`fallo`/`aviso`.
+
+#### (d) LA CUENTA DE MODELOS ERA DE DOS Y SON CUATRO
+
+Buscando cómo aborta cada guion **fuera de `imagen/`** aparecen dos formas más
+que la casilla no nombra, y las dos son de los guiones numerados:
+
+| Idioma | Cuántos | Forma | Qué tiene de malo |
+|---|---|---|---|
+| A — contar, resumir y abortar | **20** | `fallo "…"; resumen; exit 1` | Ni cuenta-y-sigue ni aborta-en-seco: es un tercer modelo sin nombre |
+| B — guarda muda | **20** en una línea, más las de varias líneas | `{ echo "No existe X…"; exit 1; }` | **No escribe `[FALLO]`**: quien lea la salida buscando el vocabulario no ve nada |
+
+Órdenes: `grep -rhn 'resumen; *exit 1' scripts/*.sh design/*.sh | wc -l` da 20, y
+`grep -rh 'exit 1' scripts/*.sh design/*.sh bancos/*.sh | grep -v resumen | grep
+echo | grep -v '\[FALLO\]' | wc -l` da 20. **La segunda cifra es un suelo, no un
+total**: sólo cuenta las de una línea, y hay más repartidas en dos
+(`00-entorno.sh:49-50`, `01-repo.sh:25-26`).
+
+**Los 20 de la guarda muda NO se han convertido a `morir()`, a propósito.** Es
+una mutación de comportamiento —añade `[FALLO]` y manda a stderr— en guiones que
+**este Mac no puede ejecutar**: son de VM Ubuntu. Convertirlos aquí sería
+declarar terminado lo que no se ha visto correr. Queda nombrado y medido para su
+turno, no hecho.
+
+#### (e) HAY UN SÉPTIMO GUION SIN `set` QUE NADIE HABÍA CONTADO, Y NO DEBE TENERLO
+
+La casilla nombra trece, y la enmienda añadió tres —`design/generar.sh`,
+`capturar-aspecto.sh`, `diario.sh`—. **Son diecisiete: falta
+`imagen/encina-seed.sh`.** Y su ausencia es correcta, por dos motivos medidos:
+
+1. Es **`#!/bin/sh`**, no `bash`. `set -o pipefail` no es portable ahí.
+2. **Va dentro de la ISO.** `imagen/fabricar-iso.sh:376` lo mete en la
+   `late-command` del autoinstall **codificado en base64**. Tocarlo cambia los
+   bytes del medio, no sólo los del repositorio.
+
+#### (f) DOS FALSOS `set` QUE EL `grep` INGENUO CUENTA
+
+`grep '^\s*set -'` da dos verdes falsos, y los dos se ven sólo abriendo el
+fichero:
+
+- **`scripts/06-ci.sh:90`** — `set -u`, pero **dentro de un `run: |` de un
+  workflow de GitHub**: es el cuerpo de un paso de CI, no las opciones del guion.
+- **`scripts/banco-veredicto.sh:86` y `:116`** — `set -- $par`, que fija
+  **parámetros posicionales** y no opciones de shell. La misma palabra.
+
+#### (g) Lo hecho: 23 guiones, y ni uno de `imagen/`
+
+Los **23 guiones fuera de `imagen/`** declaran ahora su modelo en la cabecera.
+De ellos, **16** no tenían `set` propio y ahora lo reafirman tras el `source`;
+los otros **7** ya lo tenían y sólo les faltaba la línea que dice cuál de los
+modelos usan.
+
+**Cuatro son de modelo ABORTAR y son herramientas, no instrumentos** —no tienen
+contadores ni `resumen()`, así que no hay nada que apuntar—: `capturar-vm.sh`,
+`teclear-vm.sh`, `contar-arranques.sh` y `diario.sh`. **A los dos primeros NO se
+les ha unificado el `set`**: llevan `set -u` sin `pipefail`, y añadirlo sin poder
+ejecutarlos —manejan VMs— sería otra mutación sin verificar. Va `[OMIT]`.
+
+Control del cambio, sobre el `diff` y no sobre la intención:
+
+```
+=== CONTROL 0: el diff NO esta vacio (lo que faltaba antes) ===
+  ficheros en el diff = 23  [OK] son 23
+=== CONTROL 1: el diff SOLO añade comentarios, 'set' y el cuerpo de morir() ===
+  [OK]    nada mas
+=== CONTROL 2: la 'set' añadida es identica a la que ya ponia lib.sh ===
+  lib.sh:5 en a8d7bb1 = [set -euo pipefail]
+  añadidas (unicas)   = [set -euo pipefail]  x16
+  [OK]    identica -> reafirmar no cambia ni una opcion
+```
+
+#### (h) LA TRAMPA MÁS CARA DEL DÍA: UN CONTROL QUE EJECUTA LO QUE CREE LEER
+
+El primer control por guion que se escribió comparaba las opciones de shell
+**haciendo `source` de cada guion** antes y después. Es inválido, y no por poco:
+**`source` de un guion no lee su cabecera, LO EJECUTA.**
+
+Lo que pasó, escrito entero porque es el dato:
+
+- Se ejecutaron de verdad los 23 guiones. Entre ellos **`scripts/01-repo.sh`**,
+  que en su línea 154 hace `git add -A && git commit`. **Creó el commit
+  `4e4765d`, «Esqueleto de encina-branding y scripts de construcción», encima de
+  `a8d7bb1`**, que nadie había pedido.
+- Y **`scripts/06-ci.sh`** y el propio `01-repo.sh` fabricaron un repositorio
+  entero en **`~/encina`** —su raíz por defecto— con dos commits dentro.
+- El mando se comió el tiempo de espera (2 min) y **el primer control dio un
+  `[OK]` FALSO Y VACÍO**: como el árbol había quedado limpio por el commit, el
+  `diff` no tenía nada, el filtro no encontró líneas raras… **y decir «no hay
+  líneas raras» sobre cero líneas se lee exactamente igual que un aprobado.**
+
+**Por eso el control de arriba empieza por el CONTROL 0**, que sólo comprueba que
+el `diff` tiene 23 ficheros. Un comprobador de contenido necesita antes un
+comprobador de que hay contenido.
+
+**Reparado, y medido:** `git reset --mixed a8d7bb1` deshizo el commit
+conservando el trabajo —no estaba subido: `git branch -r --contains 4e4765d` sale
+vacío y `origin/main` sigue en `a8d7bb1`—, y `4e4765d` sigue en el reflog.
+**Nada fuera de los 23 `.sh` se tocó**, comprobado con
+`git diff --stat a8d7bb1 HEAD -- imagen/ medios/ '*.md' .github/ debian-packages/`,
+que sale **vacío**; `~/.gitconfig` intacto (mtime de noviembre de 2025), y la ISO
+`medios/encina-os-amd64.iso` sigue con sus 6.849.232.896 bytes y su fecha del 22.
+**`~/encina` era nuevo del todo** —sus dos únicos commits son de las 13:10 de
+hoy—, así que no se pisó nada de Jorge; queda ahí, sin borrar, para que lo decida
+él.
+
+#### (i) Los bancos: tres verdes idénticos, dos `[OMIT]`
+
+Medidos **antes** de tocar nada y comparados **byte a byte** después:
+
+```
+  [OK]    banco-cadena             identico byte a byte que antes de tocar nada
+  [OK]    banco-mecanismos         identico byte a byte que antes de tocar nada
+  [OK]    banco-veredicto          identico byte a byte que antes de tocar nada
+  [OMIT]  banco-autosuficiencia    exige --repo y --constructor usuario@vm-linux: no hay VM en este Mac
+
+=== NEGATIVO: el comparador de bancos tiene que ver un cambio ===
+  [OK]    ve un sabotaje de un solo byte
+```
+
+`banco-cadena` da `correctas: 8 fallos: 0`, `banco-veredicto` `correctas: 9
+fallos: 0`. **`banco-mecanismos` es idéntico, pero su idéntico es un `[OMIT]`**:
+sale con `RC=1` diciendo `CONTROL ROTO: no se ejecuto ni un caso (6 omitidos)`
+porque busca en `medios/` seis ISOs con nombres que ahí no están. **No es un
+aprobado ni antes ni después**, y el guion tiene la honradez de decirlo él mismo.
+
+`bancos/enlaces.sh` es el quinto y va aparte, en (j).
+
+#### (j) EL INSTRUMENTO DE LA TAREA 1 CAZÓ ESTA MISMA TAREA
+
+Al comparar `bancos/enlaces.sh` contra su línea base salieron **~30 `[FALLO]`
+nuevos**, todos de la forma:
+
+```
+[FALLO] scripts/00-entorno.sh:8 cita MEDICIONES.md §4.67, y ese documento no tiene esa seccion
+```
+
+Ciertos todos: las cabeceras nuevas citan **esta sección**, escrita después. **Es
+exactamente para lo que se construyó** —vigilar que no queden referencias muertas
+al mover código— y es la primera vez que caza a quien lo invoca. Con §4.67
+escrita, vuelve a verde; su salida final está abajo.
+
+#### (k) Lo que esta tarea NO ha hecho, y por qué
+
+- **`[OMIT]` los 10 `fallo()` de `imagen/`**, que son donde vive el problema: los
+  6 que abortan y los 4 que cuentan. **Jorge está en la fase 1 arrancando el
+  medio `amd64` en el portátil AMD A9**, y `imagen/` es lo que fabrica y lo que
+  lee ese medio. Queda la lista exacta en (b): son seis `fallo() { echo "[FALLO]
+  $*"; exit 1; }` a renombrar `morir()`, más la línea de modelo en los 13
+  guiones de `imagen/` —`encina-seed.sh` sólo comentario, por (e)—.
+- **`[OMIT]` los 20 idiomas de guarda muda** de (d): mutación de comportamiento
+  en guiones que este Mac no ejecuta.
+- **`[OMIT]` `shellcheck`**: sigue sin estar en este Mac. Los 23 pasan `bash -n`.
+- **`[OMIT]` ejecutar los 13 numerados**: son de VM Ubuntu. La garantía de que no
+  cambian es el CONTROL 2, que es de forma —la línea añadida es idéntica a la que
+  ya se ejecutaba— y no de ejecución.
+
+**Por eso la casilla de la tarea 2 sigue sin marcar**: su «hecha cuando» pide que
+`grep -rn 'fallo()'` enseñe **una sola forma**, y mientras `imagen/` no se toque
+enseña dos.
+
+### 4.68 LA RAÍZ NO SE INVENTA: `raiz_repo()` deja de tener `~/encina` de reserva (2026-08-23)
+
+**Por qué esto y no borrar el directorio.** `~/encina` es el síntoma. La causa es
+una línea de `scripts/lib.sh`:
+
+```
+raiz_repo() { local d="${ENCINA_REPO:-$HOME/encina}"; echo "$d"; }
+```
+
+**Ese valor de reserva ha mordido dos veces, y las dos en silencio:**
+
+| Cuándo | Qué hizo | Cómo se cazó |
+|---|---|---|
+| **2026-08-14** (§4.13 y el bloque de `03-construir.sh:243`) | `03-construir.sh` dijo `[OK] Generado: encina-branding_0.1.7_all.deb` con el changelog en **0.1.9**: construyó **otro clon, de cuatro días antes**, entero y sin una queja | De rebote, por tres `[FALLO]` de iconos |
+| **2026-08-23** (§4.67 h) | `01-repo.sh`, ejecutado sin querer, **fabricó un repositorio entero en `~/encina`** y le hizo dos commits | Mirando por qué `git diff` salía vacío |
+
+**Un valor por defecto que apunta a un sitio PLAUSIBLE Y DISTINTO es peor que no
+tener valor por defecto: el guion no falla, acierta en otro sitio.** Un fallo
+ruidoso cuesta un minuto; éste costó, la primera vez, construir y creer un
+paquete equivocado.
+
+#### (a) Por qué no era otro detector
+
+Después del 2026-08-14 la reacción fue **poner un detector en `03-construir.sh`**
+—compara el árbol construido con el que tienes delante— y **dejar la causa en
+pie**. Ese guion tiene escrito, de aquel día, el argumento que explica por qué un
+detector no basta:
+
+> *«Y OJO CON EL ARREGLO FÁCIL […]: cuando `raiz_repo` se desvía, se lleva las
+> dos cosas al mismo sitio equivocado y las dos coinciden: la comprobación habría
+> dado verde sobre el fallo que dice cazar.»*
+
+Un detector por guion sólo protege **ese** guion: nueve meses después, el que
+mordió fue `01-repo.sh`, que no tenía ninguno. La causa se arregla una vez.
+
+#### (b) El arreglo, y por qué la respuesta estaba a mano
+
+Sin `ENCINA_REPO`, la raíz es **el árbol donde vive `lib.sh`** —resuelto una sola
+vez al hacer `source`, en `ENCINA_LIB_DIR`, así que no depende del directorio
+actual ni de `$HOME`—. Si ahí no hay un `AGENTS.md`, **`morir()`**, que es la
+función que ha nacido hoy en la tarea 2.
+
+No es una idea nueva en este árbol: **`design/generar.sh:25` ya lo hacía por su
+cuenta** —*«La raíz sale de dónde está este fichero y no de `$HOME/encina`»*—.
+Segundo guion que se defiende solo de `lib.sh`, después del `morir()` de
+`capa-marca.sh`. Cuando dos guiones se protegen por su cuenta de la biblioteca,
+el que está mal es la biblioteca.
+
+**`ENCINA_REPO` sigue mandando**, porque apuntar a otro árbol *a propósito* es
+legítimo y así lo invocan la CI (`"$PWD"`) y la VM constructora (`/mnt/encina`).
+Lo que ya no se puede es acabar en otro árbol **sin haberlo pedido**.
+
+#### (c) El control, en las dos direcciones
+
+**El negativo va primero, y aquí es literal: se reproduce el fallo con el
+`lib.sh` de `a8d7bb1`.** Sin él, «ahora sale la ruta buena» no distingue el
+arreglo de una prueba que mira otra cosa.
+
+```
+=== NEGATIVO PRIMERO: ¿que hacia ANTES? (si no, el positivo no dice nada) ===
+  antes, sin ENCINA_REPO y desde /tmp -> /Users/jorge/encina
+  [OK]    reproducido el fallo: se inventaba ~/encina
+
+=== POSITIVO 1: sin ENCINA_REPO, desde /tmp ===
+  ahora -> /Users/jorge/Projects/encina-os
+  [OK]    el arbol donde vive lib.sh, no $HOME
+
+=== POSITIVO 2: ENCINA_REPO sigue mandando (CI y VM) ===
+  ENCINA_REPO=/mnt/encina -> /mnt/encina
+  [OK]    respetado
+
+=== NEGATIVO 2: arbol sin AGENTS.md -> tiene que MORIR, no inventar ===
+  rc=1
+  |   [FALLO] no encuentro la raiz del repositorio: '…/falso' no tiene AGENTS.md.
+  |           Este lib.sh vive en …/falso/scripts. Si querias otro arbol, dilo:
+  |               ENCINA_REPO="$PWD" bash
+  [OK]    muere en vez de inventarse una raiz
+```
+
+Las dos pruebas se hacen **desde `/tmp`**, no desde el repositorio: si se hicieran
+desde dentro, un `raiz_repo()` que devolviera `$PWD` también pasaría, y no es eso
+lo que se quiere.
+
+#### (d) Un efecto de lado que quita una regla de memoria
+
+`ENCINA_REPO="$PWD" ./scripts/diario.sh …` era obligatorio en este Mac o el
+ritual de cierre escribía en `~/encina`. **Ya no hace falta**: `diario.sh` sin
+variable escribe en el árbol donde vive. Se puede seguir poniendo —no estorba—,
+pero olvidarla ha dejado de tener consecuencias.
+
+#### (e) Prosa enmendada, dejando al lado lo que decía
+
+Cuatro sitios afirmaban el valor por defecto viejo, y los cuatro eran ciertos
+hasta hoy: `SCRIPTS.md` §«Ubicación del repositorio» y su tabla, la cabecera de
+`01-repo.sh` (*«Crea ~/encina»*) y **el mensaje de error de
+`03-construir.sh`**, que le decía al usuario una regla que ya no rige. El detector
+de ese guion **se queda**, con su enmienda al lado: sigue cazando el caso que aún
+existe, un `ENCINA_REPO` puesto a propósito y apuntando a donde no querías.
+
+#### (f) Lo que no cubre
+
+- **`[OMIT]` los guiones de `imagen/`**: ninguno usa `raiz_repo()` —no hacen
+  `source` de `lib.sh`, §4.67— así que ni les afectaba ni les afecta.
+- **`[OMIT]` ejecutar los 13 numerados**: son de VM. Lo comprobado es
+  `raiz_repo()` en aislamiento, con los cuatro casos de (c), más `bash -n`.
+- **`~/encina` sigue en el disco.** No se borra sola y no la borra este cambio:
+  lo que cambia es que **ya nada vuelve a escribir ahí sin que se lo pidan**.

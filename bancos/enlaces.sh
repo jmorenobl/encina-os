@@ -111,6 +111,9 @@
 # el guion avisa de las exclusiones que ya no hacen falta, que es como una lista
 # de excepciones deja de pudrirse.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta y SIGUE midiendo; morir() aborta; el código de salida lo fija el
+# resumen del final. Declarado aquí para no tener que deducirlo leyendo.
 set -uo pipefail
 export LC_ALL=C
 

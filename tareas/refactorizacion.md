@@ -205,6 +205,64 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       declara su `set` en la cabecera con una línea que diga cuál de los dos
       modelos usa, y **los cuatro bancos siguen dando lo mismo que hoy**.
 
+      **ENMIENDA DEL 2026-08-23 (noche): EJECUTADA LA MITAD QUE NO TOCA
+      `imagen/`. LA CASILLA SIGUE SIN MARCAR, y el motivo está escrito.** La
+      medición entera es [MEDICIONES.md](../MEDICIONES.md) §4.67.
+
+      **El reparto no es cinco y seis: son SEIS y SEIS.** La enmienda de esta
+      mañana no era falsa, era **de ayer**: la sexta que cuenta es
+      `bancos/enlaces.sh`, **que la tarea 1 creó esa misma tarde**. En un plan
+      que se ejecuta, una cuenta de guiones caduca en horas.
+
+      **El tercer nombre es `morir()` y no `abortar()`**, y no por gusto: el
+      árbol lo tenía ya en dos sitios —`imagen/capa-marca.sh:92` lo define, y
+      `scripts/contar-arranques.sh:43` escribe su cuerpo entero a mano sin
+      ponerle nombre—. Dos usos son un precedente; cero son una preferencia.
+      Queda definida en `scripts/lib.sh` con el cuerpo de `capa-marca.sh`.
+
+      **Hecho:** los **23 guiones fuera de `imagen/`** declaran su modelo en la
+      cabecera; **16** no tenían `set` propio y ahora lo reafirman tras el
+      `source` —**demostrado no-op con su control y su negativo**, §4.67 (a)—.
+      **Cuatro son de modelo ABORTAR y son herramientas, no instrumentos**:
+      `capturar-vm.sh`, `teclear-vm.sh`, `contar-arranques.sh` y `diario.sh`.
+
+      **Y la casilla contaba dos modelos: hay CUATRO.** Los guiones numerados
+      abortan de dos formas más que ésta no nombraba —**20** veces
+      `fallo "…"; resumen; exit 1`, y **20 o más** guardas mudas
+      `{ echo "…"; exit 1; }` que **no escriben `[FALLO]`**—. Medido en §4.67 (d)
+      y **no convertido**: es mutación de comportamiento en guiones de VM que
+      este Mac no ejecuta.
+
+      **Y hay un guion sin `set` que no estaba en ninguna lista, y no debe
+      tenerlo:** `imagen/encina-seed.sh`. Es `#!/bin/sh` y **va dentro de la
+      ISO** —`fabricar-iso.sh:376` lo mete en base64 en la `late-command`—, así
+      que tocarlo cambia los bytes del medio. §4.67 (e).
+
+      *Lo que falta, que es la carga útil y está bloqueada por la fase 1:* los
+      **10 `fallo()` de `imagen/`**, seis que abortan y cuatro que cuentan.
+      **Jorge está arrancando el medio `amd64` en el portátil**, e `imagen/` es
+      lo que fabrica y lo que lee ese medio. La lista exacta está en §4.67 (b) y
+      (k); es una sesión corta cuando la fase 1 acabe.
+
+      *Y una trampa nueva, que costó un commit:* **`source` de un guion para
+      leerle el `set` no lo lee, LO EJECUTA.** El primer control por guion
+      ejecutó los 23, `scripts/01-repo.sh:154` hizo un `git commit` que nadie
+      pidió y `06-ci.sh` fabricó un repositorio en `~/encina`. Deshecho con
+      `git reset --mixed`; nada fuera de los 23 `.sh` se tocó. **Y el control
+      dio un `[OK] FALSO Y VACÍO`**, porque el árbol quedó limpio y «no hay
+      líneas raras» sobre **cero** líneas se lee igual que un aprobado: por eso
+      el control definitivo empieza comprobando que el `diff` no está vacío.
+      §4.67 (h).
+
+      *Y los bancos son cinco, no cuatro:* `banco-cadena` (8/0),
+      `banco-veredicto` (9/0) y `banco-mecanismos` salen **idénticos byte a
+      byte** a antes de tocar nada —el de mecanismos, `[OMIT]`: sin las ISOs en
+      `medios/` sale `CONTROL ROTO`, ni antes ni después es un aprobado—;
+      `banco-autosuficiencia` va **`[OMIT]`**, exige VM. Y **`bancos/enlaces.sh`
+      cazó esta misma tarea**: ~30 `[FALLO]` ciertos porque las cabeceras nuevas
+      citaban §4.67 antes de que existiera. Escrita, vuelve a
+      `correctas: 9  fallos: 0`.
+
 ## 3. `lib/salida.sh`, y que `imagen/` lo use
 
 - [ ] **Partir `scripts/lib.sh` en dos capas y llevar la portátil a `imagen/`.**

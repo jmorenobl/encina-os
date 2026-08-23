@@ -10,7 +10,7 @@ después, y ninguno da nada por bueno sin comprobarlo.
 | Script | Qué hace | Dónde |
 |---|---|---|
 | `00-entorno.sh "Nombre" "correo"` | Instala herramientas, configura git y DEBEMAIL | VM |
-| `01-repo.sh [tar.gz]` | Crea ~/encina, coloca el esqueleto, verifica el árbol | VM |
+| `01-repo.sh [tar.gz]` | Coloca el esqueleto en el repositorio, verifica el árbol | VM |
 | `02-activos.sh [--forzar]` | Genera fondos y logotipo, verifica formatos | VM |
 | `03-construir.sh` | **Reglas duras** + build + lintian | VM y CI |
 | `04-instalar.sh` | Instala y comprueba todo lo verificable sin reiniciar | VM |
@@ -134,13 +134,12 @@ tar xzf encina-scripts.tar.gz
 cd encina-scripts
 ./scripts/00-entorno.sh "Tu Nombre" "tu@correo.real"
 ./scripts/01-repo.sh ~/encina-branding.tar.gz
-cd ~/encina
 ./scripts/02-activos.sh
 ./scripts/03-construir.sh
 ```
 
-A partir de `01-repo.sh` los scripts viven dentro del repositorio, en
-`~/encina/scripts`, y se versionan con él.
+A partir de `01-repo.sh` los scripts viven dentro del repositorio, en su
+`scripts/`, y se versionan con él.
 
 ## El laboratorio de E2: fabricar una VM desatendida desde el Mac
 
@@ -487,11 +486,24 @@ una salida. Esta tabla es la que los hace legibles.
 
 ## Ubicación del repositorio
 
-Por defecto `~/encina`. Si lo tienes en otro sitio:
+**El árbol donde vive `scripts/lib.sh`.** No hace falta decir nada: los guiones
+saben dónde están. Para apuntar **a propósito** a otro árbol —así lo invocan la
+CI y la VM constructora—:
 
 ```
 export ENCINA_REPO=/ruta/a/tu/repo
 ```
+
+**ENMIENDA DEL 2026-08-23 (`MEDICIONES.md` §4.67).** Aquí decía
+~~«Por defecto `~/encina`»~~ y era verdad: `raiz_repo()` devolvía
+`${ENCINA_REPO:-$HOME/encina}`. **Ese valor de reserva mordió dos veces y las
+dos en silencio** —el 2026-08-14 `03-construir.sh` construyó otro clon de cuatro
+días antes y dijo `[OK]`; el 2026-08-23 `01-repo.sh` fabricó un repositorio
+entero en `~/encina` y le hizo dos commits—. **Un valor por defecto que apunta a
+un sitio plausible y distinto es peor que no tener valor por defecto: el guion
+no falla, acierta en otro sitio.** Ahora, sin `ENCINA_REPO`, la raíz se deduce
+de dónde está `lib.sh`; y si ahí no hay un `AGENTS.md`, **muere** en vez de
+inventarse una ruta.
 
 ## Comprobado
 

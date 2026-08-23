@@ -29,6 +29,9 @@
 #    —E1 está terminado 12 de 12— y una VM sin citar puede ser la única copia
 #    de algo. Por eso el veredicto de cada fila es [OJOS] y no [OK].
 #
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta y SIGUE midiendo; morir() aborta; el código de salida lo fija el
+# resumen del final. Declarado aquí para no tener que deducirlo leyendo.
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 requiere_no_root

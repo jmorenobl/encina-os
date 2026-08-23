@@ -13,6 +13,12 @@
 # sistema se queda en el Snap saliendo con éxito (MEDICIONES.md §4.10e).
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa N_MAL y SIGUE midiendo; morir() aborta; quien fija el
+# código de salida es resumen(). El 'set' lo pone lib.sh:5 al hacer source: se
+# REAFIRMA aquí para que las opciones de shell de este guion no dependan de a
+# quién llame. Reafirmarlo no cambia ni una opción — control en §4.67.
+set -euo pipefail
 requiere_no_root
 requiere_cmd dpkg-buildpackage lintian dpkg-deb
 
