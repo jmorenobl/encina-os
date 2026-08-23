@@ -17975,3 +17975,134 @@ enmendado con su fecha.
 de (b) sigue siendo leída y no reproducida. Y esta CI sigue **sin declarar
 probado** amd64: construye y cuadra, que es otra cosa, y la que prueba es la
 fase 1.
+
+### 4.70 EL HIERRO, PRIMER DÍA: el `[OJOS]` de Plymouth se cobra, el segundo arranque se queda en negro por GDM y no por Encina, y el modo oscuro se lleva la bellota (2026-08-23, tarde)
+
+**Dónde:** un **Acer Aspire ES1-524** (AMD A9 de 7ª generación), el hierro `amd64`
+de la receta de `ENCINA-OS.md` §7. Lo instaló y lo miró Jorge; las órdenes las
+tecleó él y las salidas llegaron **en foto**, así que lo literal de aquí está
+transcrito a mano de una pantalla, y se dice. Es la **fase 1a** del orden del
+2026-08-23. Hizo falta tocar «un par de cosas» de la BIOS —no anotadas, y es un
+`[OMIT]` de esta sección: la receta exigía UEFI y no se sabe cuáles fueron—.
+
+#### (a) LO QUE SE COBRA: el `splash` de la MÁQUINA INSTALADA es la encina
+
+Primer arranque tras instalar: Plymouth con **el árbol de Encina y la barra de
+progreso**, sobre fondo claro, en hierro y en `amd64`. Foto de Jorge. Es la fila
+**f** de la tabla de la receta, y es **el `[OJOS]` de Plymouth** —el del medio
+dice Ubuntu y D23 lo declara—. `[OJOS]`, mirado por Jorge; **cerrado**.
+
+Y la sesión, en la foto del escritorio: fondo de Encina, «ENCINA OS / Versión
+24.04 LTS / Edición ‘La Mancha’», dock abajo, «Carpeta personal» en el
+escritorio. Fila **c** de la receta, en hierro.
+
+#### (b) EL SEGUNDO ARRANQUE SE QUEDA EN NEGRO — y no es el arranque, es el saludador
+
+Reiniciada la máquina: Plymouth pinta, y después **negro**. El repositorio ya
+tenía escrito que un negro no concluye nada (§4.43d, §4.55), así que se midió en
+vez de atribuir. `Ctrl+Alt+F3` dio consola de texto: **la máquina estaba viva.**
+
+```
+journalctl --list-boots
+IDX  FIRST ENTRY                   LAST ENTRY
+ -2  2026-08-23 16:23:56 CEST      16:33:43      <- el instalador
+ -1  2026-08-23 16:33:58 CEST      17:11:00      <- el arranque BUENO
+  0  2026-08-23 17:13:11 CEST      17:22:55      <- el NEGRO
+
+journalctl -b -p err | tail        -> APIC ID mismatch (x2), tpm_crb -EBUSY, X.509 -65 (x2),
+                                      bluetoothd SAP, gdm3 «GDM_IS_REMOTE_DISPLAY» (aserción),
+                                      pam_lastlog.so ausente.   NI UNA LINEA de amdgpu/drm.
+systemctl status gdm               -> active (running) desde 17:13:19
+                                      17:13:29 gdm-launch-environment: session opened for user gdm
+```
+
+O sea: núcleo bien, **GDM arrancó y lanzó el saludador** a los 10 s. Y el dato que
+acota del todo: en el negro, **`Ctrl+Alt+F1` enseña el puntero del ratón sobre el
+texto rancio de la consola**. El puntero lo pinta un plano *hardware* de la GPU,
+aparte del resto: **el saludador está vivo, ha tomado tty1 y no consigue presentar
+ni un fotograma**.
+
+**El control, y salió a la primera:**
+
+```
+sudo systemctl restart gdm     -> el saludador APARECE, entra la sesion, todo normal
+```
+
+Así que no es una instalación rota ni una actualización mala: es **una carrera en
+el traspaso Plymouth → GDM en esa GPU** (Stoney Ridge, `amdgpu`): el saludador
+arranca antes de que el dispositivo esté del todo listo y se queda así para
+siempre. Reiniciado GDM con `amdgpu` ya asentado, pinta. **Ninguno de los cuatro
+paquetes de este repositorio toca ese traspaso**, y se dice porque es lo primero
+que alguien va a pensar.
+
+**`[OMIT]`, y no se da por bueno:** la **frecuencia** —un arranque bueno y uno
+malo no es una tasa; hacen falta cinco— y **la salida literal del saludador
+fallido**, `journalctl -b _UID=120`, que no se guardó antes de reiniciar GDM. Las
+mitigaciones, de menos a más invasiva, quedan nombradas y **ninguna aplicada**:
+que `gdm.service` espere al dispositivo DRM, forzar X11 en el saludador
+(`WaylandEnable=false`), `amdgpu.dc=0` en el núcleo. Y si alguna hace falta, **no
+va en un paquete**: va en la receta del hierro como aviso de esa máquina.
+
+#### (c) EL BOTÓN DE LA REJILLA VUELVE A SER EL DE UBUNTU — y el paquete no tiene la culpa, pero el producto sí
+
+Entre el primer arranque y el segundo, **la bellota del dock se convirtió en el
+logotipo de Ubuntu** (foto). Las tres hipótesis y lo que las separa, desde la
+sesión gráfica —no por `ssh`, que ahí `gsettings` miente—:
+
+```
+gsettings get org.gnome.desktop.interface icon-theme   -> 'Yaru-sage'
+dconf read /org/gnome/desktop/interface/icon-theme     -> 'Yaru-sage'      <- HAY VALOR DE USUARIO
+ls /usr/share/icons/Encina/scalable/actions/           -> view-app-grid-symbolic.svg
+                                                          view-app-grid-ubuntu-symbolic.svg
+dpkg -V encina-branding                                -> (nada: el paquete esta intacto)
+strings gschemas.compiled | grep -c Encina             -> no hay 'strings' en la maquina: [OMIT]
+```
+
+**Medido:** el paquete está entero y el SVG sigue; lo que hay es **un valor escrito
+en el dconf del usuario**, y en cuanto existe, el override del paquete
+(`99-encina-branding.gschema.override`) pierde **por construcción**: un valor de
+usuario gana siempre a un *default*. El propio override lo dejó escrito —*«si
+algún día alguien lo cambia a mano en Ajustes, ganará la persona: es lo
+correcto»*— y **esa frase era una deducción optimista**.
+
+**Y el valor delata quién lo escribió:** no es `'Yaru'` sino **`'Yaru-sage'`**, que
+es exactamente el acento que nosotros ponemos en `gtk-theme`. Jorge lo confirmó:
+**en la primera sesión probó el modo oscuro en Ajustes y lo volvió a dejar en
+claro**. El panel «Apariencia» de Ubuntu 24.04, al cambiar el estilo, **escribe
+`gtk-theme` e `icon-theme` A LA VEZ** a `Yaru-<acento>[-dark]` —ya lo medía el
+comentario del override, línea 63—, y no conoce `Encina`, así que al volver a
+claro dejó `icon-theme='Yaru-sage'` en el perfil. Jorge lo vio pasar: *«al
+cambiar, cambió el icono de la bellota por el de Ubuntu»*.
+
+**Esto es un FALLO DE PRODUCTO**, y no de Jorge: la persona no eligió quitar la
+marca, eligió el modo oscuro —que es lo primero que toca cualquiera—, y la marca
+se fue con él. Ninguna VM lo había enseñado porque **en ninguna VM nadie había
+abierto Ajustes y vuelto a entrar**. Va como casilla nueva en
+`tareas/aspecto/5-cierre.md`, y **la salida no se decide aquí**. Las candidatas,
+para que no haya que volver a pensarlas: *(1)* que la bellota no dependa de
+`icon-theme` —`dpkg-divert` sobre el SVG de Yaru, que es el mecanismo que R5
+prescribe para `os-release` y que D22 va a necesitar igualmente—, midiendo antes
+si los diez acentos `Yaru-*` heredan ese fichero de `Yaru` o llevan copia; *(2)*
+renunciar al acento `sage` en el override, que es lo que dispara la escritura
+—habría que medir si con `gtk-theme='Yaru'` el panel deja `icon-theme` en paz, y
+probablemente no—; *(3)* un tema `Encina` que el panel reconozca como acento, que
+no existe en 24.04 (no hay `accent-color`, línea 58 del override). El control de
+cualquiera de las tres es el mismo y ya está escrito: **tocar el modo oscuro,
+volver, salir y entrar, y que la bellota siga**.
+
+Para deshacerlo en esa máquina sin tocar ningún paquete, **una orden y es del
+usuario, no de root**: `dconf reset /org/gnome/desktop/interface/icon-theme`.
+**No ejecutada aún** al cerrar esta sección.
+
+#### (d) Lo que esta sección NO contesta
+
+- Las filas **a, d, e, g** de la receta (menú de GRUB, instalador en español,
+  `verificar-instalacion.sh` dentro, y SIN RED) no se han mirado ni ejecutado:
+  Jorge dice «todo parece haber ido correctamente» y eso es un `[OJOS]` sin
+  desglosar, no cuatro `[OK]`.
+- Qué se tocó en la BIOS.
+- La frecuencia y el registro del negro, (b).
+- **Los horarios de `apt history` no cuadran con los arranques** —las
+  instalaciones van de `11:21` a `11:40` y el primer arranque es a las `16:23`—.
+  Puede ser el reloj del firmware en otra zona o en UTC mal leído; no se ha
+  mirado y no importa para (c), que está cerrado por otra vía.

@@ -116,6 +116,22 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       repositorio. Eso no es un fallo — es lo que pasa —, pero hay que escribirlo
       donde esa huella esté citada, que son varios sitios.
 
+- [ ] **Que el modo oscuro no se lleve la bellota.** Nueva el 2026-08-23, y la
+      encontró el hierro (`MEDICIONES.md` §4.70c): en el Acer, Jorge probó el modo
+      oscuro en Ajustes y lo volvió a dejar en claro, y **el botón de la rejilla
+      pasó a ser el logotipo de Ubuntu y así se quedó**. El panel «Apariencia»
+      escribe `icon-theme='Yaru-<acento>'` junto con `gtk-theme`, y un valor de
+      usuario gana siempre al override del paquete. **Es un fallo de producto**:
+      la persona eligió el modo oscuro, no quitar la marca, y es lo primero que
+      toca cualquiera. *Por qué no se vio:* en ninguna VM nadie abrió Ajustes y
+      volvió a entrar.
+      *Hecha cuando:* en una sesión limpia, cambiar a oscuro, volver a claro,
+      cerrar sesión y entrar, **y la bellota sigue** —mirado—, con `dconf read
+      /org/gnome/desktop/interface/icon-theme` enseñado antes y después. Las tres
+      salidas candidatas están nombradas en §4.70c y **no se elige aquí**; la
+      primera (`dpkg-divert` sobre el SVG de Yaru, el mecanismo que R5 prescribe)
+      exige medir antes si los acentos `Yaru-*` heredan ese fichero o llevan copia.
+
 - [ ] **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
       probado en la máquina donde se hizo.
       *Hecha cuando:* una instalación limpia enseña las seis pantallas con la

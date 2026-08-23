@@ -554,6 +554,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > | d | el instalador en **español**, cinco pantallas | ya medido en emulación |
 > | e | **CON RED:** que termine, y dentro `sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27` | el positivo de extremo a extremo en `amd64` |
 > | f | **el *splash* de la MÁQUINA INSTALADA: ahí sí tiene que salir la encina** | **ESTE es el `[OJOS]` de Plymouth**, y no el del medio. Lo pone `encina-branding`: registra `default.plymouth` con prioridad 200 y corre `update-initramfs -u` (R7), y el tema es `ModuleName=script`, **no `bgrt`** (R6) |
+> | f | | **COBRADO EL 2026-08-23 en el Acer Aspire ES1-524 (AMD A9), con foto** (§4.70a). Y dos cosas que el hierro enseñó el mismo día y ninguna VM había enseñado: **el segundo arranque se queda en negro tras Plymouth**, y **no es de Encina** —el saludador toma tty1 y no presenta; `sudo systemctl restart gdm` lo resuelve; frecuencia y registro `[OMIT]`, §4.70b—, y **el modo oscuro de Ajustes se lleva la bellota del dock** (§4.70c), que sí es de producto y tiene casilla en `tareas/aspecto/5-cierre.md`. Las filas **a, d, e, g** siguen sin desglosar |
 > | g | **SIN RED:** repetir | si se cae, **el sitio donde mirar ya está escrito**: `curthooks`, §4.63(t). Sería el **límite declarado del producto**, no un fallo del portátil |
 
 > ### EL ORDEN DE TODO LO QUE QUEDA, decidido por Jorge el 2026-08-23: **PUBLICAR ES LO ÚLTIMO**
