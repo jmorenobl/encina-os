@@ -292,8 +292,9 @@ Ejecutar en una VM Ubuntu **virgen**:
       `Encina/`); **tras la purga el desvío no está y el enlace original de
       Yaru ha vuelto** —ese es el control, y sin él el primero no vale—. Y la
       trampa 13: `icon-theme.cache` de Yaru **más nuevo** que el SVG, con el
-      paquete y tras la purga (el disparador de gtk corrió: se mide, no se
-      supone). Lo ejecuta `05-verificar.sh` (2c y su control en la purga). Lo
+      paquete y tras la purga (quien lo regenera es el `update-icon-caches`
+      que `dh_icons` añade a nuestro `postinst`/`postrm` —medido—: se mide,
+      no se supone). Lo ejecuta `05-verificar.sh` (2c y su control en la purga). Lo
       que esa casilla **no** prueba y es `[OJOS]` de Jorge
       (`tareas/aspecto/5-cierre.md`): en sesión gráfica, oscuro, claro, cerrar
       sesión, entrar, **y la bellota sigue**, con `dconf read

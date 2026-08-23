@@ -204,10 +204,12 @@ else
 "$(ls -l "$BELLOTA_YARU.distrib" 2>&1)"
 fi
 
-# (iv) TRAMPA 13: Yaru lleva icon-theme.cache y GTK lo consulta; enviar un
-# fichero bajo /usr/share/icons DEBERIA regenerarlo via el disparador de
-# gtk-update-icon-cache, pero eso es lo que se pidio, no lo que paso. Se
-# mide: el cache tiene que ser MAS NUEVO que nuestro SVG (el mtime del SVG
+# (iv) TRAMPA 13: Yaru lleva icon-theme.cache y GTK lo consulta. Quien lo
+# regenera -MEDIDO el 2026-08-24, no supuesto- es el trozo que dh_icons
+# añade a NUESTRO postinst y postrm: 'update-icon-caches
+# /usr/share/icons/Encina /usr/share/icons/Yaru' (solo toca caches que ya
+# existen: el de Yaru; Encina no lleva). Pero eso es lo que el paquete
+# pide, no lo que paso. Se mide: el cache tiene que ser MAS NUEVO que nuestro SVG (el mtime del SVG
 # viene del .deb, o sea del build; el del cache, de cuando corrio el
 # disparador). Un cache rancio puede seguir sirviendo el dibujo viejo con
 # el fichero nuevo ya en disco, y nadie lo ve hasta mirar el dock -la
@@ -217,8 +219,8 @@ if [[ -f "$CACHE_YARU" && "$CACHE_YARU" -nt "$BELLOTA_YARU" ]]; then
 else
     fallo "icon-theme.cache de Yaru NO se regenero tras instalar el SVG" \
 "$(ls -l --time-style=full-iso "$CACHE_YARU" "$BELLOTA_YARU" 2>&1)
-El disparador de gtk-update-icon-cache no salto (o el cache no existe). Un
-cache mas viejo que el fichero puede seguir sirviendo el icono de Ubuntu.
+El update-icon-caches de dh_icons (postinst) no corrio o no existe el
+cache. Un cache mas viejo que el fichero puede seguir sirviendo el de Ubuntu.
 A mano:  sudo gtk-update-icon-cache -f /usr/share/icons/Yaru"
 fi
 
