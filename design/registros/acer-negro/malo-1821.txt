@@ -1,0 +1,329 @@
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Queued start job for default target default.target.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Created slice app.slice - User Application Slice.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Created slice session.slice - User Core Session Slice.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started autofirma-ca-mozilla.path - Vigilar la aparicion de un perfil de Mozilla para instalarle la CA de AutoFirma.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started ubuntu-report.path - Pending report trigger for Ubuntu Report.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started launchpadlib-cache-clean.timer - Clean up old files in the Launchpadlib cache.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started snap.firmware-updater.firmware-notifier.timer - Timer firmware-notifier for snap application firmware-updater.firmware-notifier.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Reached target paths.target - Paths.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Reached target timers.target - Timers.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Starting dbus.socket - D-Bus User Message Bus Socket...
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Starting gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation)...
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on keyboxd.socket - GnuPG public key management service.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on pk-debconf-helper.socket - debconf communication socket.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on snapd.session-agent.socket - REST API socket for snapd user session agent.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on speech-dispatcher.socket - Speech Dispatcher Socket.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Reached target sockets.target - Sockets.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Reached target basic.target - Basic System.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Starting autofirma-ca-mozilla.service - Instalar la CA del socket de AutoFirma en los perfiles de Mozilla...
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: gnome-initial-setup-copy-worker.service - GNOME Initial Setup Copy Worker was skipped because of an unmet condition check (ConditionUser=!@system).
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started pipewire.service - PipeWire Multimedia Service.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started filter-chain.service - PipeWire filter chain daemon.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started snap.snapd-desktop-integration.snapd-desktop-integration.service - Service for snap application snapd-desktop-integration.snapd-desktop-integration.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started wireplumber.service - Multimedia Service Session Manager.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started pipewire-pulse.service - PipeWire PulseAudio.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Finished autofirma-ca-mozilla.service - Instalar la CA del socket de AutoFirma en los perfiles de Mozilla.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Reached target default.target - Main User Target.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Starting dbus.service - D-Bus User Message Bus...
+ago 23 18:20:08 jorge-Aspire-ES1-524 dbus-daemon[991]: [session uid=120 pid=991] AppArmor D-Bus mediation is enabled
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Started dbus.service - D-Bus User Message Bus.
+ago 23 18:20:08 jorge-Aspire-ES1-524 systemd[968]: Startup finished in 811ms.
+ago 23 18:20:08 jorge-Aspire-ES1-524 pipewire[981]: mod.jackdbus-detect: Failed to receive jackdbus reply: org.freedesktop.DBus.Error.ServiceUnknown: The name org.jackaudio.service was not provided by any .service files
+ago 23 18:20:09 jorge-Aspire-ES1-524 dbus-daemon[991]: [session uid=120 pid=991] Activating via systemd: service name='org.freedesktop.portal.Documents' unit='xdg-document-portal.service' requested by ':1.10' (uid=120 pid=986 comm="/usr/bin/snap run snapd-desktop-integration" label="unconfined")
+ago 23 18:20:09 jorge-Aspire-ES1-524 wireplumber[989]: SPA handle 'api.libcamera.enum.manager' could not be loaded; is it installed?
+ago 23 18:20:09 jorge-Aspire-ES1-524 wireplumber[989]: PipeWire's libcamera SPA missing or broken. libcamera not supported.
+ago 23 18:20:09 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=120 pid=1009 comm="/usr/libexec/gnome-session-binary --autostart /usr" label="unconfined")
+ago 23 18:20:09 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:09 jorge-Aspire-ES1-524 gnome-session[1009]: gnome-session-binary[1009]: WARNING: Could not check if unit gnome-session-wayland@gnome-login.target is active: Error al llamar StartSereviceByName para org.freedesktop.systemd1: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:09 jorge-Aspire-ES1-524 gnome-session-binary[1009]: WARNING: Could not check if unit gnome-session-wayland@gnome-login.target is active: Error al llamar StartSereviceByName para org.freedesktop.systemd1: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: Starting xdg-document-portal.service - flatpak document portal service...
+ago 23 18:20:09 jorge-Aspire-ES1-524 dbus-daemon[991]: [session uid=120 pid=991] Activating via systemd: service name='org.freedesktop.impl.portal.PermissionStore' unit='xdg-permission-store.service' requested by ':1.11' (uid=120 pid=1026 comm="/usr/libexec/xdg-document-portal" label="unconfined")
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: Starting xdg-permission-store.service - sandboxed app permission store...
+ago 23 18:20:09 jorge-Aspire-ES1-524 wireplumber[989]: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+ago 23 18:20:09 jorge-Aspire-ES1-524 dbus-daemon[991]: [session uid=120 pid=991] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: Started xdg-permission-store.service - sandboxed app permission store.
+ago 23 18:20:09 jorge-Aspire-ES1-524 dbus-daemon[991]: [session uid=120 pid=991] Successfully activated service 'org.freedesktop.portal.Documents'
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: Started xdg-document-portal.service - flatpak document portal service.
+ago 23 18:20:09 jorge-Aspire-ES1-524 xdg-document-portal[1026]: Ignoring invalid max threads value 4294967295 > max (100000).
+ago 23 18:20:09 jorge-Aspire-ES1-524 gnome-shell[1038]: Running GNOME Shell (using mutter 46.2) as a Wayland display server
+ago 23 18:20:09 jorge-Aspire-ES1-524 snapd-desktop-integration.snapd-desktop-integration[986]: Sorry, home directories outside of /home needs configuration.
+ago 23 18:20:09 jorge-Aspire-ES1-524 snapd-desktop-integration.snapd-desktop-integration[986]: See https://snapcraft.io/docs/home-outside-home for details.
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: snap.snapd-desktop-integration.snapd-desktop-integration.service: Main process exited, code=exited, status=1/FAILURE
+ago 23 18:20:09 jorge-Aspire-ES1-524 systemd[968]: snap.snapd-desktop-integration.snapd-desktop-integration.service: Failed with result 'exit-code'.
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Made thread 'KMS thread' realtime scheduled
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Added device '/dev/dri/card0' (simpledrm) using atomic mode setting.
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to initialize accelerated iGPU/dGPU framebuffer sharing: Not hardware accelerated
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Created gbm renderer for '/dev/dri/card0'
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Integrated GPU /dev/dri/card0 selected as primary
+ago 23 18:20:10 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.a11y.Bus' requested by ':1.3' (uid=120 pid=1038 comm="/usr/bin/gnome-shell" label="unconfined")
+ago 23 18:20:10 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.a11y.Bus'
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Using public X11 display :1024, (using :1025 for managed services)
+ago 23 18:20:10 jorge-Aspire-ES1-524 gnome-shell[1038]: Using Wayland display name 'wayland-0'
+ago 23 18:20:10 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1092]: dbus-daemon[1092]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=120 pid=1038 comm="/usr/bin/gnome-shell" label="unconfined")
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1093]: Failed to initialize glamor, falling back to sw
+ago 23 18:20:11 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1092]: dbus-daemon[1092]: Successfully activated service 'org.a11y.atspi.Registry'
+ago 23 18:20:11 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1095]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86CameraAccessEnable
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86CameraAccessDisable
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86CameraAccessToggle
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86NextElement
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86PreviousElement
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86AutopilotEngageToggle
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86MarkWaypoint
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86Sos
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86NavChart
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86FishingChart
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86SingleRangeRadar
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86DualRangeRadar
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86RadarOverlay
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86TraditionalSonar
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86ClearvuSonar
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86SidevuSonar
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: > Warning:          Could not resolve keysym XF86NavInfo
+ago 23 18:20:11 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1102]: Errors from xkbcomp are not fatal to the X server
+ago 23 18:20:12 jorge-Aspire-ES1-524 systemd[968]: Reached target sound.target - Sound Card.
+ago 23 18:20:12 jorge-Aspire-ES1-524 wireplumber[989]: <WpPortalPermissionStorePlugin:0x6436df55a9c0> Failed to call Lookup: GDBus.Error:org.freedesktop.portal.Error.NotFound: No entry for camera
+ago 23 18:20:12 jorge-Aspire-ES1-524 gnome-shell[1038]: Unset XDG_SESSION_ID, getCurrentSessionProxy() called outside a user session. Asking logind directly.
+ago 23 18:20:12 jorge-Aspire-ES1-524 gnome-shell[1038]: Will monitor session c1
+ago 23 18:20:12 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.gnome.Shell.Screencast' requested by ':1.2' (uid=120 pid=1038 comm="/usr/bin/gnome-shell" label="unconfined")
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.2' (uid=120 pid=1038 comm="/usr/bin/gnome-shell" label="unconfined")
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.gnome.Shell.Notifications' requested by ':1.2' (uid=120 pid=1038 comm="/usr/bin/gnome-shell" label="unconfined")
+ago 23 18:20:13 jorge-Aspire-ES1-524 gnome-shell[1038]: Extension ding@rastersoft.com already installed in /usr/share/gnome-shell/extensions/ding@rastersoft.com. /usr/share/gnome-shell/extensions/ding@rastersoft.com will not be loaded
+ago 23 18:20:13 jorge-Aspire-ES1-524 gnome-shell[1038]: Extension tiling-assistant@ubuntu.com already installed in /usr/share/gnome-shell/extensions/tiling-assistant@ubuntu.com. /usr/share/gnome-shell/extensions/tiling-assistant@ubuntu.com will not be loaded
+ago 23 18:20:13 jorge-Aspire-ES1-524 gnome-shell[1038]: Extension ubuntu-appindicators@ubuntu.com already installed in /usr/share/gnome-shell/extensions/ubuntu-appindicators@ubuntu.com. /usr/share/gnome-shell/extensions/ubuntu-appindicators@ubuntu.com will not be loaded
+ago 23 18:20:13 jorge-Aspire-ES1-524 gnome-shell[1038]: Extension ubuntu-dock@ubuntu.com already installed in /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com. /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com will not be loaded
+ago 23 18:20:13 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to hotplug secondary gpu '/dev/dri/renderD128': GDBus.Error:System.Error.ENODEV: No such device
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.gnome.Shell.Notifications'
+ago 23 18:20:13 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: Window manager warning: Failed to parse saved session file: Falló al abrir el archivo «/var/lib/gdm3/.config/mutter/sessions/10ead0276476550573178750200915221200000010090000.ms»: No existe el archivo o el directorio
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.systemd1' requested by ':1.10' (uid=120 pid=1328 comm="/usr/libexec/gsd-sharing" label="unconfined")
+ago 23 18:20:13 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:14 jorge-Aspire-ES1-524 gsd-sharing[1328]: Failed to StopUnit service: GDBus.Error:org.freedesktop.DBus.Error.Spawn.ChildExited: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:14 jorge-Aspire-ES1-524 gsd-sharing[1328]: Failed to StopUnit service: GDBus.Error:org.freedesktop.DBus.Error.Spawn.ChildExited: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: Device '/dev/dri/card1' prefers shadow buffer
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: Added device '/dev/dri/card1' (amdgpu) using atomic mode setting.
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: g_hash_table_insert_internal: assertion 'hash_table != NULL' failed
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: g_hash_table_steal_extended: assertion 'hash_table != NULL' failed
+ago 23 18:20:14 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.portal.IBus' requested by ':1.25' (uid=120 pid=1395 comm="ibus-daemon --panel disable" label="unconfined")
+ago 23 18:20:14 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.freedesktop.portal.IBus'
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: Created gbm renderer for '/dev/dri/card1'
+ago 23 18:20:14 jorge-Aspire-ES1-524 gnome-shell[1038]: Error looking up permission: GDBus.Error:org.freedesktop.portal.Error.NotFound: No entry for geolocation
+ago 23 18:20:14 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:14 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:14 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.portal.IBus' requested by ':1.28' (uid=120 pid=1529 comm="ibus-daemon --panel disable -r --xim" label="unconfined")
+ago 23 18:20:14 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.freedesktop.portal.IBus'
+ago 23 18:20:14 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1525]: libEGL warning: DRI3 error: Could not get DRI3 device
+ago 23 18:20:14 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1525]: libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Unsupported maximum keycode 708, clipping.
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: >                   X11 cannot support keycodes above 255.
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86CameraAccessEnable
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86CameraAccessDisable
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86CameraAccessToggle
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86NextElement
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86PreviousElement
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86AutopilotEngageToggle
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86MarkWaypoint
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86Sos
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86NavChart
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86FishingChart
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86SingleRangeRadar
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86DualRangeRadar
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86RadarOverlay
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86TraditionalSonar
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86ClearvuSonar
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86SidevuSonar
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: > Warning:          Could not resolve keysym XF86NavInfo
+ago 23 18:20:15 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1591]: Errors from xkbcomp are not fatal to the X server
+ago 23 18:20:15 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.gnome.Shell.Screencast'
+ago 23 18:20:15 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.gnome.ScreenSaver' requested by ':1.21' (uid=120 pid=1401 comm="/usr/libexec/gsd-power" label="unconfined")
+ago 23 18:20:15 jorge-Aspire-ES1-524 spice-vdagent[1610]: vdagent virtio channel /dev/virtio-ports/com.redhat.spice.0 does not exist, exiting
+ago 23 18:20:15 jorge-Aspire-ES1-524 gnome-session-binary[1009]: Entering running state
+ago 23 18:20:15 jorge-Aspire-ES1-524 xbrlapi.desktop[1621]: openConnection: connect: No existe el archivo o el directorio
+ago 23 18:20:15 jorge-Aspire-ES1-524 xbrlapi.desktop[1621]: cannot connect to braille devices daemon brltty at :0
+ago 23 18:20:15 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Successfully activated service 'org.gnome.ScreenSaver'
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Registering session with GDM
+ago 23 18:20:16 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activating service name='org.freedesktop.systemd1' requested by ':1.10' (uid=120 pid=1328 comm="/usr/libexec/gsd-sharing" label="unconfined")
+ago 23 18:20:16 jorge-Aspire-ES1-524 /usr/libexec/gdm-wayland-session[1008]: dbus-daemon[1008]: [session uid=120 pid=1008] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:16 jorge-Aspire-ES1-524 gsd-sharing[1328]: Failed to StopUnit service: GDBus.Error:org.freedesktop.DBus.Error.Spawn.ChildExited: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:16 jorge-Aspire-ES1-524 gsd-sharing[1328]: Failed to StopUnit service: GDBus.Error:org.freedesktop.DBus.Error.Spawn.ChildExited: Process org.freedesktop.systemd1 exited with status 1
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to query buffer age, got error 3003
+ago 23 18:20:16 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Failed to grab accelerator for keybinding settings:hibernate
+ago 23 18:20:16 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Failed to grab accelerator for keybinding settings:playback-repeat
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Cursor update failed: drmModeAtomicCommit: Argumento inválido
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:498):clutter_frame_clock_notify_ready: code should not be reached
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:16 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:27 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:37 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default source
+ago 23 18:20:37 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default sink
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:465):clutter_frame_clock_notify_presented: code should not be reached
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Unsupported maximum keycode 708, clipping.
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: >                   X11 cannot support keycodes above 255.
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86CameraAccessEnable
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86CameraAccessDisable
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86CameraAccessToggle
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86NextElement
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86PreviousElement
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86AutopilotEngageToggle
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86MarkWaypoint
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86Sos
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86NavChart
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86FishingChart
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86SingleRangeRadar
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86DualRangeRadar
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86RadarOverlay
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86TraditionalSonar
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86ClearvuSonar
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86SidevuSonar
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: > Warning:          Could not resolve keysym XF86NavInfo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1790]: Errors from xkbcomp are not fatal to the X server
+ago 23 18:20:40 jorge-Aspire-ES1-524 wireplumber[989]: <WpPortalPermissionStorePlugin:0x6436df55a9c0> Failed to call Lookup: GDBus.Error:org.freedesktop.portal.Error.NotFound: No entry for camera
+ago 23 18:20:40 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default sink
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:40 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:40 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:45 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:45 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:45 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:45 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:45 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:48 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:48 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:48 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:49 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:49 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default source
+ago 23 18:20:49 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default sink
+ago 23 18:20:49 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:51 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:51 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:465):clutter_frame_clock_notify_presented: code should not be reached
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: The XKEYBOARD keymap compiler (xkbcomp) reports:
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Unsupported maximum keycode 708, clipping.
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: >                   X11 cannot support keycodes above 255.
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86CameraAccessEnable
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86CameraAccessDisable
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86CameraAccessToggle
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86NextElement
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86PreviousElement
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86AutopilotEngageToggle
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86MarkWaypoint
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86Sos
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86NavChart
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86FishingChart
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86SingleRangeRadar
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86DualRangeRadar
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86RadarOverlay
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86TraditionalSonar
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86ClearvuSonar
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86SidevuSonar
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: > Warning:          Could not resolve keysym XF86NavInfo
+ago 23 18:20:51 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1877]: Errors from xkbcomp are not fatal to the X server
+ago 23 18:20:52 jorge-Aspire-ES1-524 wireplumber[989]: <WpPortalPermissionStorePlugin:0x6436df55a9c0> Failed to call Lookup: GDBus.Error:org.freedesktop.portal.Error.NotFound: No entry for camera
+ago 23 18:20:52 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default sink
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:52 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 org.gnome.Shell.desktop[1038]: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: Failed to lock front buffer on /dev/dri/card0: gbm_surface_lock_front_buffer failed
+ago 23 18:20:52 jorge-Aspire-ES1-524 gnome-shell[1038]: (../clutter/clutter/clutter-frame-clock.c:1199):clutter_frame_clock_dispatch: code should not be reached
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default source
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: Unable to get default sink
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:20:53 jorge-Aspire-ES1-524 gsd-media-keys[1363]: gvc_mixer_card_get_index: assertion 'GVC_IS_MIXER_CARD (card)' failed
+ago 23 18:19:56 jorge-Aspire-ES1-524 systemd[1]: Starting gdm.service - GNOME Display Manager...
+ago 23 18:19:56 jorge-Aspire-ES1-524 systemd[1]: Started gdm.service - GNOME Display Manager.
+ago 23 18:20:07 jorge-Aspire-ES1-524 gdm3[917]: Gdm: on_display_added: assertion 'GDM_IS_REMOTE_DISPLAY (display)' failed
+ago 23 18:20:07 jorge-Aspire-ES1-524 gdm-launch-environment][960]: pam_unix(gdm-launch-environment:session): session opened for user gdm(uid=120) by (uid=0)

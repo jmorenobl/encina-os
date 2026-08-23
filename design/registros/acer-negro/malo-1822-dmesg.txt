@@ -1,0 +1,91 @@
+[    0.710094] ACPI: bus type drm_connector registered
+[    0.731139] simple-framebuffer simple-framebuffer.0: [drm] Registered 1 planes with drm panic
+[    0.732091] [drm] Initialized simpledrm 1.0.0 for simple-framebuffer.0 on minor 0
+[    0.734693] simple-framebuffer simple-framebuffer.0: [drm] fb0: simpledrmdrmfb frame buffer device
+[    1.810463] ata1.00: supports DRM functions and may not be fully accessible
+[    1.811674] ata1.00: supports DRM functions and may not be fully accessible
+[    2.907784] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[    3.063303] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[    3.063541] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[   25.231691] amdgpu: Virtual CRAT table created for CPU
+[   25.231726] amdgpu: Topology: Add CPU node
+[   25.232213] amdgpu 0000:00:01.0: initializing kernel modesetting (STONEY 0x1002:0x98E4 0x1025:0x1087 0xC1).
+[   25.233848] amdgpu 0000:00:01.0: register mmio base: 0xF0C00000
+[   25.233860] amdgpu 0000:00:01.0: register mmio size: 262144
+[   25.234154] amdgpu 0000:00:01.0: detected ip block number 0 <common_v1_0_0> (vi_common)
+[   25.234165] amdgpu 0000:00:01.0: detected ip block number 1 <gmc_v8_0_0> (gmc_v8_0)
+[   25.234169] amdgpu 0000:00:01.0: detected ip block number 2 <ih_v3_0_0> (cz_ih)
+[   25.234173] amdgpu 0000:00:01.0: detected ip block number 3 <gfx_v8_1_0> (gfx_v8_0)
+[   25.234177] amdgpu 0000:00:01.0: detected ip block number 4 <sdma_v3_0_0> (sdma_v3_0)
+[   25.234181] amdgpu 0000:00:01.0: detected ip block number 5 <smu_v1_0_0> (powerplay)
+[   25.234185] amdgpu 0000:00:01.0: detected ip block number 6 <dce_v1_0_0> (dm)
+[   25.234188] amdgpu 0000:00:01.0: detected ip block number 7 <uvd_v6_2_0> (uvd_v6_0)
+[   25.234191] amdgpu 0000:00:01.0: detected ip block number 8 <vce_v3_4_0> (vce_v3_0)
+[   25.234194] amdgpu 0000:00:01.0: detected ip block number 9 <acp_v2_2_0> (acp_ip)
+[   25.234233] amdgpu 0000:00:01.0: Fetched VBIOS from VFCT
+[   25.234239] amdgpu 0000:00:01.0: [drm] ATOM BIOS: 113-C91400-006
+[   25.238080] amdgpu 0000:00:01.0: [drm] UVD is enabled in physical mode
+[   25.252335] amdgpu 0000:00:01.0: Found VCE firmware Version: 52.0 Binary ID: 3
+[   25.252350] amdgpu 0000:00:01.0: [drm] VCE enabled in VM mode
+[   25.281304] amdgpu 0000:00:01.0: vgaarb: deactivate vga console
+[   25.281317] amdgpu 0000:00:01.0: Trusted Memory Zone (TMZ) feature not supported
+[   25.281321] amdgpu 0000:00:01.0: PCIE atomic ops is not supported
+[   25.281384] amdgpu 0000:00:01.0: vm size is 64 GB, 2 levels, block size is 10-bit, fragment size is 9-bit
+[   25.281393] amdgpu 0000:00:01.0: VRAM: 1024M 0x000000F400000000 - 0x000000F43FFFFFFF (1024M used)
+[   25.281399] amdgpu 0000:00:01.0: GART: 1024M 0x000000FF00000000 - 0x000000FF3FFFFFFF
+[   25.281412] amdgpu 0000:00:01.0: [drm] Detected VRAM RAM=1024M, BAR=1024M
+[   25.281416] amdgpu 0000:00:01.0: [drm] RAM width 64bits UNKNOWN
+[   25.282845] amdgpu 0000:00:01.0:  1024M of VRAM memory ready
+[   25.282858] amdgpu 0000:00:01.0:  7469M of GTT memory ready.
+[   25.282909] amdgpu 0000:00:01.0: [drm] GART: num cpu pages 262144, num gpu pages 262144
+[   25.283267] amdgpu 0000:00:01.0: [drm] PCIE GART of 1024M enabled (table at 0x000000F400600000).
+[   25.300292] amdgpu: hwmgr_sw_init smu backed is smu8_smu
+[   25.310614] amdgpu 0000:00:01.0: [drm] Found UVD firmware Version: 1.43 Family ID: 15
+[   25.310718] amdgpu 0000:00:01.0: [drm] UVD ENC is disabled
+[   25.323873] amdgpu: smu version 26.15.00
+[   25.357700] [drm] DM_PPLIB: values for Engine clock
+[   25.357713] [drm] DM_PPLIB:	 200000
+[   25.357717] [drm] DM_PPLIB:	 300000
+[   25.357718] [drm] DM_PPLIB:	 400000
+[   25.357720] [drm] DM_PPLIB:	 496560
+[   25.357722] [drm] DM_PPLIB:	 600000
+[   25.357724] [drm] DM_PPLIB:	 685720
+[   25.357725] [drm] DM_PPLIB:	 757900
+[   25.357727] [drm] DM_PPLIB:	 800000
+[   25.357729] [drm] DM_PPLIB: Validation clocks:
+[   25.357730] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   25.357732] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   25.357734] [drm] DM_PPLIB:    level           : 8
+[   25.357736] [drm] DM_PPLIB: values for Display clock
+[   25.357738] [drm] DM_PPLIB:	 300000
+[   25.357740] [drm] DM_PPLIB:	 400000
+[   25.357742] [drm] DM_PPLIB:	 496560
+[   25.357743] [drm] DM_PPLIB:	 626090
+[   25.357745] [drm] DM_PPLIB:	 685720
+[   25.357746] [drm] DM_PPLIB:	 757900
+[   25.357748] [drm] DM_PPLIB:	 800000
+[   25.357749] [drm] DM_PPLIB:	 847060
+[   25.357751] [drm] DM_PPLIB: Validation clocks:
+[   25.357752] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   25.357754] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   25.357755] [drm] DM_PPLIB:    level           : 8
+[   25.357758] [drm] DM_PPLIB: values for Memory clock
+[   25.357759] [drm] DM_PPLIB:	 333000
+[   25.357761] [drm] DM_PPLIB:	 800000
+[   25.357762] [drm] DM_PPLIB: Validation clocks:
+[   25.357764] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   25.357765] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   25.357767] [drm] DM_PPLIB:    level           : 8
+[   25.358024] amdgpu 0000:00:01.0: [drm] Display Core v3.2.369 initialized on DCE 11.0
+[   25.371479] snd_hda_intel 0000:00:01.1: bound 0000:00:01.0 (ops amdgpu_dm_audio_component_bind_ops [amdgpu])
+[   25.522743] amdgpu 0000:00:01.0: [drm] UVD initialized successfully.
+[   25.879198] amdgpu 0000:00:01.0: [drm] VCE initialized successfully.
+[   25.890285] amdgpu 0000:00:01.0: SE 1, SH per SE 1, CU per SH 3, active_cu_number 3
+[   25.891611] amdgpu: pp_dpm_get_sclk_od was not implemented.
+[   25.891623] amdgpu: pp_dpm_get_mclk_od was not implemented.
+[   25.891769] amdgpu 0000:00:01.0: Runtime PM not available
+[   25.894129] amdgpu 0000:00:01.0: [drm] Using custom brightness curve
+[   25.895805] amdgpu 0000:00:01.0: [drm] Registered 2 planes with drm panic
+[   25.899585] [drm] Initialized amdgpu 3.64.0 for 0000:00:01.0 on minor 1
+[   25.913277] fbcon: amdgpudrmfb (fb0) is primary device
+[   25.913292] amdgpu 0000:00:01.0: [drm] fb0: amdgpudrmfb frame buffer device

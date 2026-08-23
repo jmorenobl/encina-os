@@ -18535,3 +18535,62 @@ dos veces por dos vías.
   saludador con 0 aserciones, que es lo que sí se puede leer.
 - `encina-dev` queda con 0.1.16 puesto y apagada; el `.deb` está en
   `debian-packages/` del Mac (ignorado por git, como los demás).
+
+### 4.73 EL ACER CON `encina-branding` 0.1.16: 3 de 3 con saludador desde el `.deb`, y el primero mirado por Jorge (2026-08-23, noche)
+
+**Qué.** Jorge pidió instalar el 0.1.16 en el Acer Aspire ES1-524 y reiniciar.
+Es el remedio de §4.70f **salido de un paquete** y no de un `printf` a mano, en
+la máquina que tenía el fallo. Por `ssh`, usuario `jorge`, `amd64`.
+
+**Antes de tocar:** `encina-branding 0.1.15`, el fichero de mano en
+`/etc/systemd/system/gdm.service.d/` con huella `5d929e86…` (el literal de
+§4.70f), ningún `modules-load.d` nuestro. **El de mano se apartó antes de
+instalar** —dpkg, ante un conffile nuevo que ya existe en disco y no es de nadie,
+lo trata como modificado por el administrador y pregunta—; fue a
+`~/encina-espera-gpu.conf.mano` y se borró al dar esto por bueno.
+
+```
+apt-get install ./encina-branding_0.1.16_all.deb   (a8fcb1b9…, el mismo de §4.72)
+Desempaquetando encina-branding (0.1.16) sobre (0.1.15) ... Configurando ... Generating grub ...
+update-initramfs: Generating /boot/initrd.img-7.0.0-30-generic      -> 81 482 775 bytes, como antes
+
+dpkg -S /etc/systemd/system/gdm.service.d/encina-espera-gpu.conf  -> encina-branding
+huella del fichero instalado  415fb37a…   (distinta de 5d929e86…: lleva el porqué en comentarios)
+systemctl show gdm.service -p Wants       -> Wants=gpu-manager.service systemd-udev-settle.service
+                                             (gpu-manager es de Ubuntu amd64, ya estaba)
+DropInPaths=/etc/systemd/system/gdm.service.d/encina-espera-gpu.conf
+dpkg -V encina-branding                   -> nada que decir
+```
+
+**Tres arranques seguidos, la misma lectura que §4.70f:**
+
+```
+            udev-settle arranca   amdgpu dentro   udev-settle acaba   Started gdm   saludador              aserc.  front buf.
+arranque 1       3,2 s             21,9 s            22,5 s            26,8 s     28,7 s card1 (amdgpu)     0        0
+arranque 2                         22,1 s            22,6 s            27,0 s     28,9 s card1 (amdgpu)     0        0
+arranque 3                         22,1 s            22,6 s            27,0 s     28,8 s card1 (amdgpu)     0        0
+§4.70f (3), a mano                 22,2 s               -               27,1 s        amdgpu               0 (3/3)
+antes (0 de 5)                     25,8 s               -               10,4 s        simpledrm           18-445
+```
+
+**El primero lo miró Jorge: «ha salido el saludador».** `[OJOS]` cobrado; los
+otros dos, por registro. `udev-settle` termina **0,5 s después** de que `amdgpu`
+entre, que es exactamente lo que el drop-in compra: GDM no arranca hasta que la
+GPU está. El aviso `systemd-udev-settle.service is deprecated. Please fix
+gdm.service not to pull it in` sale a los 3,2 s en cada arranque, como se dijo.
+`Startup finished` 53,5 s, con el cargador en 15,4 s (el `[OMIT]` de §4.70f sigue
+siendo el mismo: GRUB con Windows detectado).
+
+**Limpieza hecha, y lo que queda en el Acer se dice:** borrados
+`~/encina-espera-gpu.conf.mano` y el `.deb` de `~`. Los doce registros de
+anoche (`malo-18xx.txt` y sus `dmesg`, los cinco negros de §4.70b) **no estaban
+en el repositorio**: se trajeron a `design/registros/acer-negro/` (224 KB) y se
+quitaron de `~` del Acer. La máquina lleva ahora: `openssh-server`, journal
+persistente, **`encina-branding 0.1.16`** (el único de los cuatro paquetes que
+no salió del medio, que tiene el 0.1.15), y `/etc/systemd/system/gdm.service.d/`
+**del paquete**. Ningún fichero a mano.
+
+**Lo que esto cierra y lo que no.** Cierra que el remedio **funciona saliendo de
+un `.deb`** en la máquina del fallo, 3 de 3 con `[OJOS]`. **No cierra la
+casilla «Hierro AMD»**, que pide una instalación **limpia desde el medio**: el
+medio vigente lleva 0.1.15 y la refabricación es la fase 1b / la de publicar.

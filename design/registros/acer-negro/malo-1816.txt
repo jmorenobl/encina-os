@@ -1,0 +1,4 @@
+ago 23 18:08:53 jorge-Aspire-ES1-524 systemd[1]: Starting gdm.service - GNOME Display Manager...
+ago 23 18:08:53 jorge-Aspire-ES1-524 systemd[1]: Started gdm.service - GNOME Display Manager.
+ago 23 18:09:03 jorge-Aspire-ES1-524 gdm3[938]: Gdm: on_display_added: assertion 'GDM_IS_REMOTE_DISPLAY (display)' failed
+ago 23 18:09:03 jorge-Aspire-ES1-524 gdm-launch-environment][972]: pam_unix(gdm-launch-environment:session): session opened for user gdm(uid=120) by (uid=0)

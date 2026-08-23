@@ -1,0 +1,89 @@
+[    0.706959] ACPI: bus type drm_connector registered
+[    0.721470] simple-framebuffer simple-framebuffer.0: [drm] Registered 1 planes with drm panic
+[    0.721502] [drm] Initialized simpledrm 1.0.0 for simple-framebuffer.0 on minor 0
+[    0.724380] simple-framebuffer simple-framebuffer.0: [drm] fb0: simpledrmdrmfb frame buffer device
+[    1.746438] ata1.00: supports DRM functions and may not be fully accessible
+[    1.747651] ata1.00: supports DRM functions and may not be fully accessible
+[    2.806817] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[   24.781663] amdgpu: Virtual CRAT table created for CPU
+[   24.781717] amdgpu: Topology: Add CPU node
+[   24.782171] amdgpu 0000:00:01.0: initializing kernel modesetting (STONEY 0x1002:0x98E4 0x1025:0x1087 0xC1).
+[   24.787973] amdgpu 0000:00:01.0: register mmio base: 0xF0C00000
+[   24.787986] amdgpu 0000:00:01.0: register mmio size: 262144
+[   24.788222] amdgpu 0000:00:01.0: detected ip block number 0 <common_v1_0_0> (vi_common)
+[   24.788232] amdgpu 0000:00:01.0: detected ip block number 1 <gmc_v8_0_0> (gmc_v8_0)
+[   24.788236] amdgpu 0000:00:01.0: detected ip block number 2 <ih_v3_0_0> (cz_ih)
+[   24.788240] amdgpu 0000:00:01.0: detected ip block number 3 <gfx_v8_1_0> (gfx_v8_0)
+[   24.788244] amdgpu 0000:00:01.0: detected ip block number 4 <sdma_v3_0_0> (sdma_v3_0)
+[   24.788248] amdgpu 0000:00:01.0: detected ip block number 5 <smu_v1_0_0> (powerplay)
+[   24.788252] amdgpu 0000:00:01.0: detected ip block number 6 <dce_v1_0_0> (dm)
+[   24.788256] amdgpu 0000:00:01.0: detected ip block number 7 <uvd_v6_2_0> (uvd_v6_0)
+[   24.788259] amdgpu 0000:00:01.0: detected ip block number 8 <vce_v3_4_0> (vce_v3_0)
+[   24.788263] amdgpu 0000:00:01.0: detected ip block number 9 <acp_v2_2_0> (acp_ip)
+[   24.788301] amdgpu 0000:00:01.0: Fetched VBIOS from VFCT
+[   24.788307] amdgpu 0000:00:01.0: [drm] ATOM BIOS: 113-C91400-006
+[   24.796908] amdgpu 0000:00:01.0: [drm] UVD is enabled in physical mode
+[   24.801613] amdgpu 0000:00:01.0: Found VCE firmware Version: 52.0 Binary ID: 3
+[   24.801626] amdgpu 0000:00:01.0: [drm] VCE enabled in VM mode
+[   24.816635] amdgpu 0000:00:01.0: vgaarb: deactivate vga console
+[   24.816647] amdgpu 0000:00:01.0: Trusted Memory Zone (TMZ) feature not supported
+[   24.816651] amdgpu 0000:00:01.0: PCIE atomic ops is not supported
+[   24.816710] amdgpu 0000:00:01.0: vm size is 64 GB, 2 levels, block size is 10-bit, fragment size is 9-bit
+[   24.816720] amdgpu 0000:00:01.0: VRAM: 1024M 0x000000F400000000 - 0x000000F43FFFFFFF (1024M used)
+[   24.816724] amdgpu 0000:00:01.0: GART: 1024M 0x000000FF00000000 - 0x000000FF3FFFFFFF
+[   24.816737] amdgpu 0000:00:01.0: [drm] Detected VRAM RAM=1024M, BAR=1024M
+[   24.816740] amdgpu 0000:00:01.0: [drm] RAM width 64bits UNKNOWN
+[   24.819662] amdgpu 0000:00:01.0:  1024M of VRAM memory ready
+[   24.819674] amdgpu 0000:00:01.0:  7469M of GTT memory ready.
+[   24.819714] amdgpu 0000:00:01.0: [drm] GART: num cpu pages 262144, num gpu pages 262144
+[   24.820056] amdgpu 0000:00:01.0: [drm] PCIE GART of 1024M enabled (table at 0x000000F400600000).
+[   24.832511] amdgpu: hwmgr_sw_init smu backed is smu8_smu
+[   24.843899] amdgpu 0000:00:01.0: [drm] Found UVD firmware Version: 1.43 Family ID: 15
+[   24.843996] amdgpu 0000:00:01.0: [drm] UVD ENC is disabled
+[   24.852896] amdgpu: smu version 26.15.00
+[   24.915450] [drm] DM_PPLIB: values for Engine clock
+[   24.915464] [drm] DM_PPLIB:	 200000
+[   24.915468] [drm] DM_PPLIB:	 300000
+[   24.915469] [drm] DM_PPLIB:	 400000
+[   24.915471] [drm] DM_PPLIB:	 496560
+[   24.915472] [drm] DM_PPLIB:	 600000
+[   24.915474] [drm] DM_PPLIB:	 685720
+[   24.915475] [drm] DM_PPLIB:	 757900
+[   24.915476] [drm] DM_PPLIB:	 800000
+[   24.915479] [drm] DM_PPLIB: Validation clocks:
+[   24.915480] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   24.915482] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   24.915483] [drm] DM_PPLIB:    level           : 8
+[   24.915485] [drm] DM_PPLIB: values for Display clock
+[   24.915487] [drm] DM_PPLIB:	 300000
+[   24.915488] [drm] DM_PPLIB:	 400000
+[   24.915490] [drm] DM_PPLIB:	 496560
+[   24.915491] [drm] DM_PPLIB:	 626090
+[   24.915492] [drm] DM_PPLIB:	 685720
+[   24.915493] [drm] DM_PPLIB:	 757900
+[   24.915495] [drm] DM_PPLIB:	 800000
+[   24.915496] [drm] DM_PPLIB:	 847060
+[   24.915497] [drm] DM_PPLIB: Validation clocks:
+[   24.915499] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   24.915500] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   24.915501] [drm] DM_PPLIB:    level           : 8
+[   24.915503] [drm] DM_PPLIB: values for Memory clock
+[   24.915505] [drm] DM_PPLIB:	 333000
+[   24.915506] [drm] DM_PPLIB:	 800000
+[   24.915507] [drm] DM_PPLIB: Validation clocks:
+[   24.915508] [drm] DM_PPLIB:    engine_max_clock: 80000
+[   24.915510] [drm] DM_PPLIB:    memory_max_clock: 80000
+[   24.915511] [drm] DM_PPLIB:    level           : 8
+[   24.922169] amdgpu 0000:00:01.0: [drm] Display Core v3.2.369 initialized on DCE 11.0
+[   25.137266] amdgpu 0000:00:01.0: [drm] UVD initialized successfully.
+[   25.193826] snd_hda_intel 0000:00:01.1: bound 0000:00:01.0 (ops amdgpu_dm_audio_component_bind_ops [amdgpu])
+[   25.486933] amdgpu 0000:00:01.0: [drm] VCE initialized successfully.
+[   25.500157] amdgpu 0000:00:01.0: SE 1, SH per SE 1, CU per SH 3, active_cu_number 3
+[   25.504465] amdgpu: pp_dpm_get_sclk_od was not implemented.
+[   25.504476] amdgpu: pp_dpm_get_mclk_od was not implemented.
+[   25.506773] amdgpu 0000:00:01.0: Runtime PM not available
+[   25.546857] amdgpu 0000:00:01.0: [drm] Using custom brightness curve
+[   25.550659] amdgpu 0000:00:01.0: [drm] Registered 2 planes with drm panic
+[   25.556235] [drm] Initialized amdgpu 3.64.0 for 0000:00:01.0 on minor 1
+[   25.578692] fbcon: amdgpudrmfb (fb0) is primary device
+[   25.578706] amdgpu 0000:00:01.0: [drm] fb0: amdgpudrmfb frame buffer device
