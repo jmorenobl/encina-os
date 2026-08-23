@@ -50,5 +50,22 @@
       medidas (`MEDICIONES.md` §4.35i). Mientras no haya una sexta, toda casilla
       `[OJOS]` que exija pulsar necesita una mano — y eso hay que tenerlo en cuenta
       **al escribir la casilla**, no al llegar a ella.
+- [ ] **Hierro AMD: el saludador nace sobre `simpledrm` y muere al llegar `amdgpu`.**
+      Nueva el 2026-08-23, del Acer Aspire ES1-524 (`MEDICIONES.md` §4.70b,
+      enmienda): 0 de 5 arranques con saludador, y 3 de 3 con
+      `echo amdgpu > /etc/modules-load.d/amdgpu.conf`. Tres capas, ninguna de
+      Encina: Ubuntu no mete `amdgpu` en el initrd, el módulo tarda 17 s en
+      cargar en ese A9, y mutter 46.2 no sobrevive al cambio de tarjeta en
+      caliente. **Es de producto** porque el medio tal cual lo reproduce en
+      cualquier portátil AMD parecido y «el primer arranque va y luego nunca» es
+      la peor forma de fallar. *Lo que hay que decidir, no arreglar:* dónde vive
+      el remedio —no en un paquete `all`, que en arm64 no hay `amdgpu`; quizá
+      en el seed por arquitectura, quizá solo en la receta—. *Antes, medir:* el
+      experimento 2 (`amdgpu` en `/etc/initramfs-tools/modules`), que quizá no
+      cueste los 16 s de GDM que cuesta el 1; y por qué tarda 17 s.
+      *Hecha cuando:* una instalación **limpia** desde el medio en un AMD
+      arranca tres veces seguidas con saludador sin que nadie toque la máquina,
+      o la receta dice con esas palabras que hay que tocarla.
+
 - [ ] **DNIe con lector** (`opensc`, PKCS#11). Incremento futuro, no deuda.
 - [ ] **Chrome y Chromium.** No se han medido; hoy el perímetro dice Firefox.

@@ -18043,6 +18043,68 @@ que `gdm.service` espere al dispositivo DRM, forzar X11 en el saludador
 (`WaylandEnable=false`), `amdgpu.dc=0` en el núcleo. Y si alguna hace falta, **no
 va en un paquete**: va en la receta del hierro como aviso de esa máquina.
 
+**ENMIENDA DE LA MISMA NOCHE, LEÍDO POR `ssh` Y NO EN FOTO: la atribución de
+arriba era buena a medias.** Con `openssh-server` puesto en el Acer —y por eso
+esa máquina ya no es una instalación limpia, se dice— se leyó el registro entero.
+~~«Carrera Plymouth → GDM», «frecuencia `[OMIT]`»~~: **fue 1 de 9 y luego 0 de 5,
+o sea determinista**, y el mecanismo es otro, con tres capas:
+
+```
+ 3,3 s  udev coldplug (raiz)         iwlwifi 6,3 s · snd_hda 00:01.1 7,2 s · r8169 10,1 s
+10,4 s  Started gdm
+22,8 s  gnome-shell (saludador): Added device /dev/dri/card0 (simpledrm)   <- nace sobre el fb del firmware
+25,8 s  kernel: amdgpu 0000:00:01.0 initializing kernel modesetting       <- la GPU llega DESPUES
+27,4 s  gnome-shell: Added device /dev/dri/card1 (amdgpu)                 <- hotplug
+27,4 s  gnome-shell: g_hash_table_insert_internal: assertion 'hash_table != NULL' failed
+27,5 s  org.gnome.Shell.desktop: KMS: DRM_IOCTL_MODE_CREATE_DUMB failed: No existe el dispositivo
+30 s →  gnome-shell: Failed to lock front buffer on /dev/dri/card0 ... (x18-148, para siempre)
+```
+
+1. **`amdgpu.ko` NO va en el initrd, y es diseño de Ubuntu, no defecto de la
+   instalación**: `MODULES=most` y aun así `lsinitramfs | grep -c amdgpu` → **0**.
+   `/usr/share/initramfs-tools/hooks/framebuffer` mete solo `minimal_drm`
+   (`=drivers/gpu/drm/tiny vboxvideo virtio-gpu`), 26 módulos drm y ninguno de
+   GPU real. Plymouth y el saludador nacen sobre `simpledrm`.
+2. **`amdgpu` tarda ~17 s en CARGAR en esta máquina**, no en pedirse. `udev`
+   pidió el driver a la vez que el audio HDMI de la misma GPU (7 s) y el módulo
+   no estuvo dentro hasta los 25,8 s; pedido a los 3 s por `systemd-modules-load`
+   (abajo), dentro a los 20,5. SSD Samsung 850 EVO, `linux-modules` sin
+   `-extra`, sin `blacklist`, núcleo HWE `7.0.0-30-generic`. **Por qué 17 s es
+   `[OMIT]`**: 21 MB en memoria, firma, zstd, un A9 — no se ha separado.
+3. **mutter 46.2 se rompe al cambiar de `simpledrm` a `amdgpu` en caliente**:
+   recibe el hotplug, asevera, y sigue pintando en un `card0` que ya no existe.
+   **El arranque «bueno» `-7` tuvo la MISMA aserción, 445 veces** —más que
+   ningún malo—: no era un arranque sano, era uno que se salvó.
+
+**El remedio, probado con el control de los cinco negros detrás:** cargar el
+módulo antes de GDM, con una línea fuera de cualquier paquete y reversible con
+`rm`:
+
+```
+echo amdgpu > /etc/modules-load.d/amdgpu.conf       (con sudo, en el Acer)
+
+                 pedido   dentro   Started gdm   saludador nace sobre   aserciones   front buffer
+arranque 1        3 s     20,5 s     25,9 s       card1 (amdgpu)            0             0
+arranque 2        3 s     20,3 s     26,0 s       card1 (amdgpu)            0             0
+arranque 3        3 s     20,0 s     25,9 s       card1 (amdgpu)            0             0
+antes (x5)        7 s     25,8 s     10,4 s       card0 (simpledrm)       18-148        18-148
+```
+
+**3 de 3 con saludador, el primero mirado por Jorge** (`[OJOS]`, los otros dos
+por registro). El precio: GDM pasa de los 10 s a los 26 s porque
+`sysinit.target` espera a `systemd-modules-load`. La alternativa, **no probada**,
+es `amdgpu` en `/etc/initramfs-tools/modules` + `update-initramfs -u`: cargaría
+en paralelo al initrd, Plymouth pintaría ya sobre la GPU y quizá GDM no esperase
+tanto; se deja escrita como experimento 2.
+
+**Lo que esto es para el producto, y va como casilla:** cualquier portátil AMD de
+esta época con el medio **tal cual** va a hacer lo mismo, y «funciona el primer
+arranque y luego nunca» es la peor forma posible de fallar delante de una
+gestoría. No es de `encina-branding` —ningún paquete toca esto— y el remedio
+correcto **no es un fichero de `modules-load.d` en un paquete `all`**, porque
+en arm64 no hay `amdgpu`. Queda abierto dónde vive: receta del hierro hoy,
+y decisión de producto después.
+
 #### (c) EL BOTÓN DE LA REJILLA VUELVE A SER EL DE UBUNTU — y el paquete no tiene la culpa, pero el producto sí
 
 Entre el primer arranque y el segundo, **la bellota del dock se convirtió en el
@@ -18101,7 +18163,8 @@ usuario, no de root**: `dconf reset /org/gnome/desktop/interface/icon-theme`.
   Jorge dice «todo parece haber ido correctamente» y eso es un `[OJOS]` sin
   desglosar, no cuatro `[OK]`.
 - Qué se tocó en la BIOS.
-- La frecuencia y el registro del negro, (b).
+- ~~La frecuencia y el registro del negro, (b).~~ **Contestado la misma noche, en la enmienda de (b).** Queda `[OMIT]` por qué `amdgpu` tarda 17 s en cargar, y el experimento 2 (initrd).
+- **La máquina ya no es limpia:** lleva `openssh-server` (apt 18:29/18:31), `/var/log/journal/` persistente y `/etc/modules-load.d/amdgpu.conf`. Los tres se dicen para que un verificador que la mire sepa qué no salió del medio.
 - **Los horarios de `apt history` no cuadran con los arranques** —las
   instalaciones van de `11:21` a `11:40` y el primer arranque es a las `16:23`—.
   Puede ser el reloj del firmware en otra zona o en UTC mal leído; no se ha
