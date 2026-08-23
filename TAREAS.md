@@ -18,10 +18,10 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 |---|---|---|
 | [aspecto/](tareas/aspecto/) | Que el sistema instalado tenga cara propia | **5, y las cinco son [5-cierre.md](tareas/aspecto/5-cierre.md)** — el 2026-08-15 Jorge dio por bueno lo visual (*«como está, está bastante bien»*) y **los bloques 0, 2, 3 y 4 quedan cerrados enteros**, con el 1 **aplazado por escrito**. Las cinco que se cerraron ese día no costaron ni una medición nueva: las pruebas ya estaban en el disco, y **dos de ellas seguían abiertas sólo porque su «hecha cuando» apostaba a una hipótesis falsa** — que el acento alcanzaría a GDM. Detalle en [aspecto/LEEME.md](tareas/aspecto/LEEME.md) |
 | **[marca-del-medio.md](tareas/marca-del-medio.md)** | **Que el medio y el instalador dejen de decir Ubuntu. Bloquea publicar.** | **0, y sólo queda el `[OJOS]` de Jorge, que se cobra en la vuelta única** — eran 4, y antes 5: la del logotipo de la rejilla era una **copia rancia** (cerrada el 2026-08-14 en `aspecto/`, donde además se vio que estaba **mal leída**: el botón nunca llevó el logotipo de Ubuntu). **El 2026-08-15 se cerraron dos**: el inventario (`MEDICIONES.md` §4.51, con instrumento `imagen/inventario-marca.sh`) y los términos de Canonical, que son **`ENCINA-OS.md` D22** — **«marca no es cadena»** y las tres pilas. **El 2026-08-15 se hizo la tercera salvo su `[OJOS]`** (§4.52), y con ella **la pregunta de fondo del bloque está contestada: `ENCINA-OS.md` D23**. Reempaquetar y E5 no eran las dos opciones: **el medio no lleva `layerfs-path=`**, así que **una capa de 2,9 MiB tapa a la de 1,69 GB**, y el instalador trae **una puerta de marca blanca documentada por Canonical** (`/usr/share/desktop-provision/`) que se apunta **desde fuera de su snap firmado**. El inventario baja de **31 a 24 apariciones** con los **ocho** sitios nombrados. ~~**Queda el nombre del volumen**~~ **— CERRADO EL 2026-08-17 (§4.53): el medio se llama `Encina OS 0.2.1 arm64`, y la premisa de la casilla era falsa, porque ni `casper` ni `apt-cdrom` ni `subiquity` ni el GRUB firmado buscan por etiqueta — el `grubaa64.efi` hace `search --file /.disk/info`. Contra un medio de control, la diferencia son 88 bytes de 3 715 235 840 y todos dentro del campo del nombre; y se tapó el punto ciego del paso 10 de `fabricar-iso.sh`, que compara fichero a fichero y no veía este cambio**, y **fuera de la casilla pero dentro de lo que bloquea publicar: el splash del `initrd` y los logotipos que siguen viajando dentro del snap** |
-| [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 |
-| [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 |
-| [despues-de-publicar.md](tareas/despues-de-publicar.md) | E5, el núcleo en el medio, amd64 | 3 |
-| [refactorizacion.md](tareas/refactorizacion.md) | Ordenar lo que ya funciona: un solo vocabulario, documentos que se puedan leer | **10, y ninguna cambia el producto** — salen de leer el repositorio entero el 2026-08-22 sobre `99e0e39`. Va **después de publicar**, salvo cinco que no tocan el medio |
+| **[despues-de-publicar.md](tareas/despues-de-publicar.md)** | E5, el núcleo en el medio, **y `amd64` (E6), que ya NO es «después»** | 3, pero **E6 es la FASE 1 y está en curso** —el nombre del fichero le queda mal desde el 2026-08-22 y se corrige en la refactorización, no antes—. E5 y el núcleo sí siguen siendo posteriores a publicar |
+| [refactorizacion.md](tareas/refactorizacion.md) | Ordenar lo que ya funciona: un solo vocabulario, documentos que se puedan leer, **y una organización de proyecto de distribución que aguante que la mire alguien de fuera** | **12 desde el 2026-08-23**, y aquí ponía 10: **eran ONCE** —once secciones y once casillas, contadas con `grep`; el encabezado del fichero llevaba mal el número desde que se escribió—. La **12** la pide Jorge y es el criterio de «profesional», que sin escribir es una sensación. **FASE 2: se ADELANTA a publicar y se hace ENTERA**, sin la excepción de las cinco |
+| [alojamiento.md](tareas/alojamiento.md) | 3,46 GB no caben en un release de GitHub | 2 — **fase 3** |
+| [publicar.md](tareas/publicar.md) | La release, y probarla en una máquina que no sea del banco | 3 — **fase 3, y es LO ÚLTIMO del proyecto** |
 | [sueltas.md](tareas/sueltas.md) | De un rato cada una, sin bloque | 5 |
 
 ## El orden, y por qué
@@ -83,17 +83,62 @@ que estaba desactualizado era `design/fondos/manifiesto.tsv`. **Ya no queda nada
 de lo visual bloqueando publicar** — lo que bloquea es la marca del medio y los
 3,46 GB.
 
-**Y la refactorización va DESPUÉS de publicar, por el mismo argumento de no
-pagar dos veces.** La definición de terminado de `construir-todo.sh` es que dos
-pasadas den la misma huella, así que tocar `imagen/fabricar-iso.sh` —la última
-tarea del bloque— invalida la huella que la release lleva dentro. Publicar
-primero, refactorizar después, y la siguiente vuelta de medio se paga una sola
-vez. **La excepción está escrita en el propio fichero:** las tareas 4, 5, 7 y 8
-—partir `MEDICIONES.md`, la tabla de vigencia, vaciar §7 y los bloques de
-`diario.sh`— no tocan ningún guion que fabrique el medio, y la 6 es aditiva, así
-que ésas no dependen de publicar. Y la 1 —`bancos/enlaces.sh`— va antes que todas
-porque es el instrumento con el que se mide el resto: **hay 1.857 referencias
-`§N.NN` en el repositorio** y dos tareas del bloque mueven ficheros.
+## EL ORDEN CAMBIA EL 2026-08-23, Y LO DECIDE JORGE: **PUBLICAR VA EL ÚLTIMO**
+
+**Las tres fases, y no se solapan:**
+
+| | Fase | Qué la cierra |
+|---|---|---|
+| **1.ª** | **QUE LAS ISOs FUNCIONEN DE VERDAD** — y son **dos**: el hierro `amd64` y la vuelta única `arm64` | **`amd64`:** la receta de `ENCINA-OS.md` §7 pasa en el portátil AMD A9 —arranca, se instala, `verificar-instalacion.sh` da 0 fallos— y ahí se cobra **Plymouth de la máquina instalada**, que no tiene otra condición de salida. **`arm64`:** la vuelta única que ya estaba en curso —`encina-branding` 0.1.15, dos pasadas con la misma huella, instalar y **mirar**—, que es donde se cobran los `[OJOS]` de [marca-del-medio.md](tareas/marca-del-medio.md) y las dos casillas de [aspecto/5-cierre.md](tareas/aspecto/5-cierre.md). **Esa huella `arm64` NO es la que se publicará** —la fase 2 la invalida a propósito— y no pasa nada: lo que compra esta vuelta son los ojos de Jorge, no una huella |
+| **2.ª** | **LA REFACTORIZACIÓN, ahora ENTERA y adelantada** — [refactorizacion.md](tareas/refactorizacion.md) | `bancos/enlaces.sh` (tarea 1) en verde sobre el árbol ya movido, **y** el documento de la tarea 12 sin ninguna fila sin veredicto |
+| **3.ª** | **PUBLICAR** — [alojamiento.md](tareas/alojamiento.md) y [publicar.md](tareas/publicar.md) | lo que ya dicen esos ficheros |
+
+**Y el motivo, que es lo que hay que conservar:** *«sabiendo que las ISOs
+funcionan y que el proyecto está bien organizado, siguiendo las mejores
+prácticas, es cuando publicamos»*. Publicar es **el único acto de este proyecto
+que no se puede deshacer**: una release tiene URL, se descarga, y activa las dos
+obligaciones que §2 ya midió —responder a un fallo y sostener la oferta de
+fuente—. Todo lo demás se rehace en el disco de Jorge sin que nadie se entere.
+Un acto irreversible va detrás de los reversibles, no delante.
+
+**LA REFACTORIZACIÓN SE ADELANTA, Y ESO INVIERTE UN ARGUMENTO QUE ESTABA
+ESCRITO — conviene ver por qué, porque el argumento viejo no era falso.** Decía:
+
+> ~~**Y la refactorización va DESPUÉS de publicar, por el mismo argumento de no
+> pagar dos veces.** La definición de terminado de `construir-todo.sh` es que dos
+> pasadas den la misma huella, así que tocar `imagen/fabricar-iso.sh` —la última
+> tarea del bloque— invalida la huella que la release lleva dentro. Publicar
+> primero, refactorizar después, y la siguiente vuelta de medio se paga una sola
+> vez.~~
+
+Eso es **cierto** y sigue siéndolo: tocar `fabricar-iso.sh` invalida la huella.
+Lo que cambia es **qué se protege con ello**. El argumento viejo protegía *la
+refactorización* de tener que refabricar; el orden nuevo protege *la release* de
+nacer con una huella que su propio repositorio ya no sabe reproducir. Y lo
+segundo pesa más, porque la huella publicada es lo que un tercero puede
+comprobar y lo único que no se puede corregir sin retirar la descarga. **Nadie
+paga dos veces en ninguno de los dos órdenes**: la vuelta de medio que la
+refactorización obliga a repetir **ya está debida** por E6 y por
+`encina-branding` 0.1.15, así que se paga una sola vez, al final, y con los
+guiones ya en su forma definitiva.
+
+**Lo que sigue valiendo del párrafo viejo, y no depende del orden:** la tarea 1
+—`bancos/enlaces.sh`— va **antes que todas** las demás del bloque, porque es el
+instrumento con el que se mide el resto (**1.857 referencias `§N.NN`** en el
+repositorio y dos tareas que mueven ficheros); y la **11** —`fabricar-iso.sh`,
+una función por fase— sigue yendo **la última**, con el producto congelado. **La
+tarea 12 es nueva y va con la 1**: la 1 es el instrumento, la 12 el criterio. Lo que **deja de aplicar** es la
+excepción: las tareas 4, 5, 6, 7 y 8 estaban señaladas como *«ésas no dependen de
+publicar»* para poder adelantarlas; ahora **ninguna depende de publicar**, así
+que la excepción sobra y el bloque se hace entero y seguido.
+
+**Y una casilla de [publicar.md](tareas/publicar.md) cambia de significado con la
+fase 1, sin que nadie la toque:** *«instalarla en una máquina que no sea del
+banco»*. El hierro la contesta **para `amd64`**, y el producto declarado por `D9`
+es **`arm64`**, que en ese portátil no arranca. O sea que la fase 1 **no la
+marca**: la deja con su alcance escrito y traslada la pregunta —*¿se publica
+`arm64` habiéndolo probado en hierro sólo en `amd64`?*— a la fase 3, que es donde
+se decide, y **a sabiendas**.
 
 ## Cerrado
 

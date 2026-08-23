@@ -1,5 +1,17 @@
 # Después de publicar
 
+**AVISO DEL 2026-08-23: EL NOMBRE DE ESTE FICHERO YA NO DESCRIBE LO QUE HAY
+DENTRO, Y SE DEJA ASÍ A PROPÓSITO.** De las tres cosas que lista, **`amd64` (E6)
+ya no es «después de publicar»: es la FASE 1 y está en curso** —`ENCINA-OS.md`
+§7, la receta del hierro—. Las otras dos —**E5** y **el núcleo en el medio**— sí
+siguen siendo posteriores a publicar. Renombrar y repartir el fichero es trabajo
+de la refactorización (fase 2), no de hoy: moverlo ahora rompería referencias
+antes de que exista `bancos/enlaces.sh`, que es la tarea 1 de ese bloque.
+
+**Y el orden entero, decidido por Jorge el 2026-08-23:** (1) que las ISOs
+funcionen probadas de verdad, (2) la refactorización entera, (3) publicar, que
+pasa a ser **lo último**. Está en `TAREAS.md`, «El orden cambia el 2026-08-23».
+
 - [ ] **E5 — la imagen propia** (`live-build`/`debos`). El destino declarado. Solo
       compra dos cosas, y son las que este proyecto quiere: marcar el propio
       instalador y controlar el conjunto base. Si el bloque 1 se hace aquí, se hace

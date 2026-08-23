@@ -3,6 +3,14 @@
 Lo que convierte «se ve bien hoy en mi VM» en algo que se puede entregar y que
 seguirá viéndose bien mañana.
 
+**DÓNDE CAE ESTO EN EL ORDEN NUEVO, 2026-08-23:** las dos últimas casillas
+—refabricar la ISO, e instalarla y mirarla— son la **fase 1(b)**, la vuelta única
+`arm64`, y van **junto al hierro `amd64`**, no después de publicar. Lo que compran
+son **los ojos de Jorge**, no una huella: la huella que salga de esa vuelta la
+invalida a propósito la refactorización (fase 2), y la que se publique se
+fabricará en la fase 3. Las tres fases, en `TAREAS.md`, «El orden cambia el
+2026-08-23».
+
 ---
 
 ## EL ESTADO, 2026-08-15: ESTE FICHERO ES YA LO ÚNICO QUE QUEDA DE `aspecto/`

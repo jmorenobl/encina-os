@@ -1,24 +1,52 @@
 # La refactorización, con lo que ya sabemos
 
-**Qué es este bloque.** Diez tareas que no cambian el producto: ni un byte de la
-ISO, ni un `.deb`, ni una decisión. Cambian **cómo está guardado** lo que ya
+**Qué es este bloque.** **Doce tareas** que no cambian el producto: ni un byte de
+la ISO, ni un `.deb`, ni una decisión. Cambian **cómo está guardado** lo que ya
 funciona, para que siga siendo legible dentro de seis meses y para que el
 vocabulario del proyecto sea uno y no dos.
+
+*Y una corrección de conteo del 2026-08-23, que es de las baratas y por eso se
+hace:* aquí decía **«Diez tareas»** y en la tabla de `TAREAS.md` ponía **10**.
+**Eran once** desde que se escribió el fichero —once secciones numeradas y once
+casillas, contadas con `grep`—, así que el encabezado llevaba mal el número
+desde el primer día. Con la tarea 12 son **doce**.
 
 **Por qué existe.** El repositorio se leyó entero el 2026-08-22 sobre `main` en
 `99e0e39`, con el árbol limpio, contando y sin ejecutar nada. Lo que salió está
 abajo, y las cifras que se citan son de esa lectura.
 
-**Cuándo.** Después de publicar, y por el mismo argumento de no pagar dos veces
-que ya ordena el resto de `TAREAS.md`: la definición de terminado de
-`construir-todo.sh` es que **dos pasadas den la misma huella**, así que tocar
-`imagen/fabricar-iso.sh` invalida la huella que la release lleva dentro.
-**Excepción escrita:** las tareas 4, 5, 7 y 8 no tocan ningún guion que fabrique
-el medio, y la 6 es aditiva. Ésas no dependen de publicar.
+**Cuándo. ENMENDADO EL 2026-08-23, Y LO DECIDE JORGE: ESTE BLOQUE VA ANTES DE
+PUBLICAR, ENTERO Y SEGUIDO.** Es la **fase 2** de las tres de `TAREAS.md`: detrás
+de que las ISOs se hayan probado —el hierro `amd64` y la vuelta `arm64`— y
+**delante** de publicar, que pasa a ser lo último del proyecto.
+
+*Lo que decía, dejado al lado, porque no era falso:*
+
+> ~~**Cuándo.** Después de publicar, y por el mismo argumento de no pagar dos veces
+> que ya ordena el resto de `TAREAS.md`: la definición de terminado de
+> `construir-todo.sh` es que **dos pasadas den la misma huella**, así que tocar
+> `imagen/fabricar-iso.sh` invalida la huella que la release lleva dentro.
+> **Excepción escrita:** las tareas 4, 5, 7 y 8 no tocan ningún guion que fabrique
+> el medio, y la 6 es aditiva. Ésas no dependen de publicar.~~
+
+Sigue siendo verdad que tocar `fabricar-iso.sh` invalida la huella. Lo que cambia
+es **qué se protege**: antes, la refactorización de tener que refabricar; ahora,
+**la release de nacer con una huella que su propio repositorio ya no reproduce**,
+que es la que un tercero puede comprobar y la única que no se corrige sin retirar
+la descarga. El argumento entero está en `TAREAS.md`, «El orden cambia el
+2026-08-23».
+
+**Y la excepción de las tareas 4, 5, 6, 7 y 8 sobra:** existía para poder
+adelantarlas a publicar. Ahora **ninguna depende de publicar**, así que no hay
+nada que adelantar y el bloque se hace entero. Lo que **sí** se conserva es el
+orden interno: la **1** y la **12** van primero —el instrumento y el criterio—, y
+la **11** va la última, con el producto congelado.
 
 **Cómo se cierra el bloque entero.** Cuando `bancos/enlaces.sh` —la tarea 1— pase
-en verde sobre el árbol ya movido. Sin ese instrumento, «refactorización
-terminada» sería una sensación y no una salida.
+en verde sobre el árbol ya movido, **y el documento de la tarea 12 no tenga
+ninguna fila sin veredicto**. Sin ese instrumento y sin ese criterio,
+«refactorización terminada» sería una sensación y no una salida — y con el
+encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ---
 
@@ -204,6 +232,47 @@ terminada» sería una sensación y no una salida.
       misma. Ése es el único control que vale aquí.
       **VA LA ÚLTIMA, y con el producto congelado:** es el guion que fabrica lo
       que se entrega.
+
+## 12. Qué es «un proyecto de distribución bien organizado», escrito ANTES de mover nada
+
+- [ ] **Un documento que compare este repositorio con cómo están organizados los
+      proyectos que hacen lo mismo, y que diga de cada diferencia si se adopta o
+      no, y por qué.** No es «aplicar buenas prácticas»: es **decidir cuáles**,
+      con nombre y con motivo, dejando por escrito también **las que se rechazan**.
+      *Por qué:* lo pide Jorge el 2026-08-23 con estas palabras —*«limpiar el
+      repo, refactorizarlo, seguir las mejores prácticas y organización para
+      creación de distros y en definitiva tener un proyecto profesional»*— y
+      **«profesional» no es una salida, es una sensación**, que es justo lo que
+      este repositorio no admite en una casilla (`CLAUDE.md`, «Método»). Sin un
+      criterio escrito **antes**, una refactorización degenera en mover ficheros
+      hasta que dé gusto mirarlos, y eso es exactamente lo que arrasa con lo que
+      la sección «Lo que este bloque NO toca» protege. Y hay un punto ciego que
+      conviene nombrar: **las once tareas de arriba salen de leer ESTE
+      repositorio**; ninguna sale de mirar hacia fuera.
+      *Qué mirar, y es el mínimo:* cómo reparten árbol y responsabilidades los
+      proyectos que reempaquetan o derivan Ubuntu/Debian —**Linux Mint**,
+      **elementary OS**, **Pop!\_OS**, **Ubuntu Cinnamon**— y las herramientas de
+      referencia —**`livecd-rootfs`** de Canonical, **`live-build`** y
+      **`debos`**—: dónde vive la receta del medio, dónde los paquetes propios y
+      su `debian/`, cómo versionan, qué automatiza su CI y qué publican como
+      oferta de fuente.
+      **Y la pregunta de fondo, que es una sola y hay que contestarla en el
+      documento:** hoy `imagen/` **reempaqueta** la ISO oficial (**D3**) y esos
+      proyectos en su mayoría **construyen** la suya (**E5**). Si la organización
+      que se copia presupone `live-build`, se estaría tomando la decisión de E5
+      **por la puerta de atrás** — y esa decisión es de `ENCINA-OS.md`, no de una
+      refactorización. La tarea es señalar dónde pasa eso, no resolverlo aquí.
+      *Hecha cuando:* existe el documento con **una fila por diferencia** —qué
+      hacen ellos · qué hacemos · se adopta o se rechaza · por qué—, **ninguna
+      fila queda sin veredicto**, y cada fila adoptada está convertida en una
+      casilla de este mismo fichero con su «hecha cuando».
+      *Su control, y sin él no vale:* al menos **una fila rechazada con motivo**.
+      Si todo lo de fuera se adopta, no se comparó — se copió, y el documento no
+      estaba midiendo nada.
+      **VA LA PRIMERA, junto con la tarea 1**, y por el mismo motivo: la 1 es el
+      instrumento con el que se mide y ésta es el criterio que dice hacia dónde.
+      Las tareas 2–11 **se releen a la luz de lo que salga aquí**, y alguna puede
+      caerse o cambiar de forma.
 
 ---
 

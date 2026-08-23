@@ -480,19 +480,54 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > ```
 >
 > **1. GRABAR EL PINCHO, y comprobarlo leyendo del dispositivo** —no mirando el
-> diálogo del grabador—. La ISO mide **6 849 232 896 bytes = 6 531 MiB exactos**,
-> así que la lectura de vuelta es exacta y **su control negativo es gratis**:
+> diálogo del grabador—. La lectura de vuelta compara la ISO **entera**, y **su
+> control negativo es gratis**: un byte de menos ya tiene que dar otra huella.
 >
 > ```
 > diskutil list                                   # identificar el pincho, el EXTERNO
 > diskutil unmountDisk /dev/diskN
 > sudo dd if=medios/encina-os-amd64.iso of=/dev/rdiskN bs=4m
 > sync
-> sudo dd if=/dev/rdiskN bs=1m count=6531 | shasum -a 256   ->  8924f148…   [OK]
-> sudo dd if=/dev/rdiskN bs=1m count=6530 | shasum -a 256   ->  OTRA cosa   <- el CONTROL:
+> N=$(stat -f %z medios/encina-os-amd64.iso)      # 6849232896
+> B=$(( N/1048576 + 1 ))                          # 6532 MiB: se pasa A PROPOSITO
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$N"       | shasum -a 256  ->  8924f148…  [OK]
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$((N-1))" | shasum -a 256  ->  0ad9f99a…  <- el CONTROL:
 >                                                              si diera lo mismo, la
 >                                                              comprobación no compara nada
 > ```
+>
+> `dd` lee **de más** y `head -c` corta en el byte exacto, así que la forma vale
+> para cualquier ISO y no hay que rehacer la cuenta al cambiar de medio. **Las dos
+> órdenes están ejecutadas contra el fichero antes de escribirlas aquí** —positivo
+> `8924f148…`, control `0ad9f99a…`—, así que las dos huellas de arriba son
+> medidas y no esperadas. Si se prefieren bloques exactos:
+> `6 849 232 896 = 65 536 × 104 511`, o sea `bs=64k count=104511` —también
+> comprobado— y su control es `count=104510`.
+>
+> **ENMIENDA DEL 2026-08-23, ANTES DE GRABAR NADA: LA CUENTA QUE HABÍA AQUÍ ERA
+> FALSA Y HABRÍA DADO UN `[FALLO]` QUE NO ERA.** Este paso decía *«la ISO mide
+> 6 849 232 896 bytes = **6 531 MiB exactos**»*, y de ahí salían `count=6531` y su
+> control `count=6530`. No son exactos, y basta la división:
+>
+> ```
+> 6 849 232 896 / 1 048 576 = 6531,9375 MiB
+> 6531 MiB                  = 6 848 249 856 bytes   <- 983 040 bytes DE MENOS
+> ```
+>
+> O sea que `count=6531` lee **960 KiB menos que la ISO**, y su huella **no puede**
+> ser `8924f148…` ni con el pincho perfectamente escrito. **Y el control no habría
+> avisado**: `count=6530` habría seguido diciendo «otra cosa», que es exactamente lo
+> que dice cuando todo va bien. La lectura natural del resultado —*«el pincho está
+> mal escrito»* o *«el `dd` se ha dejado bytes»*— habría sido una atribución falsa
+> más, la novena, y sobre hierro recién estrenado, que es donde más barato sale
+> creerse cualquier cosa. Se cazó **haciendo la división**, que es lo que había que
+> hacer al escribirla.
+>
+> *Lo que se creía, dejado al lado:* que el tamaño de una ISO redondea a MiB
+> enteros y que por eso `bs=1m count=<MiB>` la lee entera. Ninguna de las dos que
+> hay en `medios/` lo cumple —la oficial `amd64` son 6 655 619 072 bytes, o sea
+> **6347,29 MiB**—, así que la trampa no era de esta receta sino **de la forma**, y
+> por eso se sustituye la forma y no el número.
 >
 > **2. EL CONTROL DEL ARRANQUE, y va DESPUÉS y no antes — con su motivo.**
 > §4.64(b2) lo pedía delante; **si el nuestro arranca, no hace falta**: un
@@ -520,6 +555,34 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > | e | **CON RED:** que termine, y dentro `sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27` | el positivo de extremo a extremo en `amd64` |
 > | f | **el *splash* de la MÁQUINA INSTALADA: ahí sí tiene que salir la encina** | **ESTE es el `[OJOS]` de Plymouth**, y no el del medio. Lo pone `encina-branding`: registra `default.plymouth` con prioridad 200 y corre `update-initramfs -u` (R7), y el tema es `ModuleName=script`, **no `bgrt`** (R6) |
 > | g | **SIN RED:** repetir | si se cae, **el sitio donde mirar ya está escrito**: `curthooks`, §4.63(t). Sería el **límite declarado del producto**, no un fallo del portátil |
+
+> ### EL ORDEN DE TODO LO QUE QUEDA, decidido por Jorge el 2026-08-23: **PUBLICAR ES LO ÚLTIMO**
+>
+> Tres fases, y no se solapan. El desarrollo detallado, en `TAREAS.md`, «El orden
+> cambia el 2026-08-23» —donde queda **dejado al lado** el orden anterior, que
+> ponía publicar antes de la refactorización y no era falso, sólo protegía otra
+> cosa—.
+>
+> ```
+> 1.  QUE LAS ISOs FUNCIONEN DE VERDAD   <- AQUI ESTAMOS
+>       a) el hierro amd64: la receta de arriba, en el portatil AMD A9
+>       b) la vuelta unica arm64: branding 0.1.15, dos pasadas, instalar y MIRAR
+> 2.  LA REFACTORIZACION ENTERA          tareas/refactorizacion.md, 12 tareas
+>       se ADELANTA a publicar, y sin la excepcion de las cinco
+>       la 1 (bancos/enlaces.sh) y la 12 (que es «profesional», escrito) van delante
+> 3.  PUBLICAR                           alojamiento.md + publicar.md
+> ```
+>
+> **El motivo, en una frase:** publicar es **el único acto de este proyecto que no
+> se puede deshacer** —una release tiene URL, se descarga y activa las dos
+> obligaciones que §2 midió—, y un acto irreversible va detrás de los reversibles.
+> Todo lo demás se rehace en el disco de Jorge sin que nadie se entere.
+>
+> **Y lo que eso obliga a decir ahora, para que no se dé por sabido luego:** la
+> huella que se publique **no será ninguna de las de hoy**. La fase 2 toca
+> `imagen/fabricar-iso.sh`, así que el medio se refabrica una última vez en la
+> fase 3 con los guiones ya definitivos. **Nadie paga dos veces:** esa vuelta ya
+> estaba debida por E6 y por `encina-branding` 0.1.15.
 
 > ### LA TAREA EN CURSO, 2026-08-22 (noche): **HAY UN MEDIO `amd64` Y ARRANCA CON LA MARCA. EL INSTALADOR SE CAE, Y NO SE SABE DE QUIÉN ES**
 >
