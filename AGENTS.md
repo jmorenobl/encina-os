@@ -163,6 +163,7 @@ override_dh_auto_install:
 | `etc/dconf/db/gdm.d/99-encina` | Logotipo y mensaje en la pantalla de inicio de sesión |
 | `etc/dconf/profile/gdm` | Perfil que hace que GDM lea la base de datos anterior. Sin él, en Debian/Ubuntu no se lee nunca |
 | `etc/systemd/system/gdm.service.d/encina-espera-gpu.conf` | **Desde 0.1.16.** Drop-in (conffile) que hace que `gdm.service` espere a `systemd-udev-settle.service` (`Wants=` **y** `After=`; la unidad es `static` y sin `Wants=` nadie la pide). Es el remedio del negro en hierro AMD —el saludador nace sobre `simpledrm`, llega `amdgpu` y mutter 46.2 no sobrevive al cambio, `MEDICIONES.md` §4.70b/f, 0 de 5 → 3 de 3— y el único de los tres medidos que no nombra hardware. **Cuesta 0 s en arm64** (§4.71: `udev-settle` termina a 1,1 s, GDM a 2,0 s con y sin él). Su precio, a propósito no callado: `udevadm` avisa en cada arranque «`systemd-udev-settle.service is deprecated. Please fix gdm.service not to pull it in`», y el tope de 120 s si un dispositivo no asienta (no visto). Es un parche sobre mutter: el día que mutter aguante, se quita con su fecha. El porqué entero va en comentarios dentro del fichero |
+| `usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg` | **Desde 0.1.17.** La bellota **en la ruta que Yaru sirve**, sobre un `dpkg-divert` que registra el `preinst` (`MEDICIONES.md` §4.70c y §4.75): el panel «Apariencia» escribe `icon-theme='Yaru-<acento>'` al tocar el modo oscuro y un valor de usuario gana siempre al override, así que la bellota no puede depender de `icon-theme`. Un solo desvío cubre los 19 acentos —el fichero solo existe en `Yaru` y todas las cadenas de `Inherits` mueren ahí—. Se desvía **el enlace** de Yaru (a `start-here-symbolic.svg`), no su destino. Misma fuente única que los dos de `Encina/`: lo instala `debian/rules`. El porqué entero, en comentarios del `preinst` |
 
 ### 4.2 Requisitos concretos
 
@@ -249,6 +250,16 @@ Plymouth.SetDisplayPasswordFunction(display_password_callback);
    (desde 0.1.16): el drop-in de `gdm.service` es un conffile, no una unidad, y
    `dh_installsystemd` no lo ve; sin esto systemd no lo lee hasta reiniciar.
 
+**`preinst` (desde 0.1.17): registrar el desvío de la bellota.** `dpkg-divert
+--package encina-branding --rename --divert <ruta>.distrib --add
+/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg`, en
+`install|upgrade`. Tiene que ser `preinst` y no `postinst`: el desvío debe
+existir **antes** de que dpkg desempaquete nuestro fichero encima del de
+`yaru-theme-icon`. El `--remove` simétrico va en el `postrm`, en
+`remove|abort-install|disappear` y **nunca** en `abort-upgrade` (la versión
+vieja sigue instalada y sigue necesitando el desvío). `--add` es idempotente:
+R9 se cumple solo.
+
 `prerm` debe hacer `update-alternatives --remove`. `postrm` debe regenerar
 initramfs y dconf, y hacer `daemon-reload` con la misma guarda (el drop-in se
 va con la **purga**, como todo conffile; con `remove` a secas se queda, que es
@@ -275,6 +286,18 @@ Ejecutar en una VM Ubuntu **virgen**:
       ejecuta `05-verificar.sh` (2b y su control en la purga). Lo que esa
       casilla **no** prueba, y queda en el hierro: que en un AMD el saludador
       aparezca tres arranques seguidos (`tareas/sueltas.md`, «Hierro AMD»)
+- [ ] **La bellota no depende de `icon-theme` (0.1.17):** con el paquete,
+      `dpkg-divert --listpackage` sobre el SVG de Yaru dice `encina-branding` y
+      el fichero en esa ruta tiene **la huella del nuestro** (la misma que el de
+      `Encina/`); **tras la purga el desvío no está y el enlace original de
+      Yaru ha vuelto** —ese es el control, y sin él el primero no vale—. Y la
+      trampa 13: `icon-theme.cache` de Yaru **más nuevo** que el SVG, con el
+      paquete y tras la purga (el disparador de gtk corrió: se mide, no se
+      supone). Lo ejecuta `05-verificar.sh` (2c y su control en la purga). Lo
+      que esa casilla **no** prueba y es `[OJOS]` de Jorge
+      (`tareas/aspecto/5-cierre.md`): en sesión gráfica, oscuro, claro, cerrar
+      sesión, entrar, **y la bellota sigue**, con `dconf read
+      /org/gnome/desktop/interface/icon-theme` enseñado antes y después
 
 ---
 

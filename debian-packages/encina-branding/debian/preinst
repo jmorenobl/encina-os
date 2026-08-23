@@ -1,0 +1,52 @@
+#!/bin/sh
+# preinst de encina-branding.
+#
+# EL DESVIO DE LA BELLOTA (0.1.17, MEDICIONES.md 4.70c y 4.75). Este fichero
+# existe para una sola cosa: registrar el desvio del icono de la rejilla de
+# Yaru ANTES de que dpkg desempaquete el nuestro encima.
+#
+# POR QUE EXISTE EL DESVIO: en el hierro (Acer, 4.70c) Jorge probo el modo
+# oscuro en Ajustes y lo volvio a dejar en claro, y el boton de la rejilla
+# paso a ser el logotipo de Ubuntu y asi se quedo. El panel «Apariencia» de
+# 24.04 escribe icon-theme='Yaru-<acento>' junto con gtk-theme, no conoce
+# 'Encina', y un valor de usuario gana SIEMPRE al override del paquete: por
+# construccion, no hay numero de fichero 99- que lo arregle. Asi que la
+# bellota no puede depender de icon-theme: se desvia el fichero que Yaru
+# sirve y este paquete pone el suyo en esa ruta. El tema Encina y su
+# override NO se tocan: siguen siendo la red.
+#
+# POR QUE UN SOLO DESVIO CUBRE TODOS LOS ACENTOS (4.75, medido en
+# encina-dev): view-app-grid-ubuntu-symbolic.svg solo existe en el tema
+# Yaru -en los otros 19 Yaru-* no esta, ni fichero ni enlace- y las cadenas
+# de Inherits de los 20 index.theme mueren todas en Yaru. Escriba el panel
+# lo que escriba (Yaru, Yaru-sage, Yaru-sage-dark, cualquier acento), la
+# busqueda del icono acaba en este fichero.
+#
+# POR QUE AQUI Y NO EN postinst: el desvio tiene que estar registrado antes
+# del desempaquetado. Con el puesto, dpkg deja la ruta original para
+# nosotros y mandara a .distrib lo que yaru-theme-icon instale en sus
+# upgrades futuros; en postinst llegaria tarde y dpkg veria nuestro fichero
+# pisando el de yaru-theme-icon. Es el protocolo de dpkg-divert(1) y el
+# mecanismo que R5 prescribe para no sobrescribir lo ajeno. El --remove
+# simetrico va en el postrm (remove).
+#
+# SE DESVIA EL ENLACE, no su destino: en Yaru ese .svg es un enlace a
+# ../places/start-here-symbolic.svg, y start-here lo siguen pidiendo otros
+# usos que deben quedarse con el de Ubuntu (4.75c).
+#
+# --add con un desvio identico ya registrado no hace nada: reinstalar cinco
+# veces deja el estado igual (R9). No se llama a apt/dpkg (R3): dpkg-divert
+# no toca el bloqueo de dpkg, esta hecho para correr justo aqui.
+set -e
+
+RUTA=/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+
+case "$1" in
+    install|upgrade)
+        dpkg-divert --package encina-branding --rename \
+            --divert "$RUTA.distrib" --add "$RUTA"
+        ;;
+esac
+
+#DEBHELPER#
+exit 0

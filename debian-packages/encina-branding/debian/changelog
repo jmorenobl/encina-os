@@ -1,3 +1,35 @@
+encina-branding (0.1.17) noble; urgency=medium
+
+  * LA BELLOTA DEJA DE DEPENDER DE icon-theme (MEDICIONES.md 4.70c y
+    4.75): en el Acer, probar el modo oscuro en Ajustes y volver a claro
+    dejo icon-theme='Yaru-sage' escrito en el perfil del usuario, un
+    valor de usuario gana siempre al override, y el boton de la rejilla
+    paso a ser el logotipo de Ubuntu y asi se quedo. El SVG de Encina
+    viaja ahora tambien en la ruta de Yaru (view-app-grid-ubuntu-
+    symbolic.svg), sobre un dpkg-divert: la bellota sigue aunque el
+    panel escriba el acento que escriba.
+  * El desvio lo registra el preinst -antes del desempaquetado, que es
+    el protocolo de dpkg-divert(1) y el mecanismo que R5 prescribe- y lo
+    retira el postrm en remove (nunca en abort-upgrade). Se desvia EL
+    ENLACE de Yaru, no su destino start-here-symbolic.svg, que otros
+    usos siguen necesitando. UN solo desvio cubre los 19 acentos Yaru-*:
+    el fichero solo existe en Yaru y todas las cadenas de Inherits
+    mueren ahi (4.75, medido en encina-dev). El tema Encina y el
+    override no se tocan: siguen siendo la red.
+  * 05-verificar.sh 2c: desvio registrado, huella del fichero servido en
+    la ruta de Yaru (la del nuestro) y el original esperando en
+    .distrib, con sus controles en la purga (desvio fuera, enlace de
+    vuelta). Y la trampa 13: icon-theme.cache de Yaru tiene que ser mas
+    nuevo que el SVG, al instalar y al purgar -el disparador de gtk se
+    mide, no se supone-.
+  * 03-construir.sh: el preinst entra en las comprobaciones estaticas,
+    dpkg-divert deja de contar como llamada a dpkg en R3 (se borra ese
+    token y el resto de la linea sigue vigilada), y las dos mitades del
+    desvio -el --add del preinst y el --remove del postrm- se exigen por
+    separado.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Mon, 24 Aug 2026 01:23:49 +0200
+
 encina-branding (0.1.16) noble; urgency=medium
 
   * GDM ESPERA A UDEV, y es el remedio del negro en hierro AMD

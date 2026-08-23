@@ -3,6 +3,7 @@
 
 TEMA = debian/encina-branding/usr/share/plymouth/themes/encina
 ICONOS = debian/encina-branding/usr/share/icons/Encina/scalable/actions
+YARU = debian/encina-branding/usr/share/icons/Yaru/scalable/actions
 
 %:
 	dh $@
@@ -38,3 +39,16 @@ override_dh_auto_install:
 	install -D -m 644 \
 	    src/usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg \
 	    $(ICONOS)/view-app-grid-symbolic.svg
+#
+# Y UNA TERCERA COPIA, EN LA RUTA DE YARU (0.1.17, MEDICIONES.md 4.70c y
+# 4.75): el panel «Apariencia» escribe icon-theme='Yaru-<acento>' en el
+# perfil del usuario al tocar el modo oscuro, y un valor de usuario gana
+# siempre al override, asi que la bellota no puede depender de icon-theme.
+# El preinst desvia con dpkg-divert el fichero de yaru-theme-icon y este de
+# aqui es el que se sirve en su lugar; UN solo fichero cubre los 19 acentos
+# porque todas las cadenas de Inherits mueren en Yaru. Misma fuente unica y
+# por el mismo motivo que arriba: si algun dia se dibuja distinto, se toca
+# UN fichero.
+	install -D -m 644 \
+	    src/usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg \
+	    $(YARU)/view-app-grid-ubuntu-symbolic.svg

@@ -155,6 +155,74 @@ else
 fi
 
 # ============================================================================
+titulo "2c. La bellota no depende de icon-theme (0.1.17, MEDICIONES.md §4.70c y §4.75)"
+
+echo "  En el Acer, tocar el modo oscuro en Ajustes y volver a claro dejo"
+echo "  icon-theme='Yaru-sage' escrito en el perfil del usuario, y un valor"
+echo "  de usuario gana SIEMPRE al override: la bellota del dock se fue con"
+echo "  el. La salida es que el fichero que Yaru sirve sea el nuestro, via"
+echo "  dpkg-divert en el preinst; UN desvio cubre los 19 acentos porque"
+echo "  todas las cadenas de Inherits mueren en Yaru (§4.75)."
+echo
+
+BELLOTA_YARU=/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+BELLOTA_ENCINA=/usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+CACHE_YARU=/usr/share/icons/Yaru/icon-theme.cache
+
+# (i) El desvio esta registrado y es nuestro. Su control esta en la purga:
+# alli la MISMA orden tiene que devolver vacio, o esto no comprueba nada.
+DIVERT=$(dpkg-divert --listpackage "$BELLOTA_YARU" 2>&1 || true)
+if [[ "$DIVERT" == "encina-branding" ]]; then
+    ok "dpkg-divert --listpackage -> encina-branding"
+else
+    fallo "El desvio del icono de Yaru no esta registrado (o no es nuestro)" \
+"--listpackage dijo: '$DIVERT'
+$(dpkg-divert --list '*view-app-grid*' 2>&1)"
+fi
+
+# (ii) El fichero que se sirve en la ruta de Yaru es EL NUESTRO, por huella:
+# la misma que el del tema Encina (misma fuente unica, debian/rules). No
+# basta con que exista: existir tambien lo cumplia el enlace de Ubuntu.
+H_YARU=$(md5sum "$BELLOTA_YARU" 2>/dev/null | cut -d' ' -f1 || true)
+H_ENCINA=$(md5sum "$BELLOTA_ENCINA" 2>/dev/null | cut -d' ' -f1 || true)
+if [[ -n "$H_YARU" && "$H_YARU" == "$H_ENCINA" ]]; then
+    ok "El fichero en la ruta de Yaru es el nuestro (md5 $H_YARU)"
+else
+    fallo "El fichero en la ruta de Yaru NO es el nuestro" \
+"Yaru:   ${H_YARU:-no se pudo leer}   $(ls -l "$BELLOTA_YARU" 2>&1)
+Encina: ${H_ENCINA:-no se pudo leer}"
+fi
+
+# (iii) El original de Yaru espera entero en .distrib: era un ENLACE a
+# ../places/start-here-symbolic.svg (§4.75a) y el desvio lo renombro, no lo
+# destruyo. Es lo que la purga tiene que devolver a su sitio.
+DESTINO=$(readlink "$BELLOTA_YARU.distrib" 2>/dev/null || true)
+if [[ "$DESTINO" == *start-here-symbolic.svg ]]; then
+    ok "El original de Yaru espera en .distrib -> $DESTINO"
+else
+    fallo "El original de Yaru no esta en .distrib como enlace a start-here" \
+"$(ls -l "$BELLOTA_YARU.distrib" 2>&1)"
+fi
+
+# (iv) TRAMPA 13: Yaru lleva icon-theme.cache y GTK lo consulta; enviar un
+# fichero bajo /usr/share/icons DEBERIA regenerarlo via el disparador de
+# gtk-update-icon-cache, pero eso es lo que se pidio, no lo que paso. Se
+# mide: el cache tiene que ser MAS NUEVO que nuestro SVG (el mtime del SVG
+# viene del .deb, o sea del build; el del cache, de cuando corrio el
+# disparador). Un cache rancio puede seguir sirviendo el dibujo viejo con
+# el fichero nuevo ya en disco, y nadie lo ve hasta mirar el dock -la
+# cadena existe->gana->resuelve->carga->se pinta, y esto mide 'carga'-.
+if [[ -f "$CACHE_YARU" && "$CACHE_YARU" -nt "$BELLOTA_YARU" ]]; then
+    ok "icon-theme.cache de Yaru es mas nuevo que el SVG (el disparador corrio)"
+else
+    fallo "icon-theme.cache de Yaru NO se regenero tras instalar el SVG" \
+"$(ls -l --time-style=full-iso "$CACHE_YARU" "$BELLOTA_YARU" 2>&1)
+El disparador de gtk-update-icon-cache no salto (o el cache no existe). Un
+cache mas viejo que el fichero puede seguir sirviendo el icono de Ubuntu.
+A mano:  sudo gtk-update-icon-cache -f /usr/share/icons/Yaru"
+fi
+
+# ============================================================================
 titulo "3. Idempotencia: cinco instalaciones seguidas (R9)"
 
 instantanea() {
@@ -163,6 +231,8 @@ instantanea() {
         grep -c "^GRUB_DISTRIBUTOR" /etc/default/grub 2>/dev/null || true
         update-alternatives --query default.plymouth 2>/dev/null | grep -E "^(Value|Best|Priority):" || true
         dpkg -l encina-branding 2>/dev/null | tail -1 || true
+        dpkg-divert --listpackage "$BELLOTA_YARU" 2>/dev/null || true
+        md5sum "$BELLOTA_YARU" 2>/dev/null || true
     } 2>/dev/null
 }
 
@@ -205,10 +275,12 @@ if (( SIN_PURGA )); then
     titulo "4. Purga — OMITIDA por --sin-purga"
     omitido "apt purge restaura el tema de arranque original"
     omitido "EL CONTROL de la máscara: sin purgar, 'masked' no demuestra nada"
+    omitido "EL CONTROL del desvio (2c): sin purgar, un desvio puesto no demuestra que sepa irse"
 else
 titulo "4. Purga: desinstalación limpia"
 
 paso "sudo apt purge encina-branding"
+T_PURGA=$(date +%s)   # para medir que el cache de Yaru se regenera DESPUES
 if salida=$(sudo apt-get purge -y encina-branding 2>&1); then
     ok "Purga ejecutada sin error"
 else
@@ -256,6 +328,40 @@ else
     ok "Control: purgado, udev-settle sale de Wants= de gdm.service"
 fi
 
+# EL CONTROL DE LA COMPROBACION 2c, en sus cuatro mitades: sin esto, aquel
+# 'encina-branding' del --listpackage no demostraba saber decir que no.
+DIVERT_PURGA=$(dpkg-divert --listpackage "$BELLOTA_YARU" 2>&1 || true)
+if [[ -z "$DIVERT_PURGA" ]]; then
+    ok "Control 2c: purgado, el desvio del icono de Yaru ya no esta"
+else
+    fallo "Tras purgar, el desvio sigue registrado" \
+"--listpackage dijo: '$DIVERT_PURGA'
+Falta el dpkg-divert --remove del postrm: los upgrades de yaru-theme-icon
+quedarian desviados para siempre."
+fi
+DESTINO_PURGA=$(readlink "$BELLOTA_YARU" 2>/dev/null || true)
+if [[ "$DESTINO_PURGA" == *start-here-symbolic.svg ]]; then
+    ok "Control 2c: el enlace original de Yaru ha vuelto a su ruta"
+else
+    fallo "Tras purgar, la ruta de Yaru no recupera el enlace original" \
+"$(ls -l "$BELLOTA_YARU" 2>&1)
+El --rename del postrm no devolvio el .distrib: el sistema se queda SIN
+icono de rejilla en Yaru, que es peor que el de Ubuntu."
+fi
+if [[ ! -e "$BELLOTA_YARU.distrib" && ! -L "$BELLOTA_YARU.distrib" ]]; then
+    ok "Control 2c: .distrib ya no existe"
+else
+    fallo "Tras purgar, .distrib sigue ahi" "$(ls -l "$BELLOTA_YARU.distrib" 2>&1)"
+fi
+# Y la trampa 13 otra vez: QUITAR nuestro SVG tambien tiene que regenerar
+# el cache de Yaru, o el dibujo nuestro sobreviviria en el cache al paquete.
+if [[ -f "$CACHE_YARU" && $(stat -c %Y "$CACHE_YARU") -ge $T_PURGA ]]; then
+    ok "Control 2c: icon-theme.cache regenerado tambien al purgar"
+else
+    fallo "Tras purgar, icon-theme.cache de Yaru no se regenero" \
+"$(ls -l --time-style=full-iso "$CACHE_YARU" 2>&1)   (la purga empezo en el segundo $T_PURGA)"
+fi
+
 paso "Reinstalando para dejar el sistema como estaba"
 if sudo apt-get install -y "$DEB" >/dev/null 2>&1; then
     ok "Paquete reinstalado"
@@ -273,6 +379,14 @@ titulo "Pendiente de tus ojos (no lo doy por bueno yo)"
 pendiente_visual "Cierra sesión y entra en GNOME como '$USUARIO_PRUEBA' (contraseña: $CLAVE_PRUEBA)"
 echo "            El escritorio debe salir con tu fondo. Cambia a modo oscuro"
 echo "            en Ajustes y comprueba que también cambia."
+pendiente_visual "EL CONTROL DE PRODUCTO de la bellota (§4.70c, casilla de aspecto/5-cierre.md):"
+echo "            en sesion grafica: Ajustes -> Apariencia -> oscuro, volver a"
+echo "            claro, cerrar sesion, entrar - y la bellota del dock SIGUE."
+echo "            Antes y despues, ensena en una terminal DE LA SESION:"
+echo "                dconf read /org/gnome/desktop/interface/icon-theme"
+echo "            y apunta que escribe el panel en oscuro (el pendiente de"
+echo "            §4.75: ¿'Yaru-sage-dark'?). Con el desvio ese valor puede"
+echo "            quedarse escrito: la bellota ya no depende de el."
 pendiente_visual "Reinicia y confirma: GRUB, splash, GDM y escritorio con tu identidad"
 pendiente_visual "Al entrar NO debe salir la ventana «Le damos la bienvenida a Ubuntu»"
 echo "            Y el control es que el resto de la primera sesion siga igual:"

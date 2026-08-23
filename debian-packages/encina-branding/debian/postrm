@@ -3,6 +3,24 @@
 # o el sistema seguiria arrancando con un tema que ya no existe.
 set -e
 
+RUTA=/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
+
+case "$1" in
+    remove|abort-install|disappear)
+        # EL DESVIO DE LA BELLOTA (0.1.17): el --remove simetrico del --add
+        # del preinst, que es donde esta el porque entero. dpkg ya ha
+        # borrado nuestro fichero de la ruta; --rename devuelve desde
+        # .distrib el enlace original de Yaru. Va aqui y no en purge porque
+        # cuando llega purge el desvio ya no existe. abort-install deshace
+        # el --add de un preinst que fallo; en abort-upgrade NO se toca: la
+        # version vieja sigue instalada y sigue necesitando el desvio. La
+        # guarda || true: un desvio que ya no este no debe abortar la
+        # desinstalacion.
+        dpkg-divert --package encina-branding --rename \
+            --divert "$RUTA.distrib" --remove "$RUTA" || true
+        ;;
+esac
+
 case "$1" in
     remove|purge)
         if command -v update-initramfs >/dev/null 2>&1; then

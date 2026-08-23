@@ -27,7 +27,7 @@ SALIDA_DIR="$(raiz_repo)/debian-packages"
 INVOCADO_EN="$PWD"
 [[ -d "$PKG/debian" ]] || { echo "No existe $PKG/debian. Ejecuta antes ./scripts/01-repo.sh"; exit 1; }
 
-MANT=("$PKG/debian/postinst" "$PKG/debian/prerm" "$PKG/debian/postrm")
+MANT=("$PKG/debian/preinst" "$PKG/debian/postinst" "$PKG/debian/prerm" "$PKG/debian/postrm")
 PLY="$PKG/src/usr/share/plymouth/themes/encina"
 OVERRIDE="$PKG/src/usr/share/glib-2.0/schemas/99-encina-branding.gschema.override"
 
@@ -79,8 +79,12 @@ fi
 SOSPECHOSO=""
 for m in "${MANT[@]}"; do
     [[ -f "$m" ]] || continue
-    # Se ignoran los comentarios y se exige palabra completa.
-    linea=$(grep -nE '^[^#]*(\bapt\b|\bapt-get\b|\bdpkg\b|\bsnap\b)' "$m" 2>/dev/null || true)
+    # Se ignoran los comentarios y se exige palabra completa. Y dpkg-divert
+    # NO es una llamada a dpkg (0.1.17): es el mecanismo que R5 prescribe y
+    # no toca el bloqueo -esta hecho para correr desde un preinst-. Se borra
+    # ese token antes de buscar, y solo ese, para que el resto de la linea
+    # siga vigilada: un 'apt-get' al lado de un dpkg-divert se veria igual.
+    linea=$(sed 's/dpkg-divert//g' "$m" | grep -nE '^[^#]*(\bapt\b|\bapt-get\b|\bdpkg\b|\bsnap\b)' || true)
     [[ -n "$linea" ]] && SOSPECHOSO+="$m:$linea"$'\n'
 done
 if [[ -n "$SOSPECHOSO" ]]; then
@@ -189,6 +193,29 @@ if [[ -f "$OVERRIDE" ]]; then
     done
 else
     fallo "No existe el gschema.override" "falta $OVERRIDE"
+fi
+
+# --- El desvio de la bellota viaja con sus DOS MITADES (0.1.17) ------------
+# dpkg-divert exige el protocolo entero: --add en el preinst (ANTES del
+# desempaquetado, o dpkg ve nuestro fichero pisando el de yaru-theme-icon) y
+# --remove en el postrm (remove). Una mitad sin la otra deja o bien el icono
+# de Ubuntu ganando, o bien un desvio huerfano que se come los upgrades de
+# yaru-theme-icon para siempre. El porque entero, en el preinst.
+RUTA_BELLOTA='/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg'
+if grep -qsF "$RUTA_BELLOTA" "$PKG/debian/preinst" \
+   && grep -qs -- '--add "\$RUTA"' "$PKG/debian/preinst"; then
+    ok "El preinst registra el desvio del icono de Yaru (--add)"
+else
+    fallo "El preinst no registra el desvio del icono de Yaru" \
+"Sin el, dpkg no puede desempaquetar nuestro fichero en la ruta de Yaru y
+la bellota vuelve a depender de icon-theme (MEDICIONES.md 4.70c)."
+fi
+if grep -qsF "$RUTA_BELLOTA" "$PKG/debian/postrm" \
+   && grep -qs -- '--remove "\$RUTA"' "$PKG/debian/postrm"; then
+    ok "El postrm retira el desvio (--remove, la mitad simetrica)"
+else
+    fallo "El postrm no retira el desvio del icono de Yaru" \
+"Un desvio huerfano desvia los upgrades de yaru-theme-icon para siempre."
 fi
 
 # --- Otras acciones exigidas por AGENTS §4.3 -------------------------------
@@ -313,6 +340,7 @@ for esperado in \
     "usr/share/icons/Encina/index.theme" \
     "usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg" \
     "usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg" \
+    "usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg" \
     "etc/systemd/user/gnome-initial-setup-first-login.service" \
     "usr/share/applications/snap-store_snap-store.desktop" \
     "usr/share/icons/hicolor/scalable/apps/encina-centro-aplicaciones.svg"
