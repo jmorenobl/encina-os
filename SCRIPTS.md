@@ -3067,3 +3067,15 @@ puede **dormir con la VM encendida**. La VM sobrevive y sigue donde estaba, pero
 un bucle de capturas programadas **se dispara entero al despertar**, así que una
 tanda de marcas de tiempo seguidas **no prueba que se estuviera mirando** todo
 ese rato.
+
+**Y UNA CORRECCIÓN AL PROPIO `teclear-vm.sh`, del 2026-08-23:** su cabecera dice
+que «`Alt+F1` / `Alt+F2` SÍ llegan al invitado». **Eso vale en contexto de
+texto.** Dentro de una **sesión gráfica**, `Alt+F2` lo captura GNOME —abre
+«Ejecutar una orden», que es lo que hace útil la vía de arriba— y **`Alt+F1`,
+`Alt+F3` y `Alt+F4` NO cambian de consola virtual**: medido con la sesión ya
+muerta, la pantalla no cambia ni un byte. **Consecuencia práctica, y es un
+límite del banco:** el registro de un arranque **roto** no se puede leer. La vía
+apuntada y **no pagada**: editar la línea del núcleo en el menú de GRUB —que
+espera 30 s— y añadir `console=ttyS0`, que levanta `serial-getty@ttyS0` sobre el
+`Serial = Ptty` que el bundle ya trae. El `=` se manda con `tecla 24` y GRUB usa
+disposición **US**.

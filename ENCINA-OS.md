@@ -444,7 +444,24 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > (j) que **el reloj corre antes de que el seed exista**, así que «la oficial +
 > nuestro seed» ya no era el control.
 >
-> **LO QUE FALTA, Y ES BARATO:** cazar un arranque que **sí** se caiga y sacarle
+> **Y EL CONTROL SALE POR DONDE NO SE ESPERABA, §4.65(p): LA ISO OFICIAL SE ROMPE
+> IGUAL.** Con 2 CPU, la oficial `amd64` —cero líneas de Encina— dejó `plymouthd`
+> **abortado con su backtrace** y acabó en «Oh no! Something has gone wrong», que
+> es **la misma pantalla** que nuestro medio dio a las 02:34. El conteo va **2 de
+> 4** el nuestro y **1 de 2** la oficial: **los dos fallan, y en la misma
+> proporción.** Eso es el criterio 1 de §4.59 —un control conocido-bueno que
+> falla— y es lo que contesta «de quién es».
+>
+> **Y UN MODELO TUMBADO POR EL CAMINO:** con **la mitad** de CPU el servidor
+> tardó **menos** (65,83 s contra 82,03), así que esos segundos **no los manda la
+> CPU del invitado**.
+>
+> **LO QUE FALTA, Y AHORA TIENE NOMBRE:** un arranque **roto** no se puede leer
+> —`Alt+F2` no abre nada, `Alt+F1/F3/F4` no cambian de consola—. La vía apuntada y
+> no pagada: editar la línea del núcleo en GRUB y añadir `console=ttyS0`, que
+> levanta un `getty` en el `Serial = Ptty` que el bundle ya trae. Con eso sí se
+> podría cazar el `ubuntu_bootstrap.log`.
+> **Lo que sigue valiendo:** cazar un arranque que se caiga y sacarle
 > el `ubuntu_bootstrap.log`. Si sus reintentos llegan a ~90 s, la hipótesis del
 > reloj queda **probada**; si se cae por otra cosa, se tacha. Hasta entonces es
 > deducción **con su aritmética** y así está escrita.

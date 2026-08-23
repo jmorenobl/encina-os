@@ -25,3 +25,23 @@ este fallo. El que haría falta está escrito en `MEDICIONES.md` §4.64 (l).
 
 **Y no dicen nada de Plymouth.** Sigue sin veredicto y sigue siendo `[OJOS]` de
 Jorge en hierro.
+
+---
+
+## Cuatro más, del 2026-08-23, y son las que contestan «de quién es»
+
+| fichero | qué es |
+|---|---|
+| `04-control-oficial-lento-plymouthd-abortado.png` | **La ISO OFICIAL `amd64`, sin una línea de Encina**, con 2 CPU: `plymouthd` **aborta** y deja su volcado y su backtrace en la consola |
+| `05-control-oficial-lento-sesion-grafica-muerta.png` | La misma máquina 30 min después: **«Oh no! Something has gone wrong»** |
+| `06-nuestro-medio-sesion-grafica-muerta.png` | **La misma pantalla, con nuestro medio** —«Algo salió mal», en español— del arranque de las 02:34 |
+| `07-nuestro-medio-el-instalador-NO-se-cae.png` | Y el arranque de las 03:11, **con el mismo medio y el mismo bundle**: «Disposición del teclado», en español. Estuvo así **5 h 33 min sin que nadie lo tocara** |
+
+**Lo que dicen las cuatro juntas, y es lo que la 02 no podía decir:** el fallo
+**no se reproduce** —mismo bundle, tres resultados— y la familia de fallos
+gráficos **se reproduce en la ISO oficial**. El conteo va **2 de 4** el nuestro y
+**1 de 2** la oficial. `MEDICIONES.md` §4.65 (h) y (p).
+
+**Y siguen sin decir nada de Plymouth como `[OJOS]`:** que el `splash` del
+`amd64` emulado enseñe el logotipo del firmware y la palabra «Ubuntu» se vio en
+un arranque **que acabó con la sesión muerta**, así que no vale de veredicto.
