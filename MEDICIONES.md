@@ -18594,3 +18594,70 @@ no salió del medio, que tiene el 0.1.15), y `/etc/systemd/system/gdm.service.d/
 un `.deb`** en la máquina del fallo, 3 de 3 con `[OJOS]`. **No cierra la
 casilla «Hierro AMD»**, que pide una instalación **limpia desde el medio**: el
 medio vigente lleva 0.1.15 y la refabricación es la fase 1b / la de publicar.
+
+### 4.74 EL MEDIO `amd64` CON 0.1.16 — y el primer intento enseña que el `amd64` NUNCA se había reproducido: xorriso le pone un GUID de GPT al azar (2026-08-23, noche)
+
+**Qué.** Jorge pidió el medio con el 0.1.16 para hacer la fila **g** de la receta
+con la ISO corregida. Antes de fabricar, **el ritual de los seis sitios** para
+`encina-branding 0.1.16` (`a8fcb1b9…`, 6 950 492 bytes): los dos manifiestos,
+`H_BRANDING` y el nombre en `encina-seed.sh`, los arrays `FICHEROS` de
+`fabricar-iso.sh` y `fabricar-seed.sh`, y los dos `autoinstall*.yaml`
+regenerados desde el seed —**con el control previo** de que el base64 vigente
+decodificaba byte a byte al `encina-seed.sh` de HEAD (`43a51bbc…`), así que
+regenerarlo es la misma operación y no otra—. Commit `0f2fa95`. Y el paso 3 de
+`construir-todo.sh` da **`a8fcb1b9…`** para el `.deb` reconstruido desde HEAD:
+el mismo que está en el Acer (§4.73) y en `encina-dev` (§4.72). Tres
+construcciones, una huella.
+
+#### (a) Dos pasadas, dos huellas — y los registros idénticos
+
+```
+pasada 1   00908144c4eeb6595d23680440874ef87687b89dd96b74e3f56af8e77d3e0a25   6 849 232 896 bytes
+pasada 2   41394a80321386d9e8f5a1d5bfe79e1fe3848f185ec261e7642677f685b7e3b3   6 849 232 896 bytes
+diff de los dos registros: solo los directorios de mktemp y las dos huellas finales
+```
+
+La definición de terminado de `construir-todo.sh` es que dos pasadas den la
+misma huella, y **no la dan**. Antes de atribuir, se buscó dónde:
+
+```
+md5sum.txt de las dos (extraído con xorriso):  IGUALES, 499 líneas   <- el CONTENIDO es el mismo
+cmp -l: 168 bytes distintos, en 15 tramos:
+   529-532        CRC de la cabecera GPT (LBA 1)
+   569-584        GUID del disco
+   601-604        CRC de la tabla de particiones
+  1041-1056       GUID único de la partición 1
+  1169-1184       GUID único de la partición 2
+  98833-99488     la misma estructura otra vez (copia en el sector ~193)
+  6848844305-…    la GPT de respaldo, al final del disco
+xorriso -report_system_area:
+  oficial amd64   GPT disk GUID  b078d17c0e862947a4a3cd7bae592982   (y las particiones derivadas)
+  pasada 1        GPT disk GUID  4acbffabd038c446ad3051b2eba79b13
+  pasada 2        GPT disk GUID  df5765d5651b664eb0afa9927bc82704
+  oficial arm64 / encina-os-libnss3.iso:  «MBR cyl-align-all», SIN GPT
+```
+
+**Lo medido:** las dos ISO son idénticas en todos sus ficheros y difieren solo
+en los GUID de la GPT y los CRC que los cubren. **Lo deducido, y lo dice el
+manual de xorriso:** `-boot_image any gpt_disk_guid=` vale `random` por defecto
+y «los GUID de partición se generan variando mínimamente el del disco». **El
+arm64 se reproducía (§4.37, `cd84d2ec…` tres veces) porque no tiene GPT**; el
+`amd64` de §4.64 (`8924f148…`) **se fabricó una sola vez y nunca se comprobó
+contra una segunda pasada** —no está escrito en ningún sitio que lo fuera, y
+hoy se sabe que no lo habría sido—. Una sola pasada «sale una ISO» y nada más,
+que es justo lo que el propio guion advierte al final.
+
+#### (b) El arreglo, y por qué esa forma
+
+`fabricar-iso.sh`: `-boot_image any gpt_disk_guid=4c4f2d16-31f5-4a9d-b601-fd25f37e35b9`,
+una **constante de Encina** escrita en el guion con su porqué. Descartado
+`volume_date_uuid`: derivaría el GUID de `-volume_date uuid`, que tocaría las
+fechas del PVD que el medio hereda de Ubuntu (`2026021001394800`). Descartado
+heredar el GUID de la oficial (`b078d17c…`): un medio nuestro y uno oficial en
+la misma máquina no tienen por qué decir «el mismo disco». El `grub.cfg` del
+medio **no** busca la raíz por `--fs-uuid` (comprobado, 0 coincidencias), así
+que ninguna de las dos cosas afecta al arranque. Commit `9d80273`.
+
+La opción solo actúa «sobre una GPT que emerja»: **el arm64, que es solo MBR,
+no debería cambiar** —deducción; se mide en la fase 1b, que de todos modos
+rehace el arm64 con 0.1.16—.
