@@ -42,6 +42,14 @@ case "$1" in
                 update-grub || true
             fi
         fi
+
+        # 5. El drop-in de gdm.service (etc/systemd/system/gdm.service.d/)
+        #    es un conffile y no una unidad: dh_installsystemd no lo ve, asi
+        #    que systemd no lo lee hasta un daemon-reload. Solo si systemd
+        #    es quien manda (en un chroot de construccion no hay /run/systemd).
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload || true
+        fi
         ;;
 esac
 

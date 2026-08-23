@@ -113,6 +113,44 @@ de búsqueda; si dice 'static', la máscara no está llegando."
 fi
 
 # ============================================================================
+titulo "2b. GDM espera a udev-settle (0.1.16, MEDICIONES.md §4.70f y §4.71)"
+
+echo "  En hierro AMD el saludador nace sobre simpledrm y muere al llegar"
+echo "  amdgpu (mutter 46.2). El drop-in hace que gdm.service espere a"
+echo "  systemd-udev-settle.service; en arm64 cuesta 0 s (§4.71). Lo que"
+echo "  decide no es que el fichero este, sino que systemd lo haya leido."
+echo
+
+DROPIN=/etc/systemd/system/gdm.service.d/encina-espera-gpu.conf
+if [[ -f "$DROPIN" ]] && grep -q '^After=systemd-udev-settle.service' "$DROPIN" \
+   && grep -q '^Wants=systemd-udev-settle.service' "$DROPIN"; then
+    ok "$DROPIN con Wants= y After="
+else
+    fallo "El drop-in no esta o no lleva las dos lineas" "$(cat "$DROPIN" 2>&1)"
+fi
+comprobar_salida "El drop-in es nuestro (dpkg -S)" "encina-branding" dpkg -S "$DROPIN"
+
+# Lo que de verdad decide: systemd, no el sistema de ficheros. Su control
+# esta en la purga, donde la misma orden tiene que dejar de listarla.
+WANTS=$(systemctl show gdm.service -p Wants 2>&1 || true)
+if echo "$WANTS" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
+    ok "systemctl show gdm.service -p Wants lista systemd-udev-settle.service"
+else
+    fallo "systemd NO tiene el drop-in cargado" \
+"$WANTS
+Esperado: systemd-udev-settle.service en Wants=. Si el fichero esta y esto
+falla, falta el daemon-reload del postinst."
+fi
+# El precio, que se apunta y no se esconde: el aviso de udevadm en el ultimo
+# arranque. Solo sale si la unidad corrio, o sea si el drop-in estaba puesto
+# AL ARRANCAR; recien instalado sin reiniciar es normal que no este.
+if journalctl -b --no-pager 2>/dev/null | grep -q 'udev-settle.service is deprecated'; then
+    aviso "En este arranque udevadm dijo: '$(journalctl -b --no-pager | grep -m1 -o 'systemd-udev-settle.service is deprecated.*')' -- es el precio conocido (§4.70f)"
+else
+    omitido "El aviso de deprecacion de udev-settle no esta en este arranque: el drop-in no estaba al arrancar, o no hay journal. Reinicia y repite para verlo"
+fi
+
+# ============================================================================
 titulo "3. Idempotencia: cinco instalaciones seguidas (R9)"
 
 instantanea() {
@@ -198,6 +236,20 @@ else
 "is-enabled dijo: $EST_PURGA
 Esperado: static. Si sigue diciendo 'masked', la máscara ha sobrevivido a la
 purga y el paquete no es reversible."
+fi
+
+# EL CONTROL DE LA COMPROBACION 2b: purgado, udev-settle tiene que salir de
+# Wants= de gdm.service, y el conffile del drop-in tiene que haberse ido.
+WANTS_PURGA=$(systemctl show gdm.service -p Wants 2>&1 || true)
+if [[ -e /etc/systemd/system/gdm.service.d/encina-espera-gpu.conf ]]; then
+    fallo "Tras purgar, el drop-in de gdm.service sigue en /etc" \
+"$(ls -l /etc/systemd/system/gdm.service.d/)"
+elif echo "$WANTS_PURGA" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
+    fallo "Tras purgar, systemd sigue queriendo udev-settle para gdm" \
+"$WANTS_PURGA
+El fichero se fue pero systemd no releyo: falta el daemon-reload del postrm."
+else
+    ok "Control: purgado, udev-settle sale de Wants= de gdm.service"
 fi
 
 paso "Reinstalando para dejar el sistema como estaba"

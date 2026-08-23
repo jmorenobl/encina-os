@@ -11,6 +11,12 @@ case "$1" in
         if command -v dconf >/dev/null 2>&1; then
             dconf update || true
         fi
+        # El drop-in de gdm.service se va con la purga (es conffile: con
+        # 'remove' a secas se queda, como todo /etc); systemd tiene que
+        # releer para que udev-settle deje de estar en Wants=.
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload || true
+        fi
         ;;
 esac
 

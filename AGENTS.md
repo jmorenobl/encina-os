@@ -162,6 +162,7 @@ override_dh_auto_install:
 | `usr/share/plymouth/themes/encina/encina.script` | Script del tema |
 | `etc/dconf/db/gdm.d/99-encina` | Logotipo y mensaje en la pantalla de inicio de sesión |
 | `etc/dconf/profile/gdm` | Perfil que hace que GDM lea la base de datos anterior. Sin él, en Debian/Ubuntu no se lee nunca |
+| `etc/systemd/system/gdm.service.d/encina-espera-gpu.conf` | **Desde 0.1.16.** Drop-in (conffile) que hace que `gdm.service` espere a `systemd-udev-settle.service` (`Wants=` **y** `After=`; la unidad es `static` y sin `Wants=` nadie la pide). Es el remedio del negro en hierro AMD —el saludador nace sobre `simpledrm`, llega `amdgpu` y mutter 46.2 no sobrevive al cambio, `MEDICIONES.md` §4.70b/f, 0 de 5 → 3 de 3— y el único de los tres medidos que no nombra hardware. **Cuesta 0 s en arm64** (§4.71: `udev-settle` termina a 1,1 s, GDM a 2,0 s con y sin él). Su precio, a propósito no callado: `udevadm` avisa en cada arranque «`systemd-udev-settle.service is deprecated. Please fix gdm.service not to pull it in`», y el tope de 120 s si un dispositivo no asienta (no visto). Es un parche sobre mutter: el día que mutter aguante, se quita con su fecha. El porqué entero va en comentarios dentro del fichero |
 
 ### 4.2 Requisitos concretos
 
@@ -244,9 +245,14 @@ Plymouth.SetDisplayPasswordFunction(display_password_callback);
 3. `dconf update`, condicionado a que el binario exista
 4. `GRUB_DISTRIBUTOR="Encina OS"` en `/etc/default/grub` mediante `sed`
    (sustituir si la línea existe, añadir si no), seguido de `update-grub || true`
+5. `systemctl daemon-reload || true`, solo si `/run/systemd/system` existe
+   (desde 0.1.16): el drop-in de `gdm.service` es un conffile, no una unidad, y
+   `dh_installsystemd` no lo ve; sin esto systemd no lo lee hasta reiniciar.
 
 `prerm` debe hacer `update-alternatives --remove`. `postrm` debe regenerar
-initramfs y dconf. Todas las invocaciones externas con guarda `|| true` donde un
+initramfs y dconf, y hacer `daemon-reload` con la misma guarda (el drop-in se
+va con la **purga**, como todo conffile; con `remove` a secas se queda, que es
+lo que dpkg hace con `/etc`). Todas las invocaciones externas con guarda `|| true` donde un
 fallo no deba abortar la desinstalación.
 
 ### 4.4 Definición de terminado
@@ -263,6 +269,12 @@ Ejecutar en una VM Ubuntu **virgen**:
 - [ ] **Crear un usuario nuevo después de instalar** (`sudo useradd -m -s /bin/bash prueba`), iniciar sesión con él, y comprobar que hereda el fondo. Si no lo hereda, el override no funciona (probable violación de R1 o R2)
 - [ ] Reinstalar cinco veces: sin cambios de estado ni errores (R9)
 - [ ] `sudo apt purge encina-branding` restaura el tema de arranque original
+- [ ] **GDM espera a udev (0.1.16):** `systemctl show gdm.service -p Wants` lista
+      `systemd-udev-settle.service` con el paquete puesto, y **deja de listarla
+      tras la purga** —ese es el control, y sin él el primero no vale—. Lo
+      ejecuta `05-verificar.sh` (2b y su control en la purga). Lo que esa
+      casilla **no** prueba, y queda en el hierro: que en un AMD el saludador
+      aparezca tres arranques seguidos (`tareas/sueltas.md`, «Hierro AMD»)
 
 ---
 
