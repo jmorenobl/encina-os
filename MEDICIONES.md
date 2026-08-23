@@ -18440,9 +18440,7 @@ CONTROL, drop-in quitado
   algo visto.
 - `[OMIT]` el coste en hierro que no sea el Acer ni esta VM.
 - `[OMIT]` por qué GDM tarda 10 s en lanzar el saludador en arm64.
-- **El clon `encina-udev-settle` queda parado y sin el drop-in** —se quitó para el
-  control—, con su testigo y ocho arranques en el journal. Se puede borrar
-  cuando se quiera; no es banco de nada más. `encina-E4-entrega` **no se
+- ~~**El clon `encina-udev-settle` queda parado y sin el drop-in**, con su testigo y ocho arranques en el journal. Se puede borrar cuando se quiera; no es banco de nada más.~~ **Borrado en la misma sesión a petición de Jorge:** `utmctl delete`, cuatro VMs listadas y cuatro `.utm` en disco, 164 MiB devueltos —lo escrito en ocho arranques; el resto era compartido con `encina-E4-entrega`—. Lo que queda de él es esta sección. `encina-E4-entrega` **no se
   escribió**: `disco.img` sigue en `2026-08-13 10:29:38`, el mismo antes y
   después.
 - **El paso siguiente, y NO es de hoy**: el fichero entra en `encina-branding`
