@@ -18345,3 +18345,107 @@ que es la misma forma de la tabla de §4.70f para que las dos se comparen:
    **no correr** y GDM vuelve a los tiempos de la base.
 5. Saludador: **3 de 3 con `Added device`** en las dos mitades; el drop-in no debe
    cambiar nada de lo que se ve en arm64.
+
+#### (b) LO MEDIDO: ocho arranques del clon, leídos con `journalctl -b -o short-monotonic`
+
+El clon costó lo de siempre, 0 bytes (`df` 102 633 360 → 102 633 524 KiB, ruido
+al alza), y se arrancó **solo** —`utmctl list | grep -v stopped` dio una—. Su
+`journal` ya era persistente (`/var/log/journal/` del 13 de agosto), así que los
+ocho arranques están en `journalctl --list-boots` del clon, de `-7` a `0`.
+Testigo escrito en el primer minuto, con su control de que no existía:
+`/etc/encina-testigo-udev-settle`, «clon para medir el drop-in de gdm.service,
+4.71, 2026-08-23T17:13:56+00:00». Hostname `encina-e2-completa`, IP `.19`,
+núcleo `7.0.0-28-generic`, 4 vCPU, 7,9 GiB, `encina-branding 0.1.8`.
+
+El drop-in, **byte a byte el del Acer** (§4.70f), huella `5d929e86…`:
+
+```
+/etc/systemd/system/gdm.service.d/encina-espera-gpu.conf
+[Unit]
+Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service
+```
+
+y tras `daemon-reload`, `systemctl show gdm.service -p Wants` lo lista
+(`Wants=systemd-udev-settle.service`), que es la prueba de que systemd lo leyó
+**antes** de medir nada, y no «el fichero está».
+
+```
+                               udev-settle       Started gdm   saludador «Added device»   aserc.  front buf.  Startup finished
+ 0  clon, primer arranque      no corre            2,21 s     12,53 s  card0 (virtio_gpu)    0        0        13,52 s
+BASE, sin drop-in
+ 1                             no corre            2,14 s     12,44 s  card0 (virtio_gpu)    0        0        13,38 s
+ 2                             no corre            2,10 s     12,42 s  card0 (virtio_gpu)    0        0        13,32 s
+ 3                             no corre            2,05 s     12,42 s  card0 (virtio_gpu)    0        0        13,34 s
+CON EL DROP-IN
+ 1                             0,47 → 1,13 s       2,05 s     12,42 s  card0 (virtio_gpu)    0        0        13,21 s
+ 2                             0,46 → 1,08 s       1,97 s     12,42 s  card0 (virtio_gpu)    0        0        13,31 s
+ 3                             0,45 → 1,12 s       2,04 s     12,42 s  card0 (virtio_gpu)    0        0        13,33 s
+CONTROL, drop-in quitado
+ c                             no corre            2,06 s     12,43 s  card0 (virtio_gpu)    0        0        13,33 s
+```
+
+- **`systemd-udev-settle.service` dura 0,6–0,7 s en arm64/UTM y termina a los
+  1,1 s**, antes de `sysinit.target` (1,59 s) y antes de que GDM pudiera
+  arrancar de todos modos. Por eso `Started gdm` con el drop-in (1,97–2,05 s) está
+  **dentro** del rango de la base (2,05–2,14 s): el delta mediano es **−0,06 s**,
+  o sea **cero, con el signo que da el ruido**. El umbral comprometido en (a) era
+  5 s; no se acerca.
+- **El saludador nace en el mismo segundo en las dos mitades, 12,42 s**, y sobre
+  `card0` = `virtio_gpu`, no `simpledrm`: el `[drm] Initialized virtio_gpu` es
+  del núcleo a los **0,18 s**, dentro del initrd, como predecía (a)1. Ningún
+  cambio de tarjeta en caliente, 0 aserciones y 0 `front buffer` en los ocho
+  arranques. Lo que ve una persona en arm64 **no cambia**.
+- **El aviso, literal y una vez por arranque, solo con el drop-in**:
+
+```
+[    0.474048] encina-e2-completa udevadm[360]: systemd-udev-settle.service is deprecated. Please fix gdm.service not to pull it in.
+```
+
+  Lo dice `udevadm` (el propio `ExecStart` de la unidad), a prioridad de aviso,
+  y **no sale** en los cuatro arranques sin el fichero (`grep -c` → 0). Es el
+  texto que va a leer quien mire un `journalctl -p warning` de cualquier
+  Encina OS, y por eso se apunta entero: cuando el fichero entre en el paquete,
+  su porqué tiene que citar esta línea.
+- **El control contesta lo que debe:** `rm` del fichero + `rmdir` + `daemon-reload`
+  → `systemctl show gdm.service -p Wants | grep -c udev-settle` da **0**, y en el
+  arranque siguiente la unidad **no corre**, no hay aviso y GDM vuelve a 2,06 s.
+  La comprobación sabe dar sus dos respuestas: «corre» tres veces y «no corre»
+  cinco.
+
+#### (c) LO DEDUCIDO, separado de lo medido
+
+- **El coste del drop-in en arm64 es ~0 y se puede meter en un paquete `all`**
+  —que es lo que la casilla preguntaba—. La deducción que lo sostiene: en esta
+  máquina `udev` acaba **antes** de que GDM esté en condiciones de arrancar, así
+  que «esperar a udev» es esperar a algo que ya pasó. Eso es **una VM con cinco
+  dispositivos virtuales**; es lo que había que medir y es lo único que se ha
+  medido. Un Intel o un ARM real con más `udev` que éste no está medido, y el
+  tope de 120 s de `udev-settle` sigue siendo el riesgo escrito en §4.70f: aquí
+  **no se ha visto ningún dispositivo que no asiente**, ni se ha fabricado uno a
+  propósito (el control negativo del «120 s» **no existe**, `[OMIT]`).
+- **El «Wants=» importa tanto como el «After=»**: la unidad es `static` y nadie
+  la pide en 24.04 de serie —la base lo prueba, cuatro arranques sin ella—, así
+  que sin `Wants=` el `After=` no ordenaría nada. Es el mismo fichero del Acer;
+  se dice para que nadie lo «simplifique».
+- **Los 10 s entre `Started gdm` (2,0 s) y el saludador (12,1 s, `session opened
+  for user gdm`) son de GDM y no del drop-in**: están igual en las ocho lecturas
+  y no los toca nada de esta sección. Qué espera GDM ahí es `[OMIT]`, no es de
+  hoy y no cambia la conclusión.
+
+#### (d) Lo que esta sección NO contesta, y lo que deja
+
+- `[OMIT]` el negativo del tope de 120 s: no hay aquí un dispositivo que no
+  asiente, así que «se vería como 120 s» sigue siendo lo que dice el manual y no
+  algo visto.
+- `[OMIT]` el coste en hierro que no sea el Acer ni esta VM.
+- `[OMIT]` por qué GDM tarda 10 s en lanzar el saludador en arm64.
+- **El clon `encina-udev-settle` queda parado y sin el drop-in** —se quitó para el
+  control—, con su testigo y ocho arranques en el journal. Se puede borrar
+  cuando se quiera; no es banco de nada más. `encina-E4-entrega` **no se
+  escribió**: `disco.img` sigue en `2026-08-13 10:29:38`, el mismo antes y
+  después.
+- **El paso siguiente, y NO es de hoy**: el fichero entra en `encina-branding`
+  como conffile, con su porqué al lado —esta línea de `udevadm` y §4.70f— y su
+  casilla en `AGENTS.md`, con el control de «quitar el paquete → la unidad deja
+  de correr», que ya está escrito arriba.
