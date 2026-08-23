@@ -17935,5 +17935,43 @@ donde estaba.
 
 #### (e) La ejecución, que es la medida
 
-*(Pendiente hasta que el commit suba: se rellena con la salida literal de la
-ejecución, y la casilla no se marca antes.)*
+Ejecución **32650010668**, del commit `42c0c44`, **seis trabajos y seis
+`success`**. Por arquitectura, con el control delante de la medición como
+siempre (`gh run view 32650010668 --log`, filtrado a las líneas del veredicto):
+
+```
+arm64 · encina-branding        | Set up job | Image: ubuntu-24.04-arm
+arm64 · encina-branding        | CONTROL    | [OK]    sabe decir que no:  [HALLAZGO] encina-branding_0.1.15_all.deb NO es el del manifiesto
+arm64 · encina-branding        | Comprobar  | [OK]    encina-branding_0.1.15_all.deb cuadra con el manifiesto  6d9fcd64aa40…  6948796 bytes
+arm64 · encina-firefox-native  | CONTROL    | [OK]    sabe decir que no:  [HALLAZGO] encina-firefox-native_0.2.1_all.deb NO es el del manifiesto
+arm64 · encina-firefox-native  | Comprobar  | [OK]    encina-firefox-native_0.2.1_all.deb cuadra con el manifiesto  640f508e3802…  10876 bytes
+arm64 · encina-meta            | CONTROL    | [OK]    sabe decir que no:  [HALLAZGO] encina-meta_0.2.1_all.deb NO es el del manifiesto
+arm64 · encina-meta            | Comprobar  | [OK]    encina-meta_0.2.1_all.deb cuadra con el manifiesto  204081f0ff3c…  6904 bytes
+amd64 · encina-branding        | Set up job | Image: ubuntu-24.04
+amd64 · encina-branding        | Comprobar  | [OK]    encina-branding_0.1.15_all.deb cuadra con el manifiesto  6d9fcd64aa40…  6948796 bytes
+amd64 · encina-firefox-native  | Comprobar  | [OK]    encina-firefox-native_0.2.1_all.deb cuadra con el manifiesto  640f508e3802…  10876 bytes
+amd64 · encina-meta            | Comprobar  | [OK]    encina-meta_0.2.1_all.deb cuadra con el manifiesto  204081f0ff3c…  6904 bytes
+```
+
+**Las tres huellas de arm64 son las de amd64 y las del manifiesto**, que es lo
+que (a) predecía para `Architecture: all` y lo que hasta hoy ninguna máquina
+automática había afirmado de arm64. Los seis artefactos existen con su
+arquitectura en el nombre —`encina-branding-{amd64,arm64}-deb` 6.949.612 bytes,
+`encina-firefox-native-*` 11.009, `encina-meta-*` 6.999; el zip, no el `.deb`—,
+o sea que la forma de (b) es la que GitHub ejecuta y no sólo la que el
+simulador aceptó.
+
+Un dato que nadie pidió y conviene apuntar: **las filas arm64 tardan 38–43 s y
+las amd64 98–223 s** en la misma ejecución, y la diferencia está en
+`apt-get install` y no en construir. No es un hallazgo, es un reparto: si un
+día la CI estorba, la fila lenta es la que no es producto.
+
+**Definición de terminado de la casilla 13: pasa entera.** Las dos
+arquitecturas corren, las dos pasan el control saboteado que ya existía, el
+`.deb` de arm64 sale con la huella del manifiesto, y `AGENTS.md` §8 queda
+enmendado con su fecha.
+
+**`[OMIT]` y no se da por bueno:** la colisión de nombres de `upload-artifact@v4`
+de (b) sigue siendo leída y no reproducida. Y esta CI sigue **sin declarar
+probado** amd64: construye y cuadra, que es otra cosa, y la que prueba es la
+fase 1.

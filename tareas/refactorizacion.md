@@ -538,7 +538,9 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 13. La CI construye también `arm64`, que es el producto que D9 declara
 
-- [ ] **Una entrada más en la matriz: `ubuntu-24.04-arm`.** Hoy
+- [x] **Una entrada más en la matriz: `ubuntu-24.04-arm`.** **HECHA EL 2026-08-23**
+      (`MEDICIONES.md` §4.69: ejecución 32650010668, 6 de 6, tres huellas arm64
+      iguales a las del manifiesto; la casilla iba corta en tres sitios, (c)). Hoy
       `.github/workflows/build.yml` corre en `ubuntu-latest` y nada más, así que
       los tres `.deb` **sólo se construyen en amd64**.
       *Por qué:* `AGENTS.md` §8 dice *«amd64… se construye en CI porque el runner
