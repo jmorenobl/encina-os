@@ -1013,8 +1013,18 @@ FECHA='2026021001455100'
 # se queja del nombre que ya trae el medio oficial, porque «Ubuntu 24.04.4 LTS
 # arm64» tampoco cumple la norma -- minusculas y espacios. Lo nuestro hereda
 # exactamente la misma infraccion, ni una mas.
+# EL GUID DE LA GPT, FIJO, O EL MEDIO amd64 NO SE REPRODUCE NUNCA (§4.74).
+# La ISO amd64 de Ubuntu es un hibrido MBR+GPT (la arm64 es solo MBR), y al
+# reescribirla xorriso le pone a la GPT un GUID de disco ALEATORIO y deriva de
+# el los de las dos particiones: dos pasadas identicas en contenido -md5sum.txt
+# igual linea a linea- difieren en 168 bytes, todos GUIDs y sus CRC. No vale
+# 'volume_date_uuid', que tocaria las fechas del PVD que el medio hereda. Es
+# una constante de Encina, no la de Ubuntu (b078d17c…): un medio nuestro y
+# uno oficial en la misma maquina no tienen por que decir el mismo disco.
+GPT_GUID_ENCINA=4c4f2d16-31f5-4a9d-b601-fd25f37e35b9
 xorriso -indev "$ISO" -outdev "$SALIDA" \
         -boot_image any replay \
+        -boot_image any gpt_disk_guid="$GPT_GUID_ENCINA" \
         -overwrite on \
         -volid "$VOLID" \
         "${MAPAS[@]}" \
