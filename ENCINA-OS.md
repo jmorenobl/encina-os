@@ -401,6 +401,57 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### LA TAREA EN CURSO, 2026-08-23: **EL FALLO DEL INSTALADOR `amd64` NO SE REPRODUCE, Y EL RELOJ QUE LO EXPLICA ES DE UBUNTU**
+>
+> Todo con su control en `MEDICIONES.md` §4.65 —la predicción comprometida en el
+> commit `0a5c636` **antes de arrancar ninguna VM**, el marcador en (g), el
+> conteo de arranques en (h), el instrumento nuevo en (i), el registro en (j), el
+> control que separa en (k) y lo medido contra lo deducido en (l)—. Los cuatro
+> registros, en `design/registros/amd64-e6/`.
+>
+> **TRES ARRANQUES DEL MISMO BUNDLE, TRES RESULTADOS DISTINTOS:**
+>
+> ```
+> 2026-08-22 noche  -> «Se produjo un problema ... ubuntu-desktop-bootstrap»
+> 2026-08-23 02:34  -> la SESION GRAFICA se muere: «Algo salio mal»  (otro fallo)
+> 2026-08-23 03:11  -> EL INSTALADOR VA: «Disposicion del teclado», en español
+> ```
+>
+> Y el de las 03:11 **se dejó solo 5 h 33 min** —con un sueño del anfitrión de
+> por medio— y seguía en la misma pantalla. **Sin manos no se cae.** Así que
+> «el instalador `amd64` se cae» **no se puede escribir**: es la **octava
+> atribución falsa**, y la ha parado **contar arranques** (§4.59).
+>
+> **YA SE PUEDE LEER EL REGISTRO DE DENTRO, que anoche no se pudo:** `Alt+F2` →
+> «Ejecutar una orden» → `wget --post-file` contra un buzón del Mac, con sus tres
+> controles delante (`SCRIPTS.md`, la vía nueva). **`curl` no está** en la sesión
+> viva; `wget` sí. Trampas 57 y 58.
+>
+> **Y LO QUE EL REGISTRO NOMBRA ES UN RELOJ, no un paquete ni la capa:**
+>
+> ```
+> INFO subiquity_server: Waiting server up to 90 seconds     <- literal, del frontal
+>
+>                                  reintentos   s hasta el zocalo
+> ISO OFICIAL amd64 (sin Encina)       82            84,26
+> NUESTRO medio amd64 (8924f148)       81            82,03
+> presupuesto del frontal               -            90,00
+> ```
+>
+> **LA OFICIAL ESTÁ PEOR QUE LA NUESTRA.** El reloj es de Ubuntu y el margen se lo
+> come el **banco emulado**, con Encina y sin Encina. Ese es el control que
+> §4.64(l) pedía, en una forma mejor y de **un solo arranque**: se supo al leer
+> (j) que **el reloj corre antes de que el seed exista**, así que «la oficial +
+> nuestro seed» ya no era el control.
+>
+> **LO QUE FALTA, Y ES BARATO:** cazar un arranque que **sí** se caiga y sacarle
+> el `ubuntu_bootstrap.log`. Si sus reintentos llegan a ~90 s, la hipótesis del
+> reloj queda **probada**; si se cae por otra cosa, se tacha. Hasta entonces es
+> deducción **con su aritmética** y así está escrita.
+>
+> **Y LO QUE SIGUE SIENDO DE JORGE:** el hierro —una prueba con red y otra sin
+> red, y Plymouth, que es `[OJOS]`—. Nada de esta vuelta lo sustituye.
+
 > ### LA TAREA EN CURSO, 2026-08-22 (noche): **HAY UN MEDIO `amd64` Y ARRANCA CON LA MARCA. EL INSTALADOR SE CAE, Y NO SE SABE DE QUIÉN ES**
 >
 > Todo con su control en `MEDICIONES.md` §4.64 —la predicción en (a)-(f), el

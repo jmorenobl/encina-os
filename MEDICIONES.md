@@ -16892,3 +16892,184 @@ de anoche: **el clic del anfitrión no llega al invitado `x86_64`**, y
 `Shift+Tab`+espacio sobre un diálogo activa **el botón por defecto** —así se
 cerró sin querer el diálogo del error—. Por eso el plan de R **no usa el ratón ni
 los botones del diálogo**: usa `Alt+F2`.
+
+#### (g) EL MARCADOR DE LA PREDICCIÓN, sin maquillar
+
+**La predicción se comprometió en el commit `0a5c636`, antes de arrancar ninguna
+VM.** Se marca ahora. **Y la que manda —R1— FALLA, y al fallar deja sin sentido
+la mitad del plan**, que es exactamente para lo que se escribe una predicción.
+
+| | qué decía | qué pasó |
+|---|---|---|
+| **R1** | el fallo **se reproduce** | **FALLA, y es el resultado de la vuelta.** Tres arranques del **mismo bundle** dan **tres cosas distintas** |
+| **R2** | `Alt+F2` abre la consola de órdenes de GNOME | **ACIERTA.** «Ejecutar una orden», con el cursor dentro |
+| **R3** | hay un informe de `apport` en `/var/crash` | **NO SE PUEDE CONTESTAR**, y se dice así: sin caída no hay informe. En los dos arranques sanos `/var/crash` está **vacío**, que es el control |
+| **R4** | el canal invitado→anfitrión funciona con `curl` | **A MEDIAS, y corrige un supuesto: `curl` NO ESTÁ** en la sesión viva. Se paga con `wget --post-file` |
+| **R5** | lo que nombre el registro no será ni un `.deb` ni la capa | **ACIERTA, y da más de lo pedido:** nombra un **reloj de 90 segundos** |
+| **C1a/C1b/C1r** | los controles del seed | **NO SE EJECUTAN, y no por falta de tiempo: dejaron de ser el control que hace falta** cuando R1 falló. Se sustituyen por (k), que es mejor |
+| **A1** | el `arm64` solo 12 min no se cae | **NO SE EJECUTA**, y su pregunta la contesta (h) **sobre `amd64`, que es donde importaba** |
+
+#### (h) LO QUE TUMBA LA PREGUNTA DE LA VUELTA: EL FALLO **NO SE REPRODUCE**
+
+Se cuentan los arranques, que es lo que manda §4.59 cuando hay un fallo
+intermitente de por medio:
+
+```
+2026-08-22 noche   arranque unico   -> «Se produjo un problema ... ubuntu-desktop-bootstrap»
+2026-08-23 02:34   arranque 1       -> LA SESION GRAFICA SE MUERE: «Algo salio mal.
+                                        Ocurrio un problema y el sistema no se puede
+                                        recuperar» -- que NO es el fallo de anoche
+2026-08-23 03:11   arranque 2       -> EL INSTALADOR VA. «Disposicion del teclado», en
+                                        español, con «Español» ya elegido, a t+600 s
+```
+
+**Y el arranque 2 se dejó solo, que era el control A1 y sale en positivo por
+goleada:** no doce minutos, sino **5 h 33 min** —con un sueño del anfitrión de
+por medio— y a las 08:44 seguía en la misma pantalla, con su reloj corriendo.
+**Sin manos no se cae.**
+
+> **Tres arranques del mismo bundle, tres resultados distintos.** Así que la
+> frase «el instalador `amd64` se cae» **no se puede escribir**, y anoche estuvo
+> a punto de escribirse como una propiedad del medio. **Es la octava atribución
+> falsa, y la ha parado contar arranques.**
+
+#### (i) EL INSTRUMENTO QUE AHORA EXISTE: LEER EL REGISTRO DE DENTRO SIN RATÓN
+
+Anoche esto no se pudo hacer. Ahora se hace, **y con sus controles delante**:
+
+```
+1. Alt+F2                     -> «Ejecutar una orden» (el raton no hace falta)
+2. sudo tar czf /tmp/e.tgz /var/log /var/crash /run/log
+3. wget --post-file /tmp/e.tgz -O /dev/null http://192.168.64.1:8099/registro.tgz
+```
+
+- **El anfitrión es alcanzable** porque el bundle sale con `-netdev vmnet-shared`
+  —leído del `debug.log`, no supuesto— y la puerta de enlace es `192.168.64.1`.
+- **CONTROL DEL CANAL (M3), pagado y en los dos sentidos:** el buzón se enseña
+  **vacío**; luego entra un fichero del **anfitrión** con una cadena imposible;
+  luego uno del **invitado** (`/etc/hostname`, 9 bytes, `encinaos`) **desde
+  `192.168.64.28`**, que es su concesión de DHCP. Sin esos tres pasos, un fichero
+  a medias se habría leído como un fallo.
+- **PREMISA M2, comprobada antes de leer nada:** los ficheros de dentro están
+  fechados a las 03:16–03:18, o sea que son **de ese arranque**.
+- **Y `curl` NO ESTÁ.** Se midió con su control: `curl` solo → «Orden no
+  encontrada»; `gnome-terminal` solo → el diálogo **se cierra**, o sea que
+  encontrarlo lo encuentra. `wget` sí está, y **`--post-file X URL` funciona sin
+  ningún `=`**, que es lo que lo hace tecleable.
+
+#### (j) LO QUE DICE EL REGISTRO, Y ES UN RELOJ DE 90 SEGUNDOS
+
+El fichero que importa no es el del servidor: es el del **frontal**, que es quien
+enseña «Se produjo un problema». Su **tercera línea**, literal:
+
+```
+2026-08-23 01:16:06.670831 INFO subiquity_server: Waiting server up to 90 seconds
+2026-08-23 01:16:06.684930 ERROR subiquity_server: SocketException: Connection failed
+        (OS Error: No existe el archivo o el directorio, errno = 2),
+        address = /run/subiquity/socket, port = 0
+        ... 81 reintentos, uno por segundo ...
+2026-08-23 01:17:28.701972 ERROR subiquity_server: SocketException ...   <- el ultimo
+2026-08-23 01:17:29.841991 INFO  subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:39.226121 INFO  subiquity_client: Opening socket to Endpoint(...)
+```
+
+Y el servidor, por su lado, **no existía hasta los 81,5 s**:
+
+```
+2026-08-23 01:17:28,209 INFO subiquity:207 Starting Subiquity server revision 494
+        of snap /snap/ubuntu-desktop-bootstrap/494
+```
+
+**El arranque SANO pasó con 82,03 s de 90.** Ocho segundos de margen, el 91 % del
+presupuesto gastado. Y el seed nuestro **se leyó bien**, que es lo que descarta
+media lista de sospechosos de un plumazo:
+
+```
+subiquity.server.server:704 load_autoinstall_config only_early False file /autoinstall.yaml
+subiquity/Meta/interactive_sections_GET: SUCCESS: 200
+        ["keyboard", "network", "storage", "identity", "timezone"]   <- las CINCO nuestras
+```
+
+#### (k) EL CONTROL QUE SÍ SEPARA, PAGADO — Y ES **UN SOLO ARRANQUE**
+
+§4.64(l) pedía «la ISO oficial + nuestro seed». **Ese ya no es el control**, y
+por un motivo que sólo se supo al leer (j): **el reloj corre ANTES de que el seed
+exista**. Los 82 s se los come el arranque del snap, no el `autoinstall`. Así que
+el control que separa es más barato y más limpio: **la ISO oficial sin tocar, y
+se le lee el mismo reloj.**
+
+```
+                                 reintentos   s hasta el zocalo   s hasta abrirlo
+ISO OFICIAL amd64 (sin Encina)       82            84,26              93,91
+NUESTRO medio amd64 (8924f148)       81            82,03              92,55
+presupuesto del frontal               -            90,00                -
+```
+
+> **LA OFICIAL ESTÁ PEOR QUE LA NUESTRA.** El reloj de 90 s es de **Ubuntu**, y
+> el margen se lo come el **banco emulado**, con Encina dentro y sin Encina
+> dentro. La diferencia entre las dos máquinas es **exactamente el seed y nada
+> más** —`file /autoinstall.yaml` contra `file None`—, y las dos enseñan el mismo
+> `WARNING subiquity.cloudinit:97 cloud-init schema --system timed out`.
+
+Los cuatro registros quedan en `design/registros/amd64-e6/`, con su `LEEME.md`.
+
+#### (l) LO MEDIDO Y LO DEDUCIDO, SEPARADOS — porque aquí es donde se caería la novena
+
+**MEDIDO:**
+
+1. El frontal espera **90 s** por el zócalo del servidor, y lo dice él.
+2. En este banco tarda **82,03 s** (nuestro medio) y **84,26 s** (la oficial).
+3. El fallo **no se reproduce**: 3 arranques, 3 resultados.
+4. Nuestro seed se lee y se aplica bien; `/var/crash` **vacío** en los sanos.
+5. `curl` no está en la sesión viva; `wget` sí.
+
+**DEDUCIDO, Y NO PROBADO:** que el «Se produjo un problema» del 22 fuera **ese**
+reloj agotándose. **Encaja en la aritmética** —el diálogo salió a t+338 s y el
+frontal arranca alrededor de t+248 s en un arranque de ese ritmo: 90 s justos— y
+encaja con que sea intermitente, porque el banco gasta el 91-94 % del
+presupuesto. **Pero nadie ha leído todavía el registro de un arranque que se
+caiga**, y hasta que se lea esto es una hipótesis con su aritmética, no un
+resultado.
+
+**LO QUE LO PROBARÍA, y ya no cuesta una tarde:** cazar un arranque que se caiga y
+sacarle el `ubuntu_bootstrap.log` con (i). Si sus reintentos llegan a ~90 s y ahí
+está el error, queda probado. Si se cae por otra cosa, esta hipótesis se tacha y
+se deja escrita al lado.
+
+#### (m) LO QUE ESTA VUELTA **NO** HA DEMOSTRADO
+
+- **Que el medio `amd64` instale.** Sigue sin llegarse al final: nadie contestó
+  las cinco pantallas.
+- **De quién es el fallo del 22**, en el sentido fuerte. Lo que sí queda escrito
+  es que **no es del medio** por el lado del reloj, porque la oficial está peor.
+- **`amd64` separado de la emulación.** Siguen atados; lo desata el hierro.
+- **Nada de Plymouth** —y de paso se vio, en el arranque 1, que el `splash` del
+  `amd64` emulado enseña el logotipo del firmware y la palabra **Ubuntu**: es
+  `[OJOS]` de Jorge y **no se cuenta como veredicto**, porque un arranque que
+  acabó con la sesión muerta no sirve para juzgar nada.
+- **Nada del núcleo ni del arranque BIOS heredado.**
+
+#### (n) TRES COSAS DEL BANCO Y DEL INSTRUMENTO QUE CAMBIAN LO ESCRITO
+
+1. **El anfitrión se durmió** entre las 03:23 y las 08:43 con la VM encendida, y
+   **la VM sobrevivió**: al despertar seguía en la misma pantalla. Las capturas
+   programadas se dispararon **todas juntas** al despertar, así que una tanda de
+   marcas de tiempo seguidas **no prueba que se estuviera mirando**.
+2. **`curl` no está en la sesión viva de Ubuntu 24.04 escritorio.** Trampa 57.
+3. **Los caracteres de `teclear-vm.sh` dependen de la disposición del INVITADO, y
+   eso deroga lo que decía su cabecera desde el 2026-08-14.** Medido hoy contra un
+   invitado con teclado **US** (la ISO oficial), con `abc:def` y `a=b=c@d@e` como
+   controles:
+
+```
+              por keystroke (como hoy)      por key code
+   =          SE PIERDE                     24          -> =
+   @          llega como  2                 19 + shift  -> @
+   :  (US)    llega como  >                 41 + shift  -> :
+   :  (ES)    llega bien                    -
+```
+
+   O sea que **no es que esos caracteres «no lleguen»: es que se mandan con la
+   disposición del anfitrión (español) y el invitado los interpreta con la suya.**
+   `teclear-vm.sh ... tecla <codigo> [shift]` ya sabe mandarlos; lo que faltaba
+   era saberlo. Trampa 58.

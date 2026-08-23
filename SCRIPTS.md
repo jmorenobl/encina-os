@@ -3007,3 +3007,63 @@ un invitado **x86_64 emulado**, el clic del anfitrión **no llega** —el punter
 del invitado no lo sigue— y `Shift+Tab` + espacio sobre un diálogo activa el
 botón **por defecto**, no el que se buscaba. Para leer el registro de un fallo
 del instalador hace falta otra vía.
+
+## Dos más, y la vía que faltaba, leyendo el registro de dentro (2026-08-23)
+
+Lo que la advertencia de arriba dejaba abierto —«para leer el registro de un
+fallo del instalador hace falta otra vía»— **ya no está abierto**, y la vía es
+ésta. Va primero porque las dos trampas se encontraron usándola.
+
+### La vía: `Alt+F2`, y el registro sale por la red
+
+En la **sesión viva** del invitado, sin ratón y sin tocar el instalador:
+
+```
+1. ./scripts/teclear-vm.sh <VM> tecla 120 option        # Alt+F2 -> «Ejecutar una orden»
+2. ./scripts/teclear-vm.sh <VM> texto "sudo tar czf /tmp/e.tgz /var/log /var/crash /run/log"
+   ./scripts/teclear-vm.sh <VM> tecla 36                # Intro  (trampa 31: el «Invalid argument» es inocuo)
+3. ./scripts/teclear-vm.sh <VM> texto "wget --post-file /tmp/e.tgz -O /dev/null http://192.168.64.1:8099/registro.tgz"
+   ./scripts/teclear-vm.sh <VM> tecla 36
+```
+
+**Y NO VALE SIN SUS TRES CONTROLES, en este orden** (`MEDICIONES.md` §4.65i):
+el buzón del Mac se enseña **vacío**; entra un fichero **del anfitrión** con una
+cadena imposible; y entra uno **del invitado** (`/etc/hostname`) **desde su IP**.
+Después se comprueba que las fechas de dentro son **de este arranque** antes de
+leer una sola línea. El anfitrión es alcanzable porque el bundle sale con
+`-netdev vmnet-shared` —**léelo del `debug.log`, no lo supongas**— y la puerta de
+enlace es `192.168.64.1`. Y **captura la pantalla antes de cada Intro**: así se
+cazó la trampa 58.
+
+**57. `curl` NO ESTÁ EN LA SESIÓN VIVA DE UBUNTU 24.04 ESCRITORIO. `wget` SÍ.**
+Medido con su control: `curl` a secas → «Orden no encontrada»; `gnome-terminal`
+a secas → el diálogo **se cierra**, o sea que sí lo encuentra. Y lo que hace a
+`wget` tecleable es que **`--post-file X URL` funciona con espacio, sin ningún
+`=`** — que es justo el carácter que no llega (trampa 58).
+
+**58. LOS CARACTERES DE `teclear-vm.sh` DEPENDEN DE LA DISPOSICIÓN DEL INVITADO,
+y esto DEROGA lo que decía su cabecera desde el 2026-08-14.** No es que `=` y `@`
+«no lleguen»: es que se mandan con la disposición del **anfitrión** (español) y el
+invitado los interpreta con la **suya**. Medido el 2026-08-23 contra un invitado
+con teclado **US** (la ISO oficial `amd64`), con `abc:def` y `a=b=c@d@e` como
+controles en pantalla:
+
+```
+                 por keystroke              por key code
+   =             SE PIERDE                  tecla 24          -> =
+   @             llega como  2              tecla 19 shift    -> @
+   :  invitado US   llega como  >           tecla 41 shift    -> :
+   :  invitado ES   llega bien              -
+```
+
+**La regla que sale de aquí:** para cualquier carácter que no sea letra o dígito,
+**mira en pantalla lo que llegó antes de pulsar Intro**, y si no es lo que
+querías mándalo por `tecla <codigo> [shift]` — que `teclear-vm.sh` ya sabe hacer;
+lo que faltaba era saberlo. Los códigos de arriba son para un invitado **US**;
+con otro invitado, se vuelven a medir.
+
+**Y una del anfitrión, que no es trampa del guion pero engaña igual:** el Mac se
+puede **dormir con la VM encendida**. La VM sobrevive y sigue donde estaba, pero
+un bucle de capturas programadas **se dispara entero al despertar**, así que una
+tanda de marcas de tiempo seguidas **no prueba que se estuviera mirando** todo
+ese rato.

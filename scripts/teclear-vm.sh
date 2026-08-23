@@ -33,6 +33,25 @@
 #   Del resto de caracteres, comprobado en pantalla:  /  -  _  .  :  llegan bien
 #   con keystroke;  =  y  @  no llegan.
 #
+# SEXTA, DEL 2026-08-23, Y DEROGA MEDIA QUINTA: LOS CARACTERES DEPENDEN DE LA
+#   DISPOSICION DEL INVITADO, NO DEL CARACTER. Lo de arriba se midio contra un
+#   invitado con teclado ESPAÑOL. Contra uno con teclado US -la ISO oficial
+#   amd64- el mismo guion da otra cosa, medido en pantalla con 'abc:def' y
+#   'a=b=c@d@e' como controles:
+#
+#                    por keystroke          por key code
+#      =             SE PIERDE              tecla 24        -> =
+#      @             llega como  2          tecla 19 shift  -> @
+#      :  con US     llega como  >          tecla 41 shift  -> :
+#      :  con ES     llega bien             -
+#
+#   O SEA QUE NO ES QUE ESOS CARACTERES «NO LLEGUEN»: es que se mandan con la
+#   disposicion del ANFITRION (español) y el invitado los interpreta con la suya.
+#   El modo 'tecla <codigo> [shift]' de este mismo guion ya sabe mandarlos; lo
+#   que faltaba era saberlo. Los codigos de arriba son para un invitado US: con
+#   otro invitado SE VUELVEN A MEDIR. Y por eso la regla de abajo -mirar la
+#   pantalla antes de Intro- no es prudencia: es lo que caza esto.
+#
 # Y LA REGLA QUE SE PAGO SOLA: captura la pantalla ANTES de pulsar Intro. La
 # linea con 'sudo poweroff' la escribio este guion sin querer, y lo unico que lo
 # evito fue mirarla.

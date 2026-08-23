@@ -1,0 +1,120 @@
+2026-08-23 01:16:06.615229 DEBUG config: Loaded config file from /usr/share/desktop-provision/whitelabel.yml
+2026-08-23 01:16:06.667734 INFO flavor_provider: Using default flavor: UbuntuFlavor.ubuntu
+2026-08-23 01:16:06.670831 INFO subiquity_server: Waiting server up to 90 seconds
+2026-08-23 01:16:06.684930 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:07.692893 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:08.697225 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:09.706866 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:10.723702 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:11.739864 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:12.754215 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:13.764446 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:14.789145 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:15.829667 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:16.846248 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:17.869395 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:18.915334 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:19.947874 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:20.962424 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:22.005756 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:23.019456 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:24.026454 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:25.036879 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:26.070444 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:27.083064 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:28.106519 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:29.161515 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:30.210648 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:31.227754 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:32.242814 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:33.254827 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:34.276581 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:35.296248 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:36.319140 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:37.354911 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:38.374607 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:39.398600 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:40.422741 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:41.453158 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:42.468071 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:43.488392 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:44.536323 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:45.555757 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:46.613027 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:47.677602 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:48.702579 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:49.725830 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:50.743812 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:51.761983 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:52.782271 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:53.798557 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:54.819555 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:55.851438 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:56.900763 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:57.956503 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:16:58.996340 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:00.034098 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:01.049667 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:02.081277 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:03.110755 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:04.123235 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:05.172773 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:06.185789 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:07.212985 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:08.258854 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:09.271742 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:10.294550 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:11.323316 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:12.347654 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:13.362753 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:14.373674 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:15.396220 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:16.415675 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:17.442888 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:18.474941 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:19.498443 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:20.516439 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:21.545378 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:22.559168 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:23.572211 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:24.591037 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:25.612166 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:26.634553 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:27.674514 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:28.701972 ERROR subiquity_server: SocketException: Connection failed (OS Error: No existe el archivo o el directorio, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 01:17:29.841991 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:30.872069 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:31.916333 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:32.968802 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:34.011778 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:35.098361 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:36.155076 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:37.181967 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:38.218261 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 01:17:39.226121 INFO subiquity_client: Opening socket to Endpoint(/run/subiquity/socket )
+2026-08-23 01:17:39.256396 DEBUG desktop: Disabling automounting
+2026-08-23 01:17:39.281957 DEBUG subiquity_client: POST http://localhost/meta/client_variant?variant=%22desktop%22
+2026-08-23 01:17:39.324388 DEBUG telemetry: Writing report to /var/log/installer/telemetry
+2026-08-23 01:17:51.270171 DEBUG desktop: Disabling screen blanking
+2026-08-23 01:17:51.597809 DEBUG desktop: Disabling screensaver
+2026-08-23 01:17:51.777442 DEBUG desktop: Inhibiting Gnome session
+2026-08-23 01:18:03.754001 DEBUG subiquity_client: ==> setVariant(Variant.DESKTOP) null
+2026-08-23 01:18:05.349272 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3624, logSyslogId: subiquity_log.3624, eventSyslogId: subiquity_event.3624)
+2026-08-23 01:18:05.364612 DEBUG subiquity_client: POST http://localhost/meta/mark_configured?endpoint_names=%5B%22mirror%22%2C%22proxy%22%2C%22ssh%22%2C%22snaplist%22%2C%22ubuntu_pro%22%5D
+2026-08-23 01:18:05.540018 DEBUG subiquity_client: ==> markConfigured([mirror, proxy, ssh, snaplist, ubuntu_pro]) null
+2026-08-23 01:18:06.266727 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3624, logSyslogId: subiquity_log.3624, eventSyslogId: subiquity_event.3624)
+2026-08-23 01:18:06.297962 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3624, logSyslogId: subiquity_log.3624, eventSyslogId: subiquity_event.3624)
+2026-08-23 01:18:06.303094 DEBUG subiquity_client: GET http://localhost/meta/interactive_sections
+2026-08-23 01:18:06.391559 DEBUG subiquity_client: ==> getInteractiveSections() ["keyboard", "network", "storage", "identity", "timezone"]
+2026-08-23 01:18:06.407760 INFO installer_service: Showing only pages requested by subiquity: {keyboard, network, storage, identity, timezone}
+2026-08-23 01:18:06.426844 DEBUG subiquity_client: GET http://localhost/storage/has_rst
+2026-08-23 01:18:06.516780 DEBUG subiquity_client: ==> hasRst() false
+2026-08-23 01:18:06.538229 DEBUG subiquity_client: GET http://localhost/keyboard
+2026-08-23 01:18:06.962568 DEBUG subiquity_client: ==> keyboard() {"setting": {"layout": "es", "variant": "", "toggle": null}, "layouts": [{"code": "af", "name": "Afgano", "variants": [{"code": "", "name": "Afgano"}, {"code": "ps", "name": "Afgano - Pashto"}, {"code": "olpc-ps", "name": "Afgano - Pashto (Afganista\u0301n, OLPC)"}, {"code": "fa-olpc", "name": "Afgano - Persa (Afganist\u00e1n, OLPC dari)"}, {"code": "uz", "name": "Afgano - Uzbeco (Afganist\u00e1n)"}, {"code": "uz-olpc", "name": "Afgano - Uzbeco (Afganist\u00e1n, OLPC)"}]}, {"code": "al", "name": "Albane\u0301s", "variants": [{"code": "", "name": "Albane\u0301s"}, {"code": "plisi", "name": "Albane\u0301s - Alban\u00e9s (Plisi)"}, {"code": "veqilharxhi", "name": "Albane\u0301s - Albanian (Veqilharxhi)"}]}, {"code": "et", "name": "Amharico", "variants": [{"code": "", "name": "Amharico"}]}, {"code": "ara", "name": "\u00c1rabe", "variants": [{"code": "", "name": "\u00c1rabe"}, {"code": "azerty", "name": "\u00c1rabe - \u00c1rabe (AZERTY)"}, {"code": "azerty_digits", "name": "\u00c1rabe - \u00c1rabe (AZERTY/d\u00edgitos)"}, {"code": "buckwalter", "name": "\u00c1rabe - \u00c1rabe (Buckwalter)"}, {"code": "mac", "name": "\u00c1rabe - \u00c1rabe (Macintosh)"}, {"code": "olpc", "name": "\u00c...
+2026-08-23 01:18:07.003136 INFO keyboard: Loaded 99 keyboard layouts
+2026-08-23 01:18:07.004258 DEBUG subiquity_client: GET http://localhost/keyboard
+2026-08-23 01:18:07.241148 DEBUG subiquity_client: ==> keyboard() {"setting": {"layout": "es", "variant": "", "toggle": null}, "layouts": [{"code": "af", "name": "Afgano", "variants": [{"code": "", "name": "Afgano"}, {"code": "ps", "name": "Afgano - Pashto"}, {"code": "olpc-ps", "name": "Afgano - Pashto (Afganista\u0301n, OLPC)"}, {"code": "fa-olpc", "name": "Afgano - Persa (Afganist\u00e1n, OLPC dari)"}, {"code": "uz", "name": "Afgano - Uzbeco (Afganist\u00e1n)"}, {"code": "uz-olpc", "name": "Afgano - Uzbeco (Afganist\u00e1n, OLPC)"}]}, {"code": "al", "name": "Albane\u0301s", "variants": [{"code": "", "name": "Albane\u0301s"}, {"code": "plisi", "name": "Albane\u0301s - Alban\u00e9s (Plisi)"}, {"code": "veqilharxhi", "name": "Albane\u0301s - Albanian (Veqilharxhi)"}]}, {"code": "et", "name": "Amharico", "variants": [{"code": "", "name": "Amharico"}]}, {"code": "ara", "name": "\u00c1rabe", "variants": [{"code": "", "name": "\u00c1rabe"}, {"code": "azerty", "name": "\u00c1rabe - \u00c1rabe (AZERTY)"}, {"code": "azerty_digits", "name": "\u00c1rabe - \u00c1rabe (AZERTY/d\u00edgitos)"}, {"code": "buckwalter", "name": "\u00c1rabe - \u00c1rabe (Buckwalter)"}, {"code": "mac", "name": "\u00c1rabe - \u00c1rabe (Macintosh)"}, {"code": "olpc", "name": "\u00c...
+2026-08-23 01:18:07.330584 INFO keyboard: Initialized es () keyboard layout
+2026-08-23 01:18:07.331359 INFO keyboard: Updated es () input source
+2026-08-23 01:18:07.883616 DEBUG subiquity_client: POST http://localhost/keyboard/input_source?user=%22encinaos%22
+2026-08-23 01:18:08.796503 DEBUG subiquity_client: ==> setInputSource(KeyboardSetting(layout: es, variant: , toggle: null)) null

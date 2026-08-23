@@ -1,0 +1,111 @@
+2026-08-23 07:01:25.946660 INFO flavor_provider: Using default flavor: UbuntuFlavor.ubuntu
+2026-08-23 07:01:25.989664 INFO subiquity_server: Waiting server up to 90 seconds
+2026-08-23 07:01:26.014847 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:27.790526 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:28.825278 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:29.862011 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:30.902283 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:31.918551 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:32.940673 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:34.001557 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:35.029906 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:36.084881 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:37.199802 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:38.235874 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:39.256432 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:40.270425 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:41.302034 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:42.325582 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:43.379053 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:44.399090 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:45.537372 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:46.558107 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:47.580428 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:48.618671 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:49.632239 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:50.678845 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:51.771226 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:52.824816 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:53.836967 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:54.873386 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:55.922129 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:56.974535 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:58.011076 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:01:59.031345 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:00.049291 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:01.071401 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:02.118777 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:03.144554 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:04.166659 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:05.203127 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:06.225904 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:07.243625 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:08.269129 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:09.285472 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:10.318003 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:11.349431 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:12.384837 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:13.420662 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:14.450346 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:15.476426 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:16.502711 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:17.541752 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:18.557875 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:19.587623 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:20.607308 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:21.626291 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:22.639315 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:23.656167 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:24.673019 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:25.688395 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:26.696561 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:27.731014 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:28.754498 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:29.801320 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:30.825147 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:31.850309 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:32.868945 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:33.883910 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:34.911773 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:35.942239 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:36.972081 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:38.012482 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:39.031793 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:40.048180 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:41.065329 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:42.080938 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:43.144073 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:44.168190 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:45.180648 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:46.191415 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:47.200076 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:48.217421 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:49.236914 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:50.252640 ERROR subiquity_server: SocketException: Connection failed (OS Error: No such file or directory, errno = 2), address = /run/subiquity/socket, port = 0
+2026-08-23 07:02:51.379674 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:52.425293 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:53.525626 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:54.598599 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:55.643122 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:56.730905 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:57.780705 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:58.876956 INFO subiquity_server: ApplicationState.CLOUD_INIT_WAIT
+2026-08-23 07:02:59.894443 INFO subiquity_client: Opening socket to Endpoint(/run/subiquity/socket )
+2026-08-23 07:02:59.943790 DEBUG desktop: Disabling automounting
+2026-08-23 07:02:59.973321 DEBUG subiquity_client: POST http://localhost/meta/client_variant?variant=%22desktop%22
+2026-08-23 07:03:00.150674 DEBUG telemetry: Writing report to /var/log/installer/telemetry
+2026-08-23 07:03:12.317235 DEBUG desktop: Disabling screen blanking
+2026-08-23 07:03:12.518444 DEBUG desktop: Disabling screensaver
+2026-08-23 07:03:12.989949 DEBUG desktop: Inhibiting Gnome session
+2026-08-23 07:03:23.680093 DEBUG subiquity_client: ==> setVariant(Variant.DESKTOP) null
+2026-08-23 07:03:24.759152 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3537, logSyslogId: subiquity_log.3537, eventSyslogId: subiquity_event.3537)
+2026-08-23 07:03:24.800178 DEBUG subiquity_client: POST http://localhost/meta/mark_configured?endpoint_names=%5B%22mirror%22%2C%22proxy%22%2C%22ssh%22%2C%22snaplist%22%2C%22ubuntu_pro%22%5D
+2026-08-23 07:03:24.971361 DEBUG subiquity_client: ==> markConfigured([mirror, proxy, ssh, snaplist, ubuntu_pro]) null
+2026-08-23 07:03:25.584475 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3537, logSyslogId: subiquity_log.3537, eventSyslogId: subiquity_event.3537)
+2026-08-23 07:03:25.642244 INFO subiquity_status: null => ApplicationStatus(state: ApplicationState.WAITING, confirmingTty: , error: null, nonreportableError: null, cloudInitOk: true, interactive: true, echoSyslogId: subiquity_echo.3537, logSyslogId: subiquity_log.3537, eventSyslogId: subiquity_event.3537)
+2026-08-23 07:03:25.648832 DEBUG subiquity_client: GET http://localhost/meta/interactive_sections
+2026-08-23 07:03:25.713513 DEBUG subiquity_client: ==> getInteractiveSections() null
+2026-08-23 07:03:25.779362 INFO locale: Loaded 75 languages
+2026-08-23 07:03:25.782574 DEBUG subiquity_client: GET http://localhost/locale
+2026-08-23 07:03:25.835300 DEBUG subiquity_client: ==> locale() "C.UTF-8"
+2026-08-23 07:03:25.841456 INFO locale: Selected en_US as UI language

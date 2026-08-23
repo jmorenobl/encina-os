@@ -1,0 +1,31 @@
+2026-08-23 01:17:28,209 INFO subiquity:207 Starting Subiquity server revision 494 of snap /snap/ubuntu-desktop-bootstrap/494 of version 0+git.4bc1f4077
+2026-08-23 01:17:28,214 INFO subiquity:211 Arguments passed: ['/snap/ubuntu-desktop-bootstrap/494/bin/subiquity/subiquity/cmd/server.py', '--use-os-prober', '--storage-version=2', '--postinst-hooks-dir=/snap/ubuntu-desktop-bootstrap/494/etc/subiquity/postinst.d', '--no-wlan-listener']
+2026-08-23 01:17:54,244 WARNING subiquity.cloudinit:97 cloud-init schema --system timed out
+2026-08-23 01:17:55,807 INFO root:38 start: subiquity/core_validation: 
+2026-08-23 01:17:55,820 INFO root:38 start: subiquity/core_validation/top_level_keys: 
+2026-08-23 01:17:55,823 INFO root:38 finish: subiquity/core_validation/top_level_keys: SUCCESS: 
+2026-08-23 01:17:55,824 INFO root:38 finish: subiquity/core_validation: SUCCESS: 
+2026-08-23 01:17:55,841 INFO root:38 finish: subiquity/load_autoinstall_config: SUCCESS: 
+2026-08-23 01:17:55,843 INFO root:38 start: subiquity/load_autoinstall_config: 
+2026-08-23 01:17:55,845 INFO root:38 start: subiquity/load_autoinstall_config/read_config: 
+2026-08-23 01:17:56,285 INFO root:38 finish: subiquity/load_autoinstall_config/read_config: SUCCESS: 
+2026-08-23 01:17:58,415 INFO root:38 finish: subiquity/load_autoinstall_config: SUCCESS: 
+2026-08-23 01:18:03,530 INFO root:38 start: subiquity/apply_autoinstall_config: 
+2026-08-23 01:18:03,733 INFO root:38 finish: subiquity/Meta/client_variant_POST: SUCCESS: 200 null
+2026-08-23 01:18:05,192 ERROR probert.multipath:38 Failed to run cmd: ['multipathd', 'show', 'maps', 'raw', 'format', '%w,%d,%N']
+2026-08-23 01:18:05,259 ERROR probert.multipath:38 Failed to run cmd: ['multipathd', 'show', 'paths', 'raw', 'format', '%d,%z,%m,%N,%n,%R,%r,%a']
+2026-08-23 01:18:05,320 INFO root:38 start: subiquity/Meta/status_GET: 
+2026-08-23 01:18:05,332 INFO root:38 finish: subiquity/Meta/status_GET: SUCCESS: 200 {"state": "WAITING", "confirming_tty": "", "error": null, "nonreportable_erro...
+2026-08-23 01:18:05,410 INFO root:38 start: subiquity/Meta/mark_configured_POST: 
+2026-08-23 01:18:05,511 INFO root:38 finish: subiquity/Meta/mark_configured_POST: SUCCESS: 200 null
+2026-08-23 01:18:06,209 INFO root:38 start: subiquity/Meta/status_GET: 
+2026-08-23 01:18:06,213 INFO root:38 finish: subiquity/Meta/status_GET: SUCCESS: 200 {"state": "WAITING", "confirming_tty": "", "error": null, "nonreportable_erro...
+2026-08-23 01:18:06,226 INFO root:38 start: subiquity/Meta/status_GET: 
+2026-08-23 01:18:06,230 INFO root:38 finish: subiquity/Meta/status_GET: SUCCESS: 200 {"state": "WAITING", "confirming_tty": "", "error": null, "nonreportable_erro...
+2026-08-23 01:18:06,284 INFO root:38 start: subiquity/Meta/status_GET: 
+2026-08-23 01:18:06,326 INFO root:38 start: subiquity/Meta/interactive_sections_GET: 
+2026-08-23 01:18:06,338 INFO root:38 finish: subiquity/Meta/interactive_sections_GET: SUCCESS: 200 ["keyboard", "network", "storage", "identity", "timezone"]
+2026-08-23 01:18:16,041 INFO curtin:1472 Validating extracted storage config components
+2026-08-23 01:18:26,814 ERROR probert.multipath:38 Failed to run cmd: ['multipathd', 'show', 'maps', 'raw', 'format', '%w,%d,%N']
+2026-08-23 01:18:26,821 ERROR probert.multipath:38 Failed to run cmd: ['multipathd', 'show', 'paths', 'raw', 'format', '%d,%z,%m,%N,%n,%R,%r,%a']
+2026-08-23 01:18:28,859 INFO curtin:1472 Validating extracted storage config components
