@@ -466,8 +466,60 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > reloj queda **probada**; si se cae por otra cosa, se tacha. Hasta entonces es
 > deducción **con su aritmética** y así está escrita.
 >
-> **Y LO QUE SIGUE SIENDO DE JORGE:** el hierro —una prueba con red y otra sin
-> red, y Plymouth, que es `[OJOS]`—. Nada de esta vuelta lo sustituye.
+> **Y LO QUE SIGUE ES EL HIERRO, que ya tiene máquina: un portátil AMD A9 de 7ª
+> generación y un pincho.** La receta, con sus controles, está abajo. Nada de la
+> emulación lo sustituye: es lo único que desata `amd64` de la emulación **y** lo
+> único que contesta Plymouth.
+
+> ### LA RECETA DEL HIERRO — `amd64` en el portátil AMD A9 (7ª gen)
+>
+> **0. LA PREMISA, antes de grabar nada.** Lo que se graba es lo que se cree:
+>
+> ```
+> shasum -a 256 medios/encina-os-amd64.iso        ->  8924f1484a74de93…
+> ```
+>
+> **1. GRABAR EL PINCHO, y comprobarlo leyendo del dispositivo** —no mirando el
+> diálogo del grabador—. La ISO mide **6 849 232 896 bytes = 6 531 MiB exactos**,
+> así que la lectura de vuelta es exacta y **su control negativo es gratis**:
+>
+> ```
+> diskutil list                                   # identificar el pincho, el EXTERNO
+> diskutil unmountDisk /dev/diskN
+> sudo dd if=medios/encina-os-amd64.iso of=/dev/rdiskN bs=4m
+> sync
+> sudo dd if=/dev/rdiskN bs=1m count=6531 | shasum -a 256   ->  8924f148…   [OK]
+> sudo dd if=/dev/rdiskN bs=1m count=6530 | shasum -a 256   ->  OTRA cosa   <- el CONTROL:
+>                                                              si diera lo mismo, la
+>                                                              comprobación no compara nada
+> ```
+>
+> **2. EL CONTROL DEL ARRANQUE, y va DESPUÉS y no antes — con su motivo.**
+> §4.64(b2) lo pedía delante; **si el nuestro arranca, no hace falta**: un
+> positivo no necesita el negativo. **Sólo si el nuestro NO arranca** se graba
+> `medios/ubuntu-24.04.4-desktop-amd64.iso` `3a4c9877…` **en el mismo pincho y el
+> mismo portátil**, y hasta entonces **no se escribe nada**: sin ese control, un
+> «no arranca» no distingue el medio de un arranque seguro activado, de un pincho
+> mal escrito o de la máquina. Por eso esa ISO **no se ha borrado**.
+>
+> **3. EN LA BIOS: arranque UEFI, no *legacy*/CSM.** Motivo medido: la ESP es
+> **byte a byte la oficial** y la cadena firmada está intacta, así que el arranque
+> seguro debería pasar. El **BIOS heredado** tiene una pregunta abierta que nadie
+> ha contestado —el `pvd_lba` que pasa de 16 a 64 en el `eltorito.img`,
+> §4.64(j)—, así que si se prueba en ese modo, se prueba **sabiendo** que es
+> terreno sin medir.
+>
+> **4. QUÉ MIRAR, en orden, y qué es `[OJOS]` de verdad:**
+>
+> | | qué | qué significa |
+> |---|---|---|
+> | a | el menú de GRUB dice **«Probar o instalar Encina OS»** | la marca del medio viaja |
+> | b | **el *splash* del MEDIO dirá «Ubuntu»** | **NO ES UN FALLO.** Está declarado en **D23**: `watermark.png` y `bgrt-fallback.png` viven en el `initrd`, **antes de que exista ninguna capa**. La capa de marca no puede llegar ahí |
+> | c | sesión viva: fondo de Encina y «ENCINA OS / Versión 24.04 LTS / Edición ‘La Mancha’» | ya medido en emulación |
+> | d | el instalador en **español**, cinco pantallas | ya medido en emulación |
+> | e | **CON RED:** que termine, y dentro `sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27` | el positivo de extremo a extremo en `amd64` |
+> | f | **el *splash* de la MÁQUINA INSTALADA: ahí sí tiene que salir la encina** | **ESTE es el `[OJOS]` de Plymouth**, y no el del medio. Lo pone `encina-branding`: registra `default.plymouth` con prioridad 200 y corre `update-initramfs -u` (R7), y el tema es `ModuleName=script`, **no `bgrt`** (R6) |
+> | g | **SIN RED:** repetir | si se cae, **el sitio donde mirar ya está escrito**: `curthooks`, §4.63(t). Sería el **límite declarado del producto**, no un fallo del portátil |
 
 > ### LA TAREA EN CURSO, 2026-08-22 (noche): **HAY UN MEDIO `amd64` Y ARRANCA CON LA MARCA. EL INSTALADOR SE CAE, Y NO SE SABE DE QUIÉN ES**
 >
