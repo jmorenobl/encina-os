@@ -568,7 +568,8 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > ```
 > 1.  QUE LAS ISOs FUNCIONEN DE VERDAD   <- AQUI ESTAMOS
 >       a) el hierro amd64: la receta de arriba, en el portatil AMD A9
->       b) la vuelta unica arm64: branding 0.1.15, dos pasadas, instalar y MIRAR
+>       b) la vuelta unica arm64: branding 0.1.16 (era 0.1.15; el drop-in de gdm entro
+>          el 2026-08-23 noche, §4.72), dos pasadas, instalar y MIRAR
 > 2.  LA REFACTORIZACION ENTERA          tareas/refactorizacion.md, 12 tareas
 >       se ADELANTA a publicar, y sin la excepcion de las cinco
 >       la 1 (bancos/enlaces.sh) y la 12 (que es «profesional», escrito) van delante

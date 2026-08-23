@@ -132,8 +132,12 @@ comprobar_salida "El drop-in es nuestro (dpkg -S)" "encina-branding" dpkg -S "$D
 
 # Lo que de verdad decide: systemd, no el sistema de ficheros. Su control
 # esta en la purga, donde la misma orden tiene que dejar de listarla.
+# La salida es UNA linea 'Wants=a.service b.service': hay que quitar el
+# 'Wants=' antes de buscar la unidad exacta. La primera version no lo quitaba
+# y esta comprobacion no podia decir 'si' NUNCA -y su control de la purga
+# decia 'no' siempre, o sea verde falso- (MEDICIONES.md §4.72).
 WANTS=$(systemctl show gdm.service -p Wants 2>&1 || true)
-if echo "$WANTS" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
+if echo "${WANTS#Wants=}" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
     ok "systemctl show gdm.service -p Wants lista systemd-udev-settle.service"
 else
     fallo "systemd NO tiene el drop-in cargado" \
@@ -244,7 +248,7 @@ WANTS_PURGA=$(systemctl show gdm.service -p Wants 2>&1 || true)
 if [[ -e /etc/systemd/system/gdm.service.d/encina-espera-gpu.conf ]]; then
     fallo "Tras purgar, el drop-in de gdm.service sigue en /etc" \
 "$(ls -l /etc/systemd/system/gdm.service.d/)"
-elif echo "$WANTS_PURGA" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
+elif echo "${WANTS_PURGA#Wants=}" | tr ' ' '\n' | grep -qx 'systemd-udev-settle.service'; then
     fallo "Tras purgar, systemd sigue queriendo udev-settle para gdm" \
 "$WANTS_PURGA
 El fichero se fue pero systemd no releyo: falta el daemon-reload del postrm."
