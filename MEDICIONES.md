@@ -18661,3 +18661,40 @@ que ninguna de las dos cosas afecta al arranque. Commit `9d80273`.
 La opción solo actúa «sobre una GPT que emerja»: **el arm64, que es solo MBR,
 no debería cambiar** —deducción; se mide en la fase 1b, que de todos modos
 rehace el arm64 con 0.1.16—.
+
+#### (c) Pasadas 3 y 4 con el GUID fijo: BYTE A BYTE, desde dos commits distintos
+
+```
+pasada 3  (commit 9d80273)  68cf0f4451bea42a1cc899902fcbe92f7966c2cf39cdc91310cf796105c7e81e
+pasada 4  (commit ab9bee4)  68cf0f4451bea42a1cc899902fcbe92f7966c2cf39cdc91310cf796105c7e81e
+cmp p3 p4                   sin salida: iguales
+GPT disk GUID               162d4f4cf5319d4ab601fd25f37e35b9   (= 4c4f2d16-31f5-4a9d-b601-… con los tres
+                                                                 primeros campos invertidos, como manda UEFI)
+fabricar-iso.sh             10 correctas, 0 fallos en las dos; los 2 [FALLO] por registro son el control
+                            declarado del paso 4 (la cosecha sin autofirma)
+```
+
+Los dos commits difieren **solo en `MEDICIONES.md`**, que no viaja en el medio, y
+el hash del commit no entra en la ISO (se imprime en el registro y nada más):
+por eso las dos pasadas son comparables, y que lo sean desde dos árboles
+distintos es un control que no estaba previsto y vale.
+
+**El medio queda en `medios/encina-os-amd64.iso`, `68cf0f44…`, 6 849 232 896
+bytes** (mismo tamaño que el anterior: el `.deb` nuevo cabe en los mismos
+sectores). El anterior, `8924f148…`, **no se borra hoy**: es el medio del que se
+instaló el Acer y lo citan §4.64–§4.70; pasa a `medios/encina-os-amd64-0115.iso`
+y su borrado es de Jorge. `SHA256SUMS` con los tres. La receta de §7 lleva la
+huella nueva y su control recalculado sobre el fichero —`head -c $((N-1))` →
+`5d94f8b9…`—, con las viejas tachadas al lado.
+
+#### (d) Lo que NO contesta
+
+- **Que arranque e instale.** Eso es la fila g, en el Acer, con este medio:
+  grabar el pincho con la receta (paso 1 con las huellas nuevas) e instalar
+  **sin red**. Es lo siguiente y lo hace Jorge.
+- El `arm64` con `gpt_disk_guid=` puesto: deducción de que no cambia (no hay
+  GPT), se mide en la fase 1b.
+- Por qué `construir-todo.sh` **no comprueba él mismo** las dos pasadas: su
+  definición de terminado está en su cabecera y la paga quien lo invoca. Hoy
+  se pagó y salió roja la primera vez; queda como casilla de la refactorización
+  si se quiere automatizar.

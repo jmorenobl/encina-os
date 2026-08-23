@@ -476,8 +476,10 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > **0. LA PREMISA, antes de grabar nada.** Lo que se graba es lo que se cree:
 >
 > ```
-> shasum -a 256 medios/encina-os-amd64.iso        ->  8924f1484a74de93…
+> shasum -a 256 medios/encina-os-amd64.iso        ->  68cf0f4451bea42a…     (desde el 2026-08-23 noche: lleva encina-branding 0.1.16, §4.74)
 > ```
+>
+> *(Hasta esa noche era `8924f1484a74de93…`, con el 0.1.15: es el medio del que se instaló el Acer y sigue en `medios/encina-os-amd64-0115.iso`. Las huellas del paso 1 de abajo son las del medio NUEVO, recalculadas sobre el fichero; las viejas, `8924f148…`/`0ad9f99a…`, se dejan tachadas.)*
 >
 > **1. GRABAR EL PINCHO, y comprobarlo leyendo del dispositivo** —no mirando el
 > diálogo del grabador—. La lectura de vuelta compara la ISO **entera**, y **su
@@ -490,8 +492,8 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > sync
 > N=$(stat -f %z medios/encina-os-amd64.iso)      # 6849232896
 > B=$(( N/1048576 + 1 ))                          # 6532 MiB: se pasa A PROPOSITO
-> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$N"       | shasum -a 256  ->  8924f148…  [OK]
-> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$((N-1))" | shasum -a 256  ->  0ad9f99a…  <- el CONTROL:
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$N"       | shasum -a 256  ->  68cf0f44…  [OK]   (~~8924f148…~~)
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$((N-1))" | shasum -a 256  ->  5d94f8b9…  <- el CONTROL: (~~0ad9f99a…~~)
 >                                                              si diera lo mismo, la
 >                                                              comprobación no compara nada
 > ```
