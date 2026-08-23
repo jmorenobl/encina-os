@@ -2016,7 +2016,8 @@ a fallar.
 Crear `.github/workflows/build.yml`:
 
 - Disparadores: `push`, `pull_request`
-- Runner: `ubuntu-latest` (amd64)
+- Runner: ~~`ubuntu-latest` (amd64)~~ **`ubuntu-24.04` y `ubuntu-24.04-arm`, las dos
+  en la matriz (enmienda del 2026-08-23, `MEDICIONES.md` §4.69)**
 - Matriz por paquete
 - Pasos: instalar `build-essential devscripts debhelper lintian` →
   `dpkg-buildpackage -us -uc -b` → `lintian` → subir los `.deb` como artefactos
@@ -2067,8 +2068,13 @@ Crear `.github/workflows/build.yml`:
   **abiertos**: E2 terminado 6 de 6 (§6bis) y **E3 abierto el 2026-08-10**
   (§6ter). La frontera es exacta: E3 **reempaqueta** la imagen oficial y no toca
   ni uno de sus tres binarios firmados; **rehacerla** es E5, y sigue fuera
-- amd64 (D9). Se construye en CI porque el runner es amd64, pero **no se declara
-  probado**: no hay máquina donde medirlo
+- amd64 (D9). ~~Se construye en CI porque el runner es amd64~~, pero **no se declara
+  probado**: ~~no hay máquina donde medirlo~~. **Enmienda del 2026-08-23
+  (`MEDICIONES.md` §4.69):** la frase tachada describía al revés lo que importa
+  —el que **no** se construía en CI era `arm64`, el producto de D9—; desde hoy la
+  CI construye **las dos** y las dos cuadran con el manifiesto. Y máquina donde
+  medir amd64 **sí hay** desde el 2026-08-15 (D9, enmienda): lo que sigue en
+  pie es que **no se declara probado hasta que la fase 1 lo pruebe**
 - Temas de GTK o de iconos, incluidos los de estética macOS
 - Cualquier interfaz gráfica
 

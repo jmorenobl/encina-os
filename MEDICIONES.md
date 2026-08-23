@@ -17797,3 +17797,143 @@ existe, un `ENCINA_REPO` puesto a propósito y apuntando a donde no querías.
   `raiz_repo()` en aislamiento, con los cuatro casos de (c), más `bash -n`.
 - **`~/encina` sigue en el disco.** No se borra sola y no la borra este cambio:
   lo que cambia es que **ya nada vuelve a escribir ahí sin que se lo pidan**.
+
+---
+
+### 4.69 TAREA 13: la CI construye también `arm64`, y la casilla iba corta en tres sitios (2026-08-23)
+
+**Qué se ha hecho.** `.github/workflows/build.yml` pasa de una matriz de tres
+trabajos en `ubuntu-latest` a **seis: `{amd64, arm64} × {tres paquetes}`**, con
+`ubuntu-24.04` y `ubuntu-24.04-arm` como runners. Nada más se toca en el
+repositorio salvo prosa enmendada: `AGENTS.md` §7 y §8 y la fila «Runner de la
+CI» de [tareas/organizacion-comparada.md](tareas/organizacion-comparada.md).
+
+**Por qué esta tarea y no la 14 ni la 16, hoy.** Las tres descuelgan sin tocar
+`imagen/` —que está bloqueado por la fase 1—, pero la 14 pide que la versión del
+producto viva en un sitio del que se derive `imagen/marca/disk-info`, o sea que
+**su mitad útil sí es de `imagen/`**, y la 16 es un fichero nuevo de `[OJOS]`
+que no cambia nada de lo que se ejecuta. La 13 es la única de las tres cuya
+definición de terminado **se ejecuta sola en una máquina que no es este Mac**,
+y lo que produce —un `.deb` de `arm64` con la huella del manifiesto, construido
+por alguien que no es la VM de Jorge— es justo la propiedad que la tarea 15
+necesita después. Y hay un motivo de orden que el diario del 22 ya dejó
+escrito: «descuelga sola cuando se quiera».
+
+#### (a) Medido ANTES de tocar nada
+
+```
+$ grep -n '^Architecture' debian-packages/*/debian/control
+debian-packages/encina-branding/debian/control:10:Architecture: all
+debian-packages/encina-meta/debian/control:10:Architecture: all
+debian-packages/encina-firefox-native/debian/control:10:Architecture: all
+
+$ grep '^PROPIO' imagen/repo-manifiesto.tsv | cut -f1-5
+PROPIO	autofirma	1.9.1+encina4	autofirma_1.9.1+encina4_all.deb	39570056
+PROPIO	encina-branding	0.1.15	encina-branding_0.1.15_all.deb	6948796
+PROPIO	encina-firefox-native	0.2.1	encina-firefox-native_0.2.1_all.deb	10876
+PROPIO	encina-meta	0.2.1	encina-meta_0.2.1_all.deb	6904
+
+$ grep -rn 'uname -m\|print-architecture\|DEB_HOST_ARCH\|aarch64\|x86_64' scripts/0[0-9]*.sh scripts/1[0-2]*.sh imagen/comprobar-propios.sh
+scripts/00-entorno.sh:92:echo "  Ubuntu detectado: $VER   (arquitectura: $(dpkg --print-architecture))"
+imagen/comprobar-propios.sh:81:    echo "        sistema  ${PRETTY_NAME:-?}   arquitectura $(uname -m)"
+```
+
+Los tres paquetes son **`Architecture: all`** y ningún guion de construcción
+decide nada por la arquitectura —las dos líneas que la miran la **imprimen**—.
+Consecuencia que fija lo que el control tiene que dar: **las dos filas de la
+matriz tienen que producir el mismo byte**, y cuadrar con la misma huella.
+
+**Y la última ejecución de la CI, que es amd64, YA cuadraba con el manifiesto**
+(`gh run view 32635412798 --log`, ejecución de `a8d7bb1`):
+
+```
+Image: ubuntu-24.04
+Version: 20260816.277.1
+[OK]    sabe decir que no:  [HALLAZGO] encina-firefox-native_0.2.1_all.deb NO es el del manifiesto
+[OK]    encina-firefox-native_0.2.1_all.deb cuadra con el manifiesto  640f508e3802…  10876 bytes
+[OK]    sabe decir que no:  [HALLAZGO] encina-meta_0.2.1_all.deb NO es el del manifiesto
+[OK]    encina-meta_0.2.1_all.deb cuadra con el manifiesto  204081f0ff3c…  6904 bytes
+```
+
+Dos datos salen de ahí. **`ubuntu-latest` resuelve hoy a la imagen
+`ubuntu-24.04`**, así que nombrarla explícitamente en la fila amd64 **no cambia
+la máquina**: cambia que las dos filas vayan con el nombre puesto, porque la de
+arm64 no tiene alias. Y el segundo es la primera corrección a la casilla, (c).
+
+#### (b) La forma de la matriz, con su control y su negativo
+
+La casilla dice «una línea de matriz» y son más, por dos motivos que no
+estaban escritos:
+
+1. **El runner tiene que salir de la fila**, no del trabajo: `runs-on:
+   ${{ matrix.runner }}`. Y el guion de cada paquete también sale de la fila.
+   La forma elegida es la de «expanding configurations» de GitHub: dos ejes,
+   `arch` y `package`, y cada `include` **añade** una clave a las combinaciones
+   cuyo eje coincide. La forma ingenua —`runner` como eje y los paquetes sólo en
+   `include`— **no funciona**: los `include` que no coinciden con ningún eje se
+   convierten en combinaciones nuevas sin runner.
+2. **`upload-artifact@v4` exige nombres únicos por ejecución.** Con dos filas y
+   `name: <paquete>-deb` a secas, la segunda en llegar se pondría en rojo
+   —fuera cual fuera, y eso lo haría parecer intermitente—. El nombre lleva la
+   arquitectura: `<paquete>-<arch>-deb`. **Esto es leído en la documentación
+   de v4 y NO reproducido:** reproducirlo costaba una ejecución roja a
+   propósito en `main`, y el dato está escrito por el fabricante.
+
+Control local de la forma, **antes de subir nada**: un simulador de las reglas
+de `include` en Python, al que se le pasa la matriz real y la ingenua. Es un
+modelo de las reglas de GitHub, no GitHub: la medida es (e).
+
+```
+== POSITIVO ==
+  {'arch': 'amd64', 'package': 'encina-branding', 'runner': 'ubuntu-24.04', 'script': 'scripts/03-construir.sh'}
+  {'arch': 'amd64', 'package': 'encina-firefox-native', 'runner': 'ubuntu-24.04', 'script': 'scripts/07-firefox-construir.sh'}
+  {'arch': 'amd64', 'package': 'encina-meta', 'runner': 'ubuntu-24.04', 'script': 'scripts/10-meta-construir.sh'}
+  {'arch': 'arm64', 'package': 'encina-branding', 'runner': 'ubuntu-24.04-arm', 'script': 'scripts/03-construir.sh'}
+  {'arch': 'arm64', 'package': 'encina-firefox-native', 'runner': 'ubuntu-24.04-arm', 'script': 'scripts/07-firefox-construir.sh'}
+  {'arch': 'arm64', 'package': 'encina-meta', 'runner': 'ubuntu-24.04-arm', 'script': 'scripts/10-meta-construir.sh'}
+[OK] 6 combinaciones, todas con runner y script
+== NEGATIVO: runner como eje y package solo en include ==
+  {'runner': 'ubuntu-24.04'}
+  {'runner': 'ubuntu-24.04-arm'}
+  {'package': 'encina-branding', 'script': 'scripts/03-construir.sh'}
+  {'package': 'encina-firefox-native', 'script': 'scripts/07-firefox-construir.sh'}
+  {'package': 'encina-meta', 'script': 'scripts/10-meta-construir.sh'}
+[OK] el negativo sale roto: 5 combinaciones
+```
+
+#### (c) Tres correcciones a la casilla, y a la frase de `AGENTS.md` §8
+
+1. **«La huella del manifiesto, que es lo que hoy no se puede afirmar de
+   ninguna construcción automática» — era falso para amd64.** La CI cuadra
+   con el manifiesto desde `9a5d6a8` (2026-08-13), y (a) lo enseña con la
+   ejecución de esta misma mañana. Lo que **no** se podía afirmar era de
+   **arm64**, que es exactamente el producto, y por eso la casilla tenía razón
+   en el fondo y no en la frase.
+2. **«Una línea de matriz» son una docena y una trampa**, (b). El precio sigue
+   siendo pequeño; lo que no es es una línea.
+3. **`AGENTS.md` §8 decía dos cosas y las dos habían caducado:** «se construye en
+   CI porque el runner es amd64» —al revés de lo que importa, como decía la
+   casilla— **y «no hay máquina donde medirlo»**, que D9 tachó el 2026-08-15
+   cuando apareció el Mac Intel y que la fase 1 está contestando ahora mismo en
+   el portátil AMD A9. Las dos quedan tachadas con su fecha; lo que sigue en
+   pie es «no se declara probado», hasta que la fase 1 lo pruebe.
+
+#### (d) Lo que esta tarea NO toca, comprobado
+
+`build.yml` construye tres `.deb` y los compara; no escribe en `imagen/`, en
+`medios/` ni en `debian-packages/` más allá del `.deb` que sale del `dpkg-
+buildpackage` de cada ejecución, y eso ocurre en el runner y no aquí. En este
+árbol:
+
+```
+$ /usr/bin/git diff --stat d4c7ed2 -- imagen medios debian-packages scripts
+(vacío)
+```
+
+La ISO `8924f148` no se ve afectada por nada de lo de hoy, y la fase 1 sigue
+donde estaba.
+
+#### (e) La ejecución, que es la medida
+
+*(Pendiente hasta que el commit suba: se rellena con la salida literal de la
+ejecución, y la casilla no se marca antes.)*

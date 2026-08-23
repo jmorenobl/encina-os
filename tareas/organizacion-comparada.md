@@ -62,7 +62,7 @@ sacar con la orden escrita en la columna de la derecha.
 | Enlaces relativos en los `.md` | **128**, de los que **2 están rotos** | §1.c |
 | Rutas de guion citadas que no existen | **6**, y **ninguna es un error** | §1.c |
 | `Makefile` | **no hay** | `ls Makefile` |
-| Runner de la CI | **`ubuntu-latest`, sólo amd64** | `.github/workflows/build.yml` |
+| Runner de la CI | ~~**`ubuntu-latest`, sólo amd64**~~ **`ubuntu-24.04` y `ubuntu-24.04-arm` desde el 2026-08-23** (tarea 13, `MEDICIONES.md` §4.69) | `.github/workflows/build.yml` |
 | `autofirma` en `imagen/repo-manifiesto.tsv` | **`1.9.1+encina4`** | `grep autofirma imagen/repo-manifiesto.tsv` |
 | `autofirma` en los `.md` de este repositorio | **`+encina2` 25 veces**, `+encina4` 19 | `grep -rhoE '1\.9\.1\+encina[0-9]' --include='*.md' .` |
 | `debian/changelog` del repositorio hermano | **`1.9.1+encina4`** | `head -1 ~/Projects/encina-autofirma/debian/changelog` |
