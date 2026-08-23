@@ -18290,3 +18290,58 @@ de las tres ya existe**: quitar el fichero y volver al 0 de 5.
   instalaciones van de `11:21` a `11:40` y el primer arranque es a las `16:23`—.
   Puede ser el reloj del firmware en otra zona o en UTC mal leído; no se ha
   mirado y no importa para (c), que está cerrado por otra vía.
+
+### 4.71 EL DROP-IN DE `gdm.service` EN EL BANCO arm64: cuánto cuesta esperar a `udev-settle` donde no hay `amdgpu` (2026-08-23, noche)
+
+**Qué se mide y por qué va antes que el paquete.** Jorge decidió (tareas/sueltas.md,
+2026-08-23) que el remedio del negro del Acer es el experimento 3 de §4.70f —un
+drop-in de `gdm.service` que espera a `systemd-udev-settle.service`— y que vive
+en `encina-branding`. Ese paquete es `all`: lo que se le meta lo paga **también la
+máquina arm64** que no tiene el problema. §4.70f dejó escrito el riesgo y sin
+medir: `udev-settle` espera a **todos** los dispositivos, con 120 s de tope. Esta
+sección es el paso (1) de la casilla: **medir el coste en el banco arm64 antes de
+tocar `debian-packages/`**. Hoy no se toca ningún paquete ni `imagen/`.
+
+**Dónde.** El banco tiene cuatro VMs (`inventario-vms.sh`, 5 correctas, 0 fallos)
+y ninguna es «Encina OS arm64 instalada, parada, con `ssh`, que no sea el
+entregable»: `encina-dev` y `encina-limpia-respaldo` son Ubuntu sin Encina,
+`encina-marca-e8a0ead2` es una plantilla de medio sin instalar, y
+`encina-E4-entrega` **es el entregable vigente**. Así que se clona ésta:
+`encina-udev-settle`, clon de APFS de `encina-E4-entrega`. Las dos trampas
+escritas que aplican: el clon trae **la misma MAC e IP** (trampa 29), así que
+**no se encienden las dos a la vez**, y el control de que la original no se ha
+tocado es la fecha de escritura de su `disco.img` —tomada antes de empezar:
+`2026-08-13 10:29:38`, 42 949 672 960 bytes— y no «estaba parada».
+Anfitrión: macOS 25.5.0, 8 núcleos, 24 GiB; la VM es `virtio-gpu-pci`.
+
+**Lo que se lee, en cada arranque y con `journalctl -b N -o short-monotonic`**,
+que es la misma forma de la tabla de §4.70f para que las dos se comparen:
+
+- si `systemd-udev-settle.service` corre, y en qué segundo **termina**;
+- segundo de `Started gdm.service`;
+- segundo del primer `Added device /dev/dri/card…` del saludador (`_UID=120`), y
+  sobre qué tarjeta;
+- contadores de `hash_table != NULL|CREATE_DUMB` y de `lock front buffer` en
+  `_UID=120`.
+
+#### (a) LA PREDICCIÓN, escrita antes de arrancar nada
+
+1. **Línea base (sin drop-in): `systemd-udev-settle.service` NO corre** —nada la
+   pide en un Ubuntu 24.04 de serie—, GDM arranca entre los **5 y los 12 s**, el
+   saludador nace sobre **`card0` y es `virtio-gpu`** (no `simpledrm`: el
+   `virtio-gpu` va en el initrd por el hook `framebuffer`, §4.70b punto 1), y los
+   dos contadores son **0**. Si la base diera aserciones, el arm64 tendría el
+   mismo fallo de mutter por otra vía y la casilla cambia de forma.
+2. **Con el drop-in: `udev-settle` corre y termina en menos de 5 s**, porque en
+   una VM de UTM los dispositivos son pocos y virtuales. El delta de
+   `Started gdm` es **< 2 s** —dentro del ruido entre arranques, que se mide con
+   los tres de la base—. **Umbral comprometido: si el delta mediano supera los
+   5 s, el coste NO es ~0 y no se puede meter en `encina-branding` sin decirlo
+   en la casilla.** Y si algún dispositivo no asienta, se verá como **~120 s**, y
+   eso sería el hallazgo.
+3. **El aviso `systemd-udev-settle.service is deprecated` sale** en el registro
+   con el drop-in, literal y una vez por arranque, y **no sale** sin él.
+4. **Control:** quitado el drop-in y `daemon-reload`, `udev-settle` vuelve a
+   **no correr** y GDM vuelve a los tiempos de la base.
+5. Saludador: **3 de 3 con `Added device`** en las dos mitades; el drop-in no debe
+   cambiar nada de lo que se ve en arm64.
