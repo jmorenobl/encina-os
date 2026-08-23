@@ -17129,3 +17129,83 @@ del hierro.
 **20–40 min cada uno**, más la cosecha. Y dos bundles nuevos que **no cuestan
 disco** (la ISO va por enlace duro y el disco es disperso). **Si el primero no se
 cae, se para y se escribe**, no se baja a 1 CPU improvisando.
+
+#### (p) EL MARCADOR DE (o), Y EL CONTROL SALE POR DONDE NO SE ESPERABA
+
+| | qué decía | qué pasó |
+|---|---|---|
+| **L1** | con 2 CPU el servidor pasa de 90 s y sale el diálogo del 22 | **FALLA, y tumba el modelo.** Con **la mitad** de CPU el servidor apareció **antes**: **65,83 s** contra 82,03. Y llegó a la pantalla del teclado, sin caerse |
+| **L2** | los reintentos llegarán a ~90 | **NO SE PUEDE CONTESTAR:** no hubo caída del instalador |
+| **L3** | el control lento con la oficial **se cae también** | **ACIERTA, y por una vía que no estaba prevista** |
+| **L4** | el instrumento de (i) valdrá con el diálogo delante | **FALLA, y es un límite que hay que escribir** |
+
+**L1 ENSEÑA MÁS QUE UN ACIERTO: los 82 s no los manda la CPU del invitado.**
+
+```
+nuestro medio,  4 CPU, 03:11   82,03 s hasta el zocalo
+ISO oficial,    4 CPU, 08:56   84,26 s
+nuestro medio,  2 CPU, 09:18   65,83 s      <- LA MITAD DE CPU, y MENOS tiempo
+```
+
+*Lo que se creía, dejado al lado:* «arrancar el snap es trabajo de CPU, así que
+con la mitad tardará el doble». **Falso.** Lo que manda ese tiempo es otra cosa
+—lo más plausible, la E/S del anfitrión y lo que el Mac esté haciendo—, y eso
+**refuerza** que sea propiedad del banco y explica sin esfuerzo por qué es
+intermitente. Pero *plausible* no es *medido*, y así queda escrito.
+
+**L3 ACIERTA POR OTRO SITIO, Y ES EL MEJOR CONTROL DEL DÍA.** El bundle lento con
+la **ISO oficial** —cero líneas de Encina— **se rompió**, pero no en el
+instalador: **en la sesión gráfica**, y con `plymouthd` **abortando** por el
+camino, con su volcado de memoria y su backtrace en la consola:
+
+```
+/lib/x86_64-linux-gnu/libply.so.5(ply_event_loop_watch_for_timeout+0xfc)
+/lib/x86_64-linux-gnu/libply.so.5(ply_event_loop_process_pending_events+0x133)
+/usr/sbin/plymouthd(main+0x9f1)
+        ... y despues:  «Oh no!  Something has gone wrong.
+                          A problem has occurred and the system can't recover.»
+```
+
+**Es la MISMA pantalla que el arranque 1 de hoy con NUESTRO medio** —«Algo salió
+mal», en español porque el nuestro va en español—. O sea que **esa familia de
+fallos se reproduce en la ISO oficial, sin Encina dentro.** Capturas 04 a 07.
+
+**EL CONTEO DE ARRANQUES, que es lo que contesta «de quién es»:**
+
+| arranque | medio | CPU | resultado |
+|---|---|---|---|
+| 2026-08-22 noche | nuestro | 4 | **el instalador se cae** |
+| 2026-08-23 02:34 | nuestro | 4 | **la sesión gráfica se muere** |
+| 2026-08-23 03:11 | nuestro | 4 | el instalador **va** (y aguanta 5 h 33 sin tocarlo) |
+| 2026-08-23 08:56 | **OFICIAL** | 4 | la primera pantalla **va** |
+| 2026-08-23 09:18 | nuestro | 2 | el instalador **va** |
+| 2026-08-23 09:32 | **OFICIAL** | 2 | **la sesión gráfica se muere**, con `plymouthd` abortado |
+
+```
+nuestro medio:  2 de 4 llegan          ISO oficial:  1 de 2 llega
+```
+
+> **Los dos medios fallan, y en la misma proporción.** Con N pequeño eso no mide
+> una tasa —§4.59 ya dejó escrito que una diferencia de un arranque es ruido—,
+> pero **sí basta para lo que se preguntaba**: hay un fallo del banco que ocurre
+> **sin Encina de por medio**, que es exactamente el criterio 1 de §4.59.
+
+**L4 FALLA, Y DEJA UN AGUJERO CON NOMBRE.** Con la sesión muerta:
+
+```
+Alt+F2            -> no abre nada        (la pantalla no cambia ni un byte)
+espacio / Intro   -> no activan «Log Out»
+Alt+F1 / F3 / F4  -> NO cambian de consola virtual
+```
+
+O sea que el instrumento de (i) **sólo lee sesiones vivas**, y **el registro de un
+arranque roto sigue sin poder leerse**. Y de paso corrige lo que decía
+`teclear-vm.sh`: que `Alt+F1`/`Alt+F2` «llegan al invitado» vale **en contexto de
+texto**; dentro de una sesión gráfica se los queda GNOME y **no cambian de VT**.
+
+**LA VÍA QUE QUEDA APUNTADA, y ahora es alcanzable:** el bundle ya trae
+`Serial = Ptty`. Si en el menú de GRUB —que espera 30 s— se edita la línea del
+núcleo y se le añade `console=ttyS0`, `systemd` levanta `serial-getty@ttyS0` y el
+Mac tiene una consola de texto **independiente de la sesión gráfica**. El `=` que
+hacía falta ya se sabe mandar (`tecla 24`, trampa 58) y GRUB usa disposición
+**US**. No se ha pagado: se apunta.
