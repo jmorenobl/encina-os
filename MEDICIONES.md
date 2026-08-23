@@ -18156,6 +18156,127 @@ Para deshacerlo en esa máquina sin tocar ningún paquete, **una orden y es del
 usuario, no de root**: `dconf reset /org/gnome/desktop/interface/icon-theme`.
 **No ejecutada aún** al cerrar esta sección.
 
+#### (e) LAS FILAS DE LA RECETA, LEÍDAS POR `ssh` LA MISMA NOCHE: e pasa, a y d quedan `[OJOS]`, g no se ha hecho
+
+`imagen/verificar-instalacion.sh --forma e3 --visibles 27` copiado al Acer y
+ejecutado **como root**, en la máquina instalada, **amd64, hierro**:
+
+```
+[OK] 61   [FALLO] 1   [AVISO] 1   [OMIT] 0
+```
+
+Lo que hay detrás de las dos líneas que no son verdes, y ninguna es del producto:
+
+```
+[FALLO]  las etapas por las que paso el instalador (las OCHO que deciden)
+         | esperado: confirm,done,identity,install,keyboard,network,storage,timezone
+         | obtenido: confirm,confirm,done,identity,identity,install,keyboard,network,storage,timezone,timezone
+telemetry: 3 loading · 4 keyboard · 62 network · 107 storage · 160 identity · 196 timezone
+           · 205 confirm · 260 identity · 262 timezone · 265 confirm · 269 install · done
+```
+
+Las ocho están, sin `locale` ni `source`; lo que sobra es que **identity, timezone
+y confirm aparecen DOS veces**: Jorge volvió atrás desde la confirmación y las
+volvió a pasar. **Es un defecto del instrumento, no del producto** —la
+comparación exige una lista exacta y un humano delante de un instalador vuelve
+atrás; en la VM nunca lo hizo nadie porque el seed o el guion contestaban—. Va
+como trampa y como arreglo pendiente: comparar el **conjunto** y decir aparte las
+repetidas. No se toca esta noche.
+
+```
+[AVISO]  se declararon 27 visibles y hay 28: nombra cual sobra o cual falta
+```
+
+**Sobra `Firmware Updater`** (`firmware-updater_firmware-updater.desktop`, snap
+`firmware-updater` rev 210): Ubuntu lo siembra en el medio **amd64** y no estaba en
+arm64. Las otras 27 son las de siempre. Es la segunda diferencia de arquitectura
+que E6 encuentra en el inventario; no es un fallo.
+
+**Identidad y contenido de la máquina, leídos:** `encina-branding 0.1.15`,
+`encina-firefox-native 0.2.1`, `encina-meta 0.2.1`, `autofirma 1.9.1+encina4`,
+`firefox 154.0~build1` (deb), snap `firefox 7766` presente; `REPO ELEGIDO ->
+/cdrom/encina-repo`, `ENCINA_ESTADO=COMPLETO`, los tres testigos del seed;
+`GRUB_DISTRIBUTOR="Encina OS"`; `default.plymouth -> encina`; `media-info`:
+`EncinaOS 24.04.4 LTS "Nutria Nocturna" - Release amd64 (20260210)`;
+`os-release` dice Ubuntu (pila C de D22, como toca).
+
+**Y dos cosas del hierro que nadie había dicho:** (1) **es una instalación EN
+PARALELO CON WINDOWS** —`PartitionMethod: resize_use_free`, `sda4` NTFS de
+139 GB, `EFI/Microsoft/Boot/BCD`, Encina en `sda6` de 92 GB—, que explica «un par
+de cosas en la BIOS» y «seleccionar Encina», y es una forma que ninguna VM
+probó; (2) **el reloj**: `done` lleva marca `-6096` y `apt history` va cinco horas
+por detrás de los arranques — Windows guarda el RTC en hora local y Linux lo lee
+como UTC hasta que NTP corrige. Explica el `[OMIT]` de (d) y queda como
+deducción, no medida.
+
+| fila | estado |
+|---|---|
+| a (menú de GRUB del medio) | `[OJOS]` sin desglosar; `media-info` dice `EncinaOS` |
+| d (instalador en español) | `[OJOS]` sin desglosar; `telemetry` da las cinco pantallas |
+| e (verificador dentro) | **pasa: 61/1/1/0, y las dos no verdes tienen dueño** |
+| f (splash instalado) | **cobrada (a)** |
+| g (sin red) | **no hecha** |
+
+#### (f) TRES REMEDIOS MEDIDOS EN LA MISMA MÁQUINA, y el que vale para todo el mundo no nombra ningún módulo
+
+La pregunta de Jorge —*«la mejor forma para que funcione para todo el mundo»*—
+se contesta con tres experimentos sobre el Acer, con el 0 de 5 como control
+detrás y **la misma lectura en los tres**: segundo en que entra `amdgpu`, en que
+arranca Plymouth, en que arranca GDM, sobre qué tarjeta nace el saludador, y
+aserciones/front buffer del saludador. **Ninguno toca un paquete.**
+
+```
+                                  amdgpu   plymouth   gdm    saludador     errores   arranque   initrd
+antes (0 de 5)                    25,8 s    3,4 s    10,4 s  simpledrm    18-445     39 s      81 MB
+1  modules-load.d/amdgpu.conf     20,5 s    3,4 s    25,9 s  amdgpu        0 (3/3)   ~40 s     81 MB
+2  amdgpu en el initrd            17,1 s   20,6 s    27,3 s  amdgpu        0 (1/1)    54 s    116 MB
+3  gdm.service: After=udev-settle 22,2 s    3,4 s    27,1 s  amdgpu        0 (3/3)    53 s     81 MB
+```
+
+**Lo que la tabla dice y no se sabía:**
+
+- **Los 17 s son de la máquina, no del sistema.** En el initrd, sin nada
+  compitiendo, `amdgpu` tarda lo mismo (0,7 → 17 s). No hay forma de que llegue
+  antes que GDM; **solo hay formas de que GDM espere**.
+- **El initrd (2) es el peor**, y explica por qué Ubuntu lo sacó de ahí: 116 MB,
+  el cargador tarda 10 s más, y **Plymouth no aparece hasta los 20 s** —el
+  usuario ve negro donde antes veía la encina a los 3—. La forma canónica de
+  Debian para «KMS temprano» aquí empeora lo que se ve.
+- **(1) y (3) dan lo mismo en la pantalla**; la diferencia está en qué saben.
+  (1) nombra `amdgpu`: en un Intel no hace nada y en arm64 cargaría un módulo
+  para un dispositivo que no existe, pagando su tiempo. **(3) no nombra nada**:
+  «no arranques el saludador hasta que `udev` haya terminado con los
+  dispositivos», que en una máquina donde `udev` acaba a los 4 s cuesta cero y
+  en ésta cuesta justo los 17 s que hay que esperar. Es el único de los tres que
+  **se puede entregar sin saber qué hardware hay delante**.
+- El drop-in de (3), literal, y es lo que hay puesto en el Acer al cerrar:
+
+```
+/etc/systemd/system/gdm.service.d/encina-espera-gpu.conf
+[Unit]
+Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service
+```
+
+- **Y su precio, dicho por `systemd` en cada arranque:** `systemd-udev-settle.service
+  is deprecated. Please fix gdm.service not to pull it in`. Es un parche sobre
+  un fallo ajeno —**mutter 46.2 no sobrevive al cambio de tarjeta en
+  caliente**, que es lo que habría que arreglar arriba—, y tiene un riesgo que
+  no se ha medido: `udev-settle` espera a **todos** los dispositivos, con 120 s de
+  tope; una máquina con un dispositivo que nunca asienta retrasaría GDM ese
+  tiempo. El coste en el banco arm64 (UTM) **no está medido** y es lo primero
+  que hay que medir antes de meterlo en nada.
+- **El cargador pasó de 6,8 a 15,4 s entre la primera lectura y las últimas**,
+  en los tres experimentos por igual y sin relación con ellos. Candidato: el
+  menú de GRUB con Windows detectado por `os-prober`. `[OMIT]`.
+
+**Dónde vivir, que es decisión de Jorge y se deja planteada:** (a) en
+`encina-branding`, que ya es dueño de lo que se ve al arrancar —Plymouth,
+`default.plymouth`, el dconf de GDM— y cuyo `postinst` ya corre
+`update-initramfs`; (b) en un paquete nuevo, con el ritual de los siete sitios
+encima; (c) solo en la receta del hierro, como hoy. **El control de cualquiera
+de las tres ya existe**: quitar el fichero y volver al 0 de 5.
+
 #### (d) Lo que esta sección NO contesta
 
 - Las filas **a, d, e, g** de la receta (menú de GRUB, instalador en español,
@@ -18164,7 +18285,7 @@ usuario, no de root**: `dconf reset /org/gnome/desktop/interface/icon-theme`.
   desglosar, no cuatro `[OK]`.
 - Qué se tocó en la BIOS.
 - ~~La frecuencia y el registro del negro, (b).~~ **Contestado la misma noche, en la enmienda de (b).** Queda `[OMIT]` por qué `amdgpu` tarda 17 s en cargar, y el experimento 2 (initrd).
-- **La máquina ya no es limpia:** lleva `openssh-server` (apt 18:29/18:31), `/var/log/journal/` persistente y `/etc/modules-load.d/amdgpu.conf`. Los tres se dicen para que un verificador que la mire sepa qué no salió del medio.
+- **La máquina ya no es limpia:** lleva `openssh-server` (apt 18:29/18:31), `/var/log/journal/` persistente y el drop-in de (f) en `/etc/systemd/system/gdm.service.d/` —el `modules-load.d` y la línea del initrd de los experimentos 1 y 2 están quitados, initrd de vuelta a 81 MB—. Los tres se dicen para que un verificador que la mire sepa qué no salió del medio.
 - **Los horarios de `apt history` no cuadran con los arranques** —las
   instalaciones van de `11:21` a `11:40` y el primer arranque es a las `16:23`—.
   Puede ser el reloj del firmware en otra zona o en UTC mal leído; no se ha

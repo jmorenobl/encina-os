@@ -60,12 +60,23 @@
       cualquier portátil AMD parecido y «el primer arranque va y luego nunca» es
       la peor forma de fallar. *Lo que hay que decidir, no arreglar:* dónde vive
       el remedio —no en un paquete `all`, que en arm64 no hay `amdgpu`; quizá
-      en el seed por arquitectura, quizá solo en la receta—. *Antes, medir:* el
+      en el seed por arquitectura, quizá solo en la receta—. ~~*Antes, medir:* el
       experimento 2 (`amdgpu` en `/etc/initramfs-tools/modules`), que quizá no
-      cueste los 16 s de GDM que cuesta el 1; y por qué tarda 17 s.
+      cueste los 16 s de GDM que cuesta el 1; y por qué tarda 17 s.~~ **MEDIDOS LOS TRES la misma noche (§4.70f): el initrd es el peor —Plymouth a los 20 s—, y el que no nombra hardware es un drop-in de `gdm.service` con `After=systemd-udev-settle.service`, 3 de 3.** Lo que queda es de producto: dónde vive (branding / paquete nuevo / solo receta), **y antes medir su coste en el banco arm64**, porque `udev-settle` espera a todo.
       *Hecha cuando:* una instalación **limpia** desde el medio en un AMD
       arranca tres veces seguidas con saludador sin que nadie toque la máquina,
       o la receta dice con esas palabras que hay que tocarla.
+
+- [ ] **El verificador no sabe que un humano vuelve atrás.** Del Acer, 2026-08-23
+      (`MEDICIONES.md` §4.70e): `verificar-instalacion.sh` compara las etapas de
+      `telemetry` como lista exacta y dio `[FALLO]` porque identity, timezone y
+      confirm aparecían dos veces — Jorge volvió atrás desde la confirmación.
+      En la VM nunca pasó porque nadie navegaba. *Arreglo:* comparar el conjunto
+      y decir aparte las repetidas como `[DATO]`, con el control de que una etapa
+      que FALTE siga dando rojo. Y `--visibles` en amd64 son **28**, porque Ubuntu
+      siembra `firmware-updater` ahí: la receta del hierro lo tiene que decir.
+      *Hecha cuando:* el mismo `telemetry` del Acer da verde y uno con una etapa
+      quitada da rojo.
 
 - [ ] **DNIe con lector** (`opensc`, PKCS#11). Incremento futuro, no deuda.
 - [ ] **Chrome y Chromium.** No se han medido; hoy el perímetro dice Firefox.
