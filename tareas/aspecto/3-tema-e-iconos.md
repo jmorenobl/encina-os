@@ -130,7 +130,7 @@ shell y el límite declarado**, tal como la condición de arriba anticipaba.
       `autoinstall*.yaml` siguen con la huella vieja.
       *Y dos correcciones al precio que se escribió arriba, medidas y no
       supuestas:* **las 55 traducciones no hay que copiarlas** —la ISO fija
-      `locale=es_ES.UTF-8` (ENCINA-OS §7.7), así que basta `Name=Centro de
+      `locale=es_ES.UTF-8` (~~§7.7~~ `MEDICIONES.md` §4.25 — enmendado el 2026-08-23 por `bancos/enlaces.sh`: §7 de `ENCINA-OS.md` se reescribió como «Empieza aquí» y sus pasos numerados ya no existen; el dato está medido en §4.25), así que basta `Name=Centro de
       aplicaciones` y la sombra se queda en seis líneas, como la de Firefox—, y
       **falta `TryExec=/snap/bin/snap-store`** o quitar la tienda deja un lanzador
       roto en la rejilla. Límite a declarar: quien cambie el idioma del sistema

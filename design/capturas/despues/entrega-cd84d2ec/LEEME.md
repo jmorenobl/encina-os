@@ -43,7 +43,7 @@ UTM— y **una fase de un solo fotograma no es una pantalla**.
 - **Lo que ninguna de estas capturas prueba:** el verificador de la máquina
   **no mira el aspecto** —sus 63 correctas son paquetes, Firefox, el manejador
   del PDF y el tema de iconos—. Ni fondo, ni GDM, ni Plymouth, ni
-  `GRUB_DISTRIBUTOR`. Es la casilla abierta de [../../../tareas/aspecto/5-cierre.md](../../../tareas/aspecto/5-cierre.md).
+  `GRUB_DISTRIBUTOR`. Es la casilla abierta de [../../../../tareas/aspecto/5-cierre.md](../../../../tareas/aspecto/5-cierre.md).
 
 **Y el veredicto de las cuatro `[OJOS]` NO ESTÁ DADO.** Estas capturas se toman,
 se guardan y se ponen delante; quien dice si valen es Jorge.

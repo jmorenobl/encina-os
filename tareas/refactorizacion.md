@@ -65,8 +65,10 @@ la condición que mantiene a la 11 la última.
 **Cómo se cierra el bloque entero.** Cuando `bancos/enlaces.sh` —la tarea 1— pase
 en verde sobre el árbol ya movido, **y el documento de la tarea 12 no tenga
 ninguna fila sin veredicto** —*hecho el 2026-08-23: dieciocho filas, veinte
-veredictos —dos filas se parten—, ocho rechazadas enteras; queda la tarea 1, que
-es la que no está*—. Sin ese instrumento y sin ese criterio,
+veredictos —dos filas se parten—, ocho rechazadas enteras. **Y la tarea 1
+también está hecha esa misma tarde**, así que las dos condiciones de cierre
+existen ya: lo que falta es que `bancos/enlaces.sh` siga en verde **sobre el
+árbol ya movido**, que es lo que todavía no ha pasado*—. Sin ese instrumento y sin ese criterio,
 «refactorización terminada» sería una sensación y no una salida — y con el
 encargo nuevo, «proyecto profesional» lo sería aún más.
 
@@ -74,7 +76,42 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 1. El instrumento primero: `bancos/enlaces.sh`
 
-- [ ] **Un guion que compruebe que ninguna referencia apunta a la nada.** Recorre
+- [x] ~~**Un guion que compruebe que ninguna referencia apunta a la nada.**~~
+      **HECHA EL 2026-08-23. El guion es [`bancos/enlaces.sh`](../bancos/enlaces.sh)
+      y la medición entera, con su control, su saboteo sobre el árbol real y sus
+      cifras, está en `MEDICIONES.md` §4.66.** Corre en menos de dos segundos, y
+      hoy da **0 fallos** con **5 avisos declarados**. Lo que salió, y no estaba
+      previsto, en cuatro líneas:
+      **(1) LAS TRAMPAS ERAN SIETE Y NO TRES**, y las dos últimas no se podían ver
+      sin escribir el guion: una referencia **tachada** (`~~§7.7~~ §4.25`) seguía
+      contando —o sea que el comprobador castigaba justo el método de este
+      repositorio, y la única forma de ponerlo verde habría sido borrar la
+      historia—; un `§` **dentro de un bloque de código** también, con lo que la
+      propia §4.66 **se denunció a sí misma con nueve `[FALLO]` y ninguno
+      cierto**; y **el propio guion se denunció con quince más al versionarlo**,
+      porque sus referencias inventadas son los negativos de su control. Las tres
+      sólo se ven **usándolo**, que es el argumento entero de por qué esta tarea
+      iba la primera.
+      **(2) LA CARGA ÚTIL FUERON SIETE ROTAS Y NO DOS.** Los dos enlaces
+      relativos que (c) apuntaba, arreglados; y **cinco referencias `§` rotas que
+      nadie había visto**, todas **fuera** del subespacio `§4.x` —que es
+      justamente el 12 % que la lectura de ayer no miró, así que aquella medida
+      no era falsa: era parcial—. Dos arregladas (`§7.7`, que apuntaba a un paso
+      de la §7 de `ENCINA-OS.md` que ya no existe → §4.25, que es donde está
+      medido) y **tres declaradas y NO arregladas**, porque inventarles destino
+      sería deducir: salen `[AVISO]` con su motivo dentro del guion.
+      **(3) LAS EXCLUSIONES SON SIETE Y NO SEIS** —faltaba `scripts/construir-deb.sh`,
+      que la tarea 10 propone y que además es un guion real del repositorio
+      hermano—, **y la lista no se pudre**: el guion avisa de la entrada que
+      sobra en cuanto el fichero aparece. `bancos/enlaces.sh` **se cayó sola hoy**.
+      **(4) LO QUE NO HACE, y no se da por bueno:** la atribución de las **1.741**
+      referencias desnudas queda `[OMIT]` —ahí un `[OK]` dice «existe», no
+      «existe donde se pretendía»—, y `shellcheck` no está en este Mac, así que
+      sólo pasó `bash -n`.
+
+      *Lo que pedía la casilla, conservado entero porque su análisis se cumplió:*
+
+      ~~**Un guion que compruebe que ninguna referencia apunta a la nada.**~~ Recorre
       los `.md` y los `.sh` y saca `[FALLO]` por cada referencia `§N.NN` que no
       exista, cada nombre de guion citado que no esté en el disco y cada ruta
       relativa rota.
@@ -123,9 +160,16 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       la carga útil de esta tarea: `MEDICIONES.md:16713`
       (`[alojamiento.md](alojamiento.md)`, que está en `tareas/`) y
       `design/capturas/despues/entrega-cd84d2ec/LEEME.md:46` (faltan cuatro
-      niveles de `..`, no tres). **No se arreglaron el 2026-08-23 a propósito:**
+      niveles de `..`, no tres). ~~**No se arreglaron el 2026-08-23 a propósito:**
       son el primer resultado del instrumento y quitárselo lo dejaría sin nada
-      que demostrar.
+      que demostrar.~~ **ARREGLADOS ESA MISMA TARDE, en cuanto el instrumento
+      existió y los enseñó él: era eso lo que había que esperar, no más tiempo.**
+      **Y las tres cifras de esta casilla quedan enmendadas, cada una con la
+      orden que la da** (§4.66h): las referencias `§` son **2.251** en el árbol y
+      **2.126 comprobadas** —las otras 125 las excluyen las trampas 2, 5, 6 y 7, con
+      su motivo y contadas—, y no ~~1.857~~, que sigue sin reproducirse; las
+      rutas de guion citadas son **39** más 18 nombres sueltos que se cuentan
+      aparte, y no ~~51~~; y los enlaces relativos son **145**, no ~~128~~.
 
 ## 2. `fallo()` significa dos cosas opuestas
 

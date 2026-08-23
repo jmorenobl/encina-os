@@ -16710,7 +16710,7 @@ diciendo `localhost`, con su control.
 
 - **La ISO oficial `amd64` pesa 6,20 GiB contra 3,30 de la `arm64`** — casi el
   doble. Nuestro medio `amd64` sale a **6,38 GiB**. Para
-  [alojamiento.md](alojamiento.md) eso **no es un grado más del mismo problema:
+  [alojamiento.md](tareas/alojamiento.md) eso **no es un grado más del mismo problema:
   es que la entrega pasa de 3,46 GB a ~6,4 GB** y hay que publicar **dos**.
 - **El disco:** Jorge autorizó borrar nueve VMs y dos medios `arm64` viejos.
   De 15,0 GiB se pasó a **92,5 GiB**. El medio bueno `cd84d2ec…` sigue con sus
@@ -17209,3 +17209,260 @@ núcleo y se le añade `console=ttyS0`, `systemd` levanta `serial-getty@ttyS0` y
 Mac tiene una consola de texto **independiente de la sesión gráfica**. El `=` que
 hacía falta ya se sabe mandar (`tecla 24`, trampa 58) y GRUB usa disposición
 **US**. No se ha pagado: se apunta.
+
+---
+
+### 4.66 EL INSTRUMENTO DE LA REFACTORIZACIÓN: `bancos/enlaces.sh`, y las cinco trampas del espacio de referencias (2026-08-23)
+
+**Qué se midió y por qué aquí.** La tarea 1 de `tareas/refactorizacion.md` pedía
+un guion que dijera *«cuántas referencias hay y cuántas resuelven, con su
+control»*. Está escrito, corre en **menos de dos segundos** sobre el árbol
+entero y **no toca nada del producto**: ni un `.deb`, ni la ISO, ni una decisión.
+El resultado de hoy, y las órdenes que lo dan, están abajo — **una cifra va con
+su orden o no va**, que es la enmienda que dejó §4.65 y que aquí se cumple desde
+la primera línea.
+
+#### (a) El control, y por qué va DELANTE
+
+Un comprobador de referencias que no encuentre nada **da exactamente la misma
+salida que un árbol sano**. Es la clase de instrumento que puede estar mudo y
+parecer verde durante meses, y ya mordió una vez: el 2026-08-17 un banco cuyo
+binario no existía leyó `command not found` como **PASA** y dio cuatro verdes
+falsos.
+
+Así que el guion **fabrica un árbol de mentira** en `/tmp` con seis casos y
+comprueba los seis **antes de mirar el repositorio**. Si el control no da sus dos
+respuestas, **no mide nada y sale distinto de cero**:
+
+```
+== EL CONTROL, antes de medir nada: seis casos con respuesta conocida
+  [OK]    rojo (1/3): la referencia inventada §4.999 se detecta
+  [OK]    rojo (2/3): el guion citado que no esta se detecta
+  [OK]    rojo (3/3): el enlace relativo roto se detecta
+  [OK]    verde (1/3): §4.1b resuelve contra un «#### (b)», que es la trampa (1)
+  [OK]    verde (2/3): el guion que si esta se cita y se encuentra
+  [OK]    verde (3/3): el enlace que si resuelve se ve
+```
+
+**Los tres verdes no son adorno**, y ésta es la mitad que se olvida: un guion que
+diera `[FALLO]` en **todo** también estaría roto, y desde fuera el rojo se lee
+igual de bien que el rojo verdadero.
+
+#### (b) Y el saboteo sobre el árbol DE VERDAD, que el corpus sintético no cubre
+
+El corpus sintético prueba el algoritmo; no prueba que el guion esté leyendo
+**este** repositorio. Así que se le añadió una línea a `TAREAS.md` con los tres
+defectos y se ejecutó:
+
+```
+  [FALLO] TAREAS.md:166 — §4.998 no existe en ningun indice
+  [FALLO] TAREAS.md:166 cita scripts/no-esta.sh, que no esta en el disco
+  [FALLO] TAREAS.md:166 — el enlace (NO-ESTA.md) no resuelve desde ./
+   correctas: 7   fallos: 3   avisos: 4   omitidas: 1
+```
+
+Restaurado el fichero, `rc=0`. **Las tres comprobaciones saben dar sus dos
+respuestas sobre el árbol real**, y cada una por su motivo y no por un error de
+sintaxis.
+
+#### (c) Lo medido hoy, con la orden al lado
+
+```
+$ ./bancos/enlaces.sh
+   referencias §: 2126 apariciones — 385 cualificadas, 1741 desnudas, 6 pasos
+                  del seed, 2 tachadas y 117 citadas (en un bloque de codigo o
+                  entre acentos graves), excluidas
+  [OK]    las 39 rutas de guion citadas existen (o estan en la lista de exclusion)
+  [OK]    los 147 enlaces relativos de los .md resuelven
+   correctas: 9   fallos: 0   avisos: 5   omitidas: 1
+```
+
+**Las cifras son de la ejecución que cierra la casilla, y se mueven**: esta
+sección **añade referencias al árbol que describe**, así que cada vez que alguien
+escriba sobre el instrumento suben. La que no se mueve, y es la que importa, es
+**`fallos: 0`**.
+
+El índice contra el que resuelven sale de tres documentos y son **632 anclas**:
+
+```
+$ awk -f <indice> MEDICIONES.md AGENTS.md ENCINA-OS.md | sort -u | wc -l
+     632          # 579 de MEDICIONES.md, 37 de AGENTS.md, 16 de ENCINA-OS.md
+```
+
+#### (d) LAS SIETE TRAMPAS DEL ESPACIO DE REFERENCIAS, y sin ellas el guion nace mintiendo
+
+**(1) El espacio de anclas tiene CUATRO convenciones, no una.** `§4.37c` **no**
+apunta a ninguna sección `### 4.37c` —no existe— sino a un `#### (c)` **dentro**
+de `### 4.37`; hay una segunda forma para lo mismo, `**c) …`, con **62**
+apariciones frente a **451**; y una tercera, `### 9.a` en `ENCINA-OS.md`, con
+letra en el segundo nivel. Ya estaba medido en `tareas/organizacion-comparada.md`
+§1.c: mirando sólo `###` salen **204** falsos `[FALLO]` de 305.
+
+**(2) El signo `§` no siempre significa «sección de un documento».** La tabla
+«Paso del seed» numera con `§` los pasos de `imagen/encina-seed.sh`:
+`§7 ¿hay red desde el chroot?` y `§11 full-upgrade`. Son **seis filas**, y lo que hacen es
+peor que dar dos `[FALLO]` falsos: **cuatro de las seis resuelven POR
+CASUALIDAD** contra secciones que sí existen, o sea que sin excluir la tabla el
+guion daría también **cuatro `[OK]` falsos**. Se excluye por **contexto** —el
+encabezado de la tabla— y no por número de línea, porque los números de línea se
+mueven, que es justo lo que este guion existe para vigilar.
+
+**(3) El mismo `§N.N` existe en DOS documentos.** `§4.1` está en `MEDICIONES.md`
+y en `AGENTS.md`; `§6.1` en `AGENTS.md` y en `ENCINA-OS.md`. Por eso la
+comprobación es de dos niveles y **se cuenta por separado**: la **cualificada**
+—el documento pegado delante, `` `AGENTS.md` §6.8`` — se resuelve contra **ese**
+documento y es la fuerte; la **desnuda** se resuelve contra la unión y **es
+débil, y se dice que lo es** con un `[OMIT]` en cada ejecución: ahí un `[OK]`
+significa «existe en algún sitio», no «existe donde se pretendía». **Lo que no se
+hace es adivinar el documento por el fichero que cita**, que sería deducir.
+
+**La ventana del cualificador es de un acento grave y un espacio, y no más**, y
+eso está medido: con una ventana de 30 caracteres, `DIARIO.md:16` —*«…queda
+escrita en `AGENTS.md` §6.4, en el `README` y en `ENCINA-OS.md`. `§4.12a`…»*—
+se lee como *«`ENCINA-OS.md` `§4.12a`»*, que son **dos frases distintas**, y sale
+un
+`[FALLO]` que no es.
+
+**(4) No todo guion citado es de este repositorio.** Las mediciones citan por su
+nombre ficheros de `subiquity` (`refresh.py`), de `apt` (`apt.py`) y del
+repositorio hermano `~/Projects/encina-autofirma` (`sincronizar-ca-mozilla.sh`).
+Por eso sólo son `[FALLO]` las **rutas** que empiezan por un directorio de este
+árbol; un **nombre suelto** que no aparece sale `[AVISO]` y se lista. Hoy son
+**18**, y ninguno es un defecto.
+
+**(5) UNA REFERENCIA TACHADA NO ES UNA REFERENCIA, y ésta es la que sólo aparece
+al usar el instrumento.** El método de este repositorio es corregir **dejando al
+lado lo que se creía**, y la forma de dejarlo al lado es `~~§7.7~~ §4.25`. Un
+comprobador que no lo sepa hace **lo peor que puede hacer un instrumento**:
+castiga justo la práctica que existe para protegerlo, y entonces la única manera
+de ponerlo verde es **borrar la historia**. Se cazó en el acto —al enmendar las
+dos `§7.7` de (f), las dos siguieron saliendo rojas— y hoy hay **2** tachadas.
+
+**(6) UN `§` DENTRO DE UN BLOQUE DE CÓDIGO, O ENTRE ACENTOS GRAVES, ES UNA CITA Y
+NO UN PUNTERO. Y ésta la enseñó esta misma sección, denunciándose a sí misma.**
+Al pegar aquí la salida del guion —que lleva dentro el `§4.998` del saboteo— y al
+nombrar en prosa las referencias rotas que acababa de encontrar, `§4.66` produjo
+**nueve `[FALLO]` nuevos y ninguno era cierto**. Es la clase de defecto que
+convierte el instrumento en algo que **castiga escribir sobre él**, y por tanto
+en algo que nadie usa para documentar nada.
+
+Son **117** hoy, y **se cuentan en la línea de cabecera en vez de desaparecer**:
+un instrumento que tapa lo que no mira miente por omisión. Dos detalles que
+costaron su vuelta cada uno: los bloques de `ENCINA-OS.md` §7 van **dentro de una
+cita de bloque**, o sea con `> ` delante del `` ``` ``; y **un tramo entre
+acentos graves no puede cruzar de línea**, porque el emparejado es por línea —al
+partir `` `§7 ¿hay red desde el chroot?` `` en dos, el `§11` de la línea
+siguiente volvió a salir rojo—.
+
+**(7) EL INSTRUMENTO NO ES UN DOCUMENTO, y ésta salió al versionarlo — o sea en
+el último minuto y midiendo, no razonando.** Al hacer `git add bancos/enlaces.sh`
+el guion **se denunció a sí mismo con quince `[FALLO]` y ninguno cierto**: sus
+`§4.998`, `§4.1b` y el *scripts/no-existe.sh* de su corpus son **los negativos de su propio
+control**, y sus `§6.5`, `§6.8` y `§7.7` son la lista de rotas declaradas escrita
+en prosa. **Sus tokens son su vocabulario, no punteros.** Se excluye a sí mismo
+del corpus, y **el precio va declarado sin maquillar** con un `[OMIT]` en cada
+ejecución: una referencia rota escrita **dentro de ese fichero no la caza nadie**.
+
+**Y es la que hace que la contabilidad cuadre**, que es como se sabe que no tiene
+agujeros: **comprobadas + excluidas = el total del árbol**, y el guion imprime
+los cuatro sumandos en la misma línea justo para que se puedan sumar. Con la
+ejecución de (c): `2.126 + 6 + 2 + 117 = 2.251`.
+
+#### (e) La política de exclusión: SIETE rutas, no seis
+
+`tareas/refactorizacion.md` §1(b) decía **seis**. Son **siete**, y la que
+faltaba es `scripts/construir-deb.sh` —nombre que **propone** la tarea 10 y que
+además es un guion real del repositorio hermano—. Las otras seis, como estaban:
+`bancos/vigencia.sh`, `lib/salida.sh` y `lib/vm.sh` las **planea esta misma
+lista**; `imagen/autoinstall-e3.yaml` e `imagen/verificar-e2.sh` son **nombres
+históricos conservados a propósito**, con su tabla de equivalencias en
+`SCRIPTS.md`.
+
+**Y la lista no se pudre, que es la mitad que falta en cualquier lista de
+excepciones:** el guion **avisa de las exclusiones que sobran** en cuanto el
+fichero aparece en el disco. `bancos/enlaces.sh` estaba en la lista de la tarea y
+**se cayó sola hoy**, porque ya existe.
+
+#### (f) LA CARGA ÚTIL: siete referencias rotas, cuatro arregladas y tres declaradas
+
+**Los dos enlaces relativos que §1(c) dejó apuntados y sin arreglar a propósito,
+arreglados** —eran el primer resultado del instrumento y quitárselo lo habría
+dejado sin nada que demostrar—:
+
+```
+MEDICIONES.md:16713                                    [alojamiento.md](alojamiento.md)
+  -> (tareas/alojamiento.md)
+design/capturas/despues/entrega-cd84d2ec/LEEME.md:46   ../../../tareas/aspecto/5-cierre.md
+  -> ../../../../  (faltaba un nivel: el fichero cuelga de cuatro directorios, no de tres)
+```
+
+**Y CINCO REFERENCIAS `§` ROTAS QUE NADIE HABÍA VISTO, que es lo que el
+instrumento aporta de nuevo.** §1(c) había medido que *«de las 305 referencias
+`§4.x` distintas ninguna está rota»* — y era cierto: **las cinco están fuera del
+subespacio `§4.x`**, que es exactamente el 12 % que aquella medida no miró.
+
+**Dos arregladas, con lo que decían al lado** (`ENCINA-OS.md:98` y
+`tareas/aspecto/3-tema-e-iconos.md:133`): las dos citaban `ENCINA-OS §7.7` para
+*«la ISO fija `locale=es_ES.UTF-8`»*. La §7 de `ENCINA-OS.md` se reescribió como
+«Empieza aquí» y **sus pasos numerados ya no existen**; el dato está **medido**
+en §4.25, así que apuntan ahí. Apuntar a la medición es mejor que apuntar a un
+paso de un plan, que es una cosa que caduca.
+
+**Tres DECLARADAS y no arregladas, y el motivo de no inventarles destino es el
+método:** adivinar a dónde iban sería deducir, y aquí lo deducido va separado de
+lo medido. Salen `[AVISO]` con su motivo en cada ejecución, **no `[FALLO]`**,
+porque un `[FALLO]` que nadie puede arreglar deja de leerse a la tercera vez y
+entonces el guion entero deja de servir:
+
+| Dónde | Referencia | Por qué no se arregla |
+|---|---|---|
+| `DIARIO.md:13` | `§6.5` | Apuntaba a la definición de terminado de `encina-doctor` en `AGENTS.md`, y **`encina-doctor` se suprimió** (`ENCINA-OS.md` §6.1). **Era cierta el 2026-08-08**, que es el día de esa entrada, y el diario no se reescribe |
+| `ENCINA-OS.md:2031` | `MEDICIONES.md §6.1` | **`MEDICIONES.md` no ha tenido nunca una §6**: sus secciones son la 4 y la 9. El motivo del residuo de l10n de D12 está en algún sitio, pero cuál no se demuestra sin la historia del documento |
+| `MEDICIONES.md:302` | `AGENTS.md §6.8` | La §6 de `AGENTS.md` llega hasta la **6.4**. La «lista completa» de lo deducido y no medido que la frase promete **no existe hoy con ese número** |
+
+**Y esta lista tampoco se pudre:** la clave es el par (fichero, referencia), así
+que el día que alguien corrija una, el guion **avisa de que la entrada sobra**.
+
+#### (g) `§4.999` es el control VIVO, y por eso no se cuenta como carga útil
+
+La casilla manda inventar una referencia que no exista, y ya está escrita: hoy
+aparece en **seis sitios** —`DIARIO.md:72`, tres en
+`tareas/organizacion-comparada.md` y dos en `tareas/refactorizacion.md`—, y los
+seis **hablan del control**. Contarlos entre los hallazgos habría hecho que
+**seis de once fueran mentira**, que es el ruido exacto por el que una lista deja
+de leerse.
+
+**Cinco de los seis van entre acentos graves**, así que con la trampa (6) pasan a
+contarse como cita y **queda uno vivo**, el del diario. Ésa es la lectura
+correcta y no una rebaja: un token entre acentos graves es una **mención**, y
+nadie lo va a seguir. Que el guion **sepa** detectarlo está demostrado **dos
+veces y ninguna depende de esto**: en (a), sobre el corpus sintético, y en (b)
+con `§4.998` sobre el árbol real.
+
+#### (h) Tres cifras de `tareas/refactorizacion.md` §1, enmendadas con su orden
+
+| Decía | Es | Orden |
+|---|---|---|
+| ~~1.857~~ referencias `§` | **2.126** comprobadas, de **2.251** que hay en el árbol versionado **fuera del propio guion** (trampa 7): las otras 125 las excluyen las trampas (2), (5) y (6), **con su motivo y contadas**. Distintas, **346** | `./bancos/enlaces.sh`, línea «referencias §» |
+| ~~51~~ rutas de guion citadas | **39** rutas, más **18** nombres sueltos que se cuentan aparte por la trampa (4) | ídem, líneas de guiones |
+| ~~128~~ enlaces relativos | **147** | ídem, línea de enlaces |
+
+**La cifra de 1.857 sigue sin reproducirse**, como ya dijo §4.65: `2.251` es el
+total de hoy, `2.153` la del `grep` amplio de aquel día y `1.919` sobre
+`99e0e39`. **La diferencia entre 2.251 y 2.153 no es ruido y está explicada**:
+el guion cuenta también las referencias con `bis`/`ter`/`quater` (`§6bis.3`), que
+el patrón de §4.65 partía en dos.
+
+#### (i) Lo que este guion NO comprueba, y no se da por bueno
+
+- **`[OMIT]` la atribución de las referencias desnudas**, que son **1.741** de
+  2.126 — el 82 %. Un `[OK]` ahí dice «existe», no «existe donde se pretendía».
+  Cerrarlo exige decidir un documento por defecto para cada fichero, que es una
+  convención que hoy no está escrita.
+- **`[OMIT]` el propio guion**, por la trampa (7): se excluye del corpus, así que
+  una referencia rota escrita dentro de él no la caza nadie.
+- **`[OMIT]` `shellcheck`**: no está en este Mac. El guion pasa `bash -n`.
+- **`[OMIT]` los enlaces con ancla** (`fichero.md#seccion`): se comprueba el
+  fichero y **se tira el `#`**. El ancla no se resuelve.
+- **`[OMIT]` la tabla de vigencia**: la §4 sigue **parada** en la §4.54, así que
+  esta sección tampoco tiene fila. Es la tarea 5, no ésta.

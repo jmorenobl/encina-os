@@ -3079,3 +3079,73 @@ apuntada y **no pagada**: editar la línea del núcleo en el menú de GRUB —qu
 espera 30 s— y añadir `console=ttyS0`, que levanta `serial-getty@ttyS0` sobre el
 `Serial = Ptty` que el bundle ya trae. El `=` se manda con `tecla 24` y GRUB usa
 disposición **US**.
+
+## El banco de las referencias: `bancos/enlaces.sh` (2026-08-23)
+
+**Directorio nuevo, `bancos/`**, y es el primero que lo estrena: hasta hoy los
+cinco bancos vivían dentro de `imagen/` porque todos miraban un medio. Éste no
+mira ningún medio: mira el **repositorio**.
+
+```bash
+./bancos/enlaces.sh                    # control + medición. rc≠0 si hay algo roto
+./bancos/enlaces.sh --solo-control     # sólo el corpus sintético (útil al tocarlo)
+./bancos/enlaces.sh --raiz D           # sobre otro árbol
+```
+
+**Tarda menos de dos segundos** y no toca nada: sólo lee. Comprueba tres cosas
+—las referencias `§`, las rutas de guion citadas y los enlaces relativos de los
+`.md`— y **ejecuta su control antes de la medición**, porque un comprobador de
+referencias que no encuentre nada da exactamente la misma salida que un árbol
+sano. La medición entera, con sus cifras y su saboteo, está en `MEDICIONES.md`
+§4.66.
+
+**Las dos listas declaradas viven DENTRO del guion, a propósito**, para que se
+lean al mismo tiempo que el código: `EXCLUIDAS` —siete rutas que no existen y no
+son un error— y `declarar_rotas` —tres referencias rotas de verdad **sin destino
+demostrable**, que salen `[AVISO]` con su motivo y no `[FALLO]`—. **Las dos se
+caen solas**: el guion avisa cuando una entrada sobra porque el fichero ya
+existe, o porque el texto dejó de citar esa referencia.
+
+### Las siete trampas, y las tres últimas muerden a quien escriba documentación
+
+1. **Cuatro convenciones de ancla, no una.** `§4.37c` apunta a un `#### (c)`
+   **dentro** de `### 4.37`; hay una segunda forma `**c)` y una tercera
+   `### 9.a`. Mirando sólo `###` salen **204 falsos `[FALLO]` de 305**.
+2. **El `§` no siempre es una sección.** La tabla «Paso del seed» numera con `§`
+   los pasos de `imagen/encina-seed.sh`. **Cuatro de sus seis filas resuelven
+   por casualidad**, así que sin excluir la tabla salen también `[OK]` falsos,
+   que es peor que un `[FALLO]` falso.
+3. **El mismo `§N.N` está en dos documentos.** Por eso hay dos comprobaciones:
+   la **cualificada** (`AGENTS.md §6.8`, con el documento pegado) contra ese
+   documento, y la
+   **desnuda** contra la unión, que es débil y se declara `[OMIT]` en cada
+   ejecución. **La ventana del cualificador es de un acento grave y un espacio**:
+   con más, dos frases seguidas se leen como una.
+4. **No todo guion citado es de este repositorio.** `refresh.py` es de
+   `subiquity`, `apt.py` de `apt`, `sincronizar-ca-mozilla.sh` de
+   `~/Projects/encina-autofirma`. Sólo son `[FALLO]` las **rutas**; los nombres
+   sueltos salen `[AVISO]` y se listan.
+5. **Una referencia tachada no es una referencia.** El método de aquí es
+   corregir dejando al lado lo que se creía, y eso se escribe
+   `~~§7.7~~ §4.25`. Un comprobador que no lo sepa **castiga justo la práctica
+   que existe para protegerlo**, y la única forma de ponerlo verde sería borrar
+   la historia.
+6. **Un `§` dentro de un bloque de código, o entre acentos graves, es una
+   cita.** Al escribir §4.66 —que pega la salida del guion, con un `§4.998` de
+   saboteo dentro— la sección **se denunció a sí misma con nueve `[FALLO]` y
+   ninguno cierto**. Dos detalles al escribir: los bloques de `ENCINA-OS.md` §7
+   van dentro de una **cita de bloque** (`> ` antes del cercado), y **un tramo
+   entre acentos graves no puede cruzar de línea**, porque el emparejado es por
+   línea.
+
+7. **El instrumento no es un documento, y no se comprueba a sí mismo.** Al
+   versionarlo se denunció con **quince `[FALLO]` y ninguno cierto**: sus
+   `§4.998` y `§4.1b` son **los negativos de su propio control**. Se excluye del
+   corpus, y **el precio va declarado** con un `[OMIT]` en cada ejecución: una
+   referencia rota escrita dentro de ese fichero no la caza nadie.
+
+**Y una del entorno, que no es del guion:** usa `/usr/bin/git ls-files` y no
+`git`, porque el hook de `rtk` filtra la salida (`MEDICIONES.md` §4.9d). Lo que
+no está versionado no se comprueba, que es lo que evita que
+`medios/verificar-instalacion.sh` —la copia que `.gitignore` tapa— cuente dos
+veces.
