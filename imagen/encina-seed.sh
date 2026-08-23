@@ -119,7 +119,12 @@ H_AUTOFIRMA=faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d
 # hace esperar a udev (MEDICIONES.md §4.70f, §4.71, §4.72, §4.73). Es el remedio
 # del negro en hierro AMD y lo lleva el paquete; el medio con 0.1.15 necesitaba
 # ponerlo a mano.
-H_BRANDING=a8fcb1b99c0d721f233bda533c8cdfc0de25f00213a7c8228327f51a2c46969d
+# CUARTA, 2026-08-24: 0.1.17, 6929df0e…, el desvio de la bellota (MEDICIONES.md
+# §4.70c, §4.75, §4.76): el SVG de Encina servido tambien en la ruta de Yaru
+# sobre un dpkg-divert del preinst, para que el modo oscuro -que escribe
+# icon-theme='Yaru-<acento>' en el perfil del usuario y le gana al override-
+# no se lleve la bellota del dock.
+H_BRANDING=6929df0e69ac1c31c12a661a0ba35a038636983693fa3a00720afe742583ccd2
 H_FFNATIVE=640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925
 H_META=204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6
 
@@ -279,7 +284,7 @@ run sh -c "ls /target/srv/encina-repo/ | wc -l"
 run sh -c "du -sh /target/srv/encina-repo"
 say "-- las cuatro huellas de Encina, comparadas una a una:"
 huella /target/srv/encina-repo/autofirma_1.9.1+encina4_all.deb      "$H_AUTOFIRMA"
-huella /target/srv/encina-repo/encina-branding_0.1.16_all.deb       "$H_BRANDING"
+huella /target/srv/encina-repo/encina-branding_0.1.17_all.deb       "$H_BRANDING"
 huella /target/srv/encina-repo/encina-firefox-native_0.2.1_all.deb  "$H_FFNATIVE"
 huella /target/srv/encina-repo/encina-meta_0.2.1_all.deb            "$H_META"
 say "-- los dos controles del comparador de huellas, que tiene que saber decir MALA:"
