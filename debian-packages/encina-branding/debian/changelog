@@ -1,3 +1,27 @@
+encina-branding (0.1.16) noble; urgency=medium
+
+  * GDM ESPERA A UDEV, y es el remedio del negro en hierro AMD
+    (MEDICIONES.md 4.70b y 4.70f): en un Acer Aspire ES1-524 el
+    saludador nace sobre simpledrm, amdgpu tarda 17 s en cargar y mutter
+    46.2 no sobrevive al cambio de tarjeta en caliente: 0 de 5 arranques
+    con saludador. El drop-in etc/systemd/system/gdm.service.d/encina-
+    espera-gpu.conf (Wants= y After=systemd-udev-settle.service) dio 3
+    de 3 y es el unico de los tres remedios medidos que no nombra ningun
+    modulo ni arquitectura.
+  * CUESTA CERO EN arm64, medido antes de meterlo (4.71): udev-settle
+    termina a 1,1 s y GDM arranca a los 2,0 s con y sin el fichero, seis
+    arranques, saludador a los 12,4 s en todos, 0 aserciones. Su precio,
+    dicho por udevadm en cada arranque: systemd-udev-settle.service is
+    deprecated. Please fix gdm.service not to pull it in. Es un parche
+    sobre mutter y el dia que mutter aguante se quita.
+  * postinst y postrm hacen systemctl daemon-reload si
+    /run/systemd/system existe: el drop-in es un conffile, no una
+    unidad, y dh_installsystemd no lo ve. 05-verificar.sh gana la
+    comprobacion 2b (systemctl show gdm.service -p Wants) con su control
+    en la purga.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Sun, 23 Aug 2026 19:33:56 +0200
+
 encina-branding (0.1.15) noble; urgency=medium
 
   * EL ICONO DE 0.1.14 NO SE PINTABA, y lo que se veia en el dock era un
