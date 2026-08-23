@@ -16715,3 +16715,180 @@ diciendo `localhost`, con su control.
 - **El disco:** Jorge autorizó borrar nueve VMs y dos medios `arm64` viejos.
   De 15,0 GiB se pasó a **92,5 GiB**. El medio bueno `cd84d2ec…` sigue con sus
   bytes, comprobado después de borrar.
+
+---
+
+### 4.65 E6 — ¿DE QUIÉN ES EL FALLO DEL INSTALADOR `amd64`? La predicción, escrita ANTES de arrancar ninguna VM (2026-08-23)
+
+Van **siete atribuciones falsas** en este proyecto. La séptima se evitó por
+escrito (§4.63) y **anoche se evitó la octava diciendo en voz alta que el control
+no separaba** (§4.64l). Esta vuelta no fabrica nada: **atribuye**, que es
+justamente donde este proyecto se ha equivocado siete veces. Por eso la
+predicción va delante otra vez.
+
+**LA PREGUNTA DE ESTA VUELTA, Y ES UNA SOLA:** *el «Se produjo un problema …
+`ubuntu-desktop-bootstrap`» de anoche, ¿es de nuestro medio `amd64`, del seed,
+del banco emulado, o de que no había nadie contestando?* Todo lo demás —el
+hierro, Plymouth, la prueba sin red— **es de otra vuelta** y está listado en (e).
+
+#### (a) EL PUNTO DE PARTIDA, cotejado y no supuesto
+
+```
+arbol : limpio, commit 5f58853 (2026-08-23)
+disco : 93 GiB libres          <- ya no es la restriccion del dia
+medios (inodo y enlaces, no solo el nombre):
+  90585181  2 enlaces  6 849 232 896  medios/encina-os-amd64.iso
+  90585181  2 enlaces                 encina-amd64-medio.utm/Data/medio.iso
+  90581135  2 enlaces  6 655 619 072  medios/ubuntu-24.04.4-desktop-amd64.iso
+  90581135  2 enlaces                 encina-amd64-control-oficial.utm/Data/medio.iso
+  90473227  1 enlace   3 721 265 152  medios/encina-os-libnss3.iso        <- el arm64 BUENO
+  90260706  1 enlace   3 721 265 152  encina-marca-e8a0ead2.utm/Data/medio.iso
+VMs   : 8 bundles, 60 GiB (cota superior: el 'du' cuenta clones)
+red   : el bundle amd64 salio con  -netdev vmnet-shared,id=net0   (leido del
+        debug.log de anoche, no supuesto)  ->  el invitado ALCANZA al anfitrion
+        por la puerta de enlace del puente, y no hay PortForward ninguno
+nucleo: casper/vmlinuz de la ISO oficial amd64 es
+        «Linux kernel x86 boot executable bzImage, version 6.17.0-14-generic»
+        d3f1cc66…   ->  arranca DIRECTO con -kernel, sin el paso de descomprimir
+        que hizo falta en arm64 (§4.63a: alli el Image se saco del gzip)
+```
+
+**Y UNA COSA DEL PUNTO DE PARTIDA QUE YA CORRIGE UNA SUPOSICIÓN CÓMODA:** el
+`medio.iso` de la plantilla `encina-marca-e8a0ead2` **NO es enlace duro** de
+`medios/encina-os-libnss3.iso` —inodos distintos, un enlace cada uno, **el mismo
+tamaño exacto**—. Y el mismo tamaño no es el mismo contenido (§4.45). Así que
+para el control 3 **no se reutiliza la plantilla**: se fabrica un bundle nuevo
+desde `medios/encina-os-libnss3.iso` y se comprueba la huella antes.
+
+**Lo que NO se vuelve a preguntar, porque está medido anoche:** que el medio
+`amd64` arranca y que la marca se monta (§4.64l, tres capturas); que no falta
+ningún `.deb` (`25 de 25` diciendo `localhost`); que el `arm64` sigue dando
+`cd84d2ec…`; y que **el control de anoche no separa**, porque la ISO oficial se
+quedó en la primera pantalla al no llevar seed.
+
+#### (b) QUÉ SEPARA UN FALLO DEL PRODUCTO DE UNO DEL BANCO — y va DELANTE
+
+Entre la instalación que **sí** funcionó y la de anoche cambiaron **cuatro
+variables a la vez**, y ese es el problema entero:
+
+```
+§4.63(p) BIEN :  arm64  · nuestro medio · banco NATIVO   · Jorge contesto 5 pantallas
+anoche   MAL  :  amd64  · nuestro medio · banco EMULADO  · NADIE TOCO NADA
+```
+
+Los controles se eligen **para mover una variable cada uno**, y por eso son
+éstos y no otros:
+
+| | qué es | qué mueve | qué separa |
+|---|---|---|---|
+| **R** | **El registro de dentro** | nada | No separa: **NOMBRA**. Va primero porque puede ahorrar C1 y C2 enteros |
+| **C1** | ISO **oficial** `amd64` + **nuestro** seed, mismo bundle emulado, sin manos | **sólo el medio** | Si C1 **se cae**, el fallo **no es de nuestra ISO**. Si C1 **no se cae**, el fallo **es de nuestra ISO** —es la única variable que queda— |
+| **C2** | Nuestro medio `arm64` `cd84d2ec…`, banco **nativo**, **dejado solo 12 min** | **sólo las manos**, respecto de §4.63(p) | Si C2 **se cae**, lo de anoche **no tiene nada de `amd64`**: es que el camino sin manos se cae en las dos |
+
+**Y la tabla de verdad, escrita antes para no interpretarla después:**
+
+| C1 | C2 | lo que se puede escribir |
+|---|---|---|
+| no se cae | — | **Es de nuestro medio `amd64`.** Única variable |
+| se cae | no se cae | Es del **seed sobre `amd64`** (medio nuestro descartado, manos descartadas) |
+| se cae | se cae | Es del **seed sin manos**, y el `arm64` de §4.63(p) sólo se salvó porque **había** manos. `amd64` queda absuelto |
+| — | se cae | El banco «sin manos» no vale para esta casilla, y hay que rehacerla con manos |
+
+**Lo que ninguno de los dos separa, y se dice antes:** `amd64` de **emulación**.
+Los dos siguen atados —el `arm64` no cabe en el banco emulado y el `amd64` no
+corre nativo en este Mac—, y **eso sólo lo desata el hierro de Jorge**. Si C1 no
+se cae, la atribución es «nuestro medio `amd64` **en emulación**», y así se
+escribe.
+
+#### (c) LA PREMISA QUE HAY QUE COMPROBAR ANTES DE LEER CADA RESULTADO
+
+| | La premisa | Cómo se mide | Sin ella |
+|---|---|---|---|
+| **M1** | **El fallo se reproduce.** El de §4.61 era **intermitente**, y una sola pasada no distingue «se cae» de «se cayó una vez» | segundo arranque del mismo bundle, mismo diálogo | «se cae» no se puede escribir |
+| **M2** | **El registro que llegue es de ESTE arranque** | las fechas de dentro contra la hora del arranque | se estaría leyendo lo de anoche |
+| **M3** | **El canal invitado→anfitrión entrega lo que se le da, y sabe decir «nada»** | primero se manda un fichero de contenido conocido; y el buzón se enseña **vacío** antes | un fichero a medias se leería como un fallo |
+| **M4** | **C1 ha ENTRADO en modo `autoinstall`.** Si la ISO oficial ignora el `CIDATA`, C1 no ejercita el camino y **no vale de control**, exactamente igual que el de anoche | tiene que salir en **español** y **no** parar en «Choose your language» | C1 no dice nada |
+| **M5** | **El medio de C2 es `cd84d2ec…`** | `shasum` del fichero del bundle nuevo | se mediría otra ISO |
+
+**Sin su premisa, el resultado no se canta**, salga como salga.
+
+#### (d) LA PREDICCIÓN, numerada para poder fallar
+
+**R1 — El fallo se reproduce**, mismo diálogo, mismo bundle. *Falla si el
+segundo arranque llega a las pantallas del instalador: entonces es intermitente
+y media §4.64(l) se reescribe.*
+
+**R2 — `Alt+F2` abre la consola de órdenes de GNOME**, no cambia de consola
+virtual. La sesión es gráfica y GNOME Shell captura esa combinación antes que el
+núcleo. *Falla si sale una consola de texto, o si no pasa nada.*
+
+**R3 — Hay un informe de `apport` en `/var/crash` que nombra
+`ubuntu-desktop-bootstrap`**, y `/var/log/installer/` con
+`subiquity-server-debug.log` dentro. Lo dice el propio diálogo al recomendar
+`ubuntu-bug`. *Falla si `/var/crash` está vacío: entonces el frontal se rindió
+sin dejar informe y sólo queda el registro del servidor.*
+
+**R4 — El canal funciona**: `curl` desde el invitado a la puerta de enlace del
+puente `vmnet-shared`. *Falla si no llega nada; el repuesto es abrir un terminal
+con `Alt+F2` y leer en pantalla, con la trampa 51 encima.*
+
+**R5 — LA ARRIESGADA, y se escribe para poder fallar: lo que el registro nombre
+estará en el camino de `autoinstall`/`subiquity`, y NO será ni un `.deb` que
+falte ni la capa de marca (D23).** Motivo: la capa se monta —hay sesión viva con
+la marca— y el repo está completo, medido. *Falla si la traza nombra `casper`,
+las capas, un paquete o el `squashfs`.*
+
+**C1a — La ISO oficial `amd64` con un `CIDATA` que lleve nuestro
+`autoinstall.yaml` ENTRA en modo `autoinstall` sin tocar la línea de núcleo.** El
+`CIDATA` es el **cuarto** sitio que mira `select_autoinstall` y **gana** sobre el
+fichero de la raíz (trampa 16), así que la vía existe. *Falla si se queda en
+«Choose your language» en inglés como anoche → entonces hace falta la forma E2
+con `-kernel`/`-initrd`, y eso es C1b.*
+
+**C1b — La forma E2 vale para `amd64`.** Ya está medido lo que en `arm64` costó
+un paso extra: `casper/vmlinuz` es un **bzImage** y QEMU lo arranca directo, sin
+descomprimir. Lo que queda por comprobar es lo de siempre y no es de
+arquitectura: la caja de arena de UTM sólo deja leer **unidades declaradas**.
+*Falla si QEMU dice `failed to load`, y entonces se dice y no se fuerza.*
+
+**C1r — Y EL RESULTADO QUE PREDIGO: C1 SE CAE IGUAL.** O sea que el fallo **no
+es de nuestra ISO `amd64`**: es del seed recorrido sobre `amd64`. Motivo: nuestra
+ISO pasó 49 comprobaciones y arrancó una sesión entera con la marca, y lo único
+que la oficial **no** ejercitó anoche fue el seed. *Falla si C1 llega a las
+pantallas y espera: entonces es nuestra ISO, y R5 se vuelve mucho más
+interesante.*
+
+**A1 — El `arm64` dejado solo doce minutos NO se cae**: se queda en la pantalla
+del teclado esperando, porque `keyboard` es la primera de las cinco
+`interactive-sections`. *Falla si sale «Se produjo un problema»: entonces lo de
+anoche no tiene nada de `amd64` y es el camino sin manos.*
+
+#### (e) LO QUE ESTA VUELTA **NO** VA A DEMOSTRAR, escrito antes para no cantarlo después
+
+- **Que el medio `amd64` instale.** Ni con C1 ni con C2 se instala nada: se mide
+  **dónde se cae**, no que deje de caerse.
+- **`amd64` separado de la EMULACIÓN.** Siguen atados, y lo desata el hierro.
+- **Nada de Plymouth.** Sigue `[OJOS]` de Jorge y sigue necesitando hierro.
+- **Nada del núcleo ni de `curthooks`.** La ausencia de §4.63(t) sigue igual, y
+  el sitio donde mirar si la prueba **sin red** se cae ya está escrito.
+- **Nada del arranque BIOS heredado**, por el `pvd_lba` de §4.64(j).
+- **Ni E5 ni publicar.**
+
+#### (f) EL RIESGO DEL BANCO Y DEL DISCO, con su aritmética escrita antes
+
+```
+libres hoy                                   93 GiB
+- bundle C1 (ISO oficial POR ENLACE DURO)    ~0 + disco disperso + 8 MiB CIDATA
+- bundle C2 (ISO arm64, enlace duro)         ~0 + disco disperso
+```
+
+**Cabe sin borrar nada.** Lo que sí puede costar la vuelta es el banco, y las
+trampas que muerden aquí van contadas, no recordadas: el anfitrión falla **~33 %**
+de los arranques (41/42) —**se cuentan**—; **UTM sordo se muere** y los `.ips` se
+miran **antes** de acusar a nadie (45); el registro de UTM se queda obsoleto al
+crear bundles y **hay que reiniciarlo**; **una VM encendida a la vez** (14); y el
+diálogo «QEMU error … Invalid argument» es **inocuo** (31). Del banco emulado, lo
+de anoche: **el clic del anfitrión no llega al invitado `x86_64`**, y
+`Shift+Tab`+espacio sobre un diálogo activa **el botón por defecto** —así se
+cerró sin querer el diálogo del error—. Por eso el plan de R **no usa el ratón ni
+los botones del diálogo**: usa `Alt+F2`.
