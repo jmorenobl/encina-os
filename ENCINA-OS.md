@@ -476,10 +476,10 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > **0. LA PREMISA, antes de grabar nada.** Lo que se graba es lo que se cree:
 >
 > ```
-> shasum -a 256 medios/encina-os-amd64.iso        ->  68cf0f4451bea42a…     (desde el 2026-08-23 noche: lleva encina-branding 0.1.16, §4.74)
+> shasum -a 256 medios/encina-os-amd64.iso        ->  3d5d12a9bda40068…     (desde el 2026-08-24: lleva encina-branding 0.1.17 —el desvío de la bellota—, §4.76 y §4.77)
 > ```
 >
-> *(Hasta esa noche era `8924f1484a74de93…`, con el 0.1.15: es el medio del que se instaló el Acer y sigue en `medios/encina-os-amd64-0115.iso`. Las huellas del paso 1 de abajo son las del medio NUEVO, recalculadas sobre el fichero; las viejas, `8924f148…`/`0ad9f99a…`, se dejan tachadas.)*
+> *(Historial: `8924f1484a74de93…` era el 0.1.15 —el medio del que se instaló el Acer; su `encina-os-amd64-0115.iso` ya no está en `medios/`— y `68cf0f44…` el 0.1.16, fabricado el 2026-08-23 y NUNCA arrancado: queda en `medios/encina-os-amd64-0116.iso` y su borrado es de Jorge. Las huellas del paso 1 de abajo son las del medio VIGENTE, recalculadas sobre el fichero; las anteriores se dejan tachadas.)*
 >
 > **1. GRABAR EL PINCHO, y comprobarlo leyendo del dispositivo** —no mirando el
 > diálogo del grabador—. La lectura de vuelta compara la ISO **entera**, y **su
@@ -492,8 +492,8 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > sync
 > N=$(stat -f %z medios/encina-os-amd64.iso)      # 6849232896
 > B=$(( N/1048576 + 1 ))                          # 6532 MiB: se pasa A PROPOSITO
-> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$N"       | shasum -a 256  ->  68cf0f44…  [OK]   (~~8924f148…~~)
-> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$((N-1))" | shasum -a 256  ->  5d94f8b9…  <- el CONTROL: (~~0ad9f99a…~~)
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$N"       | shasum -a 256  ->  3d5d12a9…  [OK]   (~~68cf0f44…~~ ~~8924f148…~~)
+> sudo dd if=/dev/rdiskN bs=1m count=$B | head -c "$((N-1))" | shasum -a 256  ->  0b5a1af9…  <- el CONTROL: (~~5d94f8b9…~~ ~~0ad9f99a…~~)
 >                                                              si diera lo mismo, la
 >                                                              comprobación no compara nada
 > ```
