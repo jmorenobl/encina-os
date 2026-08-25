@@ -1260,7 +1260,14 @@ $(printf '%s\n' "$FUERA" | head -20)"
     ok "$ELTORITO: cambia, y solo en la boot-info-table (LBA $LBA_CAT, que es donde El Torito dice) y el puntero de grub. No es nuestro: lo reescribe xorriso"
 fi
 
-printf '%s\n' /md5sum.txt "${MODIFICADOS[@]}" "${MOD_XORRISO[@]}" | LC_ALL=C sort > "$TMP/cambiados.esperados"
+# ${A[@]+"${A[@]}"} Y NO "${A[@]}": el bash de macOS es el 3.2 y, bajo 'set -u',
+# expandir un array VACIO es «unbound variable» -- el printf muere, el fichero de
+# esperados queda VACIO y el diff de abajo da [FALLO] con la lista en blanco.
+# En amd64 nunca mordio porque MOD_XORRISO lleva el eltorito.img; en arm64 esta
+# vacio, y desde que existe este bloque (2026-08-22) no se habia fabricado
+# ningun arm64. Medido el 2026-08-25 (MEDICIONES.md §4.79), con su control: el
+# medio tenia exactamente los tres cambiados y la comprobacion decia que no.
+printf '%s\n' /md5sum.txt "${MODIFICADOS[@]}" ${MOD_XORRISO[@]+"${MOD_XORRISO[@]}"} | LC_ALL=C sort > "$TMP/cambiados.esperados"
 N_CAMB=$(( N_MOD + 1 + ${#MOD_XORRISO[@]} ))
 diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
     || fallo "los ficheros modificados no son los $N_CAMB declarados:
