@@ -97,7 +97,15 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       *Hecha cuando:* la tabla del README describe todo lo que viaja y no una
       parte. Es obligación, no cortesía.
 
-- [x] ~~**Reconstruir la ISO y comprobar que sigue saliendo igual.**~~ **HECHA EL
+- [x] ~~**Reconstruir la ISO y comprobar que sigue saliendo igual.**~~
+      **ENMIENDA DEL 2026-08-25 (`MEDICIONES.md` §4.79): la huella que produce
+      este repositorio es `63f360dd755251d1…`** —`medios/encina-os-arm64.iso`,
+      3 721 265 152 bytes, `encina-branding` 0.1.17 dentro—, **seis pasadas en
+      tres commits con una sola huella** y `cmp` mudo, distinta de `cd84d2ec…`
+      como control. Y `fabricar-iso.sh` la daba por mala: el `bash` 3.2 de macOS
+      y un array vacío (trampa 59 de `SCRIPTS.md`), arreglado con su prueba. Lo
+      de abajo es el historial, con las huellas que fueron.
+      **HECHA EL
       2026-08-17 (`MEDICIONES.md` §4.54b): `ac175f648b6406bd…`, 3 721 265 152
       bytes, DOS PASADAS LA MISMA HUELLA** desde `b9b0de09`, 66 `[OK]` cada una y
       los tres binarios firmados intactos, con el control de que la comparación
@@ -166,6 +174,12 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
 
 - [ ] **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
       probado en la máquina donde se hizo.
+      **AL DÍA 2026-08-25 (`MEDICIONES.md` §4.79g): el medio nuevo `63f360dd…`
+      (0.1.17) está arrancado en `encina-entrega-63f360dd` y en «Disposición del
+      teclado», en español, sobre el fondo de Encina —captura mirada en
+      `design/capturas/despues/entrega-63f360dd/`—. Las cinco pantallas, el
+      verificador dentro (`--visibles 27`, por el buzón HTTP) y los `[OJOS]` son
+      de Jorge; la casilla no se toca hasta entonces.**
       *Hecha cuando:* una instalación limpia enseña las seis pantallas con la
       identidad puesta, mirado por una persona, y el verificador da 0 fallos.
       **INTENTADA EL 2026-08-17 Y NO SE PUDO: NO HAY INSTALACIÓN**

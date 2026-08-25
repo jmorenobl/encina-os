@@ -401,6 +401,33 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-08-25: **LA FASE 1a ESTÁ COMPLETA Y LA 1b, A MEDIAS: HAY MEDIO `arm64` CON 0.1.17 Y ESPERA TUS MANOS EN LA PRIMERA PANTALLA**
+>
+> **1a, cerrada** (§4.78 y sus tres enmiendas): fila g pagada sin red en el Acer,
+> la bellota cerrada con `Yaru-sage-dark` contestado, `verificar-instalacion.sh`
+> 65/0 dentro, «Hierro AMD» 3 de 3.
+>
+> **1b, lo medido hoy** (§4.79):
+>
+> ```
+> medios/encina-os-arm64.iso    63f360dd755251d1…   3 721 265 152 bytes   encina-branding 0.1.17
+> seis pasadas en tres commits (c086466, 3e1ed01, e3950f4): UNA huella, cmp mudo; distinta de cd84d2ec (control)
+> xorriso -report_system_area: MBR cyl-align-all, CERO líneas GPT, tabla idéntica a cd84d2ec  <- §4.74(b) ya no es deducción
+> encina-entrega-63f360dd (sufijo C0): arranca, «Disposición del teclado» en español sobre el fondo de Encina a los ~2 min
+> ```
+>
+> **Y un instrumento que mentía, arreglado con su control:** `fabricar-iso.sh`
+> daba `[FALLO]` en el paso 10 sobre un medio correcto — el `bash` 3.2 de macOS
+> y un array vacío bajo `set -u` (trampa 59). Las cuatro pasadas «rojas» tienen la
+> misma huella que las dos verdes: la ISO no dependía del arreglo.
+>
+> **LO QUE FALTA ES TUYO (K2):** las cinco pantallas en `encina-entrega-63f360dd`,
+> y dentro, con la máquina instalada, las tres líneas de §4.79(g) — `wget` del
+> verificador desde el buzón `192.168.64.1:8099`, `--forma e3 --visibles 27`
+> como root, y `wget --post-file` de vuelta—. Con eso se listan los `[OJOS]` (no
+> se marcan) y se cierran, si toca, las dos casillas de `aspecto/5-cierre.md` y
+> la de `marca-del-medio.md`. Después, la fase 2.
+
 > ### LA TAREA EN CURSO, 2026-08-23: **EL FALLO DEL INSTALADOR `amd64` NO SE REPRODUCE, Y EL RELOJ QUE LO EXPLICA ES DE UBUNTU**
 >
 > Todo con su control en `MEDICIONES.md` §4.65 —la predicción comprometida en el
@@ -571,8 +598,12 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > ```
 > 1.  QUE LAS ISOs FUNCIONEN DE VERDAD   <- AQUI ESTAMOS
 >       a) el hierro amd64: la receta de arriba, en el portatil AMD A9
->       b) la vuelta unica arm64: branding 0.1.16 (era 0.1.15; el drop-in de gdm entro
->          el 2026-08-23 noche, §4.72), dos pasadas, instalar y MIRAR
+>       b) la vuelta unica arm64: branding 0.1.17 (era 0.1.16, y antes 0.1.15; el drop-in
+>          de gdm entro el 2026-08-23 noche, §4.72, y el desvio de la bellota el 24, §4.76),
+>          dos pasadas, instalar y MIRAR
+>          -> 2026-08-25: MITAD PAGADA. medios/encina-os-arm64.iso 63f360dd…, SEIS pasadas
+>             una huella (§4.79); arrancado en encina-entrega-63f360dd hasta «Disposicion
+>             del teclado». Faltan las cinco pantallas (Jorge), el verificador dentro y los [OJOS]
 > 2.  LA REFACTORIZACION ENTERA          tareas/refactorizacion.md, 12 tareas
 >       se ADELANTA a publicar, y sin la excepcion de las cinco
 >       la 1 (bancos/enlaces.sh) y la 12 (que es «profesional», escrito) van delante

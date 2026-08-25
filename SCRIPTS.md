@@ -3161,3 +3161,38 @@ existe, o porque el texto dejó de citar esa referencia.
 no está versionado no se comprueba, que es lo que evita que
 `medios/verificar-instalacion.sh` —la copia que `.gitignore` tapa— cuente dos
 veces.
+
+## Tres más, de la vuelta única `arm64` (2026-08-25, `MEDICIONES.md` §4.79)
+
+**59. EL `bash` DE macOS ES EL 3.2 Y, BAJO `set -u`, UN ARRAY VACÍO ES «unbound
+variable».** `"${A[@]}"` o `${A[*]}` con `A=()` matan la orden —y si la
+expansión está en el shell principal y no en una tubería, **matan el guion
+entero sin ni un `[FALLO]`**—. `fabricar-iso.sh` se quejó así de un `arm64`
+correcto: `MOD_XORRISO` sólo se llena en `amd64` (el `eltorito.img`), en `arm64`
+queda vacío, el `printf` de la lista esperada moría **antes de crear el fichero**
+y el paso 10 daba `[FALLO] … los 3 declarados:` con la lista **en blanco**. En
+`amd64` nunca mordió porque el array llevaba un elemento, y desde que el bloque
+existe (2026-08-22) no se había fabricado ningún `arm64`. **El idioma seguro es
+`${A[@]+"${A[@]}"}`** —y lo mismo con `[*]`—, probado en `/bin/bash` con vacío,
+uno y uno con espacio. Y la lección de método: **cuando el `[FALLO] `es de
+instrumento y la ISO ya está escrita, se reproduce la comprobación por fuera
+antes de tocar el guion** — la lista de cambiados hecha a mano dio exactamente
+los tres declarados, y las seis pasadas dieron una huella con y sin el arreglo.
+*Y la segunda mitad de la trampa:* el arreglo se hizo dos veces porque la
+primera vez busqué `[@]` y no `[*]`. `grep -n 'NOMBRE\[' ` sobre el array, no
+sobre la forma de la expansión.
+
+**60. EL HOOK DE `rtk` FILTRA TAMBIÉN `grep`, Y EN UNA TUBERÍA QUE ESCRIBE, LO
+FILTRADO ACABA EN EL FICHERO.** Un `grep -v … SHA256SUMS` cuya salida iba a
+`SHA256SUMS.nuevo` dejó dentro el resumen de `rtk` («`1 matches in 1F:` …») en
+vez de las líneas; lo cazó `shasum -c` («5 lines are improperly formatted»).
+Amplía §4.9d (`git`) y §4.77 (`diff`): **para medir Y para escribir**, ruta
+absoluta o `rtk proxy`. Ojo también con `echo ====` en `zsh`: una palabra que
+empieza por `=` se expande como orden y el bloque muere con `not found`.
+
+**61. `utmctl` NO VE UN BUNDLE RECIÉN FABRICADO MIENTRAS UTM ESTÁ ABIERTO.**
+`fabricar-vm-medio.py` deja el bundle perfecto en `Documents/` y `utmctl start`
+contesta `Virtual machine not found`. No es la 18 (registro con ruta obsoleta):
+UTM escanea la carpeta **al arrancar**. **`open -a UTM <bundle>.utm`** lo
+registra en el acto, sin reiniciar UTM ni tocar el `plist` del registro, y
+`utmctl list` lo lista con su nombre y su UUID.

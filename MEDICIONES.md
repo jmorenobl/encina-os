@@ -19074,3 +19074,216 @@ sí mismo**; se repite con `grep -v COMMAND=`. *(2)* `ssh` al Acer recién
 instalado dio `Host key verification failed` incluso con `accept-new`: la IP
 cargaba la clave de host de la instalación anterior en `known_hosts`;
 `ssh-keygen -R` y a correr.
+
+### 4.79 LA FASE 1b, MITAD PAGADA: el medio `arm64` con 0.1.17 existe y se reproduce —`63f360dd…`, SEIS pasadas en tres commits, una huella—, la deducción del GUID de §4.74 cobrada, y `fabricar-iso.sh` se quejaba de un `arm64` correcto por el `bash` 3.2 de macOS (2026-08-25)
+
+**Qué.** La fase 1b del orden del 2026-08-23: la vuelta única `arm64` con
+`encina-branding` 0.1.17. El ritual de los seis sitios ya estaba (§4.77) y el
+`amd64` ya se reproducía (`3d5d12a9…`); faltaba el `arm64`, que no se
+fabricaba desde `cd84d2ec…` (2026-08-22, con 0.1.15). Lo que sigue es lo
+medido, en el orden en que pasó, con lo que salió mal delante.
+
+#### (a) La ISO oficial `arm64`, traída y firmada — verificada en `encina-dev`
+
+No estaba en `medios/`. `traer-iso-oficial.sh --arq arm64 --verificador
+jorge@192.168.64.3` (el Mac no tiene `gpgv`; la VM sí, con el `ubuntu-keyring`):
+
+```
+[OK] firma correcta en jorge@192.168.64.3, y el control negativo falla como debe
+[OK] ubuntu-24.04.4-desktop-arm64.iso  c2610520bf582976…  (nombre DEDUCIDO del fichero firmado)
+[OK] bajada y comprobada contra la huella FIRMADA por Canonical      3 540 299 776 bytes, ~14 min a 4 MiB/s
+```
+
+*Mordida de instrumento:* la tarea en segundo plano del agente tiene un tope
+de 10 min y la descarga son 14; se cortó y se relanzó desligada (`nohup`), y
+`curl -C -` reanudó el `.parcial` donde iba. No afecta a la huella, que se
+comprueba entera al final.
+
+#### (b) Pasadas 1 y 2 (commit `c086466`): la ISO SE REPRODUCE y el guion dice que NO
+
+`construir-todo.sh` con `--vm 1EE16AEB…` (la enciende y la apaga él, trampa
+14), `--autofirma ~/Projects/encina-autofirma/salida`, árbol limpio:
+
+```
+pasada 1   63f360dd755251d10628e71405235979b5b5e13ebf43d9f7e089ecbc2563a1f5   3 721 265 152 bytes   rc=1
+pasada 2   63f360dd755251d10628e71405235979b5b5e13ebf43d9f7e089ecbc2563a1f5   3 721 265 152 bytes   rc=1
+cmp p1 p2                       sin salida: IGUALES
+cmp p1 vs cd84d2ec (0.1.15)     distintas                       <- el control de la comparación
+/usr/bin/diff registros         solo los directorios de mktemp
+paso 3 (encina-dev)             encina-branding_0.1.17_all.deb  6929df0e…   <- la misma huella que §4.76 y §4.77
+duración                        ~3,5 min por pasada (el amd64 tarda bastante más: la ISO es la mitad)
+```
+
+Y las dos pasadas terminan en **`[FALLO]`**, el mismo:
+
+```
+== 10. el medio entero, fichero a fichero, contra la oficial
+[OK]    leidas 501 entradas de la oficial y 533 de la nuestra
+[OK]    32 ficheros anadidos, ni uno mas, y ninguno perdido
+[FALLO] los ficheros modificados no son los 3 declarados:
+                                                             <- la lista, EN BLANCO
+```
+
+**Antes de atribuir, se reprodujo el paso 10 a mano** —el mismo mapa `md5` por
+LBA que usa el guion, sobre la oficial y sobre `p1`— y la lista de cambiados
+de verdad es **exactamente `/.disk/info`, `/boot/grub/grub.cfg` y
+`/md5sum.txt`**, los tres declarados (`diff` contra la lista esperada: rc 0).
+O sea: **el medio está bien y la comprobación miente.** Y el registro dice por
+dónde, en una línea de `stderr` pegada a otra (la salida de `fabricar-iso.sh`
+pasa por `sed 's/^/        /'`, `stderr` no):
+
+```
+imagen/fabricar-iso.sh: line 1263: MOD_XORRISO[@]: unbound variable
+diff: …/cambiados.esperados: No such file or directory                 <- en el registro de la pasada 2
+```
+
+**La causa, medida con su control:** el `bash` de macOS es el **3.2.57**
+(`/usr/bin/env bash` → `/bin/bash`; no hay otro) y, bajo `set -u`, **expandir
+un array vacío con `"${A[@]}"` es «unbound variable»**. El bloque 10bis declara
+`MOD_XORRISO=()` y sólo lo llena en `amd64` (el `eltorito.img`, §4.64); en
+`arm64` queda vacío, el `printf` de `cambiados.esperados` muere **antes de
+crear el fichero** (por eso el `diff` dice «No such file» y la lista sale en
+blanco) y el `diff -q` falla. Reproducido aislado en `/bin/bash`:
+
+```
+array vacío:    printf … "${MOD_XORRISO[@]}"  -> unbound variable, 0 líneas, rc 1
+array de uno:   el mismo bloque                 -> 4 líneas, rc 0          <- el caso amd64: por eso nunca mordió
+```
+
+**Desde cuándo:** el bloque entró en `b293269` (2026-08-22). Ese commit dice
+que «el arm64 sigue dando `cd84d2ec…`», así que esas pasadas se hicieron
+**antes** de que el bloque existiera en el árbol —deducción: el commit es uno
+y el trabajo fue de horas—. Lo medido es que desde `b293269` **no se ha
+fabricado ningún `arm64`** hasta hoy, y hoy mordió a la primera.
+
+**Y lo que esto enseña del método:** la reproducibilidad **no dependía del
+guion de comprobación** —la ISO ya estaba escrita cuando el paso 10 se quejó—
+y por eso las seis huellas de esta sección son una. Un `[FALLO]` de instrumento
+con la ISO ya fabricada se distingue de un fallo del medio **reproduciendo la
+comprobación por fuera**, que es lo que se hizo antes de tocar el guion.
+
+#### (c) Pasadas 3 y 4 (commit `3e1ed01`): arreglada UNA expansión y había DOS
+
+Arreglo: `${MOD_XORRISO[@]+"${MOD_XORRISO[@]}"}` en el `printf` (el idioma
+seguro en 3.2: expande a nada si el array está vacío y a los elementos, uno a
+uno, si no). Probado en `/bin/bash` con vacío (3 líneas), uno (4) y uno con
+espacio (sigue siendo uno). Dos pasadas más:
+
+```
+pasada 3   63f360dd…   rc=1     line 1275: MOD_XORRISO[*]: unbound variable
+pasada 4   63f360dd…   rc=1     (la misma)
+cmp p3 p4  iguales;  cmp p3 p1  iguales
+```
+
+Se me pasó la **segunda** expansión, `${MOD_XORRISO[*]}` en el `ok` de la
+línea siguiente —busqué `[@]` y no `[*]`—, **y es peor**: vive en el shell
+principal y no en una tubería, así que `bash` 3.2 **aborta el guion entero**
+sin ni un `[FALLO]` propio (sólo el `fabricar-iso.sh no paso` del padre). Las
+otras expansiones `[*]` del guion son de `MODIFICADOS`, que nunca está vacío.
+
+#### (d) Pasadas 5 y 6 (commit `e3950f4`): LAS DOS EN VERDE, y seis pasadas una huella
+
+```
+pasada 5   63f360dd755251d10628e71405235979b5b5e13ebf43d9f7e089ecbc2563a1f5   rc=0
+pasada 6   63f360dd755251d10628e71405235979b5b5e13ebf43d9f7e089ecbc2563a1f5   rc=0
+cmp p5 p6                  sin salida: IGUALES
+cmp p5 vs cd84d2ec         distintas                     <- control
+cmp p5 vs p1               sin salida: IGUALES           <- tres commits que sólo difieren en la COMPROBACIÓN, misma ISO
+[OK]  modificados exactamente 3: /md5sum.txt /boot/grub/grub.cfg /.disk/info
+[OK]  el medio lleva exactamente lo pedido (capa volid info menu): 1 1 1 1
+volid: EncinaOS 0.2.1 arm64
+```
+
+**Seis pasadas, tres commits, una huella.** La definición de terminado de
+`construir-todo.sh` —dos pasadas seguidas, misma huella, `cmp` mudo— está
+pagada con el guion en verde (5 y 6), y las cuatro anteriores son el control
+de que la huella no dependía del arreglo.
+
+#### (e) La deducción de §4.74, COBRADA: el GUID fijo de GPT NO toca el `arm64`
+
+§4.74(b) decía «el arm64, que es solo MBR, no debería cambiar» y era deducción.
+Medido con `xorriso -report_system_area plain` sobre los tres medios:
+
+```
+                                     resumen                                           líneas «GPT»
+oficial arm64 (c2610520)             MBR cyl-align-all   part 1: 64/6900480  part 2 (0xef): 6900544/13504     0
+arm64 anterior (cd84d2ec, 0.1.15)    MBR cyl-align-all   part 1: 64/7253120  part 2 (0xef): 7253184/14208     0
+arm64 NUEVO (63f360dd, 0.1.17)       MBR cyl-align-all   part 1: 64/7253120  part 2 (0xef): 7253184/14208     0
+CONTROL: amd64 vigente (3d5d12a9)    MBR protective-msdos-label grub2-mbr cyl-align-off GPT                     17
+                                     GPT disk GUID 162d4f4cf5319d4ab601fd25f37e35b9  (el fijo de §4.74c)
+```
+
+El lector sí ve la GPT donde la hay (17 líneas y el GUID de Encina en el
+`amd64`) y **no ve ninguna en el `arm64`**, cuya tabla MBR es idéntica a la del
+medio anterior. La opción actúa «sobre una GPT que emerja» y en `arm64` no
+emerge ninguna: **medido, ya no deducido.** *(La comparación de huellas
+contra `cd84d2ec…` no valía para esto, como ya decía la tarea: los `.deb`
+cambiaron; por eso se mira el área de sistema y no la huella.)*
+
+#### (f) Dónde queda cada cosa, y dos mordidas de instrumento más
+
+```
+medios/encina-os-arm64.iso        63f360dd…   3 721 265 152 bytes   <- EL VIGENTE arm64, con 0.1.17 (era p5)
+medios/encina-os-amd64.iso        3d5d12a9…                         <- el vigente amd64 (§4.77), intacto
+medios/encina-os-libnss3.iso      cd84d2ec…                         <- el arm64 anterior (0.1.15), del que nació encina-E4-entrega; su borrado es de Jorge
+medios/ubuntu-24.04.4-desktop-{arm64,amd64}.iso                     <- las dos entradas, firmadas
+SHA256SUMS                        regenerado con lo que HAY: 5 líneas, las cinco huellas conocidas presentes
+p1…p6                             borradas: eran byte a byte la misma
+```
+
+- **El hook de `rtk` también filtra `grep`, y esta vez ESCRIBIÓ en un fichero:**
+  un `grep -v … SHA256SUMS` dentro de una tubería que redirigía a
+  `SHA256SUMS.nuevo` dejó dentro el *resumen* de `rtk` («1 matches in 1F…»)
+  en vez de las líneas. Se cazó porque `shasum -c` dijo «5 lines are
+  improperly formatted». El fichero se regeneró desde cero con `shasum` sobre
+  los cinco ISO. La regla de §4.9d y §4.77 se amplía: **`rtk` filtra `git`,
+  `diff` y `grep`; y en una tubería que ESCRIBE, lo filtrado acaba en el
+  fichero.** Para medir o para escribir: ruta absoluta (`/usr/bin/grep`) o
+  `rtk proxy`.
+- **`utmctl` no ve un bundle recién fabricado mientras UTM está abierto**
+  (`Virtual machine not found` a `utmctl start`, con el bundle en disco y su
+  `plist` bien). No es la trampa 18 (registro con ruta obsoleta): es que UTM
+  sólo escanea `Documents/` al arrancar. **`open -a UTM <bundle>.utm`** lo
+  registra sin reiniciar UTM, y `utmctl list` lo lista en el acto.
+
+#### (g) El medio arranca en el banco: primera pantalla en español, con la marca
+
+`fabricar-vm-medio.py --iso medios/encina-os-arm64.iso --nombre
+encina-entrega-63f360dd`: sufijo `C0`, 8 correctas / 0 fallos, enlace duro
+(inodo compartido, 2 enlaces), disco de 40 GiB disperso a 0 bloques, sin
+CIDATA, `efi_vars.fd` de `arm64`, y el control de colisiones ve la conocida
+(`F6223E90…` en `encina-dev` y `encina-limpia-respaldo`). Arrancada a las
+10:55:28Z con ninguna otra encendida; captura a los ~2 min, leída por OCR y
+**mirada** (`design/capturas/despues/entrega-63f360dd/00-medio-instalador-teclado.png`):
+**«Disposición del teclado — Elija la disposición del teclado», en español,
+sobre el fondo de Encina, con la bellota asomando abajo a la izquierda y el
+reloj en «25 de ago 10:57».** Es la fila d de la receta en `arm64`, sin manos.
+
+**Lo que sigue son las manos de Jorge (K2), y está preparado:** las cinco
+pantallas en `encina-entrega-63f360dd`. Para sacar el verificador de dentro sin
+`ssh` ni contraseñas, el **buzón HTTP** de §4.65(i) está levantado en el Mac
+(`192.168.64.1:8099`, sirve `medios/` y guarda lo que le llega por `POST`), con
+sus dos primeros controles pagados —**vacío enseñado**, y **entra un fichero
+del anfitrión** con la cadena `XYZZY-9f3a`—; el tercero (uno del invitado,
+desde su IP) lo paga la primera línea que Jorge teclee. En la máquina
+instalada, en un terminal:
+
+```
+wget http://192.168.64.1:8099/verificar-instalacion.sh
+sudo bash verificar-instalacion.sh --forma e3 --visibles 27 > /tmp/verif.txt 2>&1; echo rc=$? >> /tmp/verif.txt
+wget --post-file /tmp/verif.txt -O /dev/null http://192.168.64.1:8099/verif.txt
+```
+
+*(`medios/verificar-instalacion.sh` es byte a byte `imagen/verificar-instalacion.sh`,
+`cmp` mudo, con la 8.2 reescrita al desvío de §4.78; en `arm64` son `--visibles 27`.)*
+
+#### (h) Lo que NO contesta, y es la otra mitad de la fase
+
+- **Que la instalación termine y la máquina arranque de su disco**, y el
+  **verificador dentro con 0 fallos**: cuando Jorge conteste las pantallas.
+- **Los `[OJOS]`, que son lo que esta vuelta compra** (cabecera de
+  `tareas/aspecto/5-cierre.md`): se listan cuando llegue el verificador, no se
+  marcan.
+- Las casillas de `5-cierre.md` («Reconstruir la ISO…» e «Instalar desde cero y
+  mirar…») y la de `marca-del-medio.md`: la primera tiene hoy su enmienda con
+  la huella nueva; las otras dos las cierra quien mira.
