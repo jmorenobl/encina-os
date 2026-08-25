@@ -50,7 +50,14 @@
       medidas (`MEDICIONES.md` §4.35i). Mientras no haya una sexta, toda casilla
       `[OJOS]` que exija pulsar necesita una mano — y eso hay que tenerlo en cuenta
       **al escribir la casilla**, no al llegar a ella.
-- [ ] **Hierro AMD: el saludador nace sobre `simpledrm` y muere al llegar `amdgpu`.**
+- [x] **Hierro AMD: el saludador nace sobre `simpledrm` y muere al llegar
+      `amdgpu`.** **CERRADA EL 2026-08-25 (`MEDICIONES.md` §4.78, tercera
+      enmienda): la instalación limpia desde el medio `3d5d12a9…` (0.1.17) en
+      el Acer arranca TRES veces seguidas con saludador** —contado en el
+      journal por `ssh`: `session opened for user gdm` en los tres, **cero**
+      `hash_table != NULL`, y el aviso de `udev-settle` en cada uno, o sea el
+      drop-in del paquete corriendo— sin tocar nada a mano: el remedio viene
+      del `.deb` y del medio, que era la condición.
       Nueva el 2026-08-23, del Acer Aspire ES1-524 (`MEDICIONES.md` §4.70b,
       enmienda): 0 de 5 arranques con saludador, y 3 de 3 con
       `echo amdgpu > /etc/modules-load.d/amdgpu.conf`. Tres capas, ninguna de

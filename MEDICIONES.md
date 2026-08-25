@@ -19053,6 +19053,20 @@ ninguna mató nada. La casilla «Hierro AMD» pide **tres seguidos** y no se
 marca con dos: falta un reinicio, que se pide en vez de ejecutarse — la
 máquina está en uso delante de Jorge.
 
+**TERCERA ENMIENDA DEL MISMO DÍA — el tercer arranque, contado: «Hierro AMD»
+SE CIERRA.** Jorge reinició y el journal dice:
+
+```
+arranque -2: saludador=1  hash_table-abortos=0  udev-settle corrio
+arranque -1: saludador=2  hash_table-abortos=0  udev-settle corrio
+arranque  0: saludador=1  hash_table-abortos=0  udev-settle corrio
+```
+
+Tres arranques de la instalación limpia, saludador en los tres, cero abortos
+de mutter, el drop-in trabajando en cada uno — la letra de la casilla de
+`tareas/sueltas.md`, cumplida y **marcada** con esta fecha. En la máquina
+donde esto era 0 de 5 (§4.70b), el medio tal cual da 3 de 3 sin ninguna mano.
+
 **Y dos mordidas de instrumento, apuntadas porque volverán:** *(1)* el primer
 conteo de aserciones salió 11 y 9 porque `sudo` registra en el journal la
 línea de la orden, que contenía la palabra `assertion`: **el grep se contó a
