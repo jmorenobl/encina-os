@@ -557,11 +557,37 @@ if esta "$TEMA_ENC"; then
 else
     fallo "no esta $TEMA_ENC: el tema de iconos de Encina no lo instala nadie"
 fi
-# 8.2 y NO se ha pisado el de Yaru, que es lo que R5 prohibe
+# 8.2 y el de Yaru NO SE HA PISADO: se ha DESVIADO, que es el mecanismo que
+#     R5 prescribe (0.1.17, MEDICIONES.md 4.76; el porque entero, en el
+#     preinst de encina-branding). Hasta 0.1.16 esta comprobacion exigia que
+#     la ruta siguiera siendo de yaru-theme-icon, y con 0.1.17 eso dio el
+#     [FALLO] esperable en el primer Acer instalado del medio nuevo (4.78):
+#     el panel de Apariencia escribe icon-theme='Yaru-<acento>' al tocar el
+#     modo oscuro y un valor de usuario gana al override, asi que la bellota
+#     no puede depender de icon-theme. Lo que R5 protege sigue protegido: el
+#     fichero de yaru-theme-icon no se destruye ni se pisa, espera INTACTO
+#     en .distrib y la purga lo devuelve.
 Y_GRID=/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg
-DUENO_Y=$(dpkg -S "$Y_GRID" 2>/dev/null | cut -d: -f1)
-igual "el icono de Yaru sigue siendo de Yaru (R5, no lo hemos pisado)" \
-      "yaru-theme-icon" "${DUENO_Y:-<sin dueno>}"
+DIV_Y=$(dpkg-divert --listpackage "$Y_GRID" 2>/dev/null)
+igual "el icono de Yaru esta DESVIADO por nosotros (R5 via dpkg-divert, 0.1.17)" \
+      "encina-branding" "${DIV_Y:-<sin desvio>}"
+H_YG=$(md5sum "$Y_GRID" 2>/dev/null | cut -d" " -f1)
+H_EG=$(md5sum /usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg 2>/dev/null | cut -d" " -f1)
+if [ -n "$H_YG" ] && [ "$H_YG" = "$H_EG" ]; then
+    ok "el fichero servido en la ruta de Yaru es el nuestro (md5 $H_YG)"
+else
+    fallo "el fichero en la ruta de Yaru NO es el nuestro" \
+"Yaru:   ${H_YG:-<no legible>}
+Encina: ${H_EG:-<no legible>}"
+fi
+DESTINO_D=$(readlink "$Y_GRID.distrib" 2>/dev/null)
+case "$DESTINO_D" in
+    *start-here-symbolic.svg)
+        ok "el original de Yaru sigue entero en .distrib -> $DESTINO_D" ;;
+    *)
+        fallo "el original de Yaru no espera en .distrib como enlace a start-here" \
+"$(ls -l "$Y_GRID.distrib" 2>&1)" ;;
+esac
 
 # 8.3 el valor por defecto del sistema, que es lo que heredaria un usuario
 #     nuevo. Se pregunta CON XDG_CURRENT_DESKTOP puesto porque Ubuntu fija

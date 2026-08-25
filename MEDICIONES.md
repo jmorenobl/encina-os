@@ -19009,6 +19009,54 @@ valores de usuario distintos, los dos derrotando al override, y la bellota
 sirve igual con ambos — que es exactamente la propiedad que el desvío compra:
 **cubre todos los acentos y sus oscuros a la vez** (§4.75a).
 
-Quedan los remates 2 y 3 (el verificador dentro y los tres arranques
+~~Quedan los remates 2 y 3 (el verificador dentro y los tres arranques
 contados); `openssh-server` ya está en el Acer (`10.32.131.54`) y se cobran
-por `ssh` en cuanto haya una clave autorizada.
+por `ssh` en cuanto haya una clave autorizada.~~
+
+**SEGUNDA ENMIENDA DEL MISMO DÍA — los remates, cobrados por `ssh` (clave
+autorizada con la contraseña que Jorge dictó; huella de la máquina:
+`jorge-Aspire-ES1-524`, `x86_64`, `encina-branding 0.1.17`):**
+
+**El desvío, medido en el hierro por instrumento** (hasta aquí era testimonio):
+`dpkg-divert --listpackage` → `encina-branding`; fichero servido `7e26039f…`
+(el mismo md5 que en `encina-dev`, §4.76); `.distrib` → enlace de 2024 a
+`start-here-symbolic.svg` intacto; caché de Yaru más nueva que el SVG; los
+cuatro paquetes en sus versiones (0.1.17 / 0.2.1 / 0.2.1 / 1.9.1+encina4),
+instalados **sin red**; `/etc/encina-estado` → `COMPLETO`, instalación
+terminada `2026-08-25T00:39:08Z`.
+
+**El remate 2 — el verificador dentro, y el `[FALLO]` que hizo falta:** la
+primera pasada dio `62/1/0/0`, y el fallo era **del instrumento con la
+especificación vieja**: la 8.2 exigía `dpkg -S → yaru-theme-icon` («no lo
+hemos pisado»), escrita antes del desvío. Con 0.1.17 esa ruta está desviada
+**a propósito** y R5 se respeta por el mecanismo que R5 prescribe. La 8.2 se
+reescribió a la especificación nueva —desviado por `encina-branding`, fichero
+servido por huella contra el de `Encina/`, original en `.distrib`— y la
+segunda pasada:
+
+```
+verificar-instalacion.sh --forma e3 --visibles 28, como root, en el Acer:
+[OK] 65   [FALLO] 0   [AVISO] 0   [OMIT] 0
+```
+
+El `[FALLO]` de la primera pasada queda como el control gratis: la
+comprobación vieja demostró saber quejarse ante el desvío antes de enseñarle
+qué es lo correcto ahora.
+
+**El remate 3 — arranques con saludador: 2 de 2, falta el tercero.**
+`journalctl --list-boots` da dos arranques desde la instalación; en ambos,
+`session opened for user gdm` y el aviso de `udev-settle` (el drop-in del
+paquete corriendo). Las «aserciones» del journal, miradas una a una: ruido
+benigno de `gdm3` (`GDM_IS_REMOTE_DISPLAY`, al añadir/quitar displays) y de
+mutter apilando ventanas — **ninguna es el `hash_table != NULL`** de §4.70b y
+ninguna mató nada. La casilla «Hierro AMD» pide **tres seguidos** y no se
+marca con dos: falta un reinicio, que se pide en vez de ejecutarse — la
+máquina está en uso delante de Jorge.
+
+**Y dos mordidas de instrumento, apuntadas porque volverán:** *(1)* el primer
+conteo de aserciones salió 11 y 9 porque `sudo` registra en el journal la
+línea de la orden, que contenía la palabra `assertion`: **el grep se contó a
+sí mismo**; se repite con `grep -v COMMAND=`. *(2)* `ssh` al Acer recién
+instalado dio `Host key verification failed` incluso con `accept-new`: la IP
+cargaba la clave de host de la instalación anterior en `known_hosts`;
+`ssh-keygen -R` y a correr.
