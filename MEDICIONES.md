@@ -18769,6 +18769,9 @@ pero el panel escribe `Yaru-<acento>` y `Yaru` a secas tampoco es `Encina`.
 - **Qué escribe exactamente el panel en modo oscuro** (¿`Yaru-sage-dark`?). Se
   lee con `dconf read` desde la sesión gráfica cuando se implemente; no cambia
   el arreglo, porque (a) enseña que toda cadena muere en `Yaru`.
+  **CONTESTADO EL 2026-08-25 en el Acer (§4.78, enmienda): `'Yaru-sage-dark'`**
+  — la conjetura era exacta, y la cadena `Yaru-sage-dark → Yaru-sage →
+  Yaru-dark → … → Yaru` muere donde el desvío espera.
 - **Que el desvío funcione.** Eso es la implementación, con el control ya
   escrito en la casilla: oscuro, claro, salir, entrar, y que la bellota siga —y
   su negativo: sin desvío y con `icon-theme='Yaru-sage'` a mano, la de Ubuntu.
@@ -18986,3 +18989,26 @@ con `SHA256SUMS` publicado al lado— e instaló en el Acer Aspire ES1-524
 
 Cuando lleguen, esta sección se amplía con enmienda fechada; las casillas las
 marca quien las mira.
+
+**ENMIENDA DEL MISMO DÍA — LA OTRA MITAD DE LA BELLOTA, PAGADA, con las tres
+lecturas dictadas por Jorge desde el Acer:**
+
+```
+dconf read /org/gnome/desktop/interface/icon-theme
+  a) antes                          -> 'Yaru-sage'
+  b) en oscuro                      -> 'Yaru-sage-dark'   <- el pendiente de §4.75: contestado
+  c) tras claro + CERRAR SESION y entrar -> 'Yaru-sage'
+y la bellota sigue en el dock (mirado)
+```
+
+La letra de la casilla está cumplida entera —oscuro, claro, cerrar sesión,
+entrar, bellota, `dconf` antes y después— y **la casilla de
+`tareas/aspecto/5-cierre.md` queda marcada** con esta fecha. El panel escribe
+el acento con `-dark` en oscuro y lo deja en `Yaru-sage` al volver: dos
+valores de usuario distintos, los dos derrotando al override, y la bellota
+sirve igual con ambos — que es exactamente la propiedad que el desvío compra:
+**cubre todos los acentos y sus oscuros a la vez** (§4.75a).
+
+Quedan los remates 2 y 3 (el verificador dentro y los tres arranques
+contados); `openssh-server` ya está en el Acer (`10.32.131.54`) y se cobran
+por `ssh` en cuanto haya una clave autorizada.

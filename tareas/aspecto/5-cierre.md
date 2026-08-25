@@ -116,7 +116,15 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       repositorio. Eso no es un fallo — es lo que pasa —, pero hay que escribirlo
       donde esa huella esté citada, que son varios sitios.
 
-- [ ] **Que el modo oscuro no se lleve la bellota.** Nueva el 2026-08-23, y la
+- [x] **Que el modo oscuro no se lleve la bellota.** **PAGADA ENTERA EL
+      2026-08-25 en el hierro, mirada por Jorge (`MEDICIONES.md` §4.78,
+      enmienda):** en el Acer instalado sin red desde el medio `3d5d12a9…`
+      (0.1.17), el ciclo completo de la letra —oscuro, claro, **cerrar sesión,
+      entrar**— y la bellota sigue, con el `dconf read …/icon-theme` enseñado
+      en los tres momentos: `'Yaru-sage'` antes, **`'Yaru-sage-dark'` en
+      oscuro** —el pendiente de §4.75, contestado—, `'Yaru-sage'` después. El
+      valor de usuario queda escrito y ya no importa: la bellota no depende de
+      él (el desvío de §4.76). Nueva el 2026-08-23, y la
       encontró el hierro (`MEDICIONES.md` §4.70c): en el Acer, Jorge probó el modo
       oscuro en Ajustes y lo volvió a dejar en claro, y **el botón de la rejilla
       pasó a ser el logotipo de Ubuntu y así se quedó**. El panel «Apariencia»
