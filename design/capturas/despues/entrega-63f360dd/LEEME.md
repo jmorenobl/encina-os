@@ -2,11 +2,23 @@
 
 Máquina fabricada con `scripts/fabricar-vm-medio.py` desde
 `medios/encina-os-arm64.iso` (`63f360dd…`, `encina-branding` 0.1.17), forma E3,
-sin CIDATA (`MEDICIONES.md` §4.79g).
+sin CIDATA. Las cinco pantallas las contestó Jorge; el verificador y las
+capturas de sesión las sacó el agente por teclas y por el buzón HTTP
+(`MEDICIONES.md` §4.79 y su enmienda).
 
 | Fichero | Qué es | Quién lo ha mirado |
 |---|---|---|
-| `00-medio-instalador-teclado.png` | La sesión viva del MEDIO a los ~2 min de arrancar: «Disposición del teclado» en español, fondo de Encina, la bellota abajo a la izquierda, reloj «25 de ago 10:57». Leída por OCR y mirada por el agente | el agente; `[OJOS]` de Jorge pendiente |
+| `00-medio-instalador-teclado.png` | La sesión viva del MEDIO a los ~2 min: «Disposición del teclado» en español, fondo de Encina, la bellota abajo a la izquierda | el agente; veredicto de Jorge pendiente |
+| `04-escritorio.png` | La máquina INSTALADA, tras `exit` del terminal: fondo, «ENCINA OS / Versión 24.04 LTS / Edición ‘La Mancha’», dock con la bellota; sin bienvenida de Ubuntu | el agente; veredicto de Jorge pendiente |
+| `05-rejilla.png` | `Super+A`: la bellota iluminada, AutoFirma en la rejilla, nombres en español | el agente; veredicto de Jorge pendiente |
+| `06-archivos.png` | `Alt+F2` → `nautilus`: carpetas en salvia; el medio «EncinaOS 0…» montado | el agente; veredicto de Jorge pendiente |
+| `verificar-instalacion-e3-27.txt` | La salida entera del verificador dentro, como root: **65 / 0 / 0 / 0, rc=0** | instrumento |
+| `buzon-control-invitado-hostname.txt` | El tercer control del buzón: `/etc/hostname` del invitado, llegado desde `192.168.64.26` antes de la medición | instrumento |
 
-Las seis del «después» de la máquina instalada —las de la casilla de
-`tareas/aspecto/5-cierre.md`— se toman cuando Jorge conteste las cinco pantallas.
+**Faltan `01-firmware`, `02-pantalla-apagada` y `03-gdm`**: las toma
+`capturar-aspecto.sh` reiniciando la VM, y no se reinició sin preguntar. Plymouth
+aquí sigue sin veredicto posible (§4.63s); en hierro `amd64` ya está cobrado
+(§4.70a).
+
+**El veredicto de Jorge NO ESTÁ DADO.** Estas capturas se toman, se guardan y se
+ponen delante.

@@ -180,6 +180,13 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       `design/capturas/despues/entrega-63f360dd/`—. Las cinco pantallas, el
       verificador dentro (`--visibles 27`, por el buzón HTTP) y los `[OJOS]` son
       de Jorge; la casilla no se toca hasta entonces.**
+      **MISMO DÍA, MÁS TARDE (§4.79, enmienda): Jorge contestó las cinco
+      pantallas, la máquina levantó de su disco, y el verificador dentro —por el
+      buzón, sin `ssh`— dio `[OK] 65 [FALLO] 0 [AVISO] 0 [OMIT] 0`. Tres de las
+      seis pantallas están tomadas y miradas por el agente
+      (`design/capturas/despues/entrega-63f360dd/`: escritorio, rejilla,
+      archivos); faltan las tres del arranque en frío, que reinician la VM. La
+      casilla la cierra Jorge cuando mire.**
       *Hecha cuando:* una instalación limpia enseña las seis pantallas con la
       identidad puesta, mirado por una persona, y el verificador da 0 fallos.
       **INTENTADA EL 2026-08-17 Y NO SE PUDO: NO HAY INSTALACIÓN**

@@ -421,12 +421,16 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > y un array vacío bajo `set -u` (trampa 59). Las cuatro pasadas «rojas» tienen la
 > misma huella que las dos verdes: la ISO no dependía del arreglo.
 >
-> **LO QUE FALTA ES TUYO (K2):** las cinco pantallas en `encina-entrega-63f360dd`,
-> y dentro, con la máquina instalada, las tres líneas de §4.79(g) — `wget` del
-> verificador desde el buzón `192.168.64.1:8099`, `--forma e3 --visibles 27`
-> como root, y `wget --post-file` de vuelta—. Con eso se listan los `[OJOS]` (no
-> se marcan) y se cierran, si toca, las dos casillas de `aspecto/5-cierre.md` y
-> la de `marca-del-medio.md`. Después, la fase 2.
+> **Y MÁS TARDE EL MISMO DÍA (§4.79, enmienda): Jorge contestó las cinco
+> pantallas, la máquina levantó, y el verificador dentro dio 65 / 0 / 0 / 0**
+> —tecleado por el agente, salida por el buzón con sus tres controles, la
+> contraseña de Jorge—. Tres pantallas de sesión tomadas y miradas
+> (`design/capturas/despues/entrega-63f360dd/`).
+>
+> **LO QUE QUEDA ES TUYO:** mirar `00`, `04`, `05` y `06` y dar el veredicto; si
+> quieres las tres del arranque en frío, `capturar-aspecto.sh` reinicia la VM.
+> Con el veredicto se cierran, si toca, las dos casillas de `aspecto/5-cierre.md`
+> y la de `marca-del-medio.md`. Después, la fase 2.
 
 > ### LA TAREA EN CURSO, 2026-08-23: **EL FALLO DEL INSTALADOR `amd64` NO SE REPRODUCE, Y EL RELOJ QUE LO EXPLICA ES DE UBUNTU**
 >

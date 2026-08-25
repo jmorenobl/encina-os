@@ -19287,3 +19287,69 @@ wget --post-file /tmp/verif.txt -O /dev/null http://192.168.64.1:8099/verif.txt
 - Las casillas de `5-cierre.md` («Reconstruir la ISO…» e «Instalar desde cero y
   mirar…») y la de `marca-del-medio.md`: la primera tiene hoy su enmienda con
   la huella nueva; las otras dos las cierra quien mira.
+
+**ENMIENDA DEL MISMO DÍA — LA OTRA MITAD, PAGADA CON LAS MANOS DE JORGE Y EL
+VERIFICADOR DENTRO: 65 / 0 / 0 / 0, y tres de las seis pantallas miradas.**
+
+Jorge contestó las cinco pantallas y la máquina levantó de su disco con un
+terminal abierto (`encina@encina-QEMU-Virtual-Machine:~$`). El resto lo hizo el
+agente **sin `ssh` y sin la contraseña**, tecleando con `teclear-vm.sh`
+(capturando y leyendo la pantalla **antes de cada Intro**) y sacando la salida
+por el buzón. Como desde el teclado no llegan `>`, `|` ni `"` (trampa 34), las
+redirecciones viven en un guion que el buzón sirve, `medios/envia.sh`:
+
+```
+cd /tmp; B=http://192.168.64.1:8099
+wget -q --post-file /etc/hostname -O /dev/null "$B/control-invitado-hostname"     # 3er control del buzon, ANTES de medir
+wget -q -O verificar-instalacion.sh "$B/verificar-instalacion.sh"
+{ sha256sum verificar-instalacion.sh; hostname; uname -m; date -u; id -un; } > verif.txt
+bash verificar-instalacion.sh --forma e3 --visibles 27 >> verif.txt 2>&1; echo "rc=$?" >> verif.txt
+wget -q --post-file /tmp/verif.txt -O /dev/null "$B/verif.txt"
+```
+
+Tecleado en la VM: `wget 192.168.64.1:8099/envia.sh` (el buzón registró el
+`GET` desde `192.168.64.26`, la IP del invitado), `sudo bash envia.sh`, y **la
+contraseña la escribió Jorge** en la ventana. Lo que llegó al buzón:
+
+```
+20260825T123504Z-192.168.64.26-control-invitado-hostname   encina-QEMU-Virtual-Machine   <- el 3er control: del invitado, desde su IP
+20260825T123506Z-192.168.64.26-verif.txt                   135 líneas
+  huella del verificador traído: 93aebef057174f90…  (= la de medios/ e imagen/, cmp mudo)
+  máquina: encina-QEMU-Virtual-Machine  aarch64  2026-08-25 12:35:04 UTC  root
+  testigos: instalador 12:12:38Z, in-target 12:12:38Z, seed «llego al final» 12:14:32Z estado=COMPLETO
+  [OK] 65   [FALLO] 0   [AVISO] 0   [OMIT] 0        rc=0
+```
+
+Los tres controles del buzón de §4.65(i), pagados en orden: vacío enseñado
+(10:56Z), un fichero del anfitrión con `XYZZY-9f3a`, uno del invitado desde su
+IP. La salida entera está en
+`design/capturas/despues/entrega-63f360dd/verificar-instalacion-e3-27.txt`.
+**Es el mismo 65/0 que el Acer dio en `amd64` (§4.78), ahora en `arm64` y desde
+el medio `63f360dd…`**: las 27 visibles cuadran, Firefox 154 nativo de Mozilla,
+el PDF atado, el tema de iconos nuestro y el desvío de la bellota con su
+original en `.distrib`.
+
+**Las pantallas de sesión, tomadas con teclas y MIRADAS por el agente** (en
+`design/capturas/despues/entrega-63f360dd/`; el veredicto es de Jorge):
+
+| | qué se ve | lo que dice del producto |
+|---|---|---|
+| `04-escritorio.png` | fondo de Encina, «ENCINA OS / Versión 24.04 LTS / Edición ‘La Mancha’», dock con Firefox, Archivos, AutoFirma, Ayuda, el medio, el Centro de aplicaciones y **la bellota**; ninguna bienvenida de Ubuntu | la identidad, entera |
+| `05-rejilla.png` | `Super+A`: **la bellota iluminada** en el dock, AutoFirma en la rejilla, y los nombres **en español** (Actualiz…, Relojes, Editor d…, Calculad…, Configur…, Escáner…, Soporte…, Terminal, Utilidades) | el `[OJOS]` del verificador («si los nombres se ven en español en una sesión de escritorio»): **sí** |
+| `06-archivos.png` | `Alt+F2` → `nautilus`: carpetas **en salvia**, no berenjena; el medio «EncinaOS 0…» en la barra lateral | el acento `Yaru-sage` trabajando |
+
+*(Efecto secundario inocuo: `envia.sh` quedó en `~` del usuario `encina`,
+porque el `wget` se tecleó en la carpeta personal; se ve en `06`.)*
+
+**Lo que queda, y a quién le toca:**
+
+- **Las tres pantallas del arranque en frío** (`01-firmware`, `02-Plymouth`,
+  `03-GDM`): las toma `capturar-aspecto.sh`, que **reinicia la VM**; no se hizo
+  sin preguntar porque la máquina estaba en uso. Plymouth en esta VM seguirá
+  siendo `[OJOS]` sin veredicto (§4.63s: las dos hipótesis dan la misma
+  captura); el de verdad ya está cobrado en hierro `amd64` (§4.70a).
+- **El veredicto de Jorge** sobre `04`–`06` y sobre `00` (la sesión viva del
+  medio): con él se cierran las dos casillas de `aspecto/5-cierre.md` y la de
+  `marca-del-medio.md`. El agente no las marca.
+- **`valide.redsara.es`**: el `[OJOS]` de la firma, que va en un clon efímero
+  (§9.1) y no en esta máquina.
