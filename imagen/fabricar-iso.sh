@@ -1260,7 +1260,10 @@ $(printf '%s\n' "$FUERA" | head -20)"
     ok "$ELTORITO: cambia, y solo en la boot-info-table (LBA $LBA_CAT, que es donde El Torito dice) y el puntero de grub. No es nuestro: lo reescribe xorriso"
 fi
 
-# ${A[@]+"${A[@]}"} Y NO "${A[@]}": el bash de macOS es el 3.2 y, bajo 'set -u',
+# ${A[@]+"${A[@]}"} Y NO "${A[@]}" -- y lo mismo con [*], en el ok de abajo, que
+# al vivir en el shell principal y no en una tuberia ABORTA EL GUION ENTERO sin
+# ni un [FALLO] (se supo en la segunda vuelta, tras arreglar solo la primera).
+# El bash de macOS es el 3.2 y, bajo 'set -u',
 # expandir un array VACIO es «unbound variable» -- el printf muere, el fichero de
 # esperados queda VACIO y el diff de abajo da [FALLO] con la lista en blanco.
 # En amd64 nunca mordio porque MOD_XORRISO lleva el eltorito.img; en arm64 esta
@@ -1272,7 +1275,7 @@ N_CAMB=$(( N_MOD + 1 + ${#MOD_XORRISO[@]} ))
 diff -q "$TMP/cambiados.esperados" "$TMP/cambiados" >/dev/null \
     || fallo "los ficheros modificados no son los $N_CAMB declarados:
 $(diff "$TMP/cambiados.esperados" "$TMP/cambiados")"
-ok "modificados exactamente $N_CAMB: /md5sum.txt ${MODIFICADOS[*]} ${MOD_XORRISO[*]}"
+ok "modificados exactamente $N_CAMB: /md5sum.txt ${MODIFICADOS[*]} ${MOD_XORRISO[*]+"${MOD_XORRISO[*]}"}"
 # CONTROL de la comparacion entera: tiene que saber ver un cambio donde lo hay.
 # Se compara la oficial consigo misma cambiandole una huella a mano.
 awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \
