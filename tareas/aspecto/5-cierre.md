@@ -149,6 +149,12 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       pendiente de §4.75 —qué escribe el panel en oscuro— se cobra en esa
       misma mirada. Y el medio vigente **no** lleva el 0.1.17: los seis
       sitios y la refabricación son de la fase del medio.
+      *Al día 2026-08-25 (`MEDICIONES.md` §4.78): el medio YA lleva el 0.1.17
+      (`3d5d12a9…`, §4.77), el Acer está instalado de él SIN RED, y Jorge miró
+      la mitad grande: oscuro↔claro en el hierro y **la bellota sigue**. La
+      casilla sigue abierta por su letra: falta cerrar sesión y entrar, y el
+      `dconf read …/icon-theme` enseñado antes y después —que de paso contesta
+      el pendiente de §4.75—.*
 
 - [ ] **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
       probado en la máquina donde se hizo.

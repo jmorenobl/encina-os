@@ -18941,3 +18941,48 @@ byte a byte la misma.
   hierro se prueba «todo junto», que es exactamente lo que Jorge pidió.
 - El `arm64` con 0.1.17: la fase 1b sigue pendiente y ahora le toca el 0.1.17,
   no el 0.1.16 (la vuelta única no se ha pagado aún — nada nuevo que pagar hoy).
+
+### 4.78 LA FILA g, PAGADA: la instalación SIN RED en el Acer termina y la máquina funciona — y la bellota sobrevive al modo oscuro EN EL HIERRO (2026-08-25, testimonio de Jorge)
+
+**Qué.** Jorge grabó el pincho con el medio `3d5d12a9…` (0.1.17, §4.77) —la
+ISO viajó al PC de grabación por un servidor HTTP levantado sobre `medios/`,
+con `SHA256SUMS` publicado al lado— e instaló en el Acer Aspire ES1-524
+**sin red**. Sus palabras, transcritas el mismo día:
+
+> «Ya he hecho la instalación sin red y aparentemente todo ha funcionado
+> correctamente. Lo de la bellota se mantiene al cambiar entre modo claro y
+> oscuro.»
+
+**Lo que esto paga, y quién lo midió:**
+
+- **La fila g de la receta de §7** —«SIN RED: repetir»— que era **el límite
+  declarado del producto** desde §4.63(t): la transacción de `curtin` contra
+  el repo local, sin DNS, termina. Es el positivo de extremo a extremo en
+  hierro `amd64` que faltaba, y es `[OJOS]` de Jorge: instalación completa y
+  máquina usable. *(El desglose fino de las filas a y d —el texto exacto del
+  menú de GRUB, las cinco pantallas— sigue sin dictarse; «aparentemente todo»
+  las cubre de palabra y así se deja escrito.)*
+- **El control de producto de la bellota, su mitad grande, EN EL HIERRO**: en
+  la máquina donde §4.70c la perdió, tocar oscuro y claro en Ajustes **ya no
+  se lleva la bellota**. Es el desvío de 0.1.17 (§4.76) haciendo exactamente
+  aquello para lo que existe, en la máquina del fallo original y desde una
+  instalación limpia del medio.
+
+**Lo que la letra de las casillas AÚN pide, y por eso ninguna se marca hoy:**
+
+1. **Bellota, la otra mitad** (`tareas/aspecto/5-cierre.md`): *cerrar sesión y
+   entrar*, y la bellota sigue; y `dconf read
+   /org/gnome/desktop/interface/icon-theme` **enseñado antes y después** — que
+   además contesta el pendiente de §4.75: qué escribe exactamente el panel en
+   oscuro (¿`Yaru-sage-dark`?).
+2. **«Hierro AMD»** (`tareas/sueltas.md`): *tres arranques seguidos con
+   saludador sin tocar la máquina*, contados — el drop-in ya viene del `.deb`
+   y §4.73 dio 3 de 3 en la instalación anterior, pero esta instalación
+   limpia tiene su propio conteo y no se hereda.
+3. **El verificador dentro de la máquina nueva**:
+   `sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 28`
+   (en `amd64` son 28: `firmware-updater`, §4.70e) — el positivo numérico que
+   convierte «aparentemente todo» en una cuenta.
+
+Cuando lleguen, esta sección se amplía con enmienda fechada; las casillas las
+marca quien las mira.
