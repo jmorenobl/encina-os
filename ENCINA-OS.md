@@ -401,7 +401,7 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### AL DÍA, 2026-08-25: **LA FASE 1a ESTÁ COMPLETA Y LA 1b, A MEDIAS: HAY MEDIO `arm64` CON 0.1.17 Y ESPERA TUS MANOS EN LA PRIMERA PANTALLA**
+> ### AL DÍA, 2026-08-25: **LA FASE 1 ESTÁ COMPLETA — 1a en el hierro `amd64`, 1b en el banco `arm64` con 0.1.17 y el veredicto de Jorge**
 >
 > **1a, cerrada** (§4.78 y sus tres enmiendas): fila g pagada sin red en el Acer,
 > la bellota cerrada con `Yaru-sage-dark` contestado, `verificar-instalacion.sh`
@@ -431,7 +431,11 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > **las seis pantallas están tomadas** (Plymouth invisible en la VM, GDM con la
 > encina y el recuadro naranja ya aceptado).
 >
-> **LO QUE QUEDA ES TUYO:** mirar las capturas y dar el veredicto.
+> **Y EL VEREDICTO, DADO:** «las capturas las veo todas bien». Las dos casillas
+> de `aspecto/5-cierre.md` y la de `marca-del-medio.md`, marcadas. **LA FASE 1
+> ESTÁ COMPLETA: las dos ISOs funcionan de verdad, en hierro `amd64` y en el
+> banco `arm64`.** Lo siguiente es la fase 2, la refactorización entera
+> (`tareas/refactorizacion.md`), que invalida a propósito estas dos huellas.
 > Con el veredicto se cierran, si toca, las dos casillas de `aspecto/5-cierre.md`
 > y la de `marca-del-medio.md`. Después, la fase 2.
 

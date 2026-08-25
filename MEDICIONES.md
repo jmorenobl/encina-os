@@ -19387,3 +19387,12 @@ Con esto **las seis pantallas de la casilla están tomadas** —`01` firmware,
 `02` apagada, `03` GDM, `04` escritorio, `05` rejilla, `06` archivos— más la
 `00` del medio, todas en `design/capturas/despues/entrega-63f360dd/`. **El
 veredicto sigue siendo de Jorge**, y la máquina queda encendida en GDM.
+
+**TERCERA ENMIENDA DEL MISMO DÍA — EL VEREDICTO:** Jorge miró las siete
+capturas y dijo *«las capturas las veo todas bien»*. Con eso se marcan las
+casillas «Instalar desde cero y mirar la pantalla» (`aspecto/5-cierre.md`) y
+«El arranque y el instalador, con identidad de Encina» (`marca-del-medio.md`),
+y **la fase 1 del orden del 2026-08-23 queda COMPLETA**: el `amd64` en el
+hierro (§4.78) y el `arm64` en el banco (§4.79), los dos medios instalando y
+verificando a 65 / 0. Lo que viene es la fase 2, y estas dos huellas
+(`3d5d12a9…`, `63f360dd…`) caducarán con ella a propósito.

@@ -23,5 +23,10 @@ capturas de sesión las sacó el agente por teclas y por el buzón HTTP
 `capturar-aspecto.sh` (Jorge autorizó el reinicio), comparadas por contenido con
 `diferencia.py`; las tablas de fases en `fases-pasada1.tsv` y `fases-pasada2.tsv`.
 
-**El veredicto de Jorge NO ESTÁ DADO.** Estas capturas se toman, se guardan y se
-ponen delante.
+## EL VEREDICTO DE JORGE, 2026-08-25
+
+**«Las capturas las veo todas bien.»** Las siete (`00`–`06`), aprobadas. Con
+ello se cierran las casillas «Instalar desde cero y mirar la pantalla» de
+`tareas/aspecto/5-cierre.md` y «El arranque y el instalador, con identidad de
+Encina» de `tareas/marca-del-medio.md`. `02` (Plymouth) se aprueba como lo que
+es: apagada en la VM, y cobrada en hierro `amd64` (§4.70a).

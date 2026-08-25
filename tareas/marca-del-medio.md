@@ -70,7 +70,14 @@ sobre el reempaquetado o si se hace ya construyendo la imagen.
       mecanismo**, y ahora con dato — el `os-release` del medio vive dentro de una
       capa de 1,69 GB, así que un `dpkg-divert` desde un `.deb` **no lo alcanza**.
       *Hecha cuando:* es una decisión escrita en `ENCINA-OS.md`, no una impresión.
-- [ ] **El arranque y el instalador, con identidad de Encina.**
+- [x] ~~**El arranque y el instalador, con identidad de Encina.**~~ **CERRADA
+      EL 2026-08-25 CON LOS OJOS DE JORGE** («las capturas las veo todas bien»):
+      el medio `63f360dd…` (0.1.17) arrancado en `encina-entrega-63f360dd` enseña
+      «Disposición del teclado» en español sobre el fondo de Encina con la
+      bellota (`design/capturas/despues/entrega-63f360dd/00-medio-instalador-teclado.png`),
+      la instalación termina y la máquina levanta con el verificador a 65 / 0
+      (`MEDICIONES.md` §4.79). El `[OJOS]` que la mantenía abierta desde el
+      2026-08-15 está dado. *Lo que sigue es el historial.*
       *Hecha cuando:* alguien arranca la ISO y **lo que ve dice Encina**, mirado en
       pantalla.
       > **HAY MEDIO QUE ARRANCA, CON NOMBRE Y VERSIÓN PROPIOS (2026-08-20,

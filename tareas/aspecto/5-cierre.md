@@ -172,7 +172,16 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       `dconf read …/icon-theme` enseñado antes y después —que de paso contesta
       el pendiente de §4.75—.*
 
-- [ ] **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
+- [x] ~~**Instalar desde cero y mirar la pantalla.**~~ **CERRADA EL 2026-08-25
+      CON EL VEREDICTO DE JORGE —«las capturas las veo todas bien»— sobre las
+      seis pantallas de `encina-entrega-63f360dd`, instalada desde
+      `medios/encina-os-arm64.iso` (`63f360dd…`, 0.1.17), con el verificador
+      dentro a 65 / 0 / 0 / 0 (`MEDICIONES.md` §4.79 y sus enmiendas;
+      capturas en `design/capturas/despues/entrega-63f360dd/`). Plymouth no se
+      ve en la VM —0 píxeles entre pasadas— y su `[OJOS]` está cobrado en hierro
+      (§4.70a), que era la condición de salida escrita el 2026-08-22.**
+      *Lo de abajo es el historial de la casilla, con lo que fue.*
+      **Instalar desde cero y mirar la pantalla.** El aspecto no se entrega
       probado en la máquina donde se hizo.
       **AL DÍA 2026-08-25 (`MEDICIONES.md` §4.79g): el medio nuevo `63f360dd…`
       (0.1.17) está arrancado en `encina-entrega-63f360dd` y en «Disposición del
