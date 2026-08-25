@@ -19353,3 +19353,37 @@ porque el `wget` se tecleó en la carpeta personal; se ve en `06`.)*
   `marca-del-medio.md`. El agente no las marca.
 - **`valide.redsara.es`**: el `[OJOS]` de la firma, que va en un clon efímero
   (§9.1) y no en esta máquina.
+
+**SEGUNDA ENMIENDA DEL MISMO DÍA — LAS TRES DEL ARRANQUE EN FRÍO, CON SU
+CONTROL DE DOS PASADAS: las seis pantallas están tomadas.** Jorge dijo
+«reinicia sin problema» y `capturar-aspecto.sh` corrió dos veces seguidas
+(80 s de ráfaga cada una, sin `ENCINA_CLAVE`: se para en GDM, que era lo que
+faltaba):
+
+```
+                               pasada 1                 pasada 2                 diferencia.py
+firmware «Start boot option»   7 s,  1 fotograma        6 s,  1 fotograma        transitoria, no se compara
+BdsDxe: loading Boot0005       10 s, 1 fotograma        (no la cazó)             transitoria; el firmware dice «Ubuntu», y eso no lo arregla GRUB_DISTRIBUTOR (§4.63s)
+«Display output is not active» 13–39 s, 10 fotogramas   9–21 s, 5 fotogramas     IGUALES: 0 píxeles           <- Plymouth no se ve, como en cd84d2ec
+GDM                            42–82 s, 13 fotogramas   24–80 s, 18 fotogramas   264 px en y 100..119         <- el reloj: la franja de arriba, no cuenta
+```
+
+`--comparar` del guion alinea por número de fase y aquí no valía (la pasada 1
+cazó una transitoria más), así que se comparó **por contenido** con
+`diferencia.py`; las tablas de fases de las dos pasadas están en
+`design/capturas/despues/entrega-63f360dd/fases-pasada{1,2}.tsv`. *Dato sin
+explicar:* la fase apagada da **0 píxeles distintos** y sin embargo
+`sha256_sin_franja` distinto en las dos pasadas (`d387abff…` / `03782a44…`);
+no se investigó, queda `[OMIT]`.
+
+**GDM, mirado:** fondo negro, el logotipo de la encina abajo, el usuario
+«Encina» con el recuadro naranja de foco —el «mal menor» que Jorge aceptó el
+2026-08-22— y «¿No está en la lista?»; sin banner. Es la misma pantalla que
+`entrega-cd84d2ec/03-gdm.png`. **Plymouth** sigue siendo lo que era: del
+segundo 9 al 39 la pantalla está apagada y no se puede juzgar aquí; el
+`[OJOS]` real está cobrado en hierro `amd64` (§4.70a).
+
+Con esto **las seis pantallas de la casilla están tomadas** —`01` firmware,
+`02` apagada, `03` GDM, `04` escritorio, `05` rejilla, `06` archivos— más la
+`00` del medio, todas en `design/capturas/despues/entrega-63f360dd/`. **El
+veredicto sigue siendo de Jorge**, y la máquina queda encendida en GDM.

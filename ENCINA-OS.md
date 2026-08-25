@@ -427,8 +427,11 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > contraseña de Jorge—. Tres pantallas de sesión tomadas y miradas
 > (`design/capturas/despues/entrega-63f360dd/`).
 >
-> **LO QUE QUEDA ES TUYO:** mirar `00`, `04`, `05` y `06` y dar el veredicto; si
-> quieres las tres del arranque en frío, `capturar-aspecto.sh` reinicia la VM.
+> Y con el reinicio autorizado, las tres del arranque en frío con dos pasadas:
+> **las seis pantallas están tomadas** (Plymouth invisible en la VM, GDM con la
+> encina y el recuadro naranja ya aceptado).
+>
+> **LO QUE QUEDA ES TUYO:** mirar las capturas y dar el veredicto.
 > Con el veredicto se cierran, si toca, las dos casillas de `aspecto/5-cierre.md`
 > y la de `marca-del-medio.md`. Después, la fase 2.
 
