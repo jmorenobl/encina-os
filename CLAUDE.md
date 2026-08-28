@@ -28,6 +28,18 @@ Si dos documentos se contradicen, manda `ENCINA-OS.md`.
 
 ## Comandos
 
+**Desde el 2026-08-28 hay `make`** (tarea 6 de la refactorización), y es la
+orden que corre la CI; los guiones de abajo siguen siendo lo que hace el trabajo:
+
+```bash
+make bancos            # los bancos que no necesitan máquina ni ISO + shellcheck (segundos; es el job «bancos» de la CI)
+make bancos-medios     # banco-mecanismos, que lee ISOs de medios/
+make paquetes          # los tres .deb desde git archive HEAD, por huella (Linux: guiones; Mac: docker/, tarea 15)
+make iso ARQ=arm64     # construir-todo.sh con nombre; make dos-veces es SU definición de terminado, ejecutable
+make medios/SHA256SUMS # las sumas calculadas, no escritas a mano
+make verificador       # medios/verificar-instalacion.sh EMPAQUETADO (lleva lib/salida.sh dentro): el que viaja a la máquina
+```
+
 Construcción y lintian (van en la VM Ubuntu **y** en la CI; un paquete por
 guion, a propósito — no se generalizan porque cada uno está validado contra el
 suyo):

@@ -157,7 +157,7 @@ elif [ -n "$VERIFICADOR" ]; then
     [ -n "$LLAVE" ] && SSH_OPTS+=(-i "$LLAVE")
     TMP_R=$(ssh "${SSH_OPTS[@]}" "$VERIFICADOR" 'mktemp -d') \
         || morir "el verificador $VERIFICADOR no contesta por ssh"
-    # shellcheck disable=SC2064
+    # shellcheck disable=SC2064  # la expansion inmediata en el trap es QUERIDA: el temporal remoto se conoce ahora y no al salir
     trap "rm -rf '$TMP'; ssh ${SSH_OPTS[*]} '$VERIFICADOR' \"rm -rf '$TMP_R'\" 2>/dev/null" EXIT
     scp -q "${SSH_OPTS[@]}" "$TMP/SHA256SUMS" "$TMP/SHA256SUMS.gpg" "$TMP/SHA256SUMS.malo" \
         "$VERIFICADOR:$TMP_R/" || morir "no pude enviar las sumas al verificador"

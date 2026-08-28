@@ -320,6 +320,7 @@ N_SLIDES=$(find "$DP/slides" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' '
 echo "  whitelabel.yml, $N_SLIDES diapositivas propias y su dibujo"
 
 # (3) los activos graficos, sustituidos por bytes en su misma ruta
+# shellcheck disable=SC2034  # «porque» es la ultima columna del TSV, prosa para quien lo lea; se lee para que no se pegue a «como»
 while IFS=$'\t' read -r destino origen como porque; do
     case "$destino" in ''|'#'*) continue ;; esac
     d=${destino#+}

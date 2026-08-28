@@ -10,6 +10,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  # LOS BANCOS QUE NO NECESITAN MAQUINA NI ISO, en cada push (tarea 6 de
+  # tareas/refactorizacion.md, 2026-08-28). Hasta ese dia habia cinco bancos con
+  # cinco puntos de entrada y la CI no corria ninguno: solo corrian si alguien
+  # se acordaba. 'make bancos' es UNA orden, para en el primero que falle y sale
+  # distinto de cero, y es la misma orden que en el Mac. El sabotaje de siempre
+  # esta pagado en local (un banco roto a proposito pone esto en rojo por ese
+  # motivo, MEDICIONES.md §4.80) y no aqui: romper la CI a proposito exige un
+  # push, y eso es de Jorge.
+  bancos:
+    name: bancos · enlaces, vigencia, ci-copias, cadena, veredicto, conteo, shellcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar lo que necesitan los bancos
+        run: |
+          sudo apt-get update
+          # ffmpeg: banco-veredicto.sh mide los pixeles de sus capturas de control.
+          # shellcheck: bancos/shellcheck.sh usa el binario si lo hay (en el Mac
+          # no lo hay y va por docker).
+          sudo apt-get install -y ffmpeg shellcheck
+      - name: make bancos
+        run: make bancos
+
   build:
     name: ${{ matrix.arch }} · ${{ matrix.package }}
     # Las dos arquitecturas, y no por simetria (2026-08-23, MEDICIONES.md

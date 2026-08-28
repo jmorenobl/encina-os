@@ -1,0 +1,45 @@
+# EL CONSTRUCTOR DE LOS TRES .deb DE ENCINA, VERSIONADO (tarea 15 de
+# tareas/refactorizacion.md, 2026-08-28).
+#
+# Hasta hoy la definicion de terminado de la reproducibilidad -- «dos pasadas,
+# la misma huella» -- se apoyaba en UNA VM concreta del disco de Jorge
+# (encina-dev, jorge@192.168.64.3): scripts/00-entorno.sh comprueba que estan
+# las herramientas, no las pone, y de como se hizo esa maquina no habia receta.
+# Esto es la receta. Es la misma idea que ~/Projects/encina-autofirma/docker/
+# Dockerfile.build, que lleva meses al lado, y la de Mint y debos.
+#
+# ALCANCE, ESTRECHO A PROPOSITO: SOLO LOS TRES .deb (y el indice Packages,
+# que dpkg-scanpackages genera y macOS no puede). fabricar-iso.sh usa xorriso,
+# sips y shasum de macOS y NO cabe aqui; construir-todo.sh no se toca.
+#
+# Ubuntu 24.04 porque es la base de Encina y la de los runners de la CI, y
+# SIN arquitectura escrita: la misma receta construye en arm64 y en amd64, y
+# los tres paquetes son 'Architecture: all', asi que tienen que dar el MISMO
+# byte en las dos (§4.38, §4.69).
+#
+# LAS HERRAMIENTAS SON LAS SIETE DE scripts/00-entorno.sh, mas lo que la CI ya
+# sabia que falta en una maquina limpia: build-essential (dependencia implicita
+# de todo paquete Debian, §7 de AGENTS.md) y gnupg (07-firefox-construir.sh
+# verifica la huella de la clave de Mozilla). Lo que la receta NO tenga, lo
+# nombra docker/construir-paquetes.sh antes de construir nada: es su control.
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git devscripts debhelper lintian dpkg-dev imagemagick librsvg2-bin file \
+      build-essential gnupg ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+# trampa 2 de SCRIPTS.md: la salida de las herramientas, sin traducir
+ENV LC_ALL=C
+# NO SE CONSTRUYE COMO ROOT, y no es una preferencia: los tres guiones de
+# construccion llaman a requiere_no_root (lib/vm.sh) y se niegan --«si lo
+# lanzas como root, los ficheros del repositorio acaban siendo propiedad de
+# root»--. La primera pasada de esta receta (2026-08-28) paro justo ahi. El
+# usuario 'ubuntu' (uid 1000) ya viene en la imagen base; /work es suyo.
+# El arbol se construye en /work, que es del contenedor: /repo se monta de
+# solo lectura y de el sale 'git archive HEAD' (§4.37), nunca el directorio
+# de trabajo.
+RUN mkdir -p /work && chown ubuntu:ubuntu /work
+USER ubuntu
+WORKDIR /work

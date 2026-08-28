@@ -380,6 +380,7 @@ titulo "6. La CA del socket de AutoFirma, en el perfil de Firefox"
 #
 # Se busca por HUELLA y no por nombre: cada reinstalacion genera un par nuevo, y
 # un perfil puede tener una CA vieja con el mismo CN y el mismo apodo (§9).
+# shellcheck disable=SC2010  # ls | grep con nombres de perfil de Mozilla (con espacios, filtrados a proposito). Guion de VM, no se reescribe sin ejecutarlo (tarea 6)
 PERFILES=$(ls -d "$HOME"/.config/mozilla/firefox/*/ 2>/dev/null | grep -v 'Crash Reports\|Pending Pings\|Profile Groups' || true)
 CA_PKG=/usr/share/autofirma/Autofirma_ROOT.cer
 

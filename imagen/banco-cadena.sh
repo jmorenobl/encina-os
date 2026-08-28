@@ -45,7 +45,7 @@ if [ "$N_F" -ne 2 ] || [ "$N_L" -lt 12 ]; then
     exit 1
 fi
 echo "== extraidas $N_F funciones ($N_L lineas) de $(basename "$FUENTE")"
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090  # el fichero que se carga se acaba de extraer de capa-marca.sh a un temporal: shellcheck no puede seguirlo
 . "$TMP/fn.sh"
 
 # EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los

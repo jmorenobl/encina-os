@@ -252,8 +252,15 @@ FNR==1 { rel=FILENAME; sub("^" RAIZ "/","",rel); dir=rel; if (!sub(/\/[^\/]*$/,"
     while (match(resto, /`[A-Za-z0-9_.\/-]+\.(sh|py|m|yaml)`/)) {
         p = substr(resto, RSTART+1, RLENGTH-2)
         resto = substr(resto, RSTART+RLENGTH)
-        if (p ~ /^(scripts|imagen|bancos|lib|design|tareas|debian-packages|medios|\.github)\//)
+        # medios/ NO esta en la lista a proposito: es .gitignore salvo su LEEME,
+        # asi que una ruta «medios/verificar-instalacion.sh» existe en el Mac de
+        # Jorge y NO en un clon limpio. La CI simulada en ubuntu:24.04 (tarea 6,
+        # 2026-08-28) dio cinco [FALLO] por eso y ninguno era cierto: lo que
+        # vive en medios/ no se puede comprobar desde el arbol versionado.
+        if (p ~ /^(scripts|imagen|bancos|lib|design|tareas|debian-packages|\.github)\//)
             print "GUION", rel, FNR, p, "ruta"
+        else if (p ~ /^medios\//)
+            print "MEDIOS", rel, FNR, p, "no versionado"
         else if (p !~ /\//)
             print "GUION", rel, FNR, p, "nombre"
     }
@@ -301,11 +308,12 @@ escanear() {
     for d in "$raiz"/mediciones/*.md; do
         [ -f "$d" ] && docs="$docs $d"
     done
-    # shellcheck disable=SC2086
+    # shellcheck disable=SC2086  # $docs se expande a proposito: es una lista de rutas separadas por espacio, y ninguna lleva espacios
     if [ -n "$docs" ]; then awk -f "$TMP/anclas.awk" $docs | sort -u > "$TMP/idx.tsv"
     else : > "$TMP/idx.tsv"; fi
 
     if [ ! -s "$lista" ]; then echo "[FALLO] corpus vacio en $raiz" >&2; return 1; fi
+    # shellcheck disable=SC2046  # la division en palabras es QUERIDA: la lista es un fichero por linea, sin espacios (git ls-files)
     awk -v IDX="$TMP/idx.tsv" -v RAIZ="$raiz" -f "$TMP/escanear.awk" \
         "$TMP/idx.tsv" $(cat "$lista") > "$TMP/hallazgos.tsv"
 }
@@ -374,7 +382,7 @@ esta_excluida() { case " $EXCLUIDAS " in *" $1 "*) return 0 ;; *) return 1 ;; es
 declarar_rotas() {
     cat <<'ROTAS'
 DIARIO.md	§6.5	apuntaba a la definicion de terminado de encina-doctor en AGENTS.md, y encina-doctor SE SUPRIMIO (ENCINA-OS.md §6.1). Era cierta el 2026-08-08, que es el dia de esa entrada, y el diario no se reescribe
-ENCINA-OS.md	§6.1	cualificada contra MEDICIONES.md, que NO HA TENIDO NUNCA una §6: sus secciones son la 4 y la 9. El motivo del residuo de l10n de D12 esta en algun sitio, pero cual no se puede demostrar sin la historia del documento
+tareas/cerradas/empieza-aqui-2026-08-08-a-2026-08-25.md	§6.1	(vivia en ENCINA-OS.md §7 hasta la tarea 7, 2026-08-28, que movio §7 entero a ese fichero) cualificada contra MEDICIONES.md, que NO HA TENIDO NUNCA una §6: sus secciones son la 4 y la 9. El motivo del residuo de l10n de D12 esta en algun sitio, pero cual no se puede demostrar sin la historia del documento
 mediciones/4.2-remedicion-abrir-b1.md	§6.8	cualificada contra AGENTS.md, cuya §6 llega hasta la 6.4. La «lista completa» de lo deducido y no medido que la frase promete no existe hoy con ese numero (hasta la tarea 4, 2026-08-28, la clave era MEDICIONES.md: el fichero unico)
 mediciones/4.66-el-instrumento-refactorizacion-bancos-enlaces.md	§6.8	es la §4.66 CITANDO la rota de arriba en su prosa (la tabla de (g)); en el fichero unico las dos vivian bajo la misma clave
 ROTAS
@@ -474,6 +482,12 @@ medicion() {
     for p in $EXCLUIDAS; do
         [ -e "$RAIZ/$p" ] && aviso "sobra de la lista de exclusion: $p YA existe en el disco"
     done
+
+    # las rutas bajo medios/: ni [OK] ni [FALLO], porque no se pueden comprobar
+    # desde un clon (medios/ es .gitignore). Se cuentan para que no desaparezcan.
+    local nmed
+    nmed=$(awk -F'\t' '$1=="MEDIOS" {print $4}' "$H" | sort -u | /usr/bin/grep -c .)
+    [ "$nmed" -gt 0 ] && omitido "$nmed rutas citadas bajo medios/, que no se versiona: no se comprueban (en un clon limpio no existen)"
 
     # los nombres sueltos: [AVISO] y no [FALLO], por la trampa (4)
     local sueltos

@@ -311,6 +311,7 @@ igual "control: el buscador sabe decir cero" "0" "$CTL_NO"
 # Y LA FOTO DEL SNAP, que es DATO y no casilla: la casilla de arriba la cumplen
 # las maquinas con Snap y sin el, a proposito. Esto solo dice en cual estamos.
 EST_SNAPD=$(dpkg-query -W -f='${db:Status-Abbrev}' snapd 2>/dev/null | tr -d ' ')
+# shellcheck disable=SC2010  # ls | grep sobre /snap/firefox/*, cuyos nombres son revisiones numericas o «current»: no hay nombres raros. Guion de VM, no se reescribe sin ejecutarlo (tarea 6)
 NSNAP=$(ls -d /snap/firefox/* 2>/dev/null | grep -cv current)
 case "$EST_SNAPD:$NSNAP:$PERFILES_SNAP" in
     ii:0*:*)  dato "forma (b): snapd instalado y SIN Snap de Firefox" ;;

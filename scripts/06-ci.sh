@@ -44,8 +44,41 @@ on:
   workflow_dispatch:
 
 jobs:
+  # LOS BANCOS QUE NO NECESITAN MAQUINA NI ISO, en cada push (tarea 6 de
+  # tareas/refactorizacion.md, 2026-08-28). Hasta ese dia habia cinco bancos con
+  # cinco puntos de entrada y la CI no corria ninguno: solo corrian si alguien
+  # se acordaba. 'make bancos' es UNA orden, para en el primero que falle y sale
+  # distinto de cero, y es la misma orden que en el Mac. El sabotaje de siempre
+  # esta pagado en local (un banco roto a proposito pone esto en rojo por ese
+  # motivo, MEDICIONES.md §4.80) y no aqui: romper la CI a proposito exige un
+  # push, y eso es de Jorge.
+  bancos:
+    name: bancos · enlaces, vigencia, ci-copias, cadena, veredicto, conteo, shellcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar lo que necesitan los bancos
+        run: |
+          sudo apt-get update
+          # ffmpeg: banco-veredicto.sh mide los pixeles de sus capturas de control.
+          # shellcheck: bancos/shellcheck.sh usa el binario si lo hay (en el Mac
+          # no lo hay y va por docker).
+          sudo apt-get install -y ffmpeg shellcheck
+      - name: make bancos
+        run: make bancos
+
   build:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.arch }} · ${{ matrix.package }}
+    # Las dos arquitecturas, y no por simetria (2026-08-23, MEDICIONES.md
+    # §4.69): arm64 es el producto que D9 declara y hasta hoy era la UNICA que
+    # no construia ninguna maquina automatica. Los tres .deb son
+    # 'Architecture: all', asi que las dos filas tienen que dar el MISMO byte
+    # y cuadrar con la misma huella del manifiesto; si un dia no lo hacen,
+    # eso es un hallazgo de reproducibilidad y no un fallo de la matriz.
+    # 'ubuntu-24.04' en vez de 'ubuntu-latest' porque es lo que 'latest'
+    # resolvia ya (imagen ubuntu-24.04, medido en la ejecucion 32635412798)
+    # y porque la fila arm64 no tiene alias: las dos van con el nombre puesto.
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       # Cada paquete tiene su propio script de construccion, asi que la matriz
@@ -53,8 +86,19 @@ jobs:
       # usaba en ningun sitio: el paso ejecutaba siempre 03-construir.sh y
       # subia debian-packages/*.deb, de modo que anadir una entrada mas habria
       # construido encina-branding dos veces sin que se notara.
+      #
+      # La forma es la de «expanding configurations» de GitHub: 'arch' y
+      # 'package' son los ejes (2 x 3 = 6 trabajos), y cada 'include' ANADE
+      # una clave a las combinaciones cuyo eje coincide -el runner a las de su
+      # arch, el guion a las de su package- sin crear combinaciones nuevas.
       matrix:
+        arch: [amd64, arm64]
+        package: [encina-branding, encina-firefox-native, encina-meta]
         include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
           - package: encina-branding
             script: scripts/03-construir.sh
           - package: encina-firefox-native
@@ -115,7 +159,8 @@ jobs:
           echo "[OK]    sabe decir que no:  $(grep -m1 '^\[HALLAZGO\]' "$LOG")"
 
       # Y AHORA LA MEDICION DE VERDAD. Las huellas del manifiesto se midieron en
-      # encina-dev, que es arm64; este runner es amd64. Que el paso anterior
+      # encina-dev, que es arm64; hasta el 2026-08-23 este runner era solo
+      # amd64, y desde entonces la matriz lo mide en las dos. Que el paso anterior
       # subiera el .deb a un artefacto sin mirarlo no comprobaba nada: un
       # artefacto se sube igual de bien con otros bytes dentro.
       - name: Comprobar la huella de ${{ matrix.package }} contra el manifiesto
@@ -123,12 +168,15 @@ jobs:
 
       # always(): si la huella NO cuadra, el .deb del runner es justamente lo
       # que hay que desglosar contra el de arm64, asi que es cuando mas falta
-      # hace tenerlo.
+      # hace tenerlo. El nombre lleva la arquitectura porque upload-artifact@v4
+      # se niega a subir dos artefactos con el mismo nombre en una ejecucion:
+      # con la matriz de dos filas, '<package>-deb' a secas habria puesto en
+      # rojo a la segunda fila en llegar, fuera cual fuera.
       - name: Subir el paquete como artefacto
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.package }}-deb
+          name: ${{ matrix.package }}-${{ matrix.arch }}-deb
           path: debian-packages/${{ matrix.package }}_*.deb
           if-no-files-found: error
 EOF

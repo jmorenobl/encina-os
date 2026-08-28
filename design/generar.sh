@@ -149,6 +149,7 @@ comprobar_salida "la arcilla $ARCILLA está en el icono del Centro de aplicacion
 paso "Fondos, contra design/fondos/manifiesto.tsv"
 
 FILAS=0
+# shellcheck disable=SC2034  # licencia y origen son columnas del TSV que aqui no se usan; se leen para que las demas caigan en su sitio
 while IFS=$'\t' read -r maestro derivado licencia origen sha_m sha_d orden; do
     [[ -z "${maestro:-}" || "$maestro" == \#* || "$maestro" == "maestro" ]] && continue
     FILAS=$((FILAS + 1))
