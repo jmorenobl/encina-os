@@ -407,13 +407,16 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > los dos medios **refabricados desde estos guiones**, dos pasadas cada uno,
 > y salen **`63f360dd…` y `3d5d12a9…` otra vez**, byte a byte iguales a los
 > vigentes: la deducción de abajo («caducan con la fase 3») era falsa para los
-> dos. **Pero `make dos-veces` tal cual ya no puede terminar**: el archivo de
-> Ubuntu ha retirado openjdk-17 `17.0.19+10-1~24.04.2` (hoy da `17.0.20`);
-> Launchpad lo sigue sirviendo con la misma huella y así se han refabricado
-> (§4.81c). Qué hacer con eso —caer a Launchpad en `cosechar-repo.sh`, subir el
-> manifiesto, o publicar los `.deb` con la ISO— **es lo primero que decide la
-> fase 3**. Siguen `[OMIT]`: la CI de verdad (sin push: §4.81a dice qué mirar) y
-> la elección de las trampas 28-33 (propuesta con precio en §4.81b).
+> dos. **El archivo de Ubuntu ha retirado openjdk-17 `17.0.19+10-1~24.04.2`**
+> (hoy da `17.0.20`) y `make dos-veces` dejó de terminar (§4.81c); esa misma
+> tarde, por decisión de Jorge y sin atajos, `cosechar-repo.sh` **cae a
+> Launchpad por huella** sólo cuando el archivo ha retirado (trampa 68) y
+> **`make dos-veces` tal cual vuelve a dar las dos huellas** desde `8a0cbef`
+> (§4.81f). También esa tarde: **la CI de verdad, los siete jobs en verde**
+> (§4.81a), y las trampas 28b-33b **renumeradas a 62-67** (§4.81e). Lo que
+> queda abierto para la fase 3 es una sola cosa nueva: Firefox no tiene fuente
+> permanente (Mozilla retira y Launchpad no lo tiene), así que publicar
+> incluye publicar la cosecha (`tareas/publicar.md`).
 >
 > **Dónde está el proyecto:** la fase 1 del orden del 2026-08-23 está completa
 > desde el 2026-08-25 —`3d5d12a9…` (`amd64`) en el hierro, §4.78, y `63f360dd…`

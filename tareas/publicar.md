@@ -22,6 +22,19 @@ se publique será la de entonces** — ninguna de las de hoy.
 
 - [ ] **La release, con lo que trae y lo que no.** Arquitectura, que exige red al
       instalar, y que Secure Boot no está demostrado.
+- [ ] **Publicar la cosecha con la ISO, no sólo la ISO** (añadida el 2026-08-28,
+  `MEDICIONES.md` §4.81f, trampa 68). El archivo de Ubuntu retira las versiones
+  superadas y el manifiesto ancla una: `cosechar-repo.sh` cae a Launchpad por
+  huella y eso cubre todo lo de Ubuntu para siempre, pero **Firefox viene de
+  `packages.mozilla.org` y no tiene fuente permanente**: el día que Mozilla
+  publique la 153.0.5, la receta pública se para en «`[RETIRADO] … Launchpad
+  tampoco lo tiene`». Así que la release lleva, además de las dos ISOs y
+  `SHA256SUMS`, **los 29 `.deb` de `/encina-repo` por arquitectura** (el
+  directorio que deja `construir-todo.sh --trabajo <dir> --conservar`, con su
+  `Packages`), con sus huellas, y `cosechar-repo.sh` tiene que saber cosechar
+  **desde esa release** (`--propios` ya copia por huella: es la misma vía). Hecha
+  cuando: un clon limpio, sin archivo ni Launchpad (`--cache` vacío y las URLs
+  cortadas), reproduce las dos huellas sólo con lo publicado.
 - [ ] **Instalarla desde cero como lo haría un desconocido**, en una máquina que
       no sea del banco, y **mirando la pantalla**.
       *Hecha cuando:* arranca, se instala contestando lo que pregunta, y
