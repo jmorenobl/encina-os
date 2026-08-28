@@ -144,7 +144,16 @@ trap 'rm -rf "$TMP"' EXIT
 # convenciones de la trampa (1) estan aqui y en ningun otro sitio.
 cat > "$TMP/anclas.awk" <<'AWK'
 BEGIN { OFS="\t" }
-FNR==1 { doc=FILENAME; sub(/^.*\//,"",doc); sub2="" }
+# EL DOCUMENTO SE LLAMA POR SU NOMBRE DE SIEMPRE: desde la tarea 4 (2026-08-28)
+# MEDICIONES.md esta partido en mediciones/*.md, un fichero por seccion, y las
+# citas siguen siendo «MEDICIONES.md §4.37». Asi que todo lo que viva bajo
+# mediciones/ indexa como MEDICIONES.md, y el MEDICIONES.md de la raiz -- que
+# ya es solo el puntero -- tambien.
+FNR==1 { doc=FILENAME; if (doc ~ /(^|\/)mediciones\/[^\/]*$/) doc="MEDICIONES.md"; else sub(/^.*\//,"",doc); sub2="" }
+# «# 4.37 ...», «# 9. ...», «# 4. ...»: la seccion que es UN FICHERO de mediciones/
+# (su titulo bajo de ### a # al partir; los #### (x) de dentro siguen igual)
+/^# +[0-9]+[a-z]*\.[0-9a-z]+ /  { sub2=$2; sub(/\.$/,"",sub2); print doc, sub2; next }
+/^# +[0-9]+[a-z]*\. /           { s=$2; sub(/\.$/,"",s); print doc, s; sub2=""; next }
 # «## 4. Estado del arte»  y  «## 6bis. La entrega»
 /^## +[0-9]+[a-z]*\./          { s=$2; sub(/\.$/,"",s); print doc, s; sub2=""; next }
 # «### 4.37 ...», «### 6bis.1 ...», «### 9.a ...»
@@ -288,6 +297,10 @@ escanear() {
     for d in MEDICIONES.md AGENTS.md ENCINA-OS.md; do
         [ -f "$raiz/$d" ] && docs="$docs $raiz/$d"
     done
+    # y las secciones de MEDICIONES.md, que desde la tarea 4 son ficheros
+    for d in "$raiz"/mediciones/*.md; do
+        [ -f "$d" ] && docs="$docs $d"
+    done
     # shellcheck disable=SC2086
     if [ -n "$docs" ]; then awk -f "$TMP/anclas.awk" $docs | sort -u > "$TMP/idx.tsv"
     else : > "$TMP/idx.tsv"; fi
@@ -362,7 +375,8 @@ declarar_rotas() {
     cat <<'ROTAS'
 DIARIO.md	§6.5	apuntaba a la definicion de terminado de encina-doctor en AGENTS.md, y encina-doctor SE SUPRIMIO (ENCINA-OS.md §6.1). Era cierta el 2026-08-08, que es el dia de esa entrada, y el diario no se reescribe
 ENCINA-OS.md	§6.1	cualificada contra MEDICIONES.md, que NO HA TENIDO NUNCA una §6: sus secciones son la 4 y la 9. El motivo del residuo de l10n de D12 esta en algun sitio, pero cual no se puede demostrar sin la historia del documento
-MEDICIONES.md	§6.8	cualificada contra AGENTS.md, cuya §6 llega hasta la 6.4. La «lista completa» de lo deducido y no medido que la frase promete no existe hoy con ese numero
+mediciones/4.2-remedicion-abrir-b1.md	§6.8	cualificada contra AGENTS.md, cuya §6 llega hasta la 6.4. La «lista completa» de lo deducido y no medido que la frase promete no existe hoy con ese numero (hasta la tarea 4, 2026-08-28, la clave era MEDICIONES.md: el fichero unico)
+mediciones/4.66-el-instrumento-refactorizacion-bancos-enlaces.md	§6.8	es la §4.66 CITANDO la rota de arriba en su prosa (la tabla de (g)); en el fichero unico las dos vivian bajo la misma clave
 ROTAS
 }
 esta_declarada() {

@@ -194,7 +194,7 @@ Este proyecto escribe lo que mide, incluido lo que sale mal.
 |---|---|
 | **[TAREAS.md](TAREAS.md)** | Lo que queda por hacer, en trozos |
 | **[ENCINA-OS.md](ENCINA-OS.md)** | Qué es el producto y qué se ha decidido, con el motivo |
-| **[MEDICIONES.md](MEDICIONES.md)** | Cada medición con sus salidas literales y sus controles |
+| **[MEDICIONES.md](MEDICIONES.md)** → [mediciones/](mediciones/) | Cada medición con sus salidas literales y sus controles; desde el 2026-08-28, un fichero por sección, con el índice y la tabla de vigencia en [mediciones/LEEME.md](mediciones/LEEME.md) |
 | **[SCRIPTS.md](SCRIPTS.md)** | Cómo se usan los guiones, y las trampas que costaron una vuelta |
 | **[AGENTS.md](AGENTS.md)** | Las definiciones de terminado, casilla a casilla |
 | **[DIARIO.md](DIARIO.md)** | Qué se hizo cada día |

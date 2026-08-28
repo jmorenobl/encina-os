@@ -13,7 +13,7 @@ sección 7 («Empieza aquí») y nada más.
 |---|---|---|
 | **ENCINA-OS.md** (este) | Índice, estado y siguiente acción | Siempre primero |
 | `AGENTS.md` | Instrucciones ejecutables: reglas duras, convenciones y especificación de cada paquete y de la imagen | Al lanzar trabajo con Claude Code |
-| `MEDICIONES.md` | Lo medido, con las salidas literales | Antes de volver a investigar algo. Casi siempre ya está medido |
+| `MEDICIONES.md` — **desde el 2026-08-28, [`mediciones/`](mediciones/), un fichero por sección, y `MEDICIONES.md` es el puntero** (tarea 4 de la refactorización) | Lo medido, con las salidas literales. Se sigue citando `MEDICIONES.md §4.NN` | Antes de volver a investigar algo. Casi siempre ya está medido. Empieza por [`mediciones/LEEME.md`](mediciones/LEEME.md), que tiene la tabla de vigencia |
 | `SCRIPTS.md` | Qué hace cada script y en qué orden, y las dieciocho trampas | Antes de ejecutar nada en la VM |
 | `README.md` | Qué es el proyecto, para quien llega de fuera | Al enseñar el repositorio |
 | `DIARIO.md` | Dónde se quedó el trabajo | Al retomarlo tras unos días |
