@@ -64,8 +64,8 @@ Con la ISO aquí, la vuelta entera es una orden
 
 ```
 encina-os-arm64.iso                     63f360dd…  EL VIGENTE arm64: encina-branding 0.1.17, seis
-                                                   pasadas una huella. Arrancado hasta el instalador
-encina-os-amd64.iso                     3d5d12a9…  el vigente amd64 (§4.77), instalado sin red en el Acer
+                                                   pasadas una huella. Arrancado hasta el instalador — refabricado el 2026-08-28 desde 464b4fd, dos pasadas, la misma huella (§4.81c)
+encina-os-amd64.iso                     3d5d12a9…  el vigente amd64 (§4.77), instalado sin red en el Acer — refabricado el 2026-08-28 desde 464b4fd, dos pasadas, la misma huella (§4.81c)
 encina-os-libnss3.iso                   cd84d2ec…  el arm64 anterior (0.1.15); su borrado es de Jorge
 ubuntu-24.04.4-desktop-arm64.iso        c2610520…  la ENTRADA arm64, firmada por Canonical
 ubuntu-24.04.4-desktop-amd64.iso        3a4c9877…  la ENTRADA amd64, firmada por Canonical
