@@ -13,7 +13,7 @@ implementarse ni prepararse aún.
 de alcance, y desde que E2 se abrió eso ya no era verdad. **Reempaquetar la ISO
 oficial es E3 y está abierto**; lo que sigue fuera es **rehacerla**, que es E5.
 
-**El cuarto paquete del producto, `autofirma 1.9.1+encina2`, no se especifica
+**El cuarto paquete del producto, `autofirma 1.9.1+encina4` *(~~`+encina2`~~ **`+encina4`**, enmienda del 2026-08-28: el manifiesto pincha `1.9.1+encina4` desde el 2026-08-12 y la prosa no lo decía; lo vigila `bancos/versiones.sh`)*, no se especifica
 aquí:** vive en `~/Projects/encina-autofirma`, con su propio `MEDICIONES.md`. Es
 un ingrediente con condición de salida (D14), no una línea de trabajo de este
 repositorio.
@@ -75,7 +75,7 @@ ni lee `/etc/firefox/pref/`, así que sobre un sistema con Firefox nativo falla
 
 **Y esa corrección tiene a su vez una corrección, del 2026-08-08.** «Falla más
 que en una Ubuntu de fábrica» era cierto **con el `.deb` oficial de AutoFirma**.
-Encina OS ya no instala ese `.deb`: instala `autofirma 1.9.1+encina2` —era
+Encina OS ya no instala ese `.deb`: instala `autofirma 1.9.1+encina4` *(~~`+encina2`~~ **`+encina4`**, enmienda del 2026-08-28: el manifiesto pincha `1.9.1+encina4` desde el 2026-08-12 y la prosa no lo decía; lo vigila `bancos/versiones.sh`)* —era
 `+encina1` cuando se midió lo que sigue—, que cierra B1a, B1b, B2, B4 y B6.
 Sobre Firefox nativo, y con ese paquete, **la firma sale** —medido con
 certificado real de la FNMT en `valide.redsara.es`, mirado en
@@ -139,6 +139,17 @@ override_dh_auto_install:
 
 - **Versionado:** semántico, `MAJOR.MINOR.PATCH`. Actualizar el changelog con
   `dch -v <versión>`. La suite del changelog es el codename de Ubuntu destino.
+  **Y desde el 2026-08-28 (tarea 14 de la refactorización) la fuente es UNA por
+  ingrediente y una para el producto:** la versión de cada `.deb` es la de su
+  `debian/changelog`, y `imagen/repo-manifiesto.tsv` (filas `PROPIO`) tiene que
+  decir la misma —`bancos/versiones.sh` lo comprueba, y comprueba también que
+  ningún documento vivo cite otra, salvo tachada o marcada como histórica—; **la
+  versión del producto es la de `encina-meta`**, y de ella `fabricar-iso.sh`
+  compone el `Volume id` del medio (`EncinaOS 0.2.1 arm64`, paso 5e). El
+  `24.04.4 LTS "Nutria Nocturna"` de `imagen/marca/disk-info` no es una versión
+  nuestra: es la de la base, que `subiquity` usa como canal (`TRAMPAS.md` 33b).
+  Los nombres de los cuatro `.deb` que viajan en el medio los leen
+  `fabricar-iso.sh` y `fabricar-seed.sh` del manifiesto, no los llevan escritos.
 - **Arquitectura:** `all` en los tres paquetes. No hay binarios compilados.
 - **Lintian es una puerta de calidad:** `lintian` sin errores es requisito.
   Los avisos deben justificarse o corregirse, no ignorarse en silencio.
@@ -800,7 +811,7 @@ sede dice «No es posible conectar con Autofirma». Aquí se escribió como lo q
 era, un apaño, y el arreglo bueno se dijo en voz alta: un disparador en
 `encina-autofirma`.
 
-**Eso es exactamente lo que se hizo allí.** `autofirma 1.9.1+encina2` trae dos
+**Eso es exactamente lo que se hizo allí.** `autofirma 1.9.1+encina2` trae dos *(versión histórica, la de aquel día)*
 unidades de systemd de usuario que instalan la CA **cuando el perfil aparece**,
 sin que el usuario teclee nada. Medido en aquel repositorio (M14–M18 de su
 `MEDICIONES.md`), y lo que cierra el asunto es M18: sobre un clon virgen de
@@ -842,7 +853,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       existe fichero de overrides y no debe crearse uno preventivo**. Si algún
       día aparece una etiqueta, es nueva: se mira antes de escribir nada, y si
       hay que anularla, con el motivo redactado.
-      **Confirmado el 2026-08-08 sobre `encina-meta_0.1.0_all.deb` (2966 bytes):
+      **Confirmado el 2026-08-08 sobre `encina-meta_0.1.0_all.deb` (2966 bytes): *(versión histórica, la de aquel día)*
       `[OK] lintian no dice nada`.** Sigue sin haber fichero de overrides
 - [x] El paquete **no instala ni un fichero** fuera de `/usr/share/doc/`.
       `dpkg -L encina-meta` lo demuestra.
@@ -852,10 +863,10 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
 - [x] `apt install ./encina-meta_*.deb` con los otros tres `.deb` al lado
       instala los cuatro y sale con código 0.
       **Los cuatro quedan `install ok installed`.** El de `autofirma` era, el día
-      de esta medición, `autofirma_1.9.1+encina1_all.deb`, bajado del artefacto
+      de esta medición, `autofirma_1.9.1+encina1_all.deb`, bajado del artefacto *(versión histórica, la de aquel día)*
       `autofirma-arm64` de la ejecución 31232027825 de su CI
       (`sha256 4aa647220eb62cc5b73a257760b44950663c2151f3efc063d81f14ffa92fff3e`).
-      **El paquete de hoy es `1.9.1+encina2`**, y con él se repitió la secuencia
+      **El paquete de hoy es `1.9.1+encina2`**, y con él se repitió la secuencia *(versión histórica, la de aquel día)*
       entera el 2026-08-09 sobre otro clon virgen (M18 de `encina-autofirma`)
 - [x] **El paso 1 no ha instalado ni tocado Firefox.** `LC_ALL=C apt-cache policy
       firefox` sigue diciendo `Installed: 1:1snap1-0ubuntu5`. *Sano:* esa versión
@@ -906,7 +917,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       `libreoffice-help-<lang>`. O sea que **la l10n que este paquete declaraba
       abría un hueco de l10n nuevo.** En §A3 la misma orden salía vacía porque
       allí no había ningún LibreOffice.
-      **Corregido el mismo día en `encina-meta 0.1.1`**, quitando la causa en vez
+      **Corregido el mismo día en `encina-meta 0.1.1`**, quitando la causa en vez *(versión histórica, la de aquel día)*
       de tapándola: la línea se cae del `Recommends:` y vuelve en E4 con
       `libreoffice-help-es` al lado (§6.2, `MEDICIONES.md` §4.11c). Verificado
       tras el `autoremove` de los 37 paquetes huérfanos, **y con control, que es
@@ -973,7 +984,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
 - [x] Una entrada de matriz nueva en `build.yml`, verde.
       **Verde el 2026-08-08**, ejecución `31252036419` sobre `ed86a45`, con las
       tres entradas de la matriz en `success`. La de `encina-meta` da las mismas
-      **14 correctas, 0 fallos, 0 avisos** que en la VM, `encina-meta_0.1.1_all.deb`
+      **14 correctas, 0 fallos, 0 avisos** que en la VM, `encina-meta_0.1.1_all.deb` *(versión histórica, la de aquel día)*
       de 3402 bytes, y —lo que importaba— **`lintian 2.117.0ubuntu1.5` en el
       runner tampoco dice nada**, igual que el de la VM. La entrada entró en el
       mismo commit que el `changelog`, porque sin él `10-meta-construir.sh` se
@@ -1030,7 +1041,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       que su configurador no encontraba ningún perfil de Mozilla y **la CA del
       socket no se instalaba en ningún navegador**; la sede respondía «No es
       posible conectar con Autofirma», que apunta al sitio equivocado. Obligaba a
-      un cuarto paso manual. `autofirma 1.9.1+encina2` trae el disparador que
+      un cuarto paso manual. `autofirma 1.9.1+encina2` trae el disparador que *(versión histórica, la de aquel día)*
       aquí se pedía, y **M18 de `encina-autofirma` mide la secuencia de tres
       órdenes sobre un clon virgen, sin `dpkg-reconfigure` ni una vez, con la CA
       dentro del perfil al abrir Firefox**. La secuencia de arriba vuelve a ser
@@ -1046,7 +1057,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       del `.p12`.
       **Lo que separa las dos fechas no es una tarde más de VM: es un paquete.**
       El 8 de agosto la firma salía y la secuencia no bastaba; el 9, con
-      `autofirma 1.9.1+encina2`, basta. Es la diferencia entre «se puede hacer
+      `autofirma 1.9.1+encina2`, basta. Es la diferencia entre «se puede hacer *(versión histórica, la de aquel día)*
       funcionar» y «funciona», que es justo lo que esta casilla mide
 
 **La última casilla es la única que importa de verdad**, y es la única que

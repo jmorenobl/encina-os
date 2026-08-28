@@ -89,10 +89,21 @@ declare -a FICHEROS HUELLAS
 # encina-autofirma/salida/ tiene TRES candidatos con la misma pinta
 # -d5a0ebe1... (+encina2), 2d985724... (+encina3) y faeca3a9... (+encina4)- y
 # un 'ls -t | head -1' construye una cosa distinta de la que crees (§4.13).
-FICHEROS=(autofirma_1.9.1+encina4_all.deb
-          encina-branding_0.1.17_all.deb
-          encina-firefox-native_0.2.1_all.deb
-          encina-meta_0.2.1_all.deb)
+# LOS NOMBRES DE LOS CUATRO .deb SALEN DEL MANIFIESTO, no se escriben aqui
+# (tarea 14, 2026-08-28): hasta hoy iban clavados en este array Y en el de
+# fabricar-seed.sh, y cambiar un .deb eran «cinco sitios» (§4.45b) que se podian
+# separar en silencio. imagen/repo-manifiesto.tsv es LA FUENTE de la lista
+# (cosechar-repo.sh), sus filas PROPIO llevan nombre y version, y las huellas
+# siguen saliendo de encina-seed.sh, que es quien las comprueba dentro. El
+# orden es el de siempre: autofirma, branding, firefox-native, meta.
+MANIFIESTO_PROPIOS="$AQUI/repo-manifiesto.tsv"
+[ -f "$MANIFIESTO_PROPIOS" ] || morir "no esta el manifiesto: $MANIFIESTO_PROPIOS"
+fichero_de() { awk -F'\t' -v p="$1" '$1=="PROPIO" && $2==p {print $4}' "$MANIFIESTO_PROPIOS"; }
+FICHEROS=("$(fichero_de autofirma)" "$(fichero_de encina-branding)"
+          "$(fichero_de encina-firefox-native)" "$(fichero_de encina-meta)")
+for i in 0 1 2 3; do
+    [ -n "${FICHEROS[$i]}" ] || morir "el manifiesto no tiene fila PROPIO para el paquete $i de los cuatro"
+done
 HUELLAS=("$(huella_de H_AUTOFIRMA)"
          "$(huella_de H_BRANDING)"
          "$(huella_de H_FFNATIVE)"

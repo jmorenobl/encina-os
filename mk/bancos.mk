@@ -9,10 +9,10 @@
 # que pide la casilla. Para verlos todos aunque uno falle: 'make -k bancos'.
 
 .PHONY: bancos bancos-medios banco-autosuficiencia \
-        banco-enlaces banco-vigencia banco-ci-copias banco-shellcheck \
+        banco-enlaces banco-vigencia banco-ci-copias banco-versiones banco-shellcheck \
         banco-cadena banco-veredicto banco-conteo banco-mecanismos
 
-bancos: banco-enlaces banco-vigencia banco-ci-copias banco-cadena banco-veredicto banco-conteo banco-shellcheck
+bancos: banco-enlaces banco-vigencia banco-ci-copias banco-versiones banco-cadena banco-veredicto banco-conteo banco-shellcheck
 
 banco-enlaces:
 	./bancos/enlaces.sh
@@ -20,6 +20,8 @@ banco-vigencia:
 	./bancos/vigencia.sh
 banco-ci-copias:
 	./bancos/ci-copias.sh
+banco-versiones:
+	./bancos/versiones.sh
 banco-shellcheck:
 	./bancos/shellcheck.sh
 banco-cadena:

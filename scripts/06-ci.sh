@@ -53,7 +53,7 @@ jobs:
   # motivo, MEDICIONES.md §4.80) y no aqui: romper la CI a proposito exige un
   # push, y eso es de Jorge.
   bancos:
-    name: bancos · enlaces, vigencia, ci-copias, cadena, veredicto, conteo, shellcheck
+    name: bancos · enlaces, vigencia, ci-copias, versiones, cadena, veredicto, conteo, shellcheck
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
