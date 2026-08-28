@@ -62,7 +62,7 @@ abierta:
   maestros son 3936×2624 y lo que se envía es 3840×2160: hay un recorte y un
   redimensionado que se hicieron a mano el 2026-08-08 y no están escritos. El
   manifiesto tiene la columna preparada y **vacía**.
-- **`02-activos.sh` sigue generando los degradados viejos.** `encina.jpg` y
+- **`generar-activos.sh` sigue generando los degradados viejos.** `encina.jpg` y
   `encina-dark.jpg` dejaron de ser degradados el 2026-08-08, pero el guion sigue
   sabiendo fabricarlos, así que `--forzar` los sustituiría sin preguntar. Está
   escrito en `SCRIPTS.md` y sigue siendo verdad.

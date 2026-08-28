@@ -12,7 +12,7 @@
 # el archive a un directorio nuevo y construye ahi, en las dos vias.
 
 SISTEMA := $(shell uname -s)
-GUIONES_DEB := scripts/03-construir.sh scripts/07-firefox-construir.sh scripts/10-meta-construir.sh
+GUIONES_DEB := scripts/construir-branding.sh scripts/construir-firefox.sh scripts/construir-meta.sh
 PAQUETES := encina-branding encina-firefox-native encina-meta
 
 .PHONY: paquetes paquetes-linux paquetes-docker constructor

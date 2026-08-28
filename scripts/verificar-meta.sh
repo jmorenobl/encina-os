@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 12-meta-verificar.sh — Idempotencia (R9) y purga de encina-meta.
+# verificar-meta.sh — Idempotencia (R9) y purga de encina-meta.
 #
-# Uso:  ./scripts/12-meta-verificar.sh
+# Uso:  ./scripts/verificar-meta.sh
 #
 # Es el equivalente de 05 y de 09 para E1, y va aparte de 11 por lo mismo que
 # aquellos: la purga es destructiva y se ejecuta al final, cuando lo demás ya
@@ -23,11 +23,11 @@ requiere_no_root
 PAQUETE="encina-meta"
 SALIDA_DIR="$(raiz_repo)/debian-packages"
 DEB=$(ls -t "$SALIDA_DIR"/${PAQUETE}_*.deb 2>/dev/null | head -1 || true)
-[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/10-meta-construir.sh"; exit 1; }
+[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/construir-meta.sh"; exit 1; }
 
 EST_INI=$(LC_ALL=C dpkg-query -W -f='${Status}' "$PAQUETE" 2>/dev/null || echo "")
 if [[ "$EST_INI" != "install ok installed" ]]; then
-    echo "$PAQUETE no está instalado. Ejecuta antes ./scripts/11-meta-instalar.sh"
+    echo "$PAQUETE no está instalado. Ejecuta antes ./scripts/instalar-meta.sh"
     exit 1
 fi
 

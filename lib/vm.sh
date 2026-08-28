@@ -31,7 +31,7 @@ requiere_cmd() {
     for c in "$@"; do command -v "$c" >/dev/null 2>&1 || falta+=("$c"); done
     if (( ${#falta[@]} > 0 )); then
         echo "${C_MAL}Faltan herramientas:${C_FIN} ${falta[*]}"
-        echo "Ejecuta primero:  ./scripts/00-entorno.sh"
+        echo "Ejecuta primero:  ./scripts/preparar-entorno.sh"
         exit 1
     fi
 }
@@ -51,16 +51,16 @@ requiere_no_root() {
 # Hasta el 2026-08-23 esto era  "${ENCINA_REPO:-$HOME/encina}"  y ese
 # "$HOME/encina" de reserva ha mordido DOS VECES, las dos en silencio:
 #
-#   - 2026-08-14: 03-construir.sh dijo [OK] sobre un .deb 0.1.7 con el changelog
+#   - 2026-08-14: construir-branding.sh dijo [OK] sobre un .deb 0.1.7 con el changelog
 #     en 0.1.9. Se invoco sin ENCINA_REPO y construyo OTRO clon, de cuatro dias
 #     antes, entero y sin una queja (ver el bloque de las dos comprobaciones en
-#     03-construir.sh). Se le puso un detector A ESE GUION, no se arreglo esto.
-#   - 2026-08-23 (§4.67 h): al ejecutarse 01-repo.sh sin querer, FABRICO UN
+#     construir-branding.sh). Se le puso un detector A ESE GUION, no se arreglo esto.
+#   - 2026-08-23 (§4.67 h): al ejecutarse colocar-esqueleto.sh sin querer, FABRICO UN
 #     REPOSITORIO ENTERO en ~/encina y le hizo dos commits.
 #
 # Un valor por defecto que apunta a un sitio PLAUSIBLE Y DISTINTO es peor que no
 # tener valor por defecto: el guion no falla, acierta en otro sitio. Y el arreglo
-# no es un detector mas —03-construir.sh ya escribio por que: cuando la raiz se
+# no es un detector mas —construir-branding.sh ya escribio por que: cuando la raiz se
 # desvia se lleva TODO al mismo sitio equivocado y las comprobaciones internas
 # cuadran—. Lo que separa los dos casos es cual es el arbol, y eso se sabe sin
 # preguntarle a nadie: ES EL ARBOL DONDE ESTA ESTE lib.sh.

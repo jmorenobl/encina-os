@@ -99,8 +99,12 @@
 #
 #   (bancos/vigencia.sh estuvo aqui hasta que la tarea 5 lo creo, el 2026-08-28)
 #   (lib/salida.sh y lib/vm.sh estuvieron aqui hasta que la tarea 3 los creo, el 2026-08-28: el guion aviso de que sobraban, que es para lo que existe el aviso)
-#   scripts/construir-deb.sh  nombre que PROPONE la tarea 10, y ademas guion
-#                             real del repositorio hermano encina-autofirma
+#   scripts/00-entorno.sh … scripts/12-meta-verificar.sh   los TRECE nombres de antes de
+#                             la tarea 10 (2026-08-28): los registros los conservan a
+#                             proposito y SCRIPTS.md lleva la tabla de equivalencias.
+#   scripts/construir-deb.sh  el nombre que la tarea 10 PROPONIA y tres documentos
+#                             citan como propuesta; al final la convencion fue
+#                             verbo-paquete (construir-branding.sh) y este no existe
 #   imagen/autoinstall-e3.yaml   nombre historico conservado a proposito;
 #   imagen/verificar-e2.sh       SCRIPTS.md los documenta en su tabla de
 #                                equivalencias, asi que borrarlos seria perder
@@ -366,7 +370,7 @@ MD
 }
 
 # ------------------------------------------------------------ la medicion ----
-EXCLUIDAS="scripts/construir-deb.sh imagen/autoinstall-e3.yaml imagen/verificar-e2.sh"
+EXCLUIDAS="imagen/autoinstall-e3.yaml imagen/verificar-e2.sh scripts/construir-deb.sh scripts/00-entorno.sh scripts/01-repo.sh scripts/02-activos.sh scripts/03-construir.sh scripts/04-instalar.sh scripts/05-verificar.sh scripts/06-ci.sh scripts/07-firefox-construir.sh scripts/08-firefox-instalar.sh scripts/09-firefox-verificar.sh scripts/10-meta-construir.sh scripts/11-meta-instalar.sh scripts/12-meta-verificar.sh"
 esta_excluida() { case " $EXCLUIDAS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
 # LAS ROTAS DECLARADAS: rotas de verdad, y SIN DESTINO DEMOSTRABLE. Salen

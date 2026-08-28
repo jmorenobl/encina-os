@@ -5,7 +5,7 @@
 #       ./design/generar.sh --escribir   regenera lo que sabe regenerar.
 #
 # Por defecto no escribe, y no es prudencia de más: 'encina.jpg' y
-# 'encina-dark.jpg' dejaron de ser degradados el 2026-08-08 y '02-activos.sh'
+# 'encina-dark.jpg' dejaron de ser degradados el 2026-08-08 y 'generar-activos.sh'
 # sigue sabiendo fabricarlos, así que un guion que escribe por su cuenta en
 # src/usr/share/backgrounds/ es una forma de perder trabajo medido.
 #

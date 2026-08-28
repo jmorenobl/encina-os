@@ -8,15 +8,15 @@ terminado de AGENTS.md §4.4.
 
 ## Construir
 
-    ./scripts/03-construir.sh
+    ./scripts/construir-branding.sh
 
 Comprueba las reglas duras, construye el `.deb` y pasa `lintian`.
 
 ## Instalar y probar
 
-    ./scripts/04-instalar.sh     # instala y comprueba lo verificable sin reiniciar
+    ./scripts/instalar-branding.sh     # instala y comprueba lo verificable sin reiniciar
     sudo reboot
-    ./scripts/05-verificar.sh    # usuario nuevo, idempotencia x5, purga
+    ./scripts/verificar-branding.sh    # usuario nuevo, idempotencia x5, purga
 
 El splash de arranque, el logotipo de GDM y el fondo del escritorio no los puede
 comprobar ningun script: salen al final marcados `[OJOS]` y hay que mirarlos.
@@ -24,9 +24,9 @@ comprobar ningun script: salen al final marcados `[OJOS]` y hay que mirarlos.
 ## Activos
 
 Los tres ficheros de `src/usr/share/backgrounds/encina/` estan versionados en el
-repositorio, pero son **provisionales**: los genero `02-activos.sh` a partir del
+repositorio, pero son **provisionales**: los genero `generar-activos.sh` a partir del
 SVG del logotipo. Cuando tengas los definitivos, sustituyelos sin mas.
-`02-activos.sh` no sobrescribe activos existentes salvo con `--forzar`,
+`generar-activos.sh` no sobrescribe activos existentes salvo con `--forzar`,
 precisamente para no machacartelos.
 
 ## Changelog

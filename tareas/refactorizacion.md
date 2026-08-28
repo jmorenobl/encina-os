@@ -246,8 +246,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
       *Y una trampa nueva, que costó un commit:* **`source` de un guion para
       leerle el `set` no lo lee, LO EJECUTA.** El primer control por guion
-      ejecutó los 23, `scripts/01-repo.sh:154` hizo un `git commit` que nadie
-      pidió y `06-ci.sh` fabricó un repositorio en `~/encina`. Deshecho con
+      ejecutó los 23, `scripts/colocar-esqueleto.sh:154` hizo un `git commit` que nadie
+      pidió y `crear-ci.sh` fabricó un repositorio en `~/encina`. Deshecho con
       `git reset --mixed`; nada fuera de los 23 `.sh` se tocó. **Y el control
       dio un `[OK] FALSO Y VACÍO`**, porque el árbol quedó limpio y «no hay
       líneas raras» sobre **cero** líneas se lee igual que un aprobado: por eso
@@ -286,7 +286,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       depende es el resto de `lib.sh`, y ésa es la frontera real.
       *Hecha cuando:* ningún fichero fuera de `lib/` define `ok`, `fallo`,
       `aviso` ni `omitido`, y la salida de `verificar-instalacion.sh` y de
-      `05-verificar.sh` está alineada en la misma columna. **Control:** los
+      `verificar-branding.sh` está alineada en la misma columna. **Control:** los
       cuatro bancos y `comprobar-propios.sh` dan el mismo número de correctas y
       fallos que antes del cambio, apuntado antes de tocar nada.
 
@@ -600,7 +600,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 - [ ] **Una receta de la máquina que construye, no un nombre de máquina.** Hoy
       `construir-todo.sh` va por `ssh` a un constructor que se le pasa como
       `usuario@vm-linux`, y **no hay ninguna receta versionada de cómo se hace esa
-      máquina**: `00-entorno.sh` comprueba que están las siete herramientas, no
+      máquina**: `preparar-entorno.sh` comprueba que están las siete herramientas, no
       las pone.
       *Por qué:* la definición de terminado de la reproducibilidad —**dos pasadas,
       la misma huella**— se apoya hoy en una VM concreta del disco de Jorge. Si esa

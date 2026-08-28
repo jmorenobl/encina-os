@@ -3,7 +3,7 @@
 #
 # Hasta hoy la definicion de terminado de la reproducibilidad -- «dos pasadas,
 # la misma huella» -- se apoyaba en UNA VM concreta del disco de Jorge
-# (encina-dev, jorge@192.168.64.3): scripts/00-entorno.sh comprueba que estan
+# (encina-dev, jorge@192.168.64.3): scripts/preparar-entorno.sh comprueba que estan
 # las herramientas, no las pone, y de como se hizo esa maquina no habia receta.
 # Esto es la receta. Es la misma idea que ~/Projects/encina-autofirma/docker/
 # Dockerfile.build, que lleva meses al lado, y la de Mint y debos.
@@ -17,9 +17,9 @@
 # los tres paquetes son 'Architecture: all', asi que tienen que dar el MISMO
 # byte en las dos (§4.38, §4.69).
 #
-# LAS HERRAMIENTAS SON LAS SIETE DE scripts/00-entorno.sh, mas lo que la CI ya
+# LAS HERRAMIENTAS SON LAS SIETE DE scripts/preparar-entorno.sh, mas lo que la CI ya
 # sabia que falta en una maquina limpia: build-essential (dependencia implicita
-# de todo paquete Debian, §7 de AGENTS.md) y gnupg (07-firefox-construir.sh
+# de todo paquete Debian, §7 de AGENTS.md) y gnupg (construir-firefox.sh
 # verifica la huella de la clave de Mozilla). Lo que la receta NO tenga, lo
 # nombra docker/construir-paquetes.sh antes de construir nada: es su control.
 FROM ubuntu:24.04

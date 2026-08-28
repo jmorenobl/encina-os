@@ -9,7 +9,7 @@ guion. Aquí está el porqué de cada uno y lo que falta.
 |---|---|---|---|
 | **acento** | verde encina | `#3A664E` | El único color que dice «Encina». Verde de hoja de encina en sombra: no es el verde de una farmacia ni el de una app de reciclaje |
 | acento-profundo | verde profundo | `#2F4033` | El fondo sobre el que descansa todo lo oscuro. Ya está puesto como `primary-color` de los fondos |
-| acento-claro | verde hoja | `#5B7553` | El extremo claro. Sale del degradado de `02-activos.sh` |
+| acento-claro | verde hoja | `#5B7553` | El extremo claro. Sale del degradado de `generar-activos.sh` |
 | tierra | tierra ibera | `#A78B75` | Lo cálido. Impide que el verde se lea como corporativo |
 | arcilla | arcilla | `#D6BFA0` | La malla del logotipo. Es lo que hace legible la red sobre el verde |
 | neutro | gris pizarra | `#E6E8E6` | El gris que no es azul |

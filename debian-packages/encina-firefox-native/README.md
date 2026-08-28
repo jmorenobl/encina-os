@@ -70,7 +70,7 @@ por su cuenta y hace falta permiso explicito:
 
     sudo apt-get install -y --allow-downgrades firefox firefox-l10n-es-es
 
-Es lo que hace `08-firefox-instalar.sh`. Una persona siguiendo el orden de
+Es lo que hace `instalar-firefox.sh`. Una persona siguiendo el orden de
 arriba no necesita la opcion.
 
 Si Firefox arranca en ingles, falta el paquete de idioma o el locale del
@@ -134,7 +134,7 @@ R4 prohibe **eliminar** el Snap por destructivo. Aqui no se elimina nada:
 
 - El Snap sigue instalado y su perfil intacto. Arranca con `snap run firefox`.
 - `apt purge encina-firefox-native` devuelve el lanzador del Snap, y el
-  identificador vuelve a resolver a `/snap/bin/firefox`. `09-firefox-verificar.sh`
+  identificador vuelve a resolver a `/snap/bin/firefox`. `verificar-firefox.sh`
   lo comprueba explicitamente: es lo que demuestra que la operacion es
   reversible y que nunca se destruyo nada.
 
@@ -182,8 +182,8 @@ medido que **no** reescribe `favorite-apps` en el dconf del usuario, o sea que l
 lista no se corrompe y el icono vuelve al volver a entrar. Si desaparece de la
 pantalla o no, no se ha podido medir sin ojos.
 
-`07-firefox-construir.sh` falla si alguien vuelve a **quitar** `NoDisplay`, y
-`08-firefox-instalar.sh` comprueba las dos cosas por separado: que la entrada
+`construir-firefox.sh` falla si alguien vuelve a **quitar** `NoDisplay`, y
+`instalar-firefox.sh` comprueba las dos cosas por separado: que la entrada
 este oculta **y** que el identificador siga resolviendo. Oculta y desactivada no
 son lo mismo, y confundirlas es lo que costo la 0.2.0.
 
@@ -236,7 +236,7 @@ El identificador de usuario de la clave es `Artifact Registry Repository Signer
 sirve el repositorio desde Google Artifact Registry. Es lo esperado: lo que se
 verifica es la huella, no el nombre.
 
-`07-firefox-construir.sh` la vuelve a comprobar en cada construccion y se
+`construir-firefox.sh` la vuelve a comprobar en cada construccion y se
 detiene sin construir nada si no coincide. La huella esta escrita a mano dentro
 del script, no leida del fichero que valida.
 
@@ -266,9 +266,9 @@ anclaje sin efecto.
 
 ## Construir y probar
 
-    ./scripts/07-firefox-construir.sh    # huella, reglas duras, build, lintian
-    ./scripts/08-firefox-instalar.sh     # instala, apt update, apt policy, idioma
-    ./scripts/09-firefox-verificar.sh    # full-upgrade x2, idempotencia x5, purga
+    ./scripts/construir-firefox.sh    # huella, reglas duras, build, lintian
+    ./scripts/instalar-firefox.sh     # instala, apt update, apt policy, idioma
+    ./scripts/verificar-firefox.sh    # full-upgrade x2, idempotencia x5, purga
 
 `09` es la que importa: ejecuta `apt full-upgrade` **dos veces** y comprueba que
 Firefox no ha vuelto al Snap ni ha sido degradado a la version de Ubuntu. Es la
@@ -298,7 +298,7 @@ y `/etc/apt/preferences.d/`. Comprobado en `Lintian/Check/Apt.pm` (lintian
 algo acabado en `-apt-source`, pero el del anclaje no tiene excepcion alguna.
 
 Se ven en cualquier momento con `lintian --show-overrides`, y
-`07-firefox-construir.sh` los imprime en cada construccion para que no se
+`construir-firefox.sh` los imprime en cada construccion para que no se
 conviertan en un error olvidado.
 
 ## Changelog

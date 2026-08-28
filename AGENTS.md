@@ -294,7 +294,7 @@ Ejecutar en una VM Ubuntu **virgen**:
 - [ ] **GDM espera a udev (0.1.16):** `systemctl show gdm.service -p Wants` lista
       `systemd-udev-settle.service` con el paquete puesto, y **deja de listarla
       tras la purga** —ese es el control, y sin él el primero no vale—. Lo
-      ejecuta `05-verificar.sh` (2b y su control en la purga). Lo que esa
+      ejecuta `verificar-branding.sh` (2b y su control en la purga). Lo que esa
       casilla **no** prueba, y queda en el hierro: que en un AMD el saludador
       aparezca tres arranques seguidos (`tareas/sueltas.md`, «Hierro AMD»)
 - [ ] **La bellota no depende de `icon-theme` (0.1.17):** con el paquete,
@@ -305,7 +305,7 @@ Ejecutar en una VM Ubuntu **virgen**:
       trampa 13: `icon-theme.cache` de Yaru **más nuevo** que el SVG, con el
       paquete y tras la purga (quien lo regenera es el `update-icon-caches`
       que `dh_icons` añade a nuestro `postinst`/`postrm` —medido—: se mide,
-      no se supone). Lo ejecuta `05-verificar.sh` (2c y su control en la purga). Lo
+      no se supone). Lo ejecuta `verificar-branding.sh` (2c y su control en la purga). Lo
       que esa casilla **no** prueba y es `[OJOS]` de Jorge
       (`tareas/aspecto/5-cierre.md`): en sesión gráfica, oscuro, claro, cerrar
       sesión, entrar, **y la bellota sigue**, con `dconf read
@@ -935,7 +935,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       **Y confirmado desde cero**, que es distinto: en el banco se llegó
       *quitando*. Sobre `encina-firma-efimera`, virgen y con línea base tomada
       —sin `libreoffice-common` ni `libreoffice-core`—, la secuencia entera con
-      0.1.1 **no los trae**, y `11-meta-instalar.sh` da allí **27 correctas, 0
+      0.1.1 **no los trae**, y `instalar-meta.sh` da allí **27 correctas, 0
       fallos y 0 avisos**
 - [x] **Idempotencia (R9):** cinco instalaciones seguidas dejan el sistema
       idéntico.
@@ -987,7 +987,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       **14 correctas, 0 fallos, 0 avisos** que en la VM, `encina-meta_0.1.1_all.deb` *(versión histórica, la de aquel día)*
       de 3402 bytes, y —lo que importaba— **`lintian 2.117.0ubuntu1.5` en el
       runner tampoco dice nada**, igual que el de la VM. La entrada entró en el
-      mismo commit que el `changelog`, porque sin él `10-meta-construir.sh` se
+      mismo commit que el `changelog`, porque sin él `construir-meta.sh` se
       detiene y la CI habría salido roja a sabiendas.
       *Aviso, no fallo:* GitHub anota que `actions/checkout@v4` y
       `actions/upload-artifact@v4` van sobre Node 20, ya obsoleto, y los fuerza a
@@ -1046,7 +1046,7 @@ Casillas, cada una con lo que daría en un sistema sano y en uno roto:
       órdenes sobre un clon virgen, sin `dpkg-reconfigure` ni una vez, con la CA
       dentro del perfil al abrir Firefox**. La secuencia de arriba vuelve a ser
       de tres pasos. *(El otro cabo de aquella tarde también está cosido:
-      `11-meta-instalar.sh` se tragaba el aviso del `postinst` porque apt salía
+      `instalar-meta.sh` se tragaba el aviso del `postinst` porque apt salía
       con 0, y desde entonces lo imprime.)*
       *(2)* El diálogo de AutoFirma **no se dibujaba** en la VM (medido: 1 solo
       color en la ventana). Eso no es del producto sino del laboratorio, y **su

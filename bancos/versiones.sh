@@ -60,7 +60,6 @@ done
 
 MANIFIESTO="$RAIZ/imagen/repo-manifiesto.tsv"
 HERMANO="${ENCINA_AUTOFIRMA:-$HOME/Projects/encina-autofirma}"
-PAQUETES="autofirma encina-branding encina-firefox-native encina-meta"
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/versiones.XXXXXX") || morir "mktemp"
 trap 'rm -rf "$TMP"' EXIT
 

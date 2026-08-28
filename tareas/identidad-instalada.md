@@ -24,7 +24,7 @@ La deuda está escrita en dos sitios y con estas palabras:
 | el **medio** | `NAME="Encina OS"`, `LOGO=encina-logo`, **`ID=ubuntu`**, `ID_LIKE=debian` | [imagen/marca/sistema/usr/lib/os-release](../imagen/marca/sistema/usr/lib/os-release) |
 | la **máquina instalada** | `NAME="Ubuntu"` entero, sin tocar | D23, y `encina-branding` no lo toca |
 | la regla | **R5: *«`os-release` con `dpkg-divert`»*** — el mecanismo está **prescrito**, no prohibido | `ENCINA-OS.md` §5 |
-| la guardia | `[FALLO] R5 — el paquete toca os-release` si un paquete **lleva** el fichero en `src/` | [scripts/03-construir.sh:97](../scripts/03-construir.sh#L97) |
+| la guardia | `[FALLO] R5 — el paquete toca os-release` si un paquete **lleva** el fichero en `src/` | [scripts/construir-branding.sh:97](../scripts/construir-branding.sh#L97) |
 
 O sea que la guardia vigila que nadie lo **sobrescriba**, no que nadie lo
 **divierta**. Eso ya estaba bien escrito y conviene no volver a leerlo al revés.

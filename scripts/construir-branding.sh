@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 03-construir.sh — Comprueba las reglas duras, construye el .deb y pasa lintian.
+# construir-branding.sh — Comprueba las reglas duras, construye el .deb y pasa lintian.
 #
-# Uso:  ./scripts/03-construir.sh [--saltar-reglas]
+# Uso:  ./scripts/construir-branding.sh [--saltar-reglas]
 #
 # Las comprobaciones de reglas son estáticas (grep sobre los ficheros): tardan
 # un segundo y detectan justo los fallos que en caliente son invisibles y que
@@ -25,7 +25,7 @@ SALIDA_DIR="$(raiz_repo)/debian-packages"
 # a partir de ahi $PWD ya es el destino y comparar los dos siempre da igual
 # -- que es como esta comprobacion salio verde sobre el fallo que caza.
 INVOCADO_EN="$PWD"
-[[ -d "$PKG/debian" ]] || { echo "No existe $PKG/debian. Ejecuta antes ./scripts/01-repo.sh"; exit 1; }
+[[ -d "$PKG/debian" ]] || { echo "No existe $PKG/debian. Ejecuta antes ./scripts/colocar-esqueleto.sh"; exit 1; }
 
 MANT=("$PKG/debian/preinst" "$PKG/debian/postinst" "$PKG/debian/prerm" "$PKG/debian/postrm")
 PLY="$PKG/src/usr/share/plymouth/themes/encina"
@@ -297,7 +297,7 @@ if [[ -f "$INVOCADO_EN/debian-packages/encina-branding/debian/changelog" ]] \
 construido: $PKG
 Tienes ENCINA_REPO puesto y apunta a otro arbol. Sin esa variable se
 construye el de aqui; para forzar este, lanzalo asi:
-    ENCINA_REPO=\"\$PWD\" ./scripts/03-construir.sh"
+    ENCINA_REPO=\"\$PWD\" ./scripts/construir-branding.sh"
 else
     ok "El arbol construido es el de aqui ($PKG)"
 fi
@@ -365,5 +365,5 @@ resumen
 RES=$?
 echo
 echo "Paquete: $DEB"
-(( RES == 0 )) && echo "Siguiente:  ./scripts/04-instalar.sh"
+(( RES == 0 )) && echo "Siguiente:  ./scripts/instalar-branding.sh"
 exit $RES

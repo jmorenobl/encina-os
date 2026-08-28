@@ -9,22 +9,22 @@ después, y ninguno da nada por bueno sin comprobarlo.
 
 | Script | Qué hace | Dónde |
 |---|---|---|
-| `00-entorno.sh "Nombre" "correo"` | Instala herramientas, configura git y DEBEMAIL | VM |
-| `01-repo.sh [tar.gz]` | Coloca el esqueleto en el repositorio, verifica el árbol | VM |
-| `02-activos.sh [--forzar]` | Genera fondos y logotipo, verifica formatos | VM |
-| `03-construir.sh` | **Reglas duras** + build + lintian | VM y CI |
-| `04-instalar.sh` | Instala y comprueba todo lo verificable sin reiniciar | VM |
-| `05-verificar.sh` | Usuario nuevo, idempotencia x5, purga | VM |
-| `06-ci.sh` | GitHub Actions y repositorio remoto | VM |
+| `preparar-entorno.sh "Nombre" "correo"` | Instala herramientas, configura git y DEBEMAIL | VM |
+| `colocar-esqueleto.sh [tar.gz]` | Coloca el esqueleto en el repositorio, verifica el árbol | VM |
+| `generar-activos.sh [--forzar]` | Genera fondos y logotipo, verifica formatos | VM |
+| `construir-branding.sh` | **Reglas duras** + build + lintian | VM y CI |
+| `instalar-branding.sh` | Instala y comprueba todo lo verificable sin reiniciar | VM |
+| `verificar-branding.sh` | Usuario nuevo, idempotencia x5, purga | VM |
+| `crear-ci.sh` | GitHub Actions y repositorio remoto | VM |
 | `diario.sh "texto"` | El ritual de cierre en un comando | VM |
 
 ### De `encina-firefox-native`
 
 | Script | Qué hace | Dónde |
 |---|---|---|
-| `07-firefox-construir.sh` | Huella de la clave, **reglas duras**, build + lintian | VM y CI |
-| `08-firefox-instalar.sh` | Instala, `apt update`, anclaje, idioma, Firefox nativo | VM |
-| `09-firefox-verificar.sh` | **`full-upgrade` x2**, idempotencia x5, purga | VM |
+| `construir-firefox.sh` | Huella de la clave, **reglas duras**, build + lintian | VM y CI |
+| `instalar-firefox.sh` | Instala, `apt update`, anclaje, idioma, Firefox nativo | VM |
+| `verificar-firefox.sh` | **`full-upgrade` x2**, idempotencia x5, purga | VM |
 
 Son scripts aparte y no una generalización de 03/04/05 a propósito: aquellos
 están validados contra `encina-branding` y no se tocan. Lo único que comparten
@@ -40,9 +40,9 @@ validaría nada.
 
 | Script | Qué hace | Dónde |
 |---|---|---|
-| `10-meta-construir.sh` | **Reglas duras** + build + lintian | VM y CI |
-| `11-meta-instalar.sh` | **La secuencia de tres órdenes**, paso a paso | VM |
-| `12-meta-verificar.sh` | Idempotencia x5, purga, `autoremove` | VM |
+| `construir-meta.sh` | **Reglas duras** + build + lintian | VM y CI |
+| `instalar-meta.sh` | **La secuencia de tres órdenes**, paso a paso | VM |
+| `verificar-meta.sh` | Idempotencia x5, purga, `autoremove` | VM |
 
 Mismo motivo que antes para que sean aparte: 03/04/05 y 07/08/09 están
 validados contra sus paquetes y no se tocan.
@@ -132,13 +132,13 @@ scp encina-scripts.tar.gz encina-branding.tar.gz USUARIO@IP:~/
 ssh USUARIO@IP
 tar xzf encina-scripts.tar.gz
 cd encina-scripts
-./scripts/00-entorno.sh "Tu Nombre" "tu@correo.real"
-./scripts/01-repo.sh ~/encina-branding.tar.gz
-./scripts/02-activos.sh
-./scripts/03-construir.sh
+./scripts/preparar-entorno.sh "Tu Nombre" "tu@correo.real"
+./scripts/colocar-esqueleto.sh ~/encina-branding.tar.gz
+./scripts/generar-activos.sh
+./scripts/construir-branding.sh
 ```
 
-A partir de `01-repo.sh` los scripts viven dentro del repositorio, en su
+A partir de `colocar-esqueleto.sh` los scripts viven dentro del repositorio, en su
 `scripts/`, y se versionan con él.
 
 ## El laboratorio de E2: fabricar una VM desatendida desde el Mac
@@ -433,11 +433,11 @@ del laboratorio, no del producto**.
 
 ## Idempotencia
 
-Todos son idempotentes: ejecútalos las veces que quieras. `02-activos.sh` no
+Todos son idempotentes: ejecútalos las veces que quieras. `generar-activos.sh` no
 sobrescribe activos existentes salvo con `--forzar`, para que el día que pongas
 el logotipo de verdad no te lo machaque un script.
 
-**Desde el 2026-08-08, `02-activos.sh --forzar` es destructivo.** Ese día llegó:
+**Desde el 2026-08-08, `generar-activos.sh --forzar` es destructivo.** Ese día llegó:
 `encina.jpg` y `encina-dark.jpg` ya no son los degradados que generaba el script,
 son fotografías. El script sigue sabiendo fabricar el degradado, así que
 `--forzar` **las sustituiría por él sin preguntar** y las dos comprobaciones que
@@ -451,6 +451,43 @@ está escrito en `design/fondos/manifiesto.tsv` con las doce huellas, y ese guio
 las comprueba —con su rojo probado— en vez de fabricar un degradado. Retirar los
 degradados de aquí es una casilla abierta:
 `tareas/aspecto/1-instrumentacion.md`.
+
+## Los nombres cambiaron otra vez el 2026-08-28: por verbo y paquete, sin números
+
+Los trece guiones `00`–`12` eran en realidad **tres tríadas** —construir ·
+instalar · verificar, una por paquete— intercaladas con cuatro utilidades, y el
+número no decía a qué paquete pertenecía cada uno: había que abrirlo. Un cuarto
+paquete no tenía hueco. La convención nueva **no se inventó aquí**: es la de
+`~/Projects/encina-autofirma`, mismo autor y mismo método, que lleva meses con
+`construir-deb.sh`, `verificar-deb.sh` y doce `medir-<qué>.sh` — verbo primero
+y sin números (tarea 10 de `tareas/refactorizacion.md`). **El orden lo dice esta
+página, no el nombre.**
+
+```
+ANTES                        AHORA                       QUE ES
+scripts/00-entorno.sh            -> scripts/preparar-entorno.sh      la VM constructora: herramientas e identidad
+scripts/01-repo.sh               -> scripts/colocar-esqueleto.sh     el esqueleto de encina-branding en el repo
+scripts/02-activos.sh            -> scripts/generar-activos.sh       los activos graficos minimos
+scripts/03-construir.sh          -> scripts/construir-branding.sh    encina-branding: construir + lintian + reglas
+scripts/04-instalar.sh           -> scripts/instalar-branding.sh     encina-branding: instalar (usuario nuevo, x5, purga)
+scripts/05-verificar.sh          -> scripts/verificar-branding.sh    encina-branding: verificar en la VM
+scripts/06-ci.sh                 -> scripts/crear-ci.sh              el flujo de GitHub Actions y el remoto
+scripts/07-firefox-construir.sh  -> scripts/construir-firefox.sh     encina-firefox-native: construir
+scripts/08-firefox-instalar.sh   -> scripts/instalar-firefox.sh      encina-firefox-native: instalar (full-upgrade x2)
+scripts/09-firefox-verificar.sh  -> scripts/verificar-firefox.sh     encina-firefox-native: verificar
+scripts/10-meta-construir.sh     -> scripts/construir-meta.sh        encina-meta: construir
+scripts/11-meta-instalar.sh      -> scripts/instalar-meta.sh         encina-meta: la secuencia de tres ordenes
+scripts/12-meta-verificar.sh     -> scripts/verificar-meta.sh        encina-meta: verificar
+```
+
+**El renombrado no tocó un solo byte de lo que se construye**: `debian/`, `src/`
+e `imagen/encina-seed.sh` conservan las citas viejas a propósito (son bytes del
+`.deb` y de la ISO), y el control es `make paquetes` en el constructor de
+`docker/` con las huellas del manifiesto, y la huella de la ISO en la tarea 11.
+**`mediciones/`, `DIARIO.md` y `tareas/cerradas/` conservan los nombres viejos
+a propósito**, como la otra vez: son el registro de lo que se ejecutó aquel día.
+`bancos/enlaces.sh` los tiene en su lista de exclusión como nombres históricos,
+y esta tabla es la que los hace legibles.
 
 ## Los nombres cambiaron el 2026-08-13, y aquí está la equivalencia
 
@@ -497,8 +534,8 @@ export ENCINA_REPO=/ruta/a/tu/repo
 **ENMIENDA DEL 2026-08-23 (`MEDICIONES.md` §4.67).** Aquí decía
 ~~«Por defecto `~/encina`»~~ y era verdad: `raiz_repo()` devolvía
 `${ENCINA_REPO:-$HOME/encina}`. **Ese valor de reserva mordió dos veces y las
-dos en silencio** —el 2026-08-14 `03-construir.sh` construyó otro clon de cuatro
-días antes y dijo `[OK]`; el 2026-08-23 `01-repo.sh` fabricó un repositorio
+dos en silencio** —el 2026-08-14 `construir-branding.sh` construyó otro clon de cuatro
+días antes y dijo `[OK]`; el 2026-08-23 `colocar-esqueleto.sh` fabricó un repositorio
 entero en `~/encina` y le hizo dos commits—. **Un valor por defecto que apunta a
 un sitio plausible y distinto es peor que no tener valor por defecto: el guion
 no falla, acierta en otro sitio.** Ahora, sin `ENCINA_REPO`, la raíz se deduce
@@ -663,9 +700,9 @@ para buscar el `gnome-shell` de la sesión. Ninguno de los dos usa el número.
 
 ```
 $ grep -rn "1000" scripts/          # las diez, todas de apt
-scripts/07-firefox-construir.sh:210:    if [[ "${PRIO:-0}" -ge 1000 ]]; then
-scripts/08-firefox-instalar.sh:125:  if grep -q "1000" <<<"$MOZ_GEN"; then
-scripts/11-meta-instalar.sh:249:    if grep -qE '(^|[[:space:]])1000([[:space:]]|$)' <<<"$BLOQUE"; then
+scripts/construir-firefox.sh:210:    if [[ "${PRIO:-0}" -ge 1000 ]]; then
+scripts/instalar-firefox.sh:125:  if grep -q "1000" <<<"$MOZ_GEN"; then
+scripts/instalar-meta.sh:249:    if grep -qE '(^|[[:space:]])1000([[:space:]]|$)' <<<"$BLOQUE"; then
     ...
 ```
 
@@ -748,10 +785,10 @@ que «no lo sé» — en la comprobación que decide la casilla «Sin Snap». Ar
 con un `except TypeError`, y las tres salidas medidas (§4.16i).
 
 **Y la señal de que llevaba roto desde el principio, comprobada en el propio
-repositorio:** `08-firefox-instalar.sh` tiene un `case` con una rama `NINGUNA)`
+repositorio:** `instalar-firefox.sh` tiene un `case` con una rama `NINGUNA)`
 que **no se podía alcanzar jamás**. Los dos consumidores mejoran con el arreglo y
 ninguno se rompe: en `08`, lo que antes caía en `*)` («no se ha podido resolver,
-¿falta python3-gi?») ahora cae en su rama correcta; en `09-firefox-verificar.sh`
+¿falta python3-gi?») ahora cae en su rama correcta; en `verificar-firefox.sh`
 el `[FALLO]` pasa de decir «resuelve a: ?» a decir «resuelve a: NINGUNA», que es
 lo que de verdad ocurre. Una rama de `case` que nunca se ejecuta es un síntoma
 barato de esta trampa, y se busca leyendo.
@@ -888,7 +925,7 @@ saber antes de la próxima**:
   —`972ec932…` y `86da3cc9…`, las que el comentario de `encina-seed.sh` llama
   «las anteriores»—: aquel medio se fabricó antes de la corrección y **los lleva
   fosilizados dentro**. Se arregla reconstruyéndolos desde el clon con
-  `07-firefox-construir.sh` y `10-meta-construir.sh`, que dan **exactamente** las
+  `construir-firefox.sh` y `construir-meta.sh`, que dan **exactamente** las
   del manifiesto. Y sobra uno, `encina-branding_0.1.8_all.deb`, que era el de
   aquella ISO.
 - **El bulto no es el problema:** `/encina-repo` pesa **168 MB**, no un gigabyte,
@@ -942,8 +979,8 @@ xorriso -osirrox on -indev encina-os-E4-es-0.2.1.iso -extract /encina-repo <dest
 **Y DESDE EL 2026-08-13 NO HAY NADA QUE SÓLO SALGA DE AHÍ** (`MEDICIONES.md`
 §4.37). Este párrafo decía que `encina-branding_0.1.8_all.deb` era el último hilo
 de la circularidad; ya no lo es, porque **los tres `.deb` de Encina se
-construyen desde el clon** con `03-construir.sh`, `07-firefox-construir.sh` y
-`10-meta-construir.sh`, y la vuelta entera —cosecha sobre un directorio vacío,
+construyen desde el clon** con `construir-branding.sh`, `construir-firefox.sh` y
+`construir-meta.sh`, y la vuelta entera —cosecha sobre un directorio vacío,
 `--propios` apuntando sólo a lo construido y a `encina-autofirma/salida`— da
 **28 de 28 sin tocar la ISO ni una vez**.
 

@@ -26,9 +26,9 @@
 # pone TODO lo que no es x86) y amd64 en archive.ubuntu.com/ubuntu.
 #
 # LOS CUATRO DE ORIGEN 'PROPIO' NO SE COSECHAN, y no es un olvido:
-#     encina-branding        scripts/03-construir.sh
-#     encina-firefox-native  scripts/07-firefox-construir.sh
-#     encina-meta            scripts/10-meta-construir.sh
+#     encina-branding        scripts/construir-branding.sh
+#     encina-firefox-native  scripts/construir-firefox.sh
+#     encina-meta            scripts/construir-meta.sh
 #     autofirma              github.com/jmorenobl/encina-autofirma (publico),
 #                            procedimiento en su README; OJO al paso 3, que saca
 #                            el .deb del volumen 'encina-work'. Alli conviven

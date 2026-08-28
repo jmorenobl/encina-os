@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 04-instalar.sh — Instala el .deb y comprueba todo lo verificable sin reiniciar.
+# instalar-branding.sh — Instala el .deb y comprueba todo lo verificable sin reiniciar.
 #
-# Uso:  ./scripts/04-instalar.sh [--si-ya-cloné]
+# Uso:  ./scripts/instalar-branding.sh [--si-ya-cloné]
 #
 # ANTES de ejecutarlo por primera vez: apaga la VM y clónala en UTM con el
 # nombre encina-limpia-respaldo. Es la primera vez que puedes dejar la máquina
@@ -19,7 +19,7 @@ requiere_no_root
 
 SALIDA_DIR="$(raiz_repo)/debian-packages"
 DEB=$(ls -t "$SALIDA_DIR"/encina-branding_*.deb 2>/dev/null | head -1 || true)
-[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/03-construir.sh"; exit 1; }
+[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/construir-branding.sh"; exit 1; }
 
 # ---------------------------------------------------------- red de seguridad -
 if [[ "${1:-}" != "--si-ya-cloné" ]]; then
@@ -111,7 +111,7 @@ for clave in picture-uri picture-uri-dark; do
     if echo "$VAL" | grep -q "backgrounds/encina"; then
         ok "$clave -> $VAL"
     else
-        aviso "$clave -> $VAL  (tu usuario puede tener un valor propio; lo definitivo es 05-verificar.sh)"
+        aviso "$clave -> $VAL  (tu usuario puede tener un valor propio; lo definitivo es verificar-branding.sh)"
     fi
 done
 
@@ -139,5 +139,5 @@ echo
 echo "Si el splash pasa demasiado rápido para verlo, no pasa nada: la"
 echo "comprobación del initramfs de arriba ya te dice que está puesto."
 echo
-(( RES == 0 )) && echo "Después del reinicio:  ./scripts/05-verificar.sh"
+(( RES == 0 )) && echo "Después del reinicio:  ./scripts/verificar-branding.sh"
 exit $RES

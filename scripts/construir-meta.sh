@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 10-meta-construir.sh — Reglas duras de encina-meta, build y lintian.
+# construir-meta.sh — Reglas duras de encina-meta, build y lintian.
 #
-# Uso:  ./scripts/10-meta-construir.sh [--saltar-reglas]
+# Uso:  ./scripts/construir-meta.sh [--saltar-reglas]
 #
 # El equivalente de 03 y de 07 para E1. Es un script aparte y no una
 # generalización de los otros dos a propósito: aquellos están validados contra
@@ -249,6 +249,6 @@ resumen
 EST=$?
 if (( EST == 0 )); then
     echo
-    echo "Siguiente:  ./scripts/11-meta-instalar.sh"
+    echo "Siguiente:  ./scripts/instalar-meta.sh"
 fi
 exit $EST

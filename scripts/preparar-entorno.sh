@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 00-entorno.sh — Prepara la VM: herramientas de empaquetado e identidad.
+# preparar-entorno.sh — Prepara la VM: herramientas de empaquetado e identidad.
 # Idempotente: puedes ejecutarlo tantas veces como quieras.
 #
-# Uso:  ./scripts/00-entorno.sh "Tu Nombre" "tu@correo.real"
+# Uso:  ./scripts/preparar-entorno.sh "Tu Nombre" "tu@correo.real"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 # MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
@@ -49,7 +49,7 @@ if [[ -z "$NOMBRE" || -z "$CORREO" ]]; then
         ok "Identidad ya configurada: $NOMBRE <$CORREO>"
     else
         echo
-        echo "Uso: ./scripts/00-entorno.sh \"Tu Nombre\" \"tu@correo.real\""
+        echo "Uso: ./scripts/preparar-entorno.sh \"Tu Nombre\" \"tu@correo.real\""
         echo
         echo "El correo acaba dentro del paquete, en el campo Maintainer."
         echo "Usa uno real: lintian da error si detecta una dirección inventada."
@@ -93,4 +93,4 @@ echo "  Ubuntu detectado: $VER   (arquitectura: $(dpkg --print-architecture))"
 
 resumen
 echo
-echo "Siguiente:  ./scripts/01-repo.sh /ruta/a/encina-branding.tar.gz"
+echo "Siguiente:  ./scripts/colocar-esqueleto.sh /ruta/a/encina-branding.tar.gz"

@@ -32,7 +32,7 @@ haya hardware real donde mirar el arranque—, este fichero se abre entero y es 
 primero, por el mismo motivo por el que lo era.
 
 **Y una que se aplaza con reparos, dicho por delante:** *«Retirar los degradados
-de `02-activos.sh`»* no es afinar el instrumento — es **un arma cargada**.
+de `generar-activos.sh`»* no es afinar el instrumento — es **un arma cargada**.
 `--forzar` sustituiría dos fotografías por degradados y las dos comprobaciones
 que hace después saldrían **en verde igualmente**. Es un verde que miente, y
 cuesta minutos, no una tarde. Se aplaza porque nadie va a ejecutar `--forzar`
@@ -172,13 +172,13 @@ antes que ninguna de las otras cinco.
       *Hecha cuando:* va montada en el siguiente cambio de versión de
       `encina-branding`, con su huella nueva en el manifiesto.
 
-- [ ] **APLAZADA el 2026-08-15 CON REPAROS — es un arma cargada, no un afinado, y es la PRIMERA que hay que hacer cuando se reabra este fichero.** El motivo está arriba. **Retirar los degradados de `02-activos.sh`.** `encina.jpg` y
+- [ ] **APLAZADA el 2026-08-15 CON REPAROS — es un arma cargada, no un afinado, y es la PRIMERA que hay que hacer cuando se reabra este fichero.** El motivo está arriba. **Retirar los degradados de `generar-activos.sh`.** `encina.jpg` y
       `encina-dark.jpg` dejaron de ser degradados el 2026-08-08, pero el guion
       sigue sabiendo fabricarlos: `--forzar` **los sustituiría sin preguntar**, y
       las dos comprobaciones que hace después —que son JPEG y que difieren entre
       sí— saldrían **en verde igualmente**. Es un verde que miente, y está escrito
       en `SCRIPTS.md` desde entonces.
-      *Hecha cuando:* `02-activos.sh --forzar` ya no puede destruir una
+      *Hecha cuando:* `generar-activos.sh --forzar` ya no puede destruir una
       fotografía, y `design/generar.sh` es el único que toca los fondos.
 
 *Lo que este fichero deja hecho ya:* `design/generar.sh` existe, comprueba el

@@ -27,7 +27,7 @@ logotipo de Ubuntu** y en el de `prueba` sale la bellota. No es una regresión d
 la casilla que se cerró en 0.1.10: es un usuario con el tema cambiado a mano.
 
 **Lo que se mira es `prueba`**, creado después de instalar, sin nada escrito en
-su `dconf`. Es el mismo usuario que usa `05-verificar.sh` y por el mismo motivo.
+su `dconf`. Es el mismo usuario que usa `verificar-branding.sh` y por el mismo motivo.
 
 ## Las capturas
 

@@ -105,7 +105,7 @@ Está explicado entero dentro del propio `99-encina-branding.gschema.override`.
 - [x] ~~**Elegir el verde, ahora con las capturas delante.**~~ **ELEGIDO `sage`
       el 2026-08-14, decisión de Jorge —«el otro es muy llamativo»— y APLICADO en
       `encina-branding` 0.1.10**, junto con el dock abajo. Construido en
-      `encina-dev` con `03-construir.sh` —**30 correctas, 0 fallos**, `lintian`
+      `encina-dev` con `construir-branding.sh` —**30 correctas, 0 fallos**, `lintian`
       sin una línea— e instalado en la máquina del producto; el después está en
       `design/capturas/despues/`.
       *Lo que hace el paquete, y por qué así:* `gtk-theme='Yaru-sage'` con su

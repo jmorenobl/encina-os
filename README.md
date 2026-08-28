@@ -78,8 +78,8 @@ Lo que puedes hacer hoy, si quieres verlo funcionar:
 ```bash
 git clone https://github.com/jmorenobl/encina-os
 cd encina-os
-./scripts/00-entorno.sh          # comprueba que tienes con qué construir
-./scripts/03-construir.sh        # construye encina-branding
+./scripts/preparar-entorno.sh          # comprueba que tienes con qué construir
+./scripts/construir-branding.sh        # construye encina-branding
 ```
 
 Y si lo que quieres es entender por qué no funcionaba y cómo se arregló, eso

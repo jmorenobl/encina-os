@@ -15,7 +15,7 @@ Colores: acento `#3A664E` y arcilla `#D6BFA0`, de [../paleta.tsv](../paleta.tsv)
 | `logo.png` 200×200 | `src/usr/share/backgrounds/encina/` | GDM (`org/gnome/login-screen` `logo`) y Plymouth |
 
 `logo.png` **tiene que llevar canal alfa**. Sin transparencia sale con un
-recuadro opaco encima del arranque, y `02-activos.sh` ya lo comprueba.
+recuadro opaco encima del arranque, y `generar-activos.sh` ya lo comprueba.
 
 ## Reglas de uso
 

@@ -39,7 +39,7 @@ SALIDA=${SALIDA:-/salida}
 . "$REPO/lib/salida.sh"
 
 titulo "0. la receta: las herramientas, ANTES de construir nada"
-# las siete de scripts/00-entorno.sh, mas las dos que la CI ya sabia que faltan
+# las siete de scripts/preparar-entorno.sh, mas las dos que la CI ya sabia que faltan
 # en una maquina limpia (AGENTS.md §7)
 HERRAMIENTAS="git dpkg-buildpackage dpkg-deb dpkg-scanpackages lintian rsvg-convert convert file gpg gcc"
 FALTAN=""
@@ -68,7 +68,7 @@ ok "commit $COMMIT, $N_WORK ficheros en $WORK"
 titulo "2. los tres .deb, con sus guiones (uno por paquete, a proposito)"
 cd "$WORK" || morir "cd $WORK"
 chmod +x scripts/*.sh
-for g in scripts/03-construir.sh scripts/07-firefox-construir.sh scripts/10-meta-construir.sh; do
+for g in scripts/construir-branding.sh scripts/construir-firefox.sh scripts/construir-meta.sh; do
     echo "== $g"
     ENCINA_REPO="$WORK" bash "$g" > "$WORK/.$(basename "$g").log" 2>&1 \
         || { tail -25 "$WORK/.$(basename "$g").log"; morir "$g no paso"; }

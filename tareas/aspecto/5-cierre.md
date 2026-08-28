@@ -155,13 +155,13 @@ entregada de E4 y la única arrancada, `95758c9e…` la primera reproducible, y
       0.1.17 toma la salida (1)* — el SVG de Encina servido también en la ruta
       de Yaru sobre un `dpkg-divert` del `preinst` (uno solo cubre los 19
       acentos), `--remove` simétrico en el `postrm`, y la 2c de
-      `05-verificar.sh` en verde con sus cuatro controles en la purga y la
+      `verificar-branding.sh` en verde con sus cuatro controles en la purga y la
       trampa 13 de `icon-theme.cache` con su negativo probado a mano
       (`touch` → «no»). El tema `Encina` y el override no se tocan: red.
       **La casilla sigue abierta a propósito**: su condición es el control de
       producto —oscuro, claro, salir, entrar, la bellota sigue, con
       `dconf read …/icon-theme` enseñado antes y después— y eso es `[OJOS]`
-      de Jorge (las órdenes exactas las imprime `05-verificar.sh`). El
+      de Jorge (las órdenes exactas las imprime `verificar-branding.sh`). El
       pendiente de §4.75 —qué escribe el panel en oscuro— se cobra en esa
       misma mirada. Y el medio vigente **no** lleva el 0.1.17: los seis
       sitios y la refabricación son de la fase del medio.

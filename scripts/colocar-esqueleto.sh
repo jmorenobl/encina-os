@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# 01-repo.sh — Coloca el esqueleto de encina-branding dentro del repositorio
+# colocar-esqueleto.sh — Coloca el esqueleto de encina-branding dentro del repositorio
 # y verifica que el árbol de ficheros es el que exige AGENTS.md §4.1.
 #
 # ~~«Crea ~/encina»~~ — lo decía hasta el 2026-08-23 y era verdad: raiz_repo()
 # se inventaba esa ruta y este guion la creaba con mkdir -p. Ahora la raíz es
 # el árbol donde vive lib.sh, o ENCINA_REPO si la pones (§4.67).
 #
-# Uso:  ./scripts/01-repo.sh [ruta/a/encina-branding.tar.gz]
+# Uso:  ./scripts/colocar-esqueleto.sh [ruta/a/encina-branding.tar.gz]
 #
 # Si no le pasas la ruta, busca el tar.gz en ~ y en ~/Downloads.
 # Idempotente: si el repositorio ya existe, no lo destruye.
@@ -32,7 +32,7 @@ if [[ -z "$(git config --global user.email 2>/dev/null || true)" ]]; then
     echo
     echo "${C_MAL}git no tiene configurada tu identidad.${C_FIN}"
     echo "Ejecuta primero:"
-    echo "    ./scripts/00-entorno.sh \"Tu Nombre\" \"tu@correo.real\""
+    echo "    ./scripts/preparar-entorno.sh \"Tu Nombre\" \"tu@correo.real\""
     exit 1
 fi
 
@@ -73,7 +73,7 @@ else
 
     if [[ -z "$TAR" || ! -f "$TAR" ]]; then
         fallo "No encuentro encina-branding.tar.gz" \
-"Pásale la ruta:  ./scripts/01-repo.sh /ruta/al/encina-branding.tar.gz
+"Pásale la ruta:  ./scripts/colocar-esqueleto.sh /ruta/al/encina-branding.tar.gz
 Desde el Mac lo copias con:
     scp ~/Downloads/encina-branding.tar.gz USUARIO@IP_DE_LA_VM:~/"
         resumen; exit 1
@@ -135,7 +135,7 @@ OBLIGATORIOS=(
     "src/etc/dconf/db/gdm.d/99-encina"
 )
 
-# Estos los genera 02-activos.sh; aquí solo se informa.
+# Estos los genera generar-activos.sh; aquí solo se informa.
 GENERADOS=(
     "src/usr/share/backgrounds/encina/encina.jpg"
     "src/usr/share/backgrounds/encina/encina-dark.jpg"
@@ -148,7 +148,7 @@ done
 
 for f in "${GENERADOS[@]}"; do
     if [[ -f "$PKG/$f" ]]; then ok "$f (ya generado)"
-    else omitido "$f — lo genera 02-activos.sh"; fi
+    else omitido "$f — lo genera generar-activos.sh"; fi
 done
 
 # ------------------------------------------------------------ 6. commit -----
@@ -168,7 +168,7 @@ resumen
 RES=$?
 echo
 if (( RES == 0 )); then
-    echo "Siguiente:  cd $REPO && ./scripts/02-activos.sh"
+    echo "Siguiente:  cd $REPO && ./scripts/generar-activos.sh"
 else
     echo "Falta algún fichero del esqueleto. NO lo improvises: pregunta antes de inventarlo."
 fi

@@ -112,9 +112,9 @@ gh run download <ID> -n autofirma-arm64 -R jmorenobl/encina-autofirma
 ## Verificación
 
 ```
-./scripts/10-meta-construir.sh    # reglas duras, build, lintian     (VM y CI)
-./scripts/11-meta-instalar.sh     # la secuencia de tres órdenes     (VM)
-./scripts/12-meta-verificar.sh    # idempotencia y purga             (VM)
+./scripts/construir-meta.sh    # reglas duras, build, lintian     (VM y CI)
+./scripts/instalar-meta.sh     # la secuencia de tres órdenes     (VM)
+./scripts/verificar-meta.sh    # idempotencia y purga             (VM)
 ```
 
 `lintian` sobre este paquete **no dice ni una línea**, medido con

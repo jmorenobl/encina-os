@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 07-firefox-construir.sh — Reglas duras de encina-firefox-native, build y lintian.
+# construir-firefox.sh — Reglas duras de encina-firefox-native, build y lintian.
 #
-# Uso:  ./scripts/07-firefox-construir.sh [--saltar-reglas]
+# Uso:  ./scripts/construir-firefox.sh [--saltar-reglas]
 #
-# El equivalente de 03-construir.sh para A2. Es un script aparte y no una
+# El equivalente de construir-branding.sh para A2. Es un script aparte y no una
 # generalización de 03 a propósito: 03 está validado contra encina-branding y
 # no se toca. Lo único que comparten es lib.sh.
 #
@@ -510,5 +510,5 @@ resumen
 RES=$?
 echo
 echo "Paquete: $DEB"
-(( RES == 0 )) && echo "Siguiente:  ./scripts/08-firefox-instalar.sh"
+(( RES == 0 )) && echo "Siguiente:  ./scripts/instalar-firefox.sh"
 exit $RES

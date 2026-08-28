@@ -154,7 +154,7 @@ Nada de aquí se ve en pantalla, y sin ello lo demás se hace dos veces.
       **(a) Repo aparte, por las mismas cuatro razones que `encina-autofirma`:**
       es un fork de un proyecto ajeno con su propia licencia (GPL-3.0 /
       CC-BY-SA), necesita su propia construcción —meson y sassc— que no encaja en
-      la cadena de `03-construir.sh`, tiene una relación de rebase con aguas
+      la cadena de `construir-branding.sh`, tiene una relación de rebase con aguas
       arriba que debe verse anclada, y su oferta de fuente **es un repositorio y
       no un directorio de aquí**. Este repositorio lo consumiría por huella en
       `imagen/repo-manifiesto.tsv`, igual que consume `autofirma`.

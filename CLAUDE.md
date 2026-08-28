@@ -45,18 +45,18 @@ guion, a propósito — no se generalizan porque cada uno está validado contra 
 suyo):
 
 ```bash
-./scripts/03-construir.sh          # encina-branding   (--saltar-reglas omite las comprobaciones estáticas)
-./scripts/07-firefox-construir.sh  # encina-firefox-native (se detiene si la huella de la clave de Mozilla no cuadra)
-./scripts/10-meta-construir.sh     # encina-meta       (se detiene si falta debian/changelog; no lo crea)
-ENCINA_REPO="$PWD" ./scripts/03-construir.sh   # así los invoca la CI
+./scripts/construir-branding.sh          # encina-branding   (--saltar-reglas omite las comprobaciones estáticas)
+./scripts/construir-firefox.sh  # encina-firefox-native (se detiene si la huella de la clave de Mozilla no cuadra)
+./scripts/construir-meta.sh     # encina-meta       (se detiene si falta debian/changelog; no lo crea)
+ENCINA_REPO="$PWD" ./scripts/construir-branding.sh   # así los invoca la CI
 ```
 
 Instalar y verificar en VM (nunca en el Mac):
 
 ```bash
-./scripts/04-instalar.sh   ./scripts/05-verificar.sh   # branding: usuario nuevo, idempotencia x5, purga
-./scripts/08-firefox-instalar.sh ./scripts/09-firefox-verificar.sh   # full-upgrade x2 = la prueba del anclaje
-./scripts/11-meta-instalar.sh ./scripts/12-meta-verificar.sh         # la secuencia de tres órdenes
+./scripts/instalar-branding.sh   ./scripts/verificar-branding.sh   # branding: usuario nuevo, idempotencia x5, purga
+./scripts/instalar-firefox.sh ./scripts/verificar-firefox.sh   # full-upgrade x2 = la prueba del anclaje
+./scripts/instalar-meta.sh ./scripts/verificar-meta.sh         # la secuencia de tres órdenes
 ```
 
 Imagen (`imagen/`), desde el Mac:

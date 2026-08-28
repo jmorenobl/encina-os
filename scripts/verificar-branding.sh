@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 05-verificar.sh — La batería que separa "parece que funciona" de "funciona".
+# verificar-branding.sh — La batería que separa "parece que funciona" de "funciona".
 #
-# Uso:  ./scripts/05-verificar.sh [--sin-purga] [--conservar-usuario]
+# Uso:  ./scripts/verificar-branding.sh [--sin-purga] [--conservar-usuario]
 #
 #   --sin-purga          no desinstala el paquete (sáltate la prueba de purga)
 #   --conservar-usuario  no recrea el usuario 'prueba'
@@ -29,10 +29,10 @@ done
 
 SALIDA_DIR="$(raiz_repo)/debian-packages"
 DEB=$(ls -t "$SALIDA_DIR"/encina-branding_*.deb 2>/dev/null | head -1 || true)
-[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/03-construir.sh"; exit 1; }
+[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/construir-branding.sh"; exit 1; }
 
 dpkg-query -W -f='${Status}' encina-branding 2>/dev/null | grep -q "install ok installed" \
-    || { echo "encina-branding no está instalado. Ejecuta antes ./scripts/04-instalar.sh"; exit 1; }
+    || { echo "encina-branding no está instalado. Ejecuta antes ./scripts/instalar-branding.sh"; exit 1; }
 
 USUARIO_PRUEBA="prueba"
 CLAVE_PRUEBA="encina"
@@ -396,5 +396,5 @@ echo "            dock, fondo y rejilla donde estaban. 'masked' lo dice systemd;
 echo "            que no se pinte la ventana solo lo dice la pantalla."
 echo
 echo "Cuando eso pase, marca las casillas de ENCINA-OS.md §7 y anota el día:"
-echo "    ./scripts/diario.sh \"A1 verificado. Siguiente: CI (06-ci.sh)\""
+echo "    ./scripts/diario.sh \"A1 verificado. Siguiente: CI (crear-ci.sh)\""
 exit $RES

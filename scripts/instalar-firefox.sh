@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 08-firefox-instalar.sh — Instala encina-firefox-native, instala Firefox nativo
+# instalar-firefox.sh — Instala encina-firefox-native, instala Firefox nativo
 # y comprueba todo lo verificable sin mirar la pantalla.
 #
-# Uso:  ./scripts/08-firefox-instalar.sh [--si-ya-cloné] [--sin-firefox]
+# Uso:  ./scripts/instalar-firefox.sh [--si-ya-cloné] [--sin-firefox]
 #
 #   --si-ya-cloné   sáltate la pregunta del respaldo
 #   --sin-firefox   instala solo el .deb de configuración, no Firefox
@@ -27,7 +27,7 @@ requiere_no_root
 PAQUETE="encina-firefox-native"
 SALIDA_DIR="$(raiz_repo)/debian-packages"
 DEB=$(ls -t "$SALIDA_DIR"/${PAQUETE}_*.deb 2>/dev/null | head -1 || true)
-[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/07-firefox-construir.sh"; exit 1; }
+[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/construir-firefox.sh"; exit 1; }
 
 CON_FIREFOX=1
 CLONADO=0
@@ -475,5 +475,5 @@ pendiente_visual "Y que la interfaz salga EN ESPAÑOL: menús, preferencias, ini
 echo "            Ojo: el Snap también está en español, así que ver español no"
 echo "            demuestra nada si no has confirmado antes el binario."
 echo
-(( RES == 0 )) && echo "Siguiente, y es la prueba que de verdad importa:  ./scripts/09-firefox-verificar.sh"
+(( RES == 0 )) && echo "Siguiente, y es la prueba que de verdad importa:  ./scripts/verificar-firefox.sh"
 exit $RES

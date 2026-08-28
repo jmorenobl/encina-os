@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 11-meta-instalar.sh — Instala encina-meta y ejecuta la secuencia de tres
+# instalar-meta.sh — Instala encina-meta y ejecuta la secuencia de tres
 # órdenes, comprobando en cada paso lo que debe verse y lo que no.
 #
-# Uso:  ./scripts/11-meta-instalar.sh [--si-ya-cloné] [--sin-firefox]
+# Uso:  ./scripts/instalar-meta.sh [--si-ya-cloné] [--sin-firefox]
 #
 #   --si-ya-cloné   sáltate la pregunta del respaldo
 #   --sin-firefox   para en el paso 2: deja el repositorio puesto y NO cambia
@@ -469,6 +469,6 @@ resumen
 EST=$?
 if (( EST == 0 )); then
     echo
-    echo "Siguiente:  ./scripts/12-meta-verificar.sh   (idempotencia y purga)"
+    echo "Siguiente:  ./scripts/verificar-meta.sh   (idempotencia y purga)"
 fi
 exit $EST

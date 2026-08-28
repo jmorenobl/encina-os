@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 06-ci.sh — Escribe el flujo de GitHub Actions, crea el repositorio remoto
+# crear-ci.sh — Escribe el flujo de GitHub Actions, crea el repositorio remoto
 # (privado) y sube el código.
 #
-# Uso:  ./scripts/06-ci.sh [nombre-del-repo]
+# Uso:  ./scripts/crear-ci.sh [nombre-del-repo]
 #
 # Privado a propósito: publicar activa la obligación de mantener parches de
 # seguridad para desconocidos (D5). Ya lo abrirás cuando quieras.
@@ -83,7 +83,7 @@ jobs:
       fail-fast: false
       # Cada paquete tiene su propio script de construccion, asi que la matriz
       # lleva las dos cosas emparejadas. Antes solo listaba el nombre y no lo
-      # usaba en ningun sitio: el paso ejecutaba siempre 03-construir.sh y
+      # usaba en ningun sitio: el paso ejecutaba siempre construir-branding.sh y
       # subia debian-packages/*.deb, de modo que anadir una entrada mas habria
       # construido encina-branding dos veces sin que se notara.
       #
@@ -100,15 +100,15 @@ jobs:
           - arch: arm64
             runner: ubuntu-24.04-arm
           - package: encina-branding
-            script: scripts/03-construir.sh
+            script: scripts/construir-branding.sh
           - package: encina-firefox-native
-            script: scripts/07-firefox-construir.sh
+            script: scripts/construir-firefox.sh
           # encina-meta entra en la matriz en el MISMO commit que su
-          # debian/changelog, y no antes: 10-meta-construir.sh se detiene sin
+          # debian/changelog, y no antes: construir-meta.sh se detiene sin
           # construir nada si no lo encuentra, asi que una entrada de matriz sin
           # changelog pondria la CI roja a sabiendas.
           - package: encina-meta
-            script: scripts/10-meta-construir.sh
+            script: scripts/construir-meta.sh
 
     steps:
       - uses: actions/checkout@v4
@@ -122,7 +122,7 @@ jobs:
           # desarrollo suele estar ya puesto porque devscripts lo recomienda,
           # asi que este fallo SOLO se manifiesta en el runner.
           #
-          # gnupg lo necesita 07-firefox-construir.sh para verificar la huella
+          # gnupg lo necesita construir-firefox.sh para verificar la huella
           # de la clave de firma de Mozilla.
           sudo apt-get install -y build-essential devscripts debhelper lintian gnupg
 
@@ -183,7 +183,7 @@ EOF
 ok "Flujo escrito en .github/workflows/build.yml"
 
 echo
-echo "  El paso de CI reutiliza 03-construir.sh, así que las reglas duras y"
+echo "  El paso de CI reutiliza construir-branding.sh, así que las reglas duras y"
 echo "  lintian se comprueban igual en tu VM y en el runner. Si algo pasa en"
 echo "  local y falla en CI, es una diferencia real, no una diferencia de script."
 echo
@@ -210,7 +210,7 @@ titulo "Repositorio remoto"
 
 if ! command -v gh >/dev/null 2>&1; then
     aviso "No está instalado 'gh'. Instálalo con: sudo apt install -y gh"
-    echo "  Después:  gh auth login  &&  ./scripts/06-ci.sh"
+    echo "  Después:  gh auth login  &&  ./scripts/crear-ci.sh"
     resumen; exit 1
 fi
 

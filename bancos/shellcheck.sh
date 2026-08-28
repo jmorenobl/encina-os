@@ -16,7 +16,7 @@
 # koalaman/shellcheck por docker, y en la CI esta el paquete de Ubuntu. Los
 # seis avisos que habia el 2026-08-28 se JUSTIFICARON en su sitio con una
 # directiva «# shellcheck disable=SCxxxx  # motivo», no se taparon aqui: una
-# excepcion sin motivo escrito al lado es lo que 07-firefox-construir.sh
+# excepcion sin motivo escrito al lado es lo que construir-firefox.sh
 # prohibe a lintian, y aqui se aplica la misma regla.
 #
 # EL CONTROL VA DELANTE: un guion de mentira con un «ls | grep» (SC2010, nivel

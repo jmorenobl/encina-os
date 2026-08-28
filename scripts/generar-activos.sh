@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 02-activos.sh — Genera los activos gráficos mínimos y verifica su formato.
+# generar-activos.sh — Genera los activos gráficos mínimos y verifica su formato.
 #
-# Uso:  ./scripts/02-activos.sh [--forzar]
+# Uso:  ./scripts/generar-activos.sh [--forzar]
 #
 # Por defecto NO sobrescribe activos que ya existan: el día que pongas el
 # logotipo de verdad, no quieres que un script lo machaque. Usa --forzar
@@ -27,11 +27,11 @@ SVG="$PKG/src/usr/share/icons/hicolor/scalable/apps/encina-logo.svg"
 # ImageMagick 7 usa 'magick'; el 6 usa 'convert'.
 if command -v magick >/dev/null 2>&1; then IM=(magick)
 elif command -v convert >/dev/null 2>&1; then IM=(convert)
-else echo "Falta ImageMagick. Ejecuta ./scripts/00-entorno.sh"; exit 1; fi
+else echo "Falta ImageMagick. Ejecuta ./scripts/preparar-entorno.sh"; exit 1; fi
 
 titulo "Activos gráficos"
 
-[[ -d "$PKG" ]] || { echo "No existe $PKG. Ejecuta antes ./scripts/01-repo.sh"; exit 1; }
+[[ -d "$PKG" ]] || { echo "No existe $PKG. Ejecuta antes ./scripts/colocar-esqueleto.sh"; exit 1; }
 mkdir -p "$FONDOS"
 
 generar() {   # generar <ruta> <descripción> <comando...>
@@ -76,7 +76,7 @@ else
     fallo "logo.png NO tiene canal alfa" \
 "$(file -b "$FONDOS/logo.png")
 Sin transparencia el logotipo aparecerá con un cuadrado de fondo sobre el
-splash. Regenéralo con:  ./scripts/02-activos.sh --forzar"
+splash. Regenéralo con:  ./scripts/generar-activos.sh --forzar"
 fi
 
 # Los fondos oscuro y claro deben ser distintos: es fácil copiar el mismo dos
@@ -106,4 +106,4 @@ fi
 
 resumen
 echo
-echo "Siguiente:  ./scripts/03-construir.sh"
+echo "Siguiente:  ./scripts/construir-branding.sh"

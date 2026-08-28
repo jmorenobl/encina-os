@@ -239,7 +239,7 @@ ok "control: con un nombre cambiado, el cotejo lo senala"
 
 # --- 3. los tres .deb, construidos alli -------------------------------------
 titulo "3. los tres .deb de Encina, desde el arbol versionado"
-for g in 03-construir.sh 07-firefox-construir.sh 10-meta-construir.sh; do
+for g in construir-branding.sh construir-firefox.sh construir-meta.sh; do
     echo "        $g"
     R "cd ~/$REMOTO && ENCINA_REPO=~/$REMOTO bash scripts/$g" > "$TMP_PROPIO/$g.log" 2>&1 \
         || { tail -25 "$TMP_PROPIO/$g.log"; morir "$g no paso"; }

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Encina OS - BANCO DE LAS DOS COPIAS DE LA CI: el heredoc de 06-ci.sh == build.yml.
+# Encina OS - BANCO DE LAS DOS COPIAS DE LA CI: el heredoc de crear-ci.sh == build.yml.
 #
 #     ./bancos/ci-copias.sh
 #
-# QUE COMPRUEBA: que el flujo de GitHub Actions que scripts/06-ci.sh escribe
+# QUE COMPRUEBA: que el flujo de GitHub Actions que scripts/crear-ci.sh escribe
 # (su heredoc, entre «cat > "$FLUJO" << 'EOF'» y «EOF») es BYTE A BYTE
 # .github/workflows/build.yml.
 #
-# POR QUE EXISTE: 06-ci.sh lo avisa en su cabecera desde el 2026-08-13 --«es
+# POR QUE EXISTE: crear-ci.sh lo avisa en su cabecera desde el 2026-08-13 --«es
 # una SEGUNDA COPIA … Si tocas una, toca la otra»-- y el 2026-08-28, al
 # escribir este banco (tarea 6), las dos copias llevaban CINCO DIAS separadas:
 # la tarea 13 (§4.69) puso la matriz de dos arquitecturas en build.yml y el
@@ -25,7 +25,7 @@ AQUI=$(cd "$(dirname "$0")" && pwd)
 RAIZ=$(cd "$AQUI/.." && pwd)
 . "$RAIZ/lib/salida.sh"
 
-GUION="$RAIZ/scripts/06-ci.sh"
+GUION="$RAIZ/scripts/crear-ci.sh"
 FLUJO="$RAIZ/.github/workflows/build.yml"
 [ -f "$GUION" ] || morir "no esta $GUION"
 [ -f "$FLUJO" ] || morir "no esta $FLUJO"
@@ -46,12 +46,12 @@ else
     ok "control: el comparador ve un byte cambiado"
 fi
 
-titulo "LA MEDICION: el heredoc de 06-ci.sh contra build.yml"
+titulo "LA MEDICION: el heredoc de crear-ci.sh contra build.yml"
 if cmp -s "$TMP/heredoc.yml" "$FLUJO"; then
     ok "las dos copias son identicas byte a byte ($N lineas)"
 else
     D=$(/usr/bin/diff "$TMP/heredoc.yml" "$FLUJO" | /usr/bin/grep -c '^[<>]')
-    fallo "el heredoc de 06-ci.sh y build.yml difieren en $D lineas. Copia el flujo DENTRO del guion, no lo transcribas:" \
+    fallo "el heredoc de crear-ci.sh y build.yml difieren en $D lineas. Copia el flujo DENTRO del guion, no lo transcribas:" \
 "$(/usr/bin/diff "$TMP/heredoc.yml" "$FLUJO" | head -12)"
 fi
 

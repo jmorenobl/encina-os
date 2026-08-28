@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 09-firefox-verificar.sh — La prueba que separa "parece que funciona" de
+# verificar-firefox.sh — La prueba que separa "parece que funciona" de
 # "funciona": dos apt full-upgrade seguidos.
 #
-# Uso:  ./scripts/09-firefox-verificar.sh [--sin-purga]
+# Uso:  ./scripts/verificar-firefox.sh [--sin-purga]
 #
 # Por qué dos y no uno: el primero puede no mover Firefox por pura casualidad
 # (no había nada nuevo que traer). El segundo corre con el estado que dejó el
@@ -24,11 +24,11 @@ requiere_no_root
 PAQUETE="encina-firefox-native"
 SALIDA_DIR="$(raiz_repo)/debian-packages"
 DEB=$(ls -t "$SALIDA_DIR"/${PAQUETE}_*.deb 2>/dev/null | head -1 || true)
-[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/07-firefox-construir.sh"; exit 1; }
+[[ -n "$DEB" ]] || { echo "No hay ningún .deb. Ejecuta antes ./scripts/construir-firefox.sh"; exit 1; }
 
 EST_PKG=$(dpkg-query -W -f='${Status}' "$PAQUETE" 2>/dev/null || true)
 [[ "$EST_PKG" == "install ok installed" ]] \
-    || { echo "$PAQUETE no está instalado. Ejecuta antes ./scripts/08-firefox-instalar.sh"; exit 1; }
+    || { echo "$PAQUETE no está instalado. Ejecuta antes ./scripts/instalar-firefox.sh"; exit 1; }
 
 SIN_PURGA=0
 for arg in "$@"; do
