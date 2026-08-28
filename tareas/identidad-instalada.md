@@ -3,7 +3,7 @@
 **Por qué este fichero existe y no cabía en ninguno de los que ya hay.**
 [marca-del-medio.md](marca-del-medio.md) es del **medio** y está cerrado salvo
 sus `[OJOS]`; `aspecto/` es de lo que se **ve** y también está cerrado;
-[refactorizacion.md](refactorizacion.md) es ordenar lo que ya funciona. Lo de
+[refactorizacion.md](cerradas/refactorizacion.md) es ordenar lo que ya funciona. Lo de
 aquí no es ninguna de las tres: es una **deuda declarada** que hasta hoy no
 tenía dónde vivir, y por eso se quedaba sin turno.
 

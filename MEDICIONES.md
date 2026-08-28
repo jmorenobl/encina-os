@@ -12,7 +12,7 @@ fichero tenía en su cabecera —cómo leer el registro y **la tabla de vigencia
 que es lo que dice qué de lo escrito sigue en pie— y el índice de las 82
 secciones con su fichero.
 
-**Por qué se partió** (tarea 4 de [tareas/refactorizacion.md](tareas/refactorizacion.md)):
+**Por qué se partió** (tarea 4 de [tareas/refactorizacion.md](tareas/cerradas/refactorizacion.md)):
 el fichero único medía 19 399 líneas y `CLAUDE.md` manda consultarlo *antes de
 investigar cualquier cosa*; con ese tamaño la regla era físicamente incumplible
 y el resultado práctico era investigar sin consultarlo. Se movió **verbatim**,

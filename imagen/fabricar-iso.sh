@@ -295,6 +295,7 @@ if [ -n "$LEER" ]; then
 fi
 
 # --- 0. QUE MECANISMOS DE MARCA LLEVA ESTE MEDIO ----------------------------
+fase_0_mecanismos_pedidos() {
 # Va DELANTE de todo lo demas a proposito: una construccion son ~20 minutos y
 # hay que poder ver en la primera linea del registro que se esta fabricando.
 # OJO CON EL printf: 'printf -- ' se come los dos guiones como «fin de
@@ -311,8 +312,10 @@ N_SIN=$(( (1-CON_CAPA) + (1-CON_VOLID) + (1-CON_INFO) + (1-CON_MENU) ))
 if [ "$N_SIN" -gt 0 ]; then
     echo "        [AVISO] faltan $N_SIN de los 4: esto es un MEDIO DE BISECADO, no el producto"
 fi
+}
 
 # --- 1. la ISO de partida es la medida, no otra, Y DE ELLA SALE LA ARQUITECTURA
+fase_1_iso_oficial() {
 echo "== 1. la ISO oficial, por huella -- y la arquitectura, DEDUCIDA de ella"
 real=$(shasum -a 256 "$ISO" | cut -d' ' -f1)
 ARQ_ISO=$(printf '%s\n' "$ISOS_OFICIALES" | awk -v h="$real" '$2==h {print $1}')
@@ -331,11 +334,13 @@ case "$ARQ_ISO" in
     amd64) SUF_EFI=x64  ;;
     *) morir "no se que binarios EFI lleva la arquitectura «$ARQ_ISO»" ;;
 esac
+}
 
 # --- 2. los cuatro .deb, con las huellas del guion que las comprueba dentro --
+fase_2_los_cuatro_deb() {
 echo "== 2. los cuatro .deb, por huella (§4.13: misma version != mismos bytes)"
 huella_de() { grep -E "^$1=" "$GUION" | head -1 | cut -d= -f2; }
-declare -a FICHEROS HUELLAS
+FICHEROS=() HUELLAS=()   # global: «declare -a» dentro de una funcion la haria LOCAL y las fases siguientes no la verian
 # LOS NOMBRES DE LOS CUATRO .deb SALEN DEL MANIFIESTO, no se escriben aqui
 # (tarea 14, 2026-08-28): hasta hoy iban clavados en este array Y en el de
 # fabricar-seed.sh, y cambiar un .deb eran «cinco sitios» (§4.45b) que se podian
@@ -381,8 +386,10 @@ done < <(paste -d' ' <(sed -n 's|^Filename: \./||p' "$REPO/Packages") \
                     <(sed -n 's|^SHA256: ||p'      "$REPO/Packages"))
 [ "$MALAS" -eq 0 ] || morir "$MALAS entradas de Packages no cuadran con los bytes del repo"
 ok "Packages describe $NIDX ficheros, viajan $NDEB, y las $NIDX huellas cuadran"
+}
 
 # --- 3. el seed y el guion no se han separado -------------------------------
+fase_3_el_seed() {
 echo "== 3. la late-command del seed == encina-seed.sh"
 B64=$(base64 -i "$GUION" | tr -d '\n')
 # LA LINEA ENTERA, Y NO SOLO EL TROZO DEL BASE64. Hasta el 2026-08-22 esto era
@@ -418,8 +425,10 @@ if grep -qE 'password|ssh-ed25519' "$AQUI/autoinstall-unattended.yaml"; then
 else
     morir "CONTROL ROTO: no sabe encontrar credenciales ni donde las hay"
 fi
+}
 
 # --- 4. las huellas de la cadena firmada, ANTES ------------------------------
+fase_4_cadena_firmada_antes() {
 # EL DIRECTORIO NO SE ESCRIBE: SE LEE DEL MEDIO, y esto costo un verde falso el
 # 2026-08-22 (§4.64). La ISO arm64 lo llama «efi/boot/» EN MINUSCULAS y la amd64
 # «EFI/boot/» EN MAYUSCULAS. Con la ruta escrita a mano, 'tar -xOf' no sacaba
@@ -428,7 +437,7 @@ fi
 # vacio contra vacio y tambien daba [OK], asi que un medio con la cadena de
 # arranque destrozada habria pasado las dos comprobaciones.
 echo "== 4. los tres binarios firmados, antes"
-declare -a EFI ANTES
+EFI=() ANTES=()   # global: «declare -a» dentro de una funcion la haria LOCAL y las fases siguientes no la verian
 EFI=("boot${SUF_EFI}.efi" "grub${SUF_EFI}.efi" "mm${SUF_EFI}.efi")
 DIR_EFI=$(tar -tf "$ISO" 2>/dev/null | grep -iE "^efi/boot/${EFI[0]}$" | head -1)
 DIR_EFI="${DIR_EFI%/*}"
@@ -443,15 +452,19 @@ for i in 0 1 2; do
         || morir "$DIR_EFI/${EFI[$i]} sale VACIO de la ISO: no lo he podido leer, y una huella de nada no es una huella"
     ok "${EFI[$i]}  ${ANTES[$i]:0:16}…"
 done
+}
 
 # --- 5. los ficheros que si se modifican, y la capa de marca ----------------
+fase_5_preparar_temporal() {
 # CUANTOS son depende de las banderas «--sin-*»: el grub.cfg y el md5sum.txt van
 # siempre, el .disk/info y la capa solo si su mecanismo esta puesto.
 echo "== 5. el grub.cfg, el .disk/info, la capa de marca y el md5sum.txt que los cubre"
 TMP=$(mktemp -d) || morir "mktemp"
 trap 'rm -rf "$TMP"' EXIT
+}
 
 # --- 5a. grub.cfg: el idioma del instalador y el titulo del menu ------------
+fase_5a_grub_cfg() {
 tar -xOf "$ISO" boot/grub/grub.cfg > "$TMP/grub.cfg.oficial" \
     || morir "no pude leer boot/grub/grub.cfg de la ISO"
 # §4.21d: en todo el medio hay UN solo grub.cfg. LINEAS DE NUCLEO puede haber
@@ -520,8 +533,10 @@ if [ "$CON_MENU" = 1 ]; then
 else
     ok "grub.cfg: locale=$LOCALE y NADA MAS (--sin-menu: el menuentry sigue siendo «Try or Install Ubuntu»)"
 fi
+}
 
 # --- 5b. .disk/info: 60 bytes que rotulan el icono del instalador ------------
+fase_5b_disk_info() {
 tar -xOf "$ISO" .disk/info > "$TMP/info.oficial" \
     || morir "no pude leer .disk/info de la ISO"
 [ -s "$AQUI/marca/disk-info" ] || morir "no esta imagen/marca/disk-info"
@@ -550,8 +565,10 @@ else
     grep -q '@ARQ@' "$TMP/info.encina" \
         && morir "la sustitucion de @ARQ@ no se hizo (trampa 13: se verifica la mutacion)"
 fi
+}
 
 # --- 5b-bis. LAS TRES ARQUITECTURAS TIENEN QUE SER LA MISMA (§4.64 P4) -------
+fase_5b_bis_arquitecturas() {
 # Hay TRES fuentes independientes que dicen de que arquitectura es este medio, y
 # hasta hoy NINGUNA se comparaba con las otras:
 #   1. la HUELLA de la ISO oficial          -> $ARQ_ISO      (paso 1)
@@ -684,8 +701,10 @@ else
     cp "$TMP/info.oficial" "$TMP/info" || morir "cp del .disk/info oficial"
     ok ".disk/info: --sin-info, viaja el OFICIAL intacto (rotulo: Install $R_OFICIAL)"
 fi
+}
 
 # --- 5c. la capa de marca ----------------------------------------------------
+fase_5c_capa_de_marca() {
 if [ "$CON_CAPA" = 0 ]; then
     # --sin-capa: ni se fabrica (capa-marca.sh son minutos) ni se anade nada a
     # /casper. Es el primer sospechoso del bisecado: es lo UNICO que mete un
@@ -732,8 +751,10 @@ tar -tf "$ISO" "casper/$CAPA_N" >/dev/null 2>&1 \
 ok "capa de marca: $CAPA_N, $(stat -f %z "$CAPA") bytes  $(shasum -a 256 "$CAPA" | cut -c1-16)…"
 ok "la cadena de la capa son $N_ESL eslabones y los $((N_ESL-1)) de debajo estan en /casper (control: «zz-encina» daria $N_NO)"
 fi
+}
 
 # --- 5c-bis. layerfs-path=: lo UNICO que hace que la capa se MONTE -----------
+fase_5c_bis_layerfs_path() {
 # ESTE BLOQUE ES LA CASILLA 3. Del 2026-08-15 al 20 el medio llevo la capa dentro
 # y NO LA MONTO NUNCA (§4.54e): el initrd trae LAYERFS_PATH=minimal.standard.live
 # .squashfs en /conf/conf.d/default-layer.conf, casper entra por su rama de
@@ -775,8 +796,10 @@ fi
 # el sed cayo donde tenia y no en otro sitio.
 d=$(diff "$TMP/grub.cfg.oficial" "$TMP/grub.cfg" | grep -c '^[<>]')
 [ "$d" -eq "$D_GRUB" ] || morir "con layerfs-path= el grub.cfg cambia en $d lineas y esperaba $D_GRUB (tenia que caer en la linea del nucleo, que ya estaba contada)"
+}
 
 # --- 5d. md5sum.txt: dos lineas rehechas y una anadida ----------------------
+fase_5d_md5sum() {
 tar -xOf "$ISO" md5sum.txt > "$TMP/md5sum.oficial" \
     || morir "no pude leer md5sum.txt de la ISO"
 cp "$TMP/md5sum.oficial" "$TMP/md5sum.txt"
@@ -822,8 +845,10 @@ L=$(wc -l < "$TMP/md5sum.oficial" | tr -d ' ')
 [ "$(wc -l < "$TMP/md5sum.txt" | tr -d ' ')" = "$((L+N_NUEVOS))" ] \
     || morir "md5sum.txt no crecio en $N_NUEVOS lineas"
 ok "md5sum.txt: $N_MOD lineas rehechas (${MODIFICADOS[*]}), $N_NUEVOS anadidas, las otras $((L-N_MOD)) intactas"
+}
 
 # --- 5e. el nombre del volumen ----------------------------------------------
+fase_5e_volume_id() {
 # NO SE ESCRIBE A MANO. El nombre del producto ya esta en marca/disk-info -- de
 # ahi salen el rotulo del icono del instalador y el usuario de la sesion viva --,
 # asi que el Volume id se DERIVA de ese mismo fichero y de la arquitectura que
@@ -954,8 +979,10 @@ else
     VOLID="$VOLID_OFICIAL"
     ok "Volume id: --sin-volid, se conserva el OFICIAL «${VOLID_OFICIAL}» (el nuestro habria sido «${VOLID_ENCINA}»)"
 fi
+}
 
 # --- 6. construir ------------------------------------------------------------
+fase_6_construir() {
 echo "== 6. xorriso: anadir el seed, el repo y la capa de marca, y reemplazar tres"
 mkdir -p "$TMP/encina-repo"
 cp "$YAML" "$TMP/autoinstall.yaml" || morir "cp seed"
@@ -1053,8 +1080,10 @@ xorriso -indev "$ISO" -outdev "$SALIDA" \
         -commit -end 2>&1 | grep -iE "^xorriso : (FAILURE|SORRY|WARNING)" | head -20
 [ -f "$SALIDA" ] || morir "xorriso no produjo $SALIDA"
 ok "escrita: $(stat -f %z "$SALIDA") bytes"
+}
 
 # --- 7. y ahora la parte que importa: comprobar que solo se anadio ----------
+fase_7_cadena_firmada_despues() {
 echo "== 7. la cadena firmada, DESPUES (si cambia una, este banco no lo notaria)"
 for i in 0 1 2; do
     d=$(tar -xOf "$SALIDA" "$DIR_EFI/${EFI[$i]}" | shasum -a 256 | cut -d' ' -f1)
@@ -1065,7 +1094,10 @@ for i in 0 1 2; do
         despues $d"
     ok "${EFI[$i]} intacto"
 done
+}
 
+# --- 8. lo anadido esta, y con las huellas de siempre -------------------------
+fase_8_lo_anadido() {
 echo "== 8. lo anadido esta, y con las huellas de siempre"
 tar -xOf "$SALIDA" autoinstall.yaml | diff -q - "$YAML" >/dev/null \
     || morir "el seed dentro de la ISO no coincide con $YAML"
@@ -1097,7 +1129,10 @@ if tar -tf "$SALIDA" 2>/dev/null | grep -q "^encina-repo/fichero-que-no-existe";
     morir "CONTROL ROTO: aparece un fichero que nadie metio"
 fi
 ok "control: un fichero que no se metio no aparece"
+}
 
+# --- 9. el arranque: la FORMA y el CONTENIDO de la ESP, contra la oficial ------
+fase_9_arranque_esp() {
 echo "== 9. el arranque: la FORMA y el CONTENIDO de la ESP, contra la oficial"
 # OJO: los desplazamientos y el tamano de la ESP CAMBIAN por fuerza al anadir
 # ficheros -- la ISO crece y la particion anadida se mueve al final, y xorriso
@@ -1177,8 +1212,10 @@ if [ "$SOBRA" -gt 0 ]; then
     [ "$NOCERO" = 0 ] || morir "los $SOBRA sectores que xorriso anade a la ESP NO son ceros ($NOCERO bytes)"
     ok "los $SOBRA sectores de mas son relleno de alineacion: 0 bytes distintos de cero"
 fi
+}
 
 # --- 10. el medio entero, fichero a fichero ----------------------------------
+fase_10_medio_entero() {
 # Mientras E3 solo anadia ficheros, «no se modifico nada» se podia argumentar.
 # Desde que toca grub.cfg y md5sum.txt hay que ENSENARLO, y sobre TODAS las
 # entradas del medio, no solo sobre las 266 que md5sum.txt cubre. Se lee cada
@@ -1238,7 +1275,10 @@ ok "$N_ESPERADOS ficheros anadidos, ni uno mas, y ninguno perdido"
 
 LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
     | awk '$2!=$3 {print $1}' | LC_ALL=C sort > "$TMP/cambiados"
+}
+
 # --- 10bis. EL FICHERO QUE CAMBIA Y NO LO CAMBIAMOS NOSOTROS -----------------
+fase_10bis_eltorito() {
 # En amd64 -- y solo en amd64, porque arm64 no arranca por BIOS -- el medio lleva
 # /boot/grub/i386-pc/eltorito.img, el arranque BIOS heredado, Y CAMBIA. No es
 # nuestro: lo reescribe xorriso al recolocar el fichero dentro de la imagen.
@@ -1256,7 +1296,7 @@ LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.nuestra" \
 # lista -- ni en la ISO oficial ni en la nuestra --, asi que la comprobacion de
 # integridad del propio medio no se ve afectada.
 ELTORITO=/boot/grub/i386-pc/eltorito.img
-declare -a MOD_XORRISO
+MOD_XORRISO=()   # global: «declare -a» dentro de una funcion la haria LOCAL y las fases siguientes no la verian
 MOD_XORRISO=()
 if LC_ALL=C grep -qx "$ELTORITO" "$TMP/rutas.oficial"; then
     tar -xOf "$ISO"    "${ELTORITO#/}" > "$TMP/elt.ofi" 2>/dev/null
@@ -1303,8 +1343,10 @@ awk 'NR==1{$1="ffffffffffffffffffffffffffffffff"}1' "$TMP/mapa.oficial" \
 c=$(LC_ALL=C join -1 2 -2 2 "$TMP/mapa.oficial" "$TMP/mapa.saboteada" | awk '$2!=$3' | wc -l | tr -d ' ')
 [ "$c" -eq 1 ] || morir "CONTROL ROTO: la comparacion no ve una huella cambiada"
 ok "control: con una huella saboteada, la comparacion la senala"
+}
 
 # --- 11. el nombre del volumen, que NO es un fichero --------------------------
+fase_11_volume_id_descriptores() {
 # EXISTE PORQUE EL PASO 10 ES CIEGO A ESTO. El paso 10 es la comprobacion mas
 # fuerte de esta receta -- las 500 y pico entradas del medio, huella a huella --
 # y aun asi dejaria pasar el cambio del Volume id sin decir nada, porque el
@@ -1401,7 +1443,10 @@ else
 $(cat "$TMP/vd.nuestra")"
     ok "--sin-volid: los $NP descriptores primarios conservan «${VOLID_OFICIAL}» (D22: este medio NO se publica)"
 fi
+}
 
+# --- 12. la integridad del propio medio, contra el md5sum.txt NUEVO ------------
+fase_12_integridad_md5sum() {
 echo "== 12. la integridad del propio medio, contra el md5sum.txt NUEVO"
 tar -xOf "$SALIDA" md5sum.txt | sed 's|  \./|  /|' | LC_ALL=C sort -k2 > "$TMP/md5.declarado"
 d=$(wc -l < "$TMP/md5.declarado" | tr -d ' ')
@@ -1418,8 +1463,10 @@ sed 's|  \./|  /|' "$TMP/md5sum.oficial" | LC_ALL=C sort -k2 > "$TMP/md5.oficial
 m=$(LC_ALL=C join -1 2 -2 2 "$TMP/md5.oficial.rutas" "$TMP/mapa.nuestra" | awk '$2!=$3' | wc -l | tr -d ' ')
 [ "$m" -eq "$N_MOD" ] || morir "CONTROL ROTO: con el md5sum.txt oficial esperaba $N_MOD fallos y hay $m"
 ok "control: con el md5sum.txt OFICIAL fallan exactamente $N_MOD lineas: ${MODIFICADOS[*]}"
+}
 
 # --- 13. los mecanismos, LEIDOS DEL MEDIO CONSTRUIDO --------------------------
+fase_13_mecanismos_leidos() {
 # ESTE BLOQUE ES LO QUE HACE FIABLE UN BISECADO. Todo lo de arriba comprueba que
 # el guion hizo lo que EL creia; esto abre la ISO terminada y pregunta que lleva,
 # sin mirar ninguna variable intermedia. Una bandera que no hiciera nada pasaria
@@ -1441,6 +1488,45 @@ PEDIDO="$CON_CAPA $CON_VOLID $CON_INFO $CON_MENU"
         pedido (capa volid info menu): $PEDIDO
         leido  en la ISO terminada   : $LEIDO"
 ok "el medio lleva exactamente lo pedido (capa volid info menu): $LEIDO"
+}
+
+# ---------------------------------------------------------------------------
+# LAS FASES, EN ORDEN. Hasta el 2026-08-28 las marcas «# --- N. ---» de arriba
+# eran comentarios sobre un guion lineal de 1 400 lineas; desde la tarea 11 de
+# tareas/refactorizacion.md cada una es una funcion, y esta lista es lo que se
+# ejecuta: un fichero, la misma lectura lineal, y una fase se puede probar sola
+# cargando el guion y llamandola. Las variables siguen siendo globales a
+# proposito -- las fases se pasan entre si ARQ_ISO, TMP, MODIFICADOS, VOLID… --
+# y por eso ningun «declare -a» vive dentro de una funcion (lo haria local).
+#
+# QUE ES FASE Y QUE ES SUBFASE, decidido aqui y no transcrito: las 14 fases son
+# las numeradas 0-13 (la 8, la 9 y la 12 solo tenian su «echo "== N."» y hoy
+# tienen su marca); la 5 se parte en siete subfases porque cada una toca UN
+# fichero del medio y tiene su propio control, y la 10bis es la excepcion del
+# eltorito.img que la 10 declara. Las banderas «--sin-*» no se dispersan: cada
+# subfase lee la suya, como antes.
+fase_0_mecanismos_pedidos
+fase_1_iso_oficial
+fase_2_los_cuatro_deb
+fase_3_el_seed
+fase_4_cadena_firmada_antes
+fase_5_preparar_temporal
+fase_5a_grub_cfg
+fase_5b_disk_info
+fase_5b_bis_arquitecturas
+fase_5c_capa_de_marca
+fase_5c_bis_layerfs_path
+fase_5d_md5sum
+fase_5e_volume_id
+fase_6_construir
+fase_7_cadena_firmada_despues
+fase_8_lo_anadido
+fase_9_arranque_esp
+fase_10_medio_entero
+fase_10bis_eltorito
+fase_11_volume_id_descriptores
+fase_12_integridad_md5sum
+fase_13_mecanismos_leidos
 
 echo
 echo "iso:    $SALIDA"

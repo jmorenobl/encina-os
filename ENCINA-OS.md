@@ -401,31 +401,41 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### LA TAREA EN CURSO, 2026-08-28: **LA FASE 2, LA REFACTORIZACIÓN ENTERA** — y detrás, la fase 3, publicar
+> ### AL DÍA, 2026-08-28: **LA FASE 2 ESTÁ COMPLETA — la refactorización entera, sin tocar un byte del producto** — y lo que queda es la fase 3, publicar
 >
-> **Dónde está el proyecto:** la fase 1 del orden del 2026-08-23 está **COMPLETA**
-> desde el 2026-08-25 —las dos ISOs funcionan de verdad: `3d5d12a9…` (`amd64`) en el
-> hierro, §4.78, y `63f360dd…` (`arm64`) en el banco, §4.79, las dos instalando y
-> verificando a 65 / 0, y las seis pantallas con el veredicto de Jorge—. Esas dos
-> huellas **caducan a propósito con esta fase**: la que se publique se fabrica en
-> la fase 3 con los guiones ya definitivos.
+> **Dónde está el proyecto:** la fase 1 del orden del 2026-08-23 está completa
+> desde el 2026-08-25 —`3d5d12a9…` (`amd64`) en el hierro, §4.78, y `63f360dd…`
+> (`arm64`) en el banco, §4.79, las dos instalando y verificando a 65 / 0, y las
+> seis pantallas con el veredicto de Jorge—. **Y la fase 2, hoy:** las dieciséis
+> tareas de [tareas/cerradas/refactorizacion.md](tareas/cerradas/refactorizacion.md),
+> cada una con su definición de terminado ejecutada y un apartado en
+> `MEDICIONES.md` §4.80. `bancos/enlaces.sh` en verde sobre el árbol entero
+> movido —la condición de cierre— y el bloque está en `tareas/cerradas/`.
 >
-> **Lo que se hace ahora:** [tareas/refactorizacion.md](tareas/refactorizacion.md)
-> entero y seguido, en el orden que el propio bloque pide —la 1, la 12 y la 13
-> estaban hechas; quedaban la 2-11 y la 14-16; la 11 (`fabricar-iso.sh`) va la
-> última, con el producto congelado—. **Cada tarea se cierra ejecutando su
-> definición de terminado, y todo lo medido está en `MEDICIONES.md` §4.80**, un
-> apartado por tarea: lo que ahí no tiene apartado no está hecho. Los bancos
-> —`make bancos` desde la tarea 6— son la red: se pasan antes y después de mover.
+> **Lo que cambió, en una pantalla:** un solo vocabulario en `lib/salida.sh`
+> (`fallo()` apunta y sigue, `morir()` aborta); `mediciones/`, un fichero por
+> sección, con la tabla de vigencia entera y `bancos/vigencia.sh`; **`make
+> bancos`** —ocho bancos, el job «bancos» de la CI, `shellcheck` por docker—,
+> `make paquetes` (el constructor versionado en `docker/`, que da las huellas
+> del manifiesto sin la VM), `make dos-veces` y `make verificador`; este §7 en
+> una pantalla; `TRAMPAS.md`; los guiones por verbo y paquete; `fabricar-iso.sh`
+> por fases; una sola fuente de la versión (`bancos/versiones.sh`); y la hoja de
+> los `[OJOS]` debidos, [tareas/ojos.md](tareas/ojos.md).
 >
-> **Cómo se cierra la fase:** `bancos/enlaces.sh` en verde sobre el árbol ya
-> movido (la condición de la tarea 1, que se repite al final) y ninguna fila sin
-> veredicto en [organizacion-comparada.md](tareas/organizacion-comparada.md)
-> (hecho el 2026-08-23). Entonces el bloque entero se va a `tareas/cerradas/`.
+> **Y lo que se creía y no era:** este párrafo decía que las dos huellas
+> «caducan a propósito con esta fase». **La `arm64` no caducó**: `fabricar-iso.sh`
+> refactorizado, sobre el mismo repositorio, da `63f360dd…` dos veces, byte a
+> byte igual a la línea base tomada con los guiones de `794f57d` —y sin VM,
+> con el índice `Packages` del contenedor— (§4.80l). De la `amd64` no se afirma
+> nada hasta refabricarla. Lo que sigue `[OMIT]`: la CI de verdad (ningún push
+> hoy; simulada tres veces en `ubuntu:24.04`), los guiones de VM (no se encendió
+> ninguna), y el medio `amd64`.
 >
-> **Después, y es lo último del proyecto:** la fase 3,
+> **Lo siguiente, y es lo último del proyecto: la fase 3.**
 > [alojamiento.md](tareas/alojamiento.md) y [publicar.md](tareas/publicar.md):
-> refabricar las dos ISOs con `make dos-veces`, instalarlas, mirarlas, y publicar.
+> `make dos-veces ARQ=arm64` y `ARQ=amd64` desde estos guiones, instalar,
+> mirar —[tareas/ojos.md](tareas/ojos.md) dice qué falta por mirar y dónde—, y
+> publicar. Antes, un push para ver el job «bancos» en verde en la CI de verdad.
 >
 > **Lo que había aquí hasta el 2026-08-28** —1 772 líneas, del 2026-08-08 al
 > 2026-08-25: la receta del hierro, el reloj del instalador `amd64`, la vuelta

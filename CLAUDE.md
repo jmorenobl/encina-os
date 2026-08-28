@@ -20,8 +20,8 @@ Orden de lectura, que no es arbitrario:
 | Siempre primero | [ENCINA-OS.md](ENCINA-OS.md) §7 «Empieza aquí» — la tarea en curso, y solo esa |
 | Al lanzar trabajo de implementación | [AGENTS.md](AGENTS.md) — reglas y definiciones de terminado |
 | **Antes de investigar cualquier cosa** | [mediciones/LEEME.md](mediciones/LEEME.md) — la tabla de vigencia y el índice; cada sección es un fichero de [mediciones/](mediciones/) y se sigue citando `MEDICIONES.md §4.NN` (el [MEDICIONES.md](MEDICIONES.md) de la raíz es sólo el puntero desde la tarea 4, 2026-08-28). Casi siempre ya está medido, con la salida literal. Su §9 es la tabla de trampas conocidas |
-| Antes de ejecutar nada en una VM | [SCRIPTS.md](SCRIPTS.md) — qué hace cada guion y sus ~20 trampas |
-| Qué queda por hacer | [TAREAS.md](TAREAS.md) → [tareas/](tareas/) |
+| Antes de ejecutar nada en una VM | [SCRIPTS.md](SCRIPTS.md) — qué hace cada guion y sus ~60 trampas, y desde el 2026-08-28 **[TRAMPAS.md](TRAMPAS.md)**: una fila por trampa numerada, con a qué guion o fase aplica |
+| Qué queda por hacer | [TAREAS.md](TAREAS.md) → [tareas/](tareas/); y lo que sólo puede mirar Jorge, en [tareas/ojos.md](tareas/ojos.md) |
 | Al retomar tras unos días | [DIARIO.md](DIARIO.md) |
 
 Si dos documentos se contradicen, manda `ENCINA-OS.md`.
@@ -81,10 +81,11 @@ Imagen (`imagen/`), desde el Mac:
 sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27   # DENTRO de la máquina instalada, como root
 ```
 
-Cierre de sesión (añade línea fechada a `DIARIO.md` y hace commit de todo):
+Cierre de sesión (añade una entrada fechada a `DIARIO.md`, **en tres bloques**
+desde el 2026-08-28, y hace commit de todo):
 
 ```bash
-./scripts/diario.sh "lo que has hecho y qué toca mañana"
+./scripts/diario.sh "qué se midió" "qué salió mal" "qué toca mañana"
 ```
 
 **El changelog se gestiona con `dch -v <versión>`, nunca a mano**, y en la VM.
@@ -123,8 +124,13 @@ Ubuntu arm64 para los pasos 1 y 3, y hace 2 y 4 en el Mac. Construye
 sucio; su definición de terminado no es «sale una ISO» sino que **dos pasadas
 den la misma huella**.
 
-`scripts/lib.sh` es lo único compartido entre guiones: colores, contadores y los
-ayudantes `ok`/`fallo`/`aviso`/`omitido`/`comprobar`/`comprobar_salida`.
+**Lo compartido entre guiones vive en `lib/` desde el 2026-08-28** (tarea 3):
+`lib/salida.sh` es el vocabulario —colores, contadores, `ok`/`fallo`/`aviso`/
+`omitido`/`morir`/`comprobar`/`comprobar_salida`/`resumen`— y es portátil: lo
+cargan también `imagen/` y `bancos/`; `lib/vm.sh` es lo que sólo sirve en la VM
+Ubuntu (`raiz_repo`, `resolver_desktop`, `PKG_DIR`, el vigilante). `scripts/lib.sh`
+sigue existiendo como puente para los 17 guiones que lo cargan. **`fallo()`
+apunta y sigue; `morir()` aborta** (tarea 2): son dos palabras en todo el árbol.
 
 ## Método — esto es lo que distingue a este repositorio
 

@@ -1,5 +1,7 @@
 # La refactorización, con lo que ya sabemos
 
+**CERRADO EL 2026-08-28: las dieciséis casillas marcadas, cada una con su apartado en `MEDICIONES.md` §4.80, y `bancos/enlaces.sh` en verde sobre el árbol entero movido, que era la condición. Movido a `tareas/cerradas/` ese mismo día, con [organizacion-comparada.md](organizacion-comparada.md).**
+
 **Qué es este bloque.** **Doce tareas** que no cambian el producto: ni un byte de
 la ISO, ni un `.deb`, ni una decisión. Cambian **cómo está guardado** lo que ya
 funciona, para que siga siendo legible dentro de seis meses y para que el
@@ -77,7 +79,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 ## 1. El instrumento primero: `bancos/enlaces.sh`
 
 - [x] ~~**Un guion que compruebe que ninguna referencia apunta a la nada.**~~
-      **HECHA EL 2026-08-23. El guion es [`bancos/enlaces.sh`](../bancos/enlaces.sh)
+      **HECHA EL 2026-08-23. El guion es [`bancos/enlaces.sh`](../../bancos/enlaces.sh)
       y la medición entera, con su control, su saboteo sobre el árbol real y sus
       cifras, está en `MEDICIONES.md` §4.66.** Corre en menos de dos segundos, y
       hoy da **0 fallos** con **5 avisos declarados**. Lo que salió, y no estaba
@@ -158,7 +160,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       esta misma casilla manda inventar y que ya está escrito seis líneas más
       arriba**. Lo que sí hay son **dos enlaces relativos rotos de 128**, y son
       la carga útil de esta tarea: `MEDICIONES.md:16713`
-      (`[alojamiento.md](alojamiento.md)`, que está en `tareas/`) y
+      (`[alojamiento.md](../alojamiento.md)`, que está en `tareas/`) y
       `design/capturas/despues/entrega-cd84d2ec/LEEME.md:46` (faltan cuatro
       niveles de `..`, no tres). ~~**No se arreglaron el 2026-08-23 a propósito:**
       son el primer resultado del instrumento y quitárselo lo dejaría sin nada
@@ -173,7 +175,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 2. `fallo()` significa dos cosas opuestas
 
-- [ ] **Partir `fallo()` en dos nombres, y declarar el `set` en cada guion.** En
+- [x] ~~Partir `fallo()` en dos nombres, y declarar el `set` en cada guion.~~ **HECHA EL 2026-08-28, la mitad de `imagen/` que faltaba (§4.80b):** los seis que abortaban renombran su `fallo()` a `morir()`, los doce de `imagen/` declaran su modelo, `encina-seed.sh` no se toca (viaja en la ISO), y `grep -rn 'fallo()'` enseña seis definiciones que cuentan y siguen; los cuatro bancos, idénticos byte a byte a la línea base.
+      *Lo que pedía la casilla, conservado:* **Partir `fallo()` en dos nombres, y declarar el `set` en cada guion.** En
       `scripts/lib.sh` y en tres guiones de `imagen/` —`capa-marca.sh`,
       `inventario-marca.sh`, `verificar-instalacion.sh`— `fallo()` incrementa un
       contador y **sigue** —**enmienda del 2026-08-23: son CUATRO de `imagen/`,
@@ -207,7 +210,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
       **ENMIENDA DEL 2026-08-23 (noche): EJECUTADA LA MITAD QUE NO TOCA
       `imagen/`. LA CASILLA SIGUE SIN MARCAR, y el motivo está escrito.** La
-      medición entera es [MEDICIONES.md](../MEDICIONES.md) §4.67.
+      medición entera es [MEDICIONES.md](../../MEDICIONES.md) §4.67.
 
       **El reparto no es cinco y seis: son SEIS y SEIS.** La enmienda de esta
       mañana no era falsa, era **de ayer**: la sexta que cuenta es
@@ -265,7 +268,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 3. `lib/salida.sh`, y que `imagen/` lo use
 
-- [ ] **Partir `scripts/lib.sh` en dos capas y llevar la portátil a `imagen/`.**
+- [x] ~~Partir `scripts/lib.sh` en dos capas y llevar la portátil a `imagen/`.~~ **HECHA EL 2026-08-28 (§4.80c):** `lib/salida.sh` y `lib/vm.sh`, `scripts/lib.sh` de puente; ningún fichero fuera de `lib/` define `ok`/`fallo`/`aviso`/`omitido`; `verificar-instalacion.sh` y `verificar-branding.sh` en la misma columna por construcción, y el que viaja se empaqueta con `make verificador`; los cinco bancos con los mismos recuentos.
+      *Lo que pedía la casilla, conservado:* **Partir `scripts/lib.sh` en dos capas y llevar la portátil a `imagen/`.**
       `lib/salida.sh` con el vocabulario, los contadores y `resumen()`, sin nada
       de VM; `lib/vm.sh` con lo que hoy sólo sirve en Ubuntu
       —`xdg_data_dirs_sesion`, `resolver_desktop`, `PKG_DIR`—.
@@ -292,7 +296,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 4. Partir `MEDICIONES.md` conservando los `§`
 
-- [ ] **Un fichero por sección, y el número es el nombre del fichero.**
+- [x] ~~Un fichero por sección, y el número es el nombre del fichero.~~ **HECHA EL 2026-08-28 (§4.80d):** 82 ficheros en `mediciones/`, verbatim —la concatenación reconstruye el original con `diff` vacío—, `enlaces.sh` en verde sobre el árbol partido (2 440 referencias) y `grep '§4.37'` encuentra las 88 de antes.
+      *Lo que pedía la casilla, conservado:* **Un fichero por sección, y el número es el nombre del fichero.**
       `mediciones/4.37-huella-del-arbol-sucio.md`, `mediciones/9-trampas.md`,
       y `mediciones/LEEME.md` con la tabla de vigencia y el índice.
       *Por qué:* `CLAUDE.md` ordena consultar `MEDICIONES.md` **antes de
@@ -322,7 +327,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 5. La tabla de vigencia, entera y comprobada
 
-- [ ] **Que ninguna sección se quede sin fila, y que lo diga un guion.** La tabla
+- [x] ~~Que ninguna sección se quede sin fila, y que lo diga un guion.~~ **HECHA EL 2026-08-28 (§4.80e):** `bancos/vigencia.sh` da 0 fallos sobre 83 secciones y 83 filas, con sus dos controles; faltaban 47 filas y no 46 (la §4.45 no estaba en ningún rango).
+      *Lo que pedía la casilla, conservado:* **Que ninguna sección se quede sin fila, y que lo diga un guion.** La tabla
       cubre ~~**33 de las 60**~~ subsecciones §4.x.
       **REMEDIDO EL 2026-08-23: el 33 es exacto y sigue siéndolo; el 60 ya no
       —son 65—, así que faltan 32 filas, no 27. Y el patrón importa más que el
@@ -342,7 +348,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 6. `Makefile`, bancos en la CI y `shellcheck`
 
-- [ ] **Una orden para construir y una para probar, y que la CI las use.** Hoy
+- [x] ~~Una orden para construir y una para probar, y que la CI las use.~~ **HECHA EL 2026-08-28 (§4.80f):** `Makefile` con `mk/*.mk`; `make bancos` corre los ocho y sale distinto de cero si falla uno (sabotaje pagado en local); job `bancos` en la CI con `shellcheck` (simulado tres veces en `ubuntu:24.04`, verde); `make dos-veces`, `make medios/SHA256SUMS`, `make qemu`. **`[OMIT]` el push que ponga la CI de verdad en rojo: es de Jorge.**
+      *Lo que pedía la casilla, conservado:* **Una orden para construir y una para probar, y que la CI las use.** Hoy
       hay ~~**cuatro bancos con cuatro puntos de entrada**~~ **CINCO, remedidos
       el 2026-08-23: faltaba `imagen/banco-autosuficiencia.sh`** —`banco-cadena.sh`,
       `banco-mecanismos.sh`, `banco-veredicto.sh`, `veredicto-conteo.py
@@ -377,11 +384,12 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       disco, pero `medios/verificar-instalacion.sh` es una copia que `.gitignore`
       tapa con `medios/*`. **Lo que NO entra: firmar las sumas** — exige una clave
       que `AGENTS.md` §7 prohíbe en el runner, y decidir dónde vive es de
-      [publicar.md](publicar.md) (fila **E2**).
+      [publicar.md](../publicar.md) (fila **E2**).
 
 ## 7. Vaciar `ENCINA-OS.md` §7
 
-- [ ] **Que «Empieza aquí» vuelva a caber en una pantalla.** Hoy son ~~**1.189
+- [x] ~~Que «Empieza aquí» vuelva a caber en una pantalla.~~ **HECHA EL 2026-08-28 (§4.80g):** §7 son 38 líneas; lo que había está verbatim en `tareas/cerradas/empieza-aqui-2026-08-08-a-2026-08-25.md` y `enlaces.sh` sigue en verde.
+      *Lo que pedía la casilla, conservado:* **Que «Empieza aquí» vuelva a caber en una pantalla.** Hoy son ~~**1.189
       líneas**~~ **1.724, remedidas el 2026-08-23 —creció 535 en un día, y la
       cifra vieja era exacta sobre `99e0e39`—**. Se queda con la tarea en curso y nada más; el resto baja a
       `tareas/cerradas/` con su fecha.
@@ -395,7 +403,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 8. Los tres bloques de `diario.sh`
 
-- [ ] **Que cada entrada del diario salga partida en tres.** Qué se midió · qué
+- [x] ~~Que cada entrada del diario salga partida en tres.~~ **HECHA EL 2026-08-28 (§4.80j):** `diario.sh` escribe los tres bloques; la primera entrada nueva es la de este cierre, y la línea más larga de una entrada nueva baja de 1 500 (59 en la prueba). Las viejas no se reescriben.
+      *Lo que pedía la casilla, conservado:* **Que cada entrada del diario salga partida en tres.** Qué se midió · qué
       salió mal · qué toca mañana.
       *Por qué:* `DIARIO.md` tiene entradas de hasta **6.518 caracteres en una
       sola línea**. El contenido es bueno y ya trae esas tres cosas mezcladas; lo
@@ -407,7 +416,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 9. Un registro único de trampas
 
-- [ ] **`TRAMPAS.md`: una fila por trampa, con la columna que hoy no existe.**
+- [x] ~~`TRAMPAS.md`: una fila por trampa, con la columna que hoy no existe.~~ **HECHA EL 2026-08-28 (§4.80i):** 68 filas, numeración conservada —y el hallazgo de que 28-33 están asignados dos veces, resuelto con a/b sin renumerar—, `enlaces.sh` resuelve todos los enlaces al texto largo.
+      *Lo que pedía la casilla, conservado:* **`TRAMPAS.md`: una fila por trampa, con la columna que hoy no existe.**
       Número —global, conservado—, síntoma, causa, **a qué guion o fase aplica**,
       y dónde está medida.
       *Por qué:* las trampas viven en dos sitios con numeración compartida
@@ -432,7 +442,9 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 10. Renombrar los guiones por paquete y fase
 
-- [ ] **Que el nombre diga qué paquete y qué fase, y que el orden lo diga
+- [x] ~~Que el nombre diga qué paquete y qué fase, y que el orden lo diga
+      `SCRIPTS.md`.~~ **HECHA EL 2026-08-28 (§4.80k):** los trece por verbo y paquete, tabla de equivalencias en `SCRIPTS.md`, la CI apunta a los nuevos, `enlaces.sh` en verde, y `make paquetes` en docker da las tres huellas del manifiesto con los guiones renombrados.
+      *Lo que pedía la casilla, conservado:* **Que el nombre diga qué paquete y qué fase, y que el orden lo diga
       `SCRIPTS.md`.** Los trece números `00–12` son en realidad tres tríadas
       —construir · instalar · verificar, por paquete— intercaladas con cuatro
       utilidades.
@@ -453,7 +465,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 11. `fabricar-iso.sh`, una función por fase
 
-- [ ] **Que las 13 fases sean ejecutables y no comentarios.** Cada
+- [x] ~~Que las 13 fases sean ejecutables y no comentarios.~~ **HECHA EL 2026-08-28 (§4.80l):** 22 funciones (14 fases, siete subfases de la 5 y la 10bis) y la lista que las llama en orden; **la ISO sale con la misma huella que antes del cambio, `63f360dd…`, apuntada antes de tocar nada, y las dos pasadas dan la misma**.
+      *Lo que pedía la casilla, conservado:* **Que las 13 fases sean ejecutables y no comentarios.** Cada
       `# --- N. ---` pasa a `fase_N_nombre()`, y al final un bloque que las llama
       en orden. **Un fichero, misma lectura lineal.**
       *Por qué:* son ~~**1.201 líneas**~~ **1.413, remedidas el 2026-08-23 (la
@@ -567,7 +580,9 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 14. Una sola fuente de la versión, y una prosa que no pueda contradecirla
 
-- [ ] **Que la versión del producto salga de un sitio, y que las versiones de
+- [x] ~~Que la versión del producto salga de un sitio, y que las versiones de
+      los ingredientes no se puedan escribir mal en un `.md`.~~ **HECHA EL 2026-08-28 (§4.80j):** la versión del producto es la de `encina-meta` y el resto se deriva (nombres de los `.deb` desde el manifiesto); `bancos/versiones.sh` da 0 fallos, con sus dos controles pagados sobre el árbol real; los `+encina2` de los documentos vivos, tres enmendados y 21 marcados históricos.
+      *Lo que pedía la casilla, conservado:* **Que la versión del producto salga de un sitio, y que las versiones de
       los ingredientes no se puedan escribir mal en un `.md`.** Hoy la versión
       está a mano y en varios sitios: `imagen/marca/disk-info` dice
       `EncinaOS 24.04.4 LTS "Nutria Nocturna"`, el `Volume id` que D23 declara es
@@ -597,7 +612,8 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 15. El constructor de los `.deb`, versionado en vez de acordado
 
-- [ ] **Una receta de la máquina que construye, no un nombre de máquina.** Hoy
+- [x] ~~Una receta de la máquina que construye, no un nombre de máquina.~~ **HECHA EL 2026-08-28 (§4.80h):** `docker/Dockerfile.constructor` y `docker/construir-paquetes.sh`, puerta `make paquetes`; los tres `.deb` salen con las huellas del manifiesto, y la receta sin `lintian` (o sin `rsvg-convert`) falla nombrándola. `construir-todo.sh` no se toca.
+      *Lo que pedía la casilla, conservado:* **Una receta de la máquina que construye, no un nombre de máquina.** Hoy
       `construir-todo.sh` va por `ssh` a un constructor que se le pasa como
       `usuario@vm-linux`, y **no hay ninguna receta versionada de cómo se hace esa
       máquina**: `preparar-entorno.sh` comprueba que están las siete herramientas, no
@@ -623,10 +639,12 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
 
 ## 16. La hoja de los `[OJOS]` debidos
 
-- [ ] **Un sitio donde se apunte qué mirada falta, por medio y por
+- [x] ~~Un sitio donde se apunte qué mirada falta, por medio y por
+      arquitectura.~~ **HECHA EL 2026-08-28 (§4.80j):** `tareas/ojos.md`, 47 filas recogidas sin reescribir las casillas, enlace a cada una resuelto por `enlaces.sh`, y ninguna marcada por un agente.
+      *Lo que pedía la casilla, conservado:* **Un sitio donde se apunte qué mirada falta, por medio y por
       arquitectura.** Hoy los `[OJOS]` pendientes están repartidos por
-      [marca-del-medio.md](marca-del-medio.md),
-      [aspecto/5-cierre.md](aspecto/5-cierre.md), [publicar.md](publicar.md) y
+      [marca-del-medio.md](../marca-del-medio.md),
+      [aspecto/5-cierre.md](../aspecto/5-cierre.md), [publicar.md](../publicar.md) y
       `ENCINA-OS.md` §7, y **no hay ninguna hoja que los junte**.
       *Por qué:* es lo único que la comparación con el exterior encontró que este
       repositorio no tiene y otro sí. Ubuntu valida cada imagen con **casos de

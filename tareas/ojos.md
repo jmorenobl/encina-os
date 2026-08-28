@@ -1,6 +1,6 @@
 # La hoja de los `[OJOS]` debidos: qué mirada falta, por medio y por arquitectura
 
-**Qué es esto** (tarea 16 de [refactorizacion.md](refactorizacion.md), 2026-08-28).
+**Qué es esto** (tarea 16 de [refactorizacion.md](cerradas/refactorizacion.md), 2026-08-28).
 `[OJOS]` es lo que sólo puede verificar una persona mirando la pantalla, y **es
 de Jorge**: se lista y no se cuenta como aprobado (`CLAUDE.md`, «Método»). Hasta
 hoy los `[OJOS]` cobrados y pendientes estaban repartidos por
@@ -9,7 +9,7 @@ hoy los `[OJOS]` cobrados y pendientes estaban repartidos por
 [cerradas/empieza-aqui-2026-08-08-a-2026-08-25.md](cerradas/empieza-aqui-2026-08-08-a-2026-08-25.md)), y no había ninguna hoja que los juntara. Ubuntu la tiene
 —`iso.qa.ubuntu.com`, casos manuales que firma una persona, por hito, producto y
 arquitectura— y es lo único que la comparación con el exterior encontró que este
-repositorio no tenía ([organizacion-comparada.md](organizacion-comparada.md), fila F2).
+repositorio no tenía ([organizacion-comparada.md](cerradas/organizacion-comparada.md), fila F2).
 
 **Las reglas de esta hoja, y son dos:**
 

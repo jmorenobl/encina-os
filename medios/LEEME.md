@@ -156,3 +156,12 @@ arranque de `95758c9e…`. No son un patrón contra el que comparar, y no
 sustituyen a la transcripción de `MEDICIONES.md` §4.40 — que es la evidencia
 (§4.35o). Están aquí porque el `debug.log` de UTM enseñó que lo que no se
 transcribe se pierde.
+
+## `verificar-instalacion.sh`, la copia que viaja (2026-08-28)
+
+La que se sirve por el buzón a la máquina instalada **no es** `imagen/verificar-instalacion.sh`
+tal cual: desde la tarea 3 de la refactorización ese guion carga `lib/salida.sh`, y
+dentro de la máquina no hay clon. Se fabrica con **`make verificador`**, que pega la
+biblioteca dentro y deja aquí `medios/verificar-instalacion.sh` (en `.gitignore`, como
+todo lo de este directorio). La copia sin empaquetar, suelta, se niega a correr y lo dice.
+

@@ -452,6 +452,35 @@ las comprueba —con su rojo probado— en vez de fabricar un degradado. Retirar
 degradados de aquí es una casilla abierta:
 `tareas/aspecto/1-instrumentacion.md`.
 
+## Lo que la fase 2 dejó el 2026-08-28: `make`, `bancos/`, `lib/` y `docker/`
+
+Todo medido en `MEDICIONES.md` §4.80, un apartado por tarea.
+
+- **`make bancos`** corre los ocho bancos que no necesitan máquina ni ISO y
+  para en el primero que falle: `bancos/enlaces.sh` (referencias), `vigencia.sh`
+  (una fila por sección de `mediciones/`), `ci-copias.sh` (el heredoc de
+  `crear-ci.sh` contra `build.yml`), `versiones.sh` (changelog == manifiesto, y
+  la prosa viva no desmiente la versión), `imagen/banco-cadena.sh`,
+  `scripts/banco-veredicto.sh`, `veredicto-conteo.py --banco` y
+  `bancos/shellcheck.sh` (por docker si no hay binario). Es el job «bancos» de
+  la CI. `make bancos-medios` es `banco-mecanismos.sh` (lee ISOs);
+  `make banco-autosuficiencia` cruza a la VM. Cada banco lleva su control delante
+  y sabe dar sus dos respuestas; los detalles, en la cabecera de cada uno.
+- **`make paquetes`** construye los tres `.deb` desde `git archive HEAD` y los
+  coteja con el manifiesto: en Linux con los tres `construir-*.sh`, en el Mac
+  con el constructor versionado de `docker/` (`Dockerfile.constructor` +
+  `construir-paquetes.sh`). **`make iso`** es `construir-todo.sh` con nombre y
+  **`make dos-veces`** su definición de terminado, ejecutable.
+  **`make medios/SHA256SUMS`** calcula las sumas; **`make verificador`** empaqueta
+  `imagen/verificar-instalacion.sh` con `lib/salida.sh` dentro, que es la copia
+  que viaja a la máquina instalada.
+- **`lib/salida.sh`** es el vocabulario `[OK] [FALLO] [AVISO] [OMIT] [OJOS]` con
+  sus contadores, `fallo()` (apunta y sigue) y `morir()` (aborta), y lo cargan
+  `scripts/` (por `scripts/lib.sh`), `imagen/` y `bancos/`. **`lib/vm.sh`** es lo
+  que sólo sirve en la VM. Ningún guion define ya `ok`/`fallo` por su cuenta.
+- **`fabricar-iso.sh`** es desde hoy **una función por fase** —22, con la lista
+  que las llama en orden al final— y sale con la misma huella que antes.
+
 ## Los nombres cambiaron otra vez el 2026-08-28: por verbo y paquete, sin números
 
 Los trece guiones `00`–`12` eran en realidad **tres tríadas** —construir ·

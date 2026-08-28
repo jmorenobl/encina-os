@@ -1,6 +1,6 @@
 # Las trampas, en un registro único: una fila por número
 
-**Qué es esto** (tarea 9 de [refactorizacion.md](tareas/refactorizacion.md),
+**Qué es esto** (tarea 9 de [refactorizacion.md](tareas/cerradas/refactorizacion.md),
 2026-08-28). Las trampas de este proyecto viven en **dos sitios con numeración
 compartida**: las numeradas están en [SCRIPTS.md](SCRIPTS.md), repartidas en
 28 secciones tituladas «Y una octava…», «Cuatro más…», y la tabla de

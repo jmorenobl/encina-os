@@ -3,7 +3,7 @@
 **FASE 3, Y ES LO ÚLTIMO DEL PROYECTO — decidido por Jorge el 2026-08-23.** Antes
 van, en este orden: **(1)** que las ISOs se prueben de verdad —el hierro `amd64`
 en el portátil AMD A9 y la vuelta única `arm64`— y **(2)** la refactorización
-entera, [refactorizacion.md](refactorizacion.md). El motivo, en una frase:
+entera, [refactorizacion.md](cerradas/refactorizacion.md). El motivo, en una frase:
 **publicar es el único acto de este proyecto que no se puede deshacer**, y un
 acto irreversible va detrás de los reversibles. El argumento completo, y el
 anterior dejado al lado, en `TAREAS.md`, «El orden cambia el 2026-08-23».

@@ -226,7 +226,7 @@ original byte a byte, que es el control de la partición.
 ---
 
 *Este directorio nació el 2026-08-28 (tarea 4 de
-[refactorizacion.md](../tareas/refactorizacion.md)): `MEDICIONES.md` medía
+[refactorizacion.md](../tareas/cerradas/refactorizacion.md)): `MEDICIONES.md` medía
 19 399 líneas y 82 secciones, y `CLAUDE.md` manda leerlo **antes de investigar
 cualquier cosa**, que con ese tamaño era físicamente incumplible. Se movió
 **verbatim**, sección a sección, y el control es que la concatenación de los 82
