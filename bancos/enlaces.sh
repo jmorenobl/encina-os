@@ -97,7 +97,7 @@
 # salen siete [FALLO] y NINGUNO ES CIERTO. Se declara aqui y no en un fichero
 # aparte para que se lea al mismo tiempo que el guion.
 #
-#   bancos/vigencia.sh        planeado por la tarea 5 de refactorizacion.md
+#   (bancos/vigencia.sh estuvo aqui hasta que la tarea 5 lo creo, el 2026-08-28)
 #   (lib/salida.sh y lib/vm.sh estuvieron aqui hasta que la tarea 3 los creo, el 2026-08-28: el guion aviso de que sobraban, que es para lo que existe el aviso)
 #   scripts/construir-deb.sh  nombre que PROPONE la tarea 10, y ademas guion
 #                             real del repositorio hermano encina-autofirma
@@ -358,7 +358,7 @@ MD
 }
 
 # ------------------------------------------------------------ la medicion ----
-EXCLUIDAS="bancos/vigencia.sh scripts/construir-deb.sh imagen/autoinstall-e3.yaml imagen/verificar-e2.sh"
+EXCLUIDAS="scripts/construir-deb.sh imagen/autoinstall-e3.yaml imagen/verificar-e2.sh"
 esta_excluida() { case " $EXCLUIDAS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
 # LAS ROTAS DECLARADAS: rotas de verdad, y SIN DESTINO DEMOSTRABLE. Salen
