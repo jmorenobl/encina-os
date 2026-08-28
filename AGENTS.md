@@ -147,7 +147,7 @@ override_dh_auto_install:
   versión del producto es la de `encina-meta`**, y de ella `fabricar-iso.sh`
   compone el `Volume id` del medio (`EncinaOS 0.2.1 arm64`, paso 5e). El
   `24.04.4 LTS "Nutria Nocturna"` de `imagen/marca/disk-info` no es una versión
-  nuestra: es la de la base, que `subiquity` usa como canal (`TRAMPAS.md` 33b).
+  nuestra: es la de la base, que `subiquity` usa como canal (`TRAMPAS.md` 67).
   Los nombres de los cuatro `.deb` que viajan en el medio los leen
   `fabricar-iso.sh` y `fabricar-seed.sh` del manifiesto, no los llevan escritos.
 - **Arquitectura:** `all` en los tres paquetes. No hay binarios compilados.

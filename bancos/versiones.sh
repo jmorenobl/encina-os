@@ -12,7 +12,7 @@
 # mano en ningun otro sitio. La otra version que viaja en el medio -- el
 # «24.04.4 LTS "Nutria Nocturna"» de imagen/marca/disk-info -- NO es nuestra:
 # es la de la BASE, que subiquity usa como canal de snap y tiene que ser la de
-# la ISO oficial (§4.56b, 33b de TRAMPAS.md); fabricar-iso.sh la coteja.
+# la ISO oficial (§4.56b, 67 de TRAMPAS.md); fabricar-iso.sh la coteja.
 #
 # QUE COMPRUEBA (tarea 14 de tareas/refactorizacion.md):
 #   (A) manifiesto == changelog, para los tres paquetes propios (y autofirma si

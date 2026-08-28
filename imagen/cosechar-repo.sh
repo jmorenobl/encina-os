@@ -49,6 +49,8 @@
 #     [RETIRADO] el archivo ya no ofrece ESA version -- es un HALLAZGO, no un
 #                contratiempo, y este guion NO coge la version nueva por su
 #                cuenta: eso cambiaria lo que el producto lleva
+#     [LAUNCHPAD] el archivo la ha retirado pero Launchpad la conserva, y los
+#                bytes son los del manifiesto (2026-08-28, trampa 68): entra
 #     [OTROS BYTES] el archivo ofrece esa version pero con otra huella, o sea
 #                que el paquete se reempaqueto y el manifiesto se ha quedado atras
 #
@@ -74,6 +76,8 @@ MANIFIESTO=""
 SALIDA=""; PROPIOS=""; CACHE=""; ARQ=arm64
 
 MOZILLA=https://packages.mozilla.org/apt
+# LAUNCHPAD CONSERVA LO QUE EL ARCHIVO RETIRA (trampa 68, §4.81c): por nombre de fichero, sin epoch
+LAUNCHPAD=https://launchpad.net/ubuntu/+archive/primary/+files
 SUITES="noble noble-updates noble-security"
 COMPONENTES="main universe"
 
@@ -201,7 +205,7 @@ ok "$N_TABLA entradas en los indices"
 
 # --- 4. los 24 de ARCHIVO, bajados y comprobados POR HUELLA -----------------
 echo "== 4. los $N_ARCH de ARCHIVO"
-RETIRADOS=""; OTROSBYTES=""; MALAS=0; BAJADOS=0; YAESTABAN=0
+RETIRADOS=""; OTROSBYTES=""; MALAS=0; BAJADOS=0; YAESTABAN=0; DE_LAUNCHPAD=0
 while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
     [ "$origen" = ARCHIVO ] || continue
     # la arquitectura sale del nombre del fichero, y de paso lo valida
@@ -240,6 +244,42 @@ while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
                 | sort -u | tr '\n' ' ')
         echo "        [RETIRADO] $paquete $version ($arq) no esta en el archivo"
         [ -n "$otras" ] && echo "                   lo que hay hoy: $otras"
+        # EL ARCHIVO RETIRA, LAUNCHPAD NO (2026-08-28, MEDICIONES.md §4.81c, trampa
+        # 68): el 2026-08-28 openjdk-17-jre 17.0.19+10-1~24.04.2 dejo de estar en
+        # los indices y en el pool (404) de las DOS arquitecturas, y 'make
+        # dos-veces' no podia terminar. Launchpad conserva cada compilacion que
+        # publico y la sirve por nombre de fichero -- SIN el epoch, que el pool
+        # tampoco lleva: hunspell-es_24.2.1-1_all.deb y no hunspell-es_1%3a… --.
+        # Se le pide, Y SE COTEJA IGUAL QUE LO QUE VIENE DEL ARCHIVO: los bytes
+        # tienen que ser los del manifiesto, o no entran. Lo que no es de Ubuntu
+        # (Mozilla) no esta en Launchpad y se queda [RETIRADO] como antes: no hay
+        # fuente permanente para eso, y es lo que hace falta publicar con la ISO.
+        lp_fichero="${paquete}_${version#*:}_${arq}.deb"
+        lp_url="$LAUNCHPAD/$lp_fichero"
+        echo "                   se pide a Launchpad: $lp_url"
+        if curl -fsSL -o "$destino.parcial" "$lp_url" 2>/dev/null; then
+            r=$(shasum -a 256 "$destino.parcial" | cut -d' ' -f1)
+            t=$(wc -c <"$destino.parcial" | tr -d ' ')
+            if [ "$r" = "$sha" ] && [ "$t" = "$tamano" ]; then
+                # CONTROL, y va antes de aceptar nada: la misma comparacion con la
+                # huella esperada cambiada en UN caracter tiene que decir que no.
+                # Un sabotaje que no sabotea deja el control en decoracion
+                # (§4.37c: 'sed 1s/^./f/' sobre una huella que ya empezaba por f).
+                case "$sha" in f*) sab="0${sha:1}" ;; *) sab="f${sha:1}" ;; esac
+                [ "$sab" != "$sha" ] || morir "CONTROL ROTO: el sabotaje de la huella no saboteo"
+                [ "$r" != "$sab" ] || morir "CONTROL ROTO: la comparacion acepta una huella cambiada"
+                mv "$destino.parcial" "$destino"
+                echo "        [LAUNCHPAD] $fichero  ${sha:0:8}…  los bytes del manifiesto, y el control con la huella cambiada dice que no"
+                DE_LAUNCHPAD=$((DE_LAUNCHPAD+1))
+                continue
+            fi
+            echo "        [FALLO] Launchpad da $lp_fichero con OTROS BYTES: no entra"
+            echo "                esperada $sha  ($tamano bytes)"
+            echo "                real     $r  ($t bytes)"
+            rm -f "$destino.parcial"; MALAS=$((MALAS+1)); continue
+        fi
+        rm -f "$destino.parcial"
+        echo "                   Launchpad tampoco lo tiene (no es de Ubuntu, o el nombre no es ese)"
         RETIRADOS="$RETIRADOS$paquete $version${TAB}${otras:-ninguna}
 "
         continue
@@ -306,7 +346,7 @@ EOF
 
 # --- 6. el veredicto, con las tres respuestas separadas ----------------------
 echo "== 6. el veredicto"
-echo "        bajados: $BAJADOS   ya estaban: $YAESTABAN   fallos de descarga: $MALAS"
+echo "        bajados: $BAJADOS   ya estaban: $YAESTABAN   de Launchpad (retirados del archivo, por huella): $DE_LAUNCHPAD   fallos de descarga: $MALAS"
 if [ -n "$RETIRADOS" ]; then
     echo
     echo "[HALLAZGO] el archivo de Ubuntu retira las versiones superadas, y esto"

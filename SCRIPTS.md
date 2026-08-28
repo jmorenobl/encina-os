@@ -2293,9 +2293,9 @@ etiqueta** —`casper` va por contenido y UUID, el GRUB firmado hace
 ruta `/cdrom`— y que la cadena de arranque sale **byte a byte idéntica**.
 Arrancarlo es `[OJOS]` de Jorge.
 
-## Y cuatro más, todas del 2026-08-17 al dar la vuelta única
+## Y cuatro más, todas del 2026-08-17 al dar la vuelta única — numeradas 62-67 desde el 2026-08-28 (eran 28-33, y pisaban a las de 1895-2024: `MEDICIONES.md` §4.81e)
 
-**28. `utmctl start` devuelve 0 cuando falla.** Escribe
+**62. `utmctl start` devuelve 0 cuando falla.** Escribe
 `Error from event: The operation couldn't be completed. (OSStatus error -1712.)`
 por **stderr** y sale con **código 0**, así que cualquier `utmctl start … || fallo`
 es código muerto. `construir-todo.sh` lo tenía, la VM no arrancó, el guion imprimió
@@ -2310,7 +2310,7 @@ y falla al arrancar con `-1712` por `utmctl` y **`-609 La conexión no es válid
 por AppleScript. **Se arregla reiniciando UTM.** Antes de hacerlo, respalda
 `com.utmapp.UTM.plist` y comprueba las dos mitades después (trampa 18).
 
-**29. Un mismo ajuste tiene DOS nombres, y buscar uno no dice nada del otro.**
+**63. Un mismo ajuste tiene DOS nombres, y buscar uno no dice nada del otro.**
 La marca de la sesión viva se apoyaba en que *«el medio no lleva `layerfs-path`»*,
 buscado en el `grub.cfg`, la ESP y el resto de la imagen: **0 apariciones, y era
 verdad**. Pero `casper` lo lee de la variable **`LAYERFS_PATH`** —con subrayado—,
@@ -2319,20 +2319,20 @@ cpio comprimido donde ningún `grep` sobre la imagen llega. Coste: una capa ente
 que **no se monta nunca** (`MEDICIONES.md` §4.54e). **Regla: cuando concluyas «no
 está», di en qué grafía lo buscaste y dónde NO miraste.**
 
-**30. Un `[OK]` sobre un fichero del medio no dice que el sistema lo use.**
+**64. Un `[OK]` sobre un fichero del medio no dice que el sistema lo use.**
 `inventario-marca.sh` lee los ficheros de la capa dentro de la ISO y los cuenta
 como «sitios que ya no dicen Ubuntu». En marcha, `/etc/os-release` decía
 `NAME="Ubuntu"` mientras el inventario declaraba `PRETTY_NAME="Encina OS 24.04
 LTS"`. **No es un fallo de lectura: es que «está en el medio» y «se monta» son dos
 cosas, y el instrumento sólo mide la primera.**
 
-**31. Dos caracteres más que no llegan al invitado con `teclear-vm.sh`: `|` y
+**65. Dos caracteres más que no llegan al invitado con `teclear-vm.sh`: `|` y
 `&`.** Se suman a `=` y `@`. `ls /cdrom/casper/ | tail -n 4` llegó sin la tubería
 y ejecutó otra cosa. **Los subrayados sí llegan** (`ubuntu_bootstrap.log`, medido).
 Escribe las órdenes **sin tuberías y una por línea**, y mira la pantalla antes de
 Intro.
 
-**32. Dos bundles de UTM con el MISMO `Drive.Identifier` no arrancan.** Al
+**66. Dos bundles de UTM con el MISMO `Drive.Identifier` no arrancan.** Al
 fabricar VMs clonando el guion con `sed` es fácil cambiar nombre, UUID, MAC e ISO
 **y olvidar los identificadores de las unidades**. El síntoma no dice nada:
 **pantalla negra indefinida, disco a 0 bloques y el `debug.log` de QEMU congelado
@@ -2341,7 +2341,7 @@ propios arranca a la primera. **Costó dos controles que parecían decir que dos
 ISOs no arrancaban, y no era verdad** (`MEDICIONES.md` §4.54h). El `debug.log`
 congelado es la señal que lo separa de «tarda mucho».
 
-**33. La segunda palabra de `/.disk/info` es un NÚMERO DE VERSIÓN, no parte del
+**67. La segunda palabra de `/.disk/info` es un NÚMERO DE VERSIÓN, no parte del
 nombre.** `subiquity/server/controllers/refresh.py` hace
 `release = info.split()[1]` y construye con ella el canal de snap del propio
 instalador (`stable/ubuntu-<release>`). Un `.disk/info` que diga
@@ -2510,7 +2510,7 @@ dando nada por bueno.
 
 **38. Una VM en negro no siempre está colgada, y hay dos señales que lo separan.**
 El primer arranque del medio de bisecado dio pantalla negra con el cursor de X a
-los 7 minutos. **No era la trampa 32:** el `debug.log` crecía (70→97 KB, no
+los 7 minutos. **No era la trampa 66:** el `debug.log` crecía (70→97 KB, no
 congelado en ~2 700 bytes) **y la VM tenía IP en el `arp` del anfitrión**
 (`arp -a | grep <su MAC>`), o sea que el sistema live había arrancado y estaba en
 red. En el segundo arranque del **mismo** medio salió el instalador. Así que
@@ -2690,7 +2690,7 @@ en los arranques que van mal, o sea daría trato distinto justo a lo que se cuen
 **LA COMPROBACIÓN QUE NO SE PUEDE QUITAR** (trampa 13, y aquí muerde de verdad):
 como UTM sólo reescribe `screenshot.png` al parar, se compara el `mtime` de antes
 con el de después. Si no cambió —`stop` que falló, VM que ya estaba parada,
-`utmctl` devolviendo 0 sin hacer nada (trampa 28)— se estaría leyendo **el
+`utmctl` devolviendo 0 sin hacer nada (trampa 62)— se estaría leyendo **el
 framebuffer del arranque anterior** y contando dos veces el mismo dato. Esa línea
 sale `FALLO-SIN-CAPTURA` y **no cuenta como arranque**.
 
@@ -2819,7 +2819,7 @@ qemu-aarch64-softmmu: -drive ...,file.filename=/…/encina-capa-p10.utm/Data/,�
   'file' driver requires '/…/Data/' to be a regular file
 ```
 
-y, cómo no, `utmctl start` devuelve **0** (trampa 28). **Lo que funciona es
+y, cómo no, `utmctl start` devuelve **0** (trampa 62). **Lo que funciona es
 borrar la entrada `Drive` entera**, con UTM cerrado:
 
 ```
@@ -2966,7 +2966,7 @@ Son las dos mitades de lo mismo, y el inventario que las distingue es `stat -f %
 ## Dos más, y un instrumento, ejercitando la red de seguridad (2026-08-22)
 
 **49. DOS DISCOS `virtio` DEL MISMO BUNDLE PUEDEN ANUNCIAR EL MISMO `serial`, Y
-EL INVITADO SE COME UNO.** Es la trampa 32 en una forma nueva y peor: allí el
+EL INVITADO SE COME UNO.** Es la trampa 66 en una forma nueva y peor: allí el
 problema eran identificadores **iguales**; aquí son **distintos** y aun así
 chocan. UTM fabrica el `serial=` de cada disco con **los 20 primeros dígitos hex
 del `Identifier` sin guiones**, y los que reparte `scripts/fabricar-vm-medio.py`
@@ -3262,3 +3262,31 @@ contesta `Virtual machine not found`. No es la 18 (registro con ruta obsoleta):
 UTM escanea la carpeta **al arrancar**. **`open -a UTM <bundle>.utm`** lo
 registra en el acto, sin reiniciar UTM ni tocar el `plist` del registro, y
 `utmctl list` lo lista con su nombre y su UUID.
+
+## Una más, refabricando los dos medios desde los guiones definitivos (2026-08-28, tarde, `MEDICIONES.md` §4.81)
+
+*(Las 62-67 están más arriba, en «Y cuatro más, todas del 2026-08-17»: eran las
+28-33 duplicadas y se renumeraron ese mismo día, §4.81e.)*
+
+**68. EL ARCHIVO DE UBUNTU RETIRA LAS VERSIONES SUPERADAS, Y EL MANIFIESTO
+ANCLA UNA VERSIÓN: EL DÍA QUE EL ARCHIVO PUBLICA OTRA, `make dos-veces` DEJA DE
+TERMINAR.** `cosechar-repo.sh` sabía decir `[RETIRADO]` desde §4.36, y el
+2026-08-28 lo dijo en serio por primera vez: `openjdk-17-jre` y `-headless`
+`17.0.19+10-1~24.04.2` desaparecieron de los índices y del `pool` (404) de
+**las dos arquitecturas** (el archivo daba `17.0.20+8-1~24.04`), y la pasada 1
+murió en la cosecha con «esperaba 28 .deb y hay 26». **Launchpad conserva cada
+compilación publicada** y la sirve por nombre de fichero —**sin el epoch**:
+`hunspell-es_24.2.1-1_all.deb`, no `hunspell-es_1%3a…`—:
+`https://launchpad.net/ubuntu/+archive/primary/+files/<fichero>` → 303 →
+`launchpadlibrarian.net` → 200, y los cuatro `.deb` (dos por arquitectura)
+cuadran con el manifiesto byte a byte. Desde ese día `cosechar-repo.sh` cae a
+Launchpad **sólo** cuando el archivo ha retirado, **coteja igual que lo que
+viene del archivo** (huella y tamaño del manifiesto, o no entra) y lo dice con
+su propia palabra, `[LAUNCHPAD]`, con el control de que la comparación rechaza
+la huella cambiada en un carácter. **Lo que no es de Ubuntu no está en
+Launchpad**: Firefox (`packages.mozilla.org`) se quedará `[RETIRADO]` el día
+que Mozilla publique la 153.0.5, y para eso no hay fuente permanente —la
+única es la cosecha misma, que viaja dentro de la ISO en `/encina-repo` y que
+al publicar hay que publicar también—. Y la regla de fondo, que es la de
+§4.36: **el guion no coge la versión nueva por su cuenta**; subir el manifiesto
+es cambiar el producto, con huellas nuevas y `[OJOS]` nuevos.

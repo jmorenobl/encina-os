@@ -41,7 +41,7 @@ $(MEDIOS)/SHA256SUMS: $(wildcard $(MEDIOS)/*.iso)
 	@cat $@
 
 # un bundle de UTM para arrancar el medio, con la huella en el nombre para que
-# la VM no se pueda confundir con otra (trampa 32 de SCRIPTS.md)
+# la VM no se pueda confundir con otra (trampa 66 de SCRIPTS.md)
 qemu:
 	@H=$$(shasum -a 256 $(ISO_SALIDA) | cut -c1-8); \
 	python3 scripts/fabricar-vm-medio.py --iso $(ISO_SALIDA) --nombre encina-medio-$$H --arq $(ARQ)

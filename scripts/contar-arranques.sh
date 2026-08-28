@@ -20,7 +20,7 @@
 # LA COMPROBACION QUE NO SE PUEDE QUITAR (trampa 13: una mutacion se verifica
 # ANTES de leer su resultado). UTM solo reescribe 'screenshot.png' al parar. Si
 # no lo reescribiera -- porque el stop fallo, porque la VM ya estaba parada,
-# porque utmctl devolvio 0 sin hacer nada (trampa 28) -- se leeria el framebuffer
+# porque utmctl devolvio 0 sin hacer nada (trampa 62) -- se leeria el framebuffer
 # DEL ARRANQUE ANTERIOR y se contaria dos veces el mismo dato. Se compara el
 # mtime de antes con el de despues y si no cambio la linea sale [FALLO] y NO
 # cuenta como arranque.
@@ -93,7 +93,7 @@ for r in $(seq 1 "$RONDAS"); do
         ANTES=$(/usr/bin/stat -f %m "$SHOT" 2>/dev/null || echo 0)
         H=$(date +%H:%M:%S)
         utmctl start "$VM" >/dev/null 2>&1
-        # utmctl start DEVUELVE 0 CUANDO FALLA (trampa 28): el estado es lo que vale.
+        # utmctl start DEVUELVE 0 CUANDO FALLA (trampa 62): el estado es lo que vale.
         /bin/sleep 5
         EST=$(utmctl status "$VM" 2>&1)
         if [ "$EST" != "started" ]; then

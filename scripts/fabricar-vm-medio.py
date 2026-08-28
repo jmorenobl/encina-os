@@ -19,12 +19,12 @@ ninguna se puede olvidar:
 
 LA CUARTA Y LA QUINTA SON LAS QUE DAN PANTALLA NEGRA SI SE OLVIDAN, y una
 pantalla negra en este proyecto ya ha costado dos controles que parecian decir
-que una ISO no arrancaba (trampa 32). El firmware EFI de arm64 NO arranca una
+que una ISO no arrancaba (trampa 66). El firmware EFI de arm64 NO arranca una
 maquina x86_64: son binarios distintos, no una opcion.
 
 QUE HACE, y las cuatro cosas son las que costaron caro el 2026-08-17:
 
-  1. IDENTIFICADORES DE UNIDAD PROPIOS (trampa 32). Dos bundles con el mismo
+  1. IDENTIFICADORES DE UNIDAD PROPIOS (trampa 66). Dos bundles con el mismo
      'Drive.Identifier' arrancan y se cuelgan antes de nada -- pantalla negra y
      disco a 0 bloques --, y eso costo dos controles que parecian decir que dos
      ISOs no arrancaban. Aqui se eligen libres y SE COMPRUEBA contra TODOS los
@@ -45,7 +45,7 @@ QUE HACE, y las cuatro cosas son las que costaron caro el 2026-08-17:
 EL CONTROL DE LA COMPROBACION DE COLISIONES ES GRATIS Y ESTA DENTRO: en este
 disco hay CINCO bundles que comparten el identificador F6223E90..., asi que un
 detector que no los vea no esta mirando. (Y ojo con lo que ese dato dice de la
-trampa 32: encina-dev es uno de los cinco y arranca todos los dias. O sea que
+trampa 66: encina-dev es uno de los cinco y arranca todos los dias. O sea que
 compartir identificador no basta por si solo para colgar una VM -- queda
 MEDIDO que colisionan y SIN MEDIR que eso sea lo que las cuelga.)
 """
@@ -260,7 +260,7 @@ def main():
     if N_FALLO:
         sys.exit(1)
     print()
-    print("ARRANCARLA:  utmctl start %s   <- y OJO: devuelve 0 AUNQUE FALLE (trampa 28)." % vm_uuid)
+    print("ARRANCARLA:  utmctl start %s   <- y OJO: devuelve 0 AUNQUE FALLE (trampa 62)." % vm_uuid)
     print("             Comprueba 'utmctl status' Y UNA CAPTURA. El tamano del")
     print("             debug.log NO sirve para esto: una instalacion entera lo dejo")
     print("             en 2 727 bytes (trampa 47).")

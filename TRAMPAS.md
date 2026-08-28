@@ -18,13 +18,19 @@ llegan hasta la 58, trece huecos». Contadas las cabeceras `**N. …**` de
 sin ningún hueco de definición**, pero **28, 29, 30, 31, 32 y 33 están
 asignados dos veces**: el bloque del 2026-08-12/13 (`SCRIPTS.md` 1895-2024) y
 la sección «Y cuatro más, todas del 2026-08-17» (`SCRIPTS.md` 2298-2344), que
-contó a partir de la 27 sin mirar. Aquí van como **28a/28b … 33a/33b** (a = la
-primera en el fichero), y la numeración **no se cambia**: la tarea exige
-conservarla y qué número se queda cada «b» es decisión de Jorge. Lo que sí
-está comprobado, cita a cita, es a cuál apunta cada «trampa N» escrita fuera:
-28 → siempre la b (`utmctl start` devuelve 0); 29, 30, 31 → siempre la a;
-32 → **las dos** (`MEDICIONES.md` §4.35 cita la regla de «no cambiar dos
-variables»; todo lo demás, `Drive.Identifier`); 33 → nadie la cita.
+contó a partir de la 27 sin mirar. Por la mañana iban aquí como **28a/28b …
+33a/33b** (a = la primera en el fichero) y la decisión era de Jorge. **Tomada
+la tarde del 2026-08-28: las seis «b» son la 62 a la 67** (28b→62, 29b→63,
+30b→64, 31b→65, 32b→66, 33b→67; `MEDICIONES.md` §4.81b es la cuenta y §4.81e la
+ejecución) y las «a» se quedan con su número. Lo que cambió: las seis cabeceras
+de `SCRIPTS.md` (2298-2344, con el título de su sección diciendo que eran
+28-33), 18 citas vivas (5 de «28» → 62, 11 de «32» → 66, y las «30b», «31b» y
+«33b» que ya llevaban letra), y **6 citas en registros que NO se reescriben**
+—`DIARIO.md` 2026-08-21, §4.54h, §4.55, §4.61 ×2, `organizacion-comparada.md`—
+que llevan al lado «hoy la 62/66, renumerada el 2026-08-28». Cualquier «trampa
+28» o «trampa 32» sin esa coletilla en un texto anterior al 2026-08-28 que hable
+de `utmctl` o de `Drive.Identifier` es la 62 o la 66. La 33 nunca la citó nadie
+por número; la 67 (la del `.disk/info`) ya se citaba con letra.
 
 **Lo que la columna «dónde está medida» dice y lo que no:** `SCRIPTS.md:NNN` es
 la línea del texto largo en `464b4fd` (el enlace va al fichero: markdown no
@@ -44,12 +50,15 @@ bloque y **no se dan por buenas**.
 > `**N. …**` de `SCRIPTS.md` **a partir de la línea 599** (las de 160-231 son la
 > lista del laboratorio de E2 y casan con el mismo patrón) contra la cita de cada
 > fila; la orden entera está en §4.81b. Un número de línea no es un ancla.
-> **(2) Las 28-33 siguen duplicadas a propósito:** la propuesta con su precio
-> —(a) dejar a/b para siempre, o (b) dar a las «b» los números 62-67 y tocar
-> 18 citas vivas, 6 cabeceras y 6 filas, dejando 6 citas en registros con una
-> regla de lectura— está en §4.81b, cita a cita (8 apuntan a la a, 24 a la b).
-> **Nada se ha renumerado**: es decisión de Jorge, y cuando la tome se aplica y
-> se fecha aquí.
+> **(2) Las 28-33 duplicadas, resueltas la misma tarde:** la propuesta con su
+> precio —(a) dejar a/b para siempre, o (b) dar a las «b» los números 62-67—
+> está en §4.81b, cita a cita (8 apuntan a la a, 24 a la b). **Jorge eligió la
+> (b) y está aplicada (§4.81e)**: las seis filas «b» están ahora detrás de la 61
+> con su número nuevo y «*(era la 28b)*» al lado; las «a» se quedan con el suyo
+> y sin marca; las 18 citas vivas dicen el número nuevo; las 6 de registros
+> llevan la coletilla fechada. La cuenta de después: ninguna cita a «28b … 33b»
+> y ninguna «trampa 28» o «32» que hable de `utmctl` o de `Drive.Identifier`
+> fuera de un registro con coletilla.
 
 | Nº | Síntoma | Causa | A qué aplica | Dónde está medida |
 |---|---|---|---|---|
@@ -81,18 +90,12 @@ bloque y **no se dan por buenas**.
 | **26** | Una medición por ssh de algo del escritorio (mimeapps → firefox.desktop) mintió y decidió producto | Los `<escritorio>-mimeapps.list` solo se leen con `XDG_CURRENT_DESKTOP`; medir en las dos columnas o marcar [OJOS] | Mediciones por ssh del escritorio; contar-tiendas.py | [SCRIPTS.md:1865](SCRIPTS.md); MEDICIONES.md §4.26c, §4.26f |
 | **26bis** *(sub-trampa de la 26, no es número global)* | Los nombres de aplicaciones salen en inglés con LANG=es_ES en las tres combinaciones | No son las variables: es `setlocale()`; un `python3 -c` no lo llama. Enseñar `get_language_names()` al lado | Mediciones con PyGObject/GLib de cadenas traducidas | [SCRIPTS.md:1848](SCRIPTS.md); MEDICIONES.md §4.26f |
 | **27** | `verificar-instalacion.sh --forma e3` falla por la etapa `loading` que toda instalación escribe | Comprobación reescrita sin dispararla contra las dos formas que dice cubrir (luego revertida en §4.40c: `loading` NO siempre está) | verificar-instalacion.sh | [SCRIPTS.md:1883](SCRIPTS.md); MEDICIONES.md §4.32 (y §4.40c; §9 fila «Una lista exacta que da por segura una etapa…») |
-| **28a** *(número duplicado)* | «hay un saludador gráfico vivo» solo sabía contestar `no` en una máquina E3 | Preguntar por el mecanismo (GDM) en vez de por lo que se quiere saber (el escritorio arranca); ahora vale saludador O sesión | verificar-instalacion.sh (forma E3) | [SCRIPTS.md:1895](SCRIPTS.md); MEDICIONES.md §4.32 |
-| **28b** *(número duplicado)* | `utmctl start` escribe «OSStatus error -1712» y sale con código 0; `[OK] VMs encendidas: 0` | `utmctl start` devuelve 0 cuando falla; esperar al ESTADO (`utmctl status` hasta started). Causa de fondo: conexión interna de UTM caída, se reinicia UTM | construir-todo.sh, contar-arranques.sh, fabricar-vm-medio.py, VMs de UTM | [SCRIPTS.md:2298](SCRIPTS.md) (2026-08-17; §4.54 § DEDUCIDA por la fecha, no citada en el texto); MEDICIONES.md §4.61, §4.61 |
-| **29a** *(número duplicado)* | `utmctl clone` da un clon con la MISMA MAC e IP: indistinguible del origen por dentro y por arp | `utmctl clone` no regenera la MAC ni la huella; la prueba está fuera (mtime de disco.img) y un testigo en el primer minuto | VMs clonadas de UTM (clon efímero de la firma, encina-udev-settle) | [SCRIPTS.md:1913](SCRIPTS.md); MEDICIONES.md §4.33, §4.71; ENCINA-OS.md:2326 |
-| **29b** *(número duplicado)* | «el medio no lleva `layerfs-path`» era verdad y la capa no se montaba nunca | El mismo ajuste tiene dos grafías: `LAYERFS_PATH` vive en un cpio comprimido dentro del initrd donde ningún grep sobre la imagen llega | capa-marca.sh, fabricar-iso.sh, inventario-marca.sh (lectura del medio) | [SCRIPTS.md:2313](SCRIPTS.md); MEDICIONES.md §4.54e |
-| **30a** *(número duplicado)* | «0 .p12 en el disco» no puede salir sano nunca; el contador de iconos dijo 2 donde hay 1 | Dos umbrales que no podían dar una de sus dos respuestas (autofirma.pfx siempre está; contar ficheros no aplica el ensombrecido de XDG_DATA_DIRS) | Huella de virginidad antes de gastar una VM con certificado (§4.33) | [SCRIPTS.md:1950](SCRIPTS.md); MEDICIONES.md §4.33; citada en §4.72 |
-| **30b** *(número duplicado)* | El inventario dice `PRETTY_NAME="Encina OS"` y en marcha `/etc/os-release` dice Ubuntu | «está en el medio» y «se monta» son dos cosas; inventario-marca.sh solo mide la primera | inventario-marca.sh | [SCRIPTS.md:2322](SCRIPTS.md) (2026-08-17; §4.54 § DEDUCIDA por la fecha, no citada en el texto) |
-| **31a** *(número duplicado)* | Diálogo «QEMU error … Invalid argument» en cada instalación, despachado por fe | APFS exige alineación a 4096 para F_PUNCHHOLE y el instalador descarta alineado a 512 (discard=unmap); inocuo y reproducible. No sale en debug.log | VMs de UTM con disco de destino (instalaciones) | [SCRIPTS.md:1979](SCRIPTS.md); MEDICIONES.md §4.34; citada en [SCRIPTS.md:2994](SCRIPTS.md) |
-| **31b** *(número duplicado)* | `ls /cdrom/casper/ | tail -n 4` llegó sin la tubería y ejecutó otra cosa | `|` y `&` no llegan al invitado con teclear-vm.sh (se suman a `=` y `@`); órdenes sin tuberías y una por línea | teclear-vm.sh | [SCRIPTS.md:2329](SCRIPTS.md) (2026-08-17; superada por 34, 35 y 58) |
-| **32a** *(número duplicado)* | Se metieron el seed nuevo y `-set drive.discard=off` en la misma instalación y costó dos vueltas saber cuál atascaba | El arreglo evidente de la 31 rompe la instalación; regla: no cambiar dos variables a la vez | Método de medición (instalaciones en VM) | [SCRIPTS.md:2006](SCRIPTS.md); MEDICIONES.md §4.34; citada como «regla de la trampa 32» en §4.35 |
-| **32b** *(número duplicado)* | Pantalla negra indefinida, disco a 0 bloques y `debug.log` congelado en ~2 700 bytes: parecía que dos ISOs no arrancaban | Dos bundles de UTM con el mismo `Drive.Identifier` no arrancan (clonar config.plist con sed sin cambiar los identificadores) | fabricar-vm-medio.py, VMs de UTM | [SCRIPTS.md:2335](SCRIPTS.md); MEDICIONES.md §4.54h; citada en CLAUDE.md:80, [SCRIPTS.md:2513](SCRIPTS.md), MEDICIONES.md |
-| **33a** *(número duplicado)* | El instalador cascó (apport) a mitad de instalación; la vigilancia no imprimió nada en diez minutos | El Mac se durmió (pmset «Maintenance Sleep») y se llevó la VM; toda instalación va con `caffeinate -dimsu` | Anfitrión macOS durante instalaciones largas | [SCRIPTS.md:2024](SCRIPTS.md); MEDICIONES.md §4.34 |
-| **33b** *(número duplicado)* | Un `.disk/info` que dice `Encina OS 0.2.1 …` hace que el instalador se caiga en silencio | subiquity usa la 2.ª palabra como release del canal snap `stable/ubuntu-<release>`; tiene que ser la de la base (24.04.4), el nombre va en la 1.ª palabra | imagen/marca/disk-info, fabricar-iso.sh (paso 5b) | [SCRIPTS.md:2344](SCRIPTS.md) (enmienda 2026-08-19); MEDICIONES.md §4.56b |
+| **28** | «hay un saludador gráfico vivo» solo sabía contestar `no` en una máquina E3 | Preguntar por el mecanismo (GDM) en vez de por lo que se quiere saber (el escritorio arranca); ahora vale saludador O sesión | verificar-instalacion.sh (forma E3) | [SCRIPTS.md:1895](SCRIPTS.md); MEDICIONES.md §4.32 |
+| **29** | `utmctl clone` da un clon con la MISMA MAC e IP: indistinguible del origen por dentro y por arp | `utmctl clone` no regenera la MAC ni la huella; la prueba está fuera (mtime de disco.img) y un testigo en el primer minuto | VMs clonadas de UTM (clon efímero de la firma, encina-udev-settle) | [SCRIPTS.md:1913](SCRIPTS.md); MEDICIONES.md §4.33, §4.71; ENCINA-OS.md:2326 |
+| **30** | «0 .p12 en el disco» no puede salir sano nunca; el contador de iconos dijo 2 donde hay 1 | Dos umbrales que no podían dar una de sus dos respuestas (autofirma.pfx siempre está; contar ficheros no aplica el ensombrecido de XDG_DATA_DIRS) | Huella de virginidad antes de gastar una VM con certificado (§4.33) | [SCRIPTS.md:1950](SCRIPTS.md); MEDICIONES.md §4.33; citada en §4.72 |
+| **31** | Diálogo «QEMU error … Invalid argument» en cada instalación, despachado por fe | APFS exige alineación a 4096 para F_PUNCHHOLE y el instalador descarta alineado a 512 (discard=unmap); inocuo y reproducible. No sale en debug.log | VMs de UTM con disco de destino (instalaciones) | [SCRIPTS.md:1979](SCRIPTS.md); MEDICIONES.md §4.34; citada en [SCRIPTS.md:2994](SCRIPTS.md) |
+| **32** | Se metieron el seed nuevo y `-set drive.discard=off` en la misma instalación y costó dos vueltas saber cuál atascaba | El arreglo evidente de la 31 rompe la instalación; regla: no cambiar dos variables a la vez | Método de medición (instalaciones en VM) | [SCRIPTS.md:2006](SCRIPTS.md); MEDICIONES.md §4.34; citada como «regla de la trampa 32» en §4.35 |
+| **33** | El instalador cascó (apport) a mitad de instalación; la vigilancia no imprimió nada en diez minutos | El Mac se durmió (pmset «Maintenance Sleep») y se llevó la VM; toda instalación va con `caffeinate -dimsu` | Anfitrión macOS durante instalaciones largas | [SCRIPTS.md:2024](SCRIPTS.md); MEDICIONES.md §4.34 |
 | **34** | No se pueden teclear redirecciones, tuberías, comillas ni índices en el invitado | `| & > " [ ]` no llegan con teclear-vm.sh; usar `script -c <orden> <fichero>`. `ubuntu-desktop-bootstrap` desde terminal solo da el foco | teclear-vm.sh, medios/envia.sh | [SCRIPTS.md:2365](SCRIPTS.md) (2026-08-17; §4.54 § DEDUCIDA por la fecha, no citada en el texto); citada en medios/envia.sh:4, MEDICIONES.md §4.79 |
 | **35** | `echo A_B` llega como `A?B`; `ubuntu?bootstrap.log` funciona por comodín y puede leer otro fichero | El `_` no llega al invitado con teclear-vm.sh: llega como `?` (comodín del shell → verde falso) | teclear-vm.sh | [SCRIPTS.md:2478](SCRIPTS.md) (2026-08-19; §4.55/§4.56 § DEDUCIDA por la fecha, no citada en el texto); citada en MEDICIONES.md §4.63, [SCRIPTS.md:2998](SCRIPTS.md) |
 | **36** | No se puede pulsar «Mostrar registro» en el diálogo del instalador caído | Hay terminal en la sesión: `Alt+F2` → gnome-terminal; Tab no mueve el foco visible y el ratón de UTM no llega | Sesión viva del instalador en VM de UTM (teclear-vm.sh) | [SCRIPTS.md:2492](SCRIPTS.md) (2026-08-19); citada en MEDICIONES.md §4.61, §4.62 |
@@ -121,13 +124,20 @@ bloque y **no se dan por buenas**.
 | **59** | `fabricar-iso.sh` da [FALLO] en el paso 10 sobre un arm64 correcto con la lista «en blanco»; o el guion muere sin [FALLO] | El bash 3.2 de macOS trata `"${A[@]}"`/`${A[*]}` de un array vacío como unbound variable bajo `set -u`; idioma seguro `${A[@]+"${A[@]}"}`; buscar `NOMBRE\[` no la forma de la expansión | bash 3.2 de macOS: fabricar-iso.sh (MOD_XORRISO) y todo guion con `set -u` | [SCRIPTS.md:3233](SCRIPTS.md); MEDICIONES.md §4.79 |
 | **60** | `grep -v … SHA256SUMS > SHA256SUMS.nuevo` dejó dentro «1 matches in 1F:»; `shasum -c` lo cazó | El hook de rtk filtra también `grep`, y en una tubería que escribe lo filtrado acaba en el fichero; ruta absoluta o `rtk proxy` para medir Y escribir. `echo ====` en zsh muere | Entorno del agente (hook rtk, zsh) en el Mac | [SCRIPTS.md:3251](SCRIPTS.md); MEDICIONES.md §4.79 (amplía §4.9d y §4.77) |
 | **61** | `utmctl start` contesta «Virtual machine not found» sobre un bundle recién fabricado y perfecto | UTM escanea Documents/ al arrancar; no es la 18. `open -a UTM <bundle>.utm` lo registra en el acto | fabricar-vm-medio.py, VMs de UTM | [SCRIPTS.md:3259](SCRIPTS.md); MEDICIONES.md §4.79 |
+| **62** *(era la 28b)* | `utmctl start` escribe «OSStatus error -1712» y sale con código 0; `[OK] VMs encendidas: 0` | `utmctl start` devuelve 0 cuando falla; esperar al ESTADO (`utmctl status` hasta started). Causa de fondo: conexión interna de UTM caída, se reinicia UTM | construir-todo.sh, contar-arranques.sh, fabricar-vm-medio.py, VMs de UTM | [SCRIPTS.md:2298](SCRIPTS.md) (2026-08-17; §4.54 § DEDUCIDA por la fecha, no citada en el texto); MEDICIONES.md §4.61, §4.61 |
+| **63** *(era la 29b)* | «el medio no lleva `layerfs-path`» era verdad y la capa no se montaba nunca | El mismo ajuste tiene dos grafías: `LAYERFS_PATH` vive en un cpio comprimido dentro del initrd donde ningún grep sobre la imagen llega | capa-marca.sh, fabricar-iso.sh, inventario-marca.sh (lectura del medio) | [SCRIPTS.md:2313](SCRIPTS.md); MEDICIONES.md §4.54e |
+| **64** *(era la 30b)* | El inventario dice `PRETTY_NAME="Encina OS"` y en marcha `/etc/os-release` dice Ubuntu | «está en el medio» y «se monta» son dos cosas; inventario-marca.sh solo mide la primera | inventario-marca.sh | [SCRIPTS.md:2322](SCRIPTS.md) (2026-08-17; §4.54 § DEDUCIDA por la fecha, no citada en el texto) |
+| **65** *(era la 31b)* | `ls /cdrom/casper/ | tail -n 4` llegó sin la tubería y ejecutó otra cosa | `|` y `&` no llegan al invitado con teclear-vm.sh (se suman a `=` y `@`); órdenes sin tuberías y una por línea | teclear-vm.sh | [SCRIPTS.md:2329](SCRIPTS.md) (2026-08-17; superada por 34, 35 y 58) |
+| **66** *(era la 32b)* | Pantalla negra indefinida, disco a 0 bloques y `debug.log` congelado en ~2 700 bytes: parecía que dos ISOs no arrancaban | Dos bundles de UTM con el mismo `Drive.Identifier` no arrancan (clonar config.plist con sed sin cambiar los identificadores) | fabricar-vm-medio.py, VMs de UTM | [SCRIPTS.md:2335](SCRIPTS.md); MEDICIONES.md §4.54h; citada en CLAUDE.md:80, [SCRIPTS.md:2513](SCRIPTS.md), MEDICIONES.md |
+| **67** *(era la 33b)* | Un `.disk/info` que dice `Encina OS 0.2.1 …` hace que el instalador se caiga en silencio | subiquity usa la 2.ª palabra como release del canal snap `stable/ubuntu-<release>`; tiene que ser la de la base (24.04.4), el nombre va en la 1.ª palabra | imagen/marca/disk-info, fabricar-iso.sh (paso 5b) | [SCRIPTS.md:2344](SCRIPTS.md) (enmienda 2026-08-19); MEDICIONES.md §4.56b |
+| **68** | `make dos-veces` muere en la cosecha: «esperaba 28 .deb y hay 26», `[RETIRADO] openjdk-17-jre 17.0.19+10-1~24.04.2`, `pool` 404 en las dos arquitecturas | El archivo de Ubuntu retira las versiones superadas y el manifiesto ancla una; Launchpad las conserva (`+archive/primary/+files/<fichero sin epoch>`) y `cosechar-repo.sh` cae a él SÓLO si el archivo retiró, cotejando huella y tamaño igual (`[LAUNCHPAD]`, con control). Lo de Mozilla no tiene fuente permanente: publicar la cosecha con la ISO | cosechar-repo.sh, construir-todo.sh, make dos-veces, la fase 3 (publicar) | [SCRIPTS.md:3271](SCRIPTS.md); MEDICIONES.md §4.81c, §4.81f |
 
 ## Lo que NO lleva número, y dónde vive
 
 - **58 filas de la tabla §9** ([mediciones/9-trampas.md](mediciones/9-trampas.md))
   no corresponden a ninguna numerada: son las de la firma electrónica (§4.1-§4.9),
   las del Snap, y las que cada sección de `MEDICIONES.md` dejó como «familia de»
-  una numerada (la 13, la 27, la 24, la 11, la 30b) **sin número propio**. Se
+  una numerada (la 13, la 27, la 24, la 11, la 64) **sin número propio**. Se
   quedan allí; la fila de §9 es su registro.
 - **Numeraciones LOCALES que chocan con la global**, y hay que leer el ámbito:
   las siete trampas de `bancos/enlaces.sh` (`SCRIPTS.md` 3187-3223 y
@@ -141,7 +151,7 @@ bloque y **no se dan por buenas**.
   necesitado por número.
 - **Enmiendas que la fila tiene que decir o manda a una regla falsa**: la 38
   (su señal del `debug.log` la derogan la 42 y la 47), la 45 (su remedio
-  `open -a UTM` era falso, enmienda del 2026-08-22), y la 31b, la 34, la 35 y la
+  `open -a UTM` era falso, enmienda del 2026-08-22), y la 65, la 34, la 35 y la
   58 son **la misma trampa creciendo** (qué caracteres no llegan con
   `teclear-vm.sh`; la 58 deroga la cabecera del guion).
 
@@ -151,5 +161,5 @@ bloque y **no se dan por buenas**.
 leídos enteros (borrador de un agente de sólo lectura, con la orden `grep` de
 cada recuento apuntada, y auditado fila a fila contra el fichero). Al añadir
 una trampa a `SCRIPTS.md`, se le añade aquí su fila con el número siguiente al
-último —hoy, la 62— y `bancos/enlaces.sh` comprueba que sus `§` y sus enlaces
+último —hoy, la 69— y `bancos/enlaces.sh` comprueba que sus `§` y sus enlaces
 resuelven.*

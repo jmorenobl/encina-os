@@ -77,7 +77,7 @@ Imagen (`imagen/`), desde el Mac:
                                                    # una bandera por mecanismo de D23: es para BISECAR, no el producto
 ./imagen/fabricar-iso.sh --leer-mecanismos <iso>   # qué mecanismos lleva un medio, leídos de él
 ./imagen/banco-mecanismos.sh                       # el banco de ese lector, con su control (segundos)
-./scripts/fabricar-vm-medio.py --iso <iso> --nombre <n>   # bundle de UTM para arrancar un medio (trampa 32)
+./scripts/fabricar-vm-medio.py --iso <iso> --nombre <n>   # bundle de UTM para arrancar un medio (trampa 66)
 sudo ./imagen/verificar-instalacion.sh --forma e3 --visibles 27   # DENTRO de la máquina instalada, como root
 ```
 
