@@ -22,6 +22,11 @@
 # esas funciones, este banco mide LAS NUEVAS. Y si la extraccion sale corta se
 # NIEGA a medir, porque un banco que mide un guion vacio contesta que si a todo.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C
 AQUI=$(cd "$(dirname "$0")" && pwd)
@@ -43,11 +48,13 @@ echo "== extraidas $N_F funciones ($N_L lineas) de $(basename "$FUENTE")"
 # shellcheck disable=SC1090
 . "$TMP/fn.sh"
 
-N_OK=0; N_MAL=0
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 comp() {   # rotulo  esperado  obtenido
-    if [ "$2" = "$3" ]; then N_OK=$((N_OK+1)); echo "  [OK]    $1"
-    else N_MAL=$((N_MAL+1)); echo "  [FALLO] $1"
-         echo "          esperaba: $2"; echo "          obtuvo  : $3"; fi
+    if [ "$2" = "$3" ]; then ok "$1"
+    else fallo "$1" "esperaba: $2
+obtuvo  : $3"; fi
 }
 
 echo
@@ -76,9 +83,9 @@ comp "'minimal.squashfs': la base es su propia cadena, y no encadena hacia arrib
      "minimal.squashfs" "$(cadena_de minimal.squashfs)"
 # y el control de que el calculo NO da lo mismo para todo
 if [ "$(cadena_de minimal.standard.live.encina.squashfs)" = "$(cadena_de zz-encina.squashfs)" ]; then
-    N_MAL=$((N_MAL+1)); echo "  [FALLO] CONTROL ROTO: el calculo da lo mismo con los dos nombres"
+    fallo "CONTROL ROTO: el calculo da lo mismo con los dos nombres"
 else
-    N_OK=$((N_OK+1)); echo "  [OK]    control: el calculo distingue los dos nombres"
+    ok "control: el calculo distingue los dos nombres"
 fi
 
 echo
@@ -89,10 +96,9 @@ ALFA=$(printf '%s\n' minimal.squashfs minimal.standard.squashfs minimal.standard
        | LC_ALL=C sort -r | sed 's|^|/|' | tr '\n' ':' | sed 's/:$//')
 REAL=$(lowerdir_de "$(cadena_de minimal.standard.live.squashfs)")
 if [ "$ALFA" = "$REAL" ]; then
-    N_MAL=$((N_MAL+1)); echo "  [FALLO] la reproduccion da el orden ALFABETICO: esta copiando la rama muerta"
-    echo "          $REAL"
+    fallo "la reproduccion da el orden ALFABETICO: esta copiando la rama muerta" "$REAL"
 else
-    N_OK=$((N_OK+1)); echo "  [OK]    el orden no es el alfabetico (alfabetico daria: $ALFA)"
+    ok "el orden no es el alfabetico (alfabetico daria: $ALFA)"
 fi
 
 echo

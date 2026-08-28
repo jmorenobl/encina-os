@@ -54,6 +54,11 @@
 # asi que la bandera manda de verdad. Antes de eso estaba escrito en dos sitios
 # que E6 necesitaba «un constructor amd64»: NO lo necesita.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2
 
@@ -88,10 +93,9 @@ esac
 [ -z "$ISO_OFICIAL" ] && ISO_OFICIAL=$(ls -1 "$AQUI/../medios"/ubuntu-*-desktop-"$ARQ".iso 2>/dev/null | head -1)
 [ -z "$CACHE" ] && CACHE="$REPO/.base"
 
-FALLOS=0
-fallo() { echo "[FALLO] $*"; FALLOS=$((FALLOS+1)); }
-ok()    { echo "[OK]    $*"; }
-aviso() { echo "[AVISO] $*"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 
 [ -d "$REPO" ]        || { echo "[FALLO] no existe el repo: $REPO"; exit 1; }
 [ -f "$REPO/Packages" ] || { echo "[FALLO] el repo no tiene indice Packages: $REPO/Packages
@@ -291,9 +295,9 @@ fi
 R "rm -rf ~/$REMOTO" >/dev/null 2>&1
 
 echo
-if [ "$FALLOS" -eq 0 ]; then
+if [ "$N_MAL" -eq 0 ]; then
     ok "banco de autosuficiencia: $N_INST paquetes, todos del medio"
     exit 0
 fi
-echo "[FALLO] el banco de autosuficiencia NO pasa: $FALLOS fallos"
+echo "[FALLO] el banco de autosuficiencia NO pasa: $N_MAL fallos"
 exit 1

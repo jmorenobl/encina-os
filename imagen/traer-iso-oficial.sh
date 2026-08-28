@@ -44,6 +44,14 @@
 # los dos servidores firman con la misma «Ubuntu CD Image Automatic Signing Key
 # (2012)», medido con su control negativo.
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Este guion no
+# cuenta ni resume: el primer problema lo para, y la palabra es morir(), que
+# escribe [FALLO] por stderr y sale con 1. Hasta el 2026-08-28 esa misma
+# funcion se llamaba fallo(), igual que la que en lib.sh APUNTA Y SIGUE; la
+# misma palabra para dos flujos de control opuestos es lo que la tarea 2 quita.
+# El 'set' de abajo es el que este guion ya tenia y no se ha unificado con el
+# de lib.sh: cambiar las opciones de shell de un guion sin ejecutarlo entero
+# seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
@@ -68,18 +76,19 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-fallo() { echo "[FALLO] $*"; exit 1; }
-ok()    { echo "[OK]    $*"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 
-command -v curl >/dev/null || fallo "no hay curl"
+command -v curl >/dev/null || morir "no hay curl"
 if command -v shasum >/dev/null; then HUELLA() { shasum -a 256 "$1" | cut -d' ' -f1; }
 elif command -v sha256sum >/dev/null; then HUELLA() { sha256sum "$1" | cut -d' ' -f1; }
-else fallo "no hay ni shasum ni sha256sum"; fi
+else morir "no hay ni shasum ni sha256sum"; fi
 
 # --- 1. la huella, leida de quien la exige ----------------------------------
 echo "== 1. que ISO hace falta para $ARQ, segun quien la exige"
 GUION="$AQUI/fabricar-iso.sh"
-[ -f "$GUION" ] || fallo "no existe $GUION"
+[ -f "$GUION" ] || morir "no existe $GUION"
 # la tabla vive entre ISOS_OFICIALES="\ y la comilla que la cierra
 FILA=$(sed -n '/^ISOS_OFICIALES="/,/^[a-z0-9]* [0-9a-f]\{64\} [^ ]*"$/p' "$GUION" \
        | sed 's/"$//' | awk -v a="$ARQ" '$1==a {print $2, $3}')
@@ -92,18 +101,18 @@ if [ ${#H_ISO} -ne 64 ]; then
     exit 1
 fi
 [ -n "$BASE" ] || BASE="$B_TABLA"
-[ -n "$BASE" ] || fallo "la tabla no dice de que servidor sale la ISO $ARQ"
+[ -n "$BASE" ] || morir "la tabla no dice de que servidor sale la ISO $ARQ"
 ok "fabricar-iso.sh exige ${H_ISO:0:16}…  para $ARQ, desde $BASE"
 
-mkdir -p "$MEDIOS" || fallo "no pude crear $MEDIOS"
+mkdir -p "$MEDIOS" || morir "no pude crear $MEDIOS"
 
 # --- 2. el SHA256SUMS firmado ------------------------------------------------
 echo "== 2. el SHA256SUMS de cdimage y su firma"
-TMP=$(mktemp -d) || fallo "mktemp"
+TMP=$(mktemp -d) || morir "mktemp"
 trap 'rm -rf "$TMP"' EXIT
 for f in SHA256SUMS SHA256SUMS.gpg; do
     c=$(curl -fsS -o "$TMP/$f" -w '%{http_code}' "$BASE/$f") \
-        || fallo "no pude bajar $BASE/$f (HTTP ${c:-?})"
+        || morir "no pude bajar $BASE/$f (HTTP ${c:-?})"
     echo "        $f  HTTP $c  $(wc -c <"$TMP/$f" | tr -d ' ') bytes"
 done
 
@@ -123,7 +132,7 @@ LLAVERO=/usr/share/keyrings/ubuntu-archive-keyring.gpg
 awk 'NR==1 { c=substr($0,1,1); print (c=="0" ? "1" : "0") substr($0,2); next } { print }' \
     "$TMP/SHA256SUMS" > "$TMP/SHA256SUMS.malo"
 cmp -s "$TMP/SHA256SUMS" "$TMP/SHA256SUMS.malo" \
-    && fallo "CONTROL ROTO: el sabotaje no cambia el fichero"
+    && morir "CONTROL ROTO: el sabotaje no cambia el fichero"
 
 verificar_aqui() {   # 1=fichero a verificar. rc 0 si la firma es buena
     if command -v gpgv >/dev/null && [ -f "$LLAVERO" ]; then
@@ -140,23 +149,23 @@ verificar_alli() {
 FIRMA_COMPROBADA=0
 if verificar_aqui "$TMP/SHA256SUMS"; then
     verificar_aqui "$TMP/SHA256SUMS.malo" \
-        && fallo "CONTROL ROTO: la firma da por buena una suma saboteada"
+        && morir "CONTROL ROTO: la firma da por buena una suma saboteada"
     FIRMA_COMPROBADA=1
     ok "firma correcta aqui, y el control negativo falla como debe"
 elif [ -n "$VERIFICADOR" ]; then
     SSH_OPTS=(-o StrictHostKeyChecking=no -o ConnectTimeout=8 -o BatchMode=yes)
     [ -n "$LLAVE" ] && SSH_OPTS+=(-i "$LLAVE")
     TMP_R=$(ssh "${SSH_OPTS[@]}" "$VERIFICADOR" 'mktemp -d') \
-        || fallo "el verificador $VERIFICADOR no contesta por ssh"
+        || morir "el verificador $VERIFICADOR no contesta por ssh"
     # shellcheck disable=SC2064
     trap "rm -rf '$TMP'; ssh ${SSH_OPTS[*]} '$VERIFICADOR' \"rm -rf '$TMP_R'\" 2>/dev/null" EXIT
     scp -q "${SSH_OPTS[@]}" "$TMP/SHA256SUMS" "$TMP/SHA256SUMS.gpg" "$TMP/SHA256SUMS.malo" \
-        "$VERIFICADOR:$TMP_R/" || fallo "no pude enviar las sumas al verificador"
+        "$VERIFICADOR:$TMP_R/" || morir "no pude enviar las sumas al verificador"
     ssh "${SSH_OPTS[@]}" "$VERIFICADOR" "[ -f $LLAVERO ]" \
-        || fallo "el verificador no tiene $LLAVERO (falta el paquete ubuntu-keyring)"
-    verificar_alli "$TMP/SHA256SUMS" || fallo "la firma NO es correcta en $VERIFICADOR"
+        || morir "el verificador no tiene $LLAVERO (falta el paquete ubuntu-keyring)"
+    verificar_alli "$TMP/SHA256SUMS" || morir "la firma NO es correcta en $VERIFICADOR"
     verificar_alli "$TMP/SHA256SUMS.malo" \
-        && fallo "CONTROL ROTO: la firma da por buena una suma saboteada"
+        && morir "CONTROL ROTO: la firma da por buena una suma saboteada"
     FIRMA_COMPROBADA=1
     ok "firma correcta en $VERIFICADOR, y el control negativo falla como debe"
 else
@@ -202,19 +211,19 @@ if [ -f "$DESTINO" ]; then
     echo "[OTROS BYTES] $DESTINO existe y NO es el firmado"
     echo "        firmado ${H_ISO}"
     echo "        real    ${r}"
-    fallo "no lo sobrescribo yo: mira que es ese fichero y quitalo tu"
+    morir "no lo sobrescribo yo: mira que es ese fichero y quitalo tu"
 fi
 
 echo "        bajando $NOMBRE  (~3,3 GiB)"
 curl -fL --progress-bar -C - -o "$DESTINO.parcial" "$BASE/$NOMBRE" \
-    || fallo "no pude bajar $BASE/$NOMBRE"
+    || morir "no pude bajar $BASE/$NOMBRE"
 r=$(HUELLA "$DESTINO.parcial")
 [ "$r" = "$H_ISO" ] || { mv "$DESTINO.parcial" "$DESTINO.mala"
-    fallo "lo bajado NO cuadra con la huella firmada
+    morir "lo bajado NO cuadra con la huella firmada
         firmada $H_ISO
         real    $r
         se ha dejado en $DESTINO.mala en vez de borrarlo, por si hay que mirarlo"; }
-mv "$DESTINO.parcial" "$DESTINO" || fallo "no pude renombrar"
+mv "$DESTINO.parcial" "$DESTINO" || morir "no pude renombrar"
 ok "bajada y comprobada contra la huella FIRMADA por Canonical"
 
 echo

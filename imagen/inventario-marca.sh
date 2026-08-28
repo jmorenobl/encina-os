@@ -44,6 +44,11 @@
 # EL PRECIO: ~3,2 GB de disco temporal y ~2 min. Con --sin-capas se salta los
 # squashfs; entonces los planos 2 y 3 salen [OMIT], que no es un aprobado.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
@@ -67,16 +72,11 @@ done
 [ -n "$ISO" ] || uso
 [ -f "$ISO" ] || { echo "[FALLO] no existe la ISO: $ISO" >&2; exit 1; }
 
-N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0; N_LIMPIO=0
-FALLOS=()
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
+N_LIMPIO=0
 CAPAS_MARCA=""
-titulo() { echo; echo "=== $* ==="; }
-paso()   { echo "--- $* "; }
-ok()     { N_OK=$((N_OK+1));  echo "  [OK]    $*"; }
-aviso()  { N_AVI=$((N_AVI+1)); echo "  [AVISO] $*"; }
-omitido(){ N_OMI=$((N_OMI+1)); echo "  [OMIT]  $*"; }
-ojos()   { echo "  [OJOS]  $*"; }
-fallo()  { N_MAL=$((N_MAL+1)); echo "  [FALLO] $1"; [ -n "${2:-}" ] && echo "$2" | sed 's/^/          | /'; FALLOS+=("$1"); }
 
 # marca "fichero" "cadena o valor" "donde se ve"
 #
@@ -496,7 +496,7 @@ echo "  controles correctos: $N_OK   fallos: $N_MAL   omitidas: $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then
     echo
     echo "NO VALE. Han fallado controles, asi que la lista de arriba no se puede creer:"
-    for f in "${FALLOS[@]}"; do echo "  - $f"; done
+    for f in "${FALLOS_DETALLE[@]}"; do echo "  - $f"; done
     exit 1
 fi
 [ "$CONSERVAR" -eq 1 ] && echo "  el trabajo se conserva en: $T"

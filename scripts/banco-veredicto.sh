@@ -73,11 +73,13 @@ exec(open(sys.argv[1]).read(), g)
 print(g["clasificar"](int(sys.argv[2]), float(sys.argv[3]))[0])' "$1" "$2" "$3"
 }
 
-N_OK=0; N_MAL=0
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 comp() {   # rotulo esperado obtenido
-    if [ "$2" = "$3" ]; then N_OK=$((N_OK+1)); echo "  [OK]    $1"
-    else N_MAL=$((N_MAL+1)); echo "  [FALLO] $1"
-         echo "          esperaba: $2"; echo "          obtuvo  : $3"; fi
+    if [ "$2" = "$3" ]; then ok "$1"
+    else fallo "$1" "esperaba: $2
+obtuvo  : $3"; fi
 }
 
 # ------------------------------------------------------ 1. los dos extremos --
@@ -89,7 +91,7 @@ for par in "control-negra.png NEGRA" \
     set -- $par
     F="$CONTROLES/$1"; ESP="$2"
     if [ ! -f "$F" ]; then
-        N_MAL=$((N_MAL+1)); echo "  [FALLO] falta el control $1 -- sin el no se mide nada"
+        fallo "falta el control $1 -- sin el no se mide nada"
         continue
     fi
     read -r C B <<<"$(medir "$F")"
@@ -104,9 +106,9 @@ read -r CN BN <<<"$(medir "$CONTROLES/control-negra.png")"
 read -r CG BG <<<"$(medir "$CONTROLES/control-grafica.png")"
 VN=$(aplica "$TMP/regla.py" "$CN" "$BN"); VG=$(aplica "$TMP/regla.py" "$CG" "$BG")
 if [ "$VN" = "$VG" ]; then
-    N_MAL=$((N_MAL+1)); echo "  [FALLO] CONTROL ROTO: negra y grafica dan el MISMO veredicto ($VN)"
+    fallo "CONTROL ROTO: negra y grafica dan el MISMO veredicto ($VN)"
 else
-    N_OK=$((N_OK+1)); echo "  [OK]    negra -> $VN  y  grafica -> $VG : la regla separa las dos columnas"
+    ok "negra -> $VN  y  grafica -> $VG : la regla separa las dos columnas"
 fi
 # separacion medida, para que quede escrito cuanto margen hay
 echo "          margen: $CN colores frente a $CG, brillo $BN frente a $BG"
@@ -129,15 +131,15 @@ echo "== 4. TRES SABOTAJES: si la regla esta rota, esto tiene que decirlo"
 sabotaje() {   # rotulo  sed-expr  fichero-control  veredicto-que-YA-NO-debe-salir
     sed "$2" "$TMP/regla.py" > "$TMP/roto.py"
     if cmp -s "$TMP/regla.py" "$TMP/roto.py"; then
-        N_MAL=$((N_MAL+1)); echo "  [FALLO] el sabotaje '$1' no cambio la regla: el sed no pego"
+        fallo "el sabotaje '$1' no cambio la regla: el sed no pego"
         return
     fi
     read -r C B <<<"$(medir "$CONTROLES/$3")"
     V=$(aplica "$TMP/roto.py" "$C" "$B")
     if [ "$V" = "$4" ]; then
-        N_MAL=$((N_MAL+1)); echo "  [FALLO] sabotaje '$1' NO se nota: $3 sigue dando $4"
+        fallo "sabotaje '$1' NO se nota: $3 sigue dando $4"
     else
-        N_OK=$((N_OK+1)); echo "  [OK]    sabotaje '$1' cazado: $3 pasa de $4 a $V"
+        ok "sabotaje '$1' cazado: $3 pasa de $4 a $V"
     fi
 }
 # a) la banda de negra tragandoselo todo: es lo que pasaria si el umbral se

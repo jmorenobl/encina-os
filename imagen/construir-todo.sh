@@ -37,6 +37,14 @@
 # SCRIPTS.md). Con --vm <uuid> la enciende y la apaga el; sin --vm, la
 # enciendes tu y el solo comprueba que no haya otra.
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Este guion no
+# cuenta ni resume: el primer problema lo para, y la palabra es morir(), que
+# escribe [FALLO] por stderr y sale con 1. Hasta el 2026-08-28 esa misma
+# funcion se llamaba fallo(), igual que la que en lib.sh APUNTA Y SIGUE; la
+# misma palabra para dos flujos de control opuestos es lo que la tarea 2 quita.
+# El 'set' de abajo es el que este guion ya tenia y no se ha unificado con el
+# de lib.sh: cambiar las opciones de shell de un guion sin ejecutarlo entero
+# seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
@@ -91,9 +99,11 @@ esac
     || MANIFIESTO="$AQUI/repo-manifiesto.tsv"; }
 [ -n "$CONSTRUCTOR" ] && [ -n "$AUTOFIRMA" ] && [ -n "$SALIDA" ] || uso
 
-fallo() { echo "[FALLO] $*"; exit 1; }
-ok()    { echo "[OK]    $*"; }
-paso()  { echo; echo "== $*"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
+# las etapas de este guion se rotulan con titulo(); hasta la tarea 3 tenia un
+# paso() propio que imprimia «== N.» y sombreaba al de la biblioteca
 # contar con un glob y no con 'ls | grep': un nombre raro no cuenta de mas ni de
 # menos, y 'ls' de un directorio vacio no vale 1
 contar_deb() { local n=0 f; for f in "$1"/*.deb; do [ -e "$f" ] && n=$((n+1)); done; echo "$n"; }
@@ -111,26 +121,26 @@ SSH_OPTS=(-o StrictHostKeyChecking=no -o ConnectTimeout=8 -o BatchMode=yes)
 R()  { ssh "${SSH_OPTS[@]}" "$CONSTRUCTOR" "$@"; }
 
 # --- 0. el sitio, las herramientas y el arbol -------------------------------
-paso "0. donde se esta construyendo, escrito antes de construir nada"
+titulo "0. donde se esta construyendo, escrito antes de construir nada"
 echo "        mac        $(sw_vers -productName) $(sw_vers -productVersion)  $(uname -m)"
 echo "        xorriso    $(xorriso -version 2>&1 | sed -n 's/^xorriso version *: *//p' | head -1)"
 for c in xorriso git shasum python3; do
-    command -v "$c" >/dev/null || fallo "no hay $c en este Mac"
+    command -v "$c" >/dev/null || morir "no hay $c en este Mac"
 done
-[ -f "$ISO_OFICIAL" ] || fallo "no esta la ISO oficial: $ISO_OFICIAL
+[ -f "$ISO_OFICIAL" ] || morir "no esta la ISO oficial: $ISO_OFICIAL
         Traela y comprueba su firma con:  ./imagen/traer-iso-oficial.sh
         (medios/ esta en .gitignore a proposito: ver medios/LEEME.md)"
-[ -d "$AUTOFIRMA" ]   || fallo "no existe el directorio de autofirma: $AUTOFIRMA"
-[ -f "$MANIFIESTO" ]  || fallo "no existe el manifiesto: $MANIFIESTO"
+[ -d "$AUTOFIRMA" ]   || morir "no existe el directorio de autofirma: $AUTOFIRMA"
+[ -f "$MANIFIESTO" ]  || morir "no existe el manifiesto: $MANIFIESTO"
 
-cd "$RAIZ" || fallo "no pude entrar en $RAIZ"
-git rev-parse --git-dir >/dev/null 2>&1 || fallo "$RAIZ no es un repositorio git"
+cd "$RAIZ" || morir "no pude entrar en $RAIZ"
+git rev-parse --git-dir >/dev/null 2>&1 || morir "$RAIZ no es un repositorio git"
 COMMIT=$(git rev-parse HEAD)
 SUCIO=$(git status --porcelain | wc -l | tr -d ' ')
 echo "        commit     $COMMIT"
 if [ "$SUCIO" -ne 0 ]; then
     if [ "$PERMITIR_SUCIO" = 0 ]; then
-        fallo "el arbol tiene $SUCIO cambios sin confirmar y se construye 'git archive HEAD'.
+        morir "el arbol tiene $SUCIO cambios sin confirmar y se construye 'git archive HEAD'.
         Lo que saldria NO seria lo que ves. Confirmalos, o pasa --permitir-sucio
         sabiendo que la ISO NO describe este directorio de trabajo."
     fi
@@ -139,19 +149,19 @@ fi
 ok "arbol versionado en $COMMIT${SUCIO:+ }"
 
 # --- 1. una sola VM encendida a la vez --------------------------------------
-paso "1. una sola VM encendida a la vez (trampa 14: dos contestan en la misma IP)"
+titulo "1. una sola VM encendida a la vez (trampa 14: dos contestan en la misma IP)"
 if command -v utmctl >/dev/null; then
     ENCENDIDAS=$(utmctl list | awk 'NR>1 && $2=="started" {print $1" "$3}')
     N=$(printf '%s' "$ENCENDIDAS" | grep -c . )
     if [ -n "$VM" ]; then
         OTRAS=$(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM " | grep -c . )
-        [ "$OTRAS" -eq 0 ] || fallo "hay $OTRAS VM(s) encendidas que no son la pedida:
+        [ "$OTRAS" -eq 0 ] || morir "hay $OTRAS VM(s) encendidas que no son la pedida:
 $(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM ")"
         if ! printf '%s\n' "$ENCENDIDAS" | grep -q "^$VM "; then
             echo "        encendiendo $VM"
             # OJO: 'utmctl start' DEVUELVE 0 AUNQUE FALLE. Escribe
             # «Error from event: ... (OSStatus error -1712.)» por stderr y sale
-            # con codigo 0, asi que un '|| fallo' aqui NO SE DISPARA NUNCA. Paso
+            # con codigo 0, asi que un '|| morir' aqui NO SE DISPARA NUNCA. Paso
             # el 2026-08-17 (MEDICIONES.md §4.54g): la VM no arranco, este bloque
             # imprimio «[OK] VMs encendidas: 0» justo despues de decir que
             # encendia una, y el guion acabo culpando a ssh -- que manda a mirar
@@ -164,7 +174,7 @@ $(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM ")"
                 [ "$(utmctl status "$VM" 2>/dev/null)" = "started" ] && { ARRANCO=1; break; }
                 sleep 2
             done
-            [ "$ARRANCO" -eq 1 ] || fallo "no pude encender $VM: sigue en «$(utmctl status "$VM" 2>&1)».
+            [ "$ARRANCO" -eq 1 ] || morir "no pude encender $VM: sigue en «$(utmctl status "$VM" 2>&1)».
         'utmctl start' devuelve 0 aunque falle, asi que mira su stderr. Si dice
         OSStatus -1712 o -609, UTM tiene la conexion interna caida: reinicialo."
             APAGAR_AL_SALIR="$VM"
@@ -172,14 +182,14 @@ $(printf '%s\n' "$ENCENDIDAS" | grep -v "^$VM ")"
             ok "la VM pedida ya estaba encendida (no la apago yo)"
         fi
     else
-        [ "$N" -le 1 ] || fallo "hay $N VMs encendidas a la vez:
+        [ "$N" -le 1 ] || morir "hay $N VMs encendidas a la vez:
 $ENCENDIDAS"
     fi
     # y este recuento SE COMPRUEBA en vez de imprimirse: un «0 encendidas» aqui
     # es el modo de fallo de arriba, no una buena noticia
     ENC=$(utmctl list | awk 'NR>1 && $2=="started"' | grep -c .)
     if [ -n "$VM" ]; then
-        [ "$ENC" -eq 1 ] || fallo "esperaba EXACTAMENTE 1 VM encendida y hay $ENC"
+        [ "$ENC" -eq 1 ] || morir "esperaba EXACTAMENTE 1 VM encendida y hay $ENC"
     fi
     ok "VMs encendidas: $ENC"
 else
@@ -188,20 +198,20 @@ fi
 
 # el constructor contesta, y se identifica POR HUELLA y nunca por nombre
 for _ in $(seq 1 30); do R true 2>/dev/null && break; sleep 6; done
-R true 2>/dev/null || fallo "el constructor $CONSTRUCTOR no contesta por ssh"
+R true 2>/dev/null || morir "el constructor $CONSTRUCTOR no contesta por ssh"
 echo "        constructor $(R 'echo "$(lsb_release -ds 2>/dev/null)  $(dpkg --print-architecture)"')"
 echo "        machine-id  $(R 'cat /etc/machine-id')"
 echo "        dpkg        $(R 'dpkg-query -W -f="\${Version}" dpkg')  dpkg-dev $(R 'dpkg-query -W -f="\${Version}" dpkg-dev')"
 for c in dpkg-buildpackage lintian dpkg-scanpackages gpg; do
-    R "command -v $c >/dev/null" || fallo "al constructor le falta $c"
+    R "command -v $c >/dev/null" || morir "al constructor le falta $c"
 done
 ok "el constructor tiene dpkg-buildpackage, lintian, dpkg-scanpackages y gpg"
 
 # --- 2. el arbol versionado viaja, y se coteja a los dos lados --------------
-paso "2. 'git archive HEAD' al constructor -- lo versionado, no el disco (§4.37c)"
+titulo "2. 'git archive HEAD' al constructor -- lo versionado, no el disco (§4.37c)"
 REMOTO="encina-construir-$COMMIT"
-R "rm -rf ~/$REMOTO && mkdir -p ~/$REMOTO" || fallo "no pude preparar ~/$REMOTO"
-git archive HEAD | R "tar -xf - -C ~/$REMOTO" || fallo "no pude enviar el arbol"
+R "rm -rf ~/$REMOTO && mkdir -p ~/$REMOTO" || morir "no pude preparar ~/$REMOTO"
+git archive HEAD | R "tar -xf - -C ~/$REMOTO" || morir "no pude enviar el arbol"
 # el cotejo, que es lo unico que protege de verdad (trampa 24: COPYFILE_DISABLE
 # no suprime las cabeceras pax, y contar entradas '._' ya no demuestra nada)
 #
@@ -213,26 +223,26 @@ git archive HEAD | R "tar -xf - -C ~/$REMOTO" || fallo "no pude enviar el arbol"
 # entrada mas y 'find -type f' NO lo ve, asi que los dos lados contaban cosas
 # distintas. El fallo apunta en la direccion buena -dice que falta algo que si
 # esta-, pero es del instrumento, no del arbol.
-TMP_PROPIO=$(mktemp -d) || fallo "mktemp"
+TMP_PROPIO=$(mktemp -d) || morir "mktemp"
 git archive HEAD | tar -tf - | grep -v '/$' | LC_ALL=C sort > "$TMP_PROPIO/aqui"
 R "cd ~/$REMOTO && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C sort" > "$TMP_PROPIO/alli"
 D=$(diff "$TMP_PROPIO/aqui" "$TMP_PROPIO/alli" | grep -c '^[<>]')
-[ "$D" -eq 0 ] || fallo "el arbol no llego entero: $D diferencias
+[ "$D" -eq 0 ] || morir "el arbol no llego entero: $D diferencias
 $(diff "$TMP_PROPIO/aqui" "$TMP_PROPIO/alli" | head -10)"
 ok "$(grep -c . "$TMP_PROPIO/aqui") ficheros a los dos lados, 0 diferencias"
 # CONTROL de ese cotejo: tiene que saber ver un nombre cambiado
 sed '1s/^./Z/' "$TMP_PROPIO/aqui" > "$TMP_PROPIO/sab"
-cmp -s "$TMP_PROPIO/aqui" "$TMP_PROPIO/sab" && fallo "CONTROL ROTO: el sabotaje no saboteo"
+cmp -s "$TMP_PROPIO/aqui" "$TMP_PROPIO/sab" && morir "CONTROL ROTO: el sabotaje no saboteo"
 C=$(diff "$TMP_PROPIO/sab" "$TMP_PROPIO/alli" | grep -c '^[<>]')
-[ "$C" -ge 1 ] || fallo "CONTROL ROTO: el cotejo no ve un nombre cambiado"
+[ "$C" -ge 1 ] || morir "CONTROL ROTO: el cotejo no ve un nombre cambiado"
 ok "control: con un nombre cambiado, el cotejo lo senala"
 
 # --- 3. los tres .deb, construidos alli -------------------------------------
-paso "3. los tres .deb de Encina, desde el arbol versionado"
+titulo "3. los tres .deb de Encina, desde el arbol versionado"
 for g in 03-construir.sh 07-firefox-construir.sh 10-meta-construir.sh; do
     echo "        $g"
     R "cd ~/$REMOTO && ENCINA_REPO=~/$REMOTO bash scripts/$g" > "$TMP_PROPIO/$g.log" 2>&1 \
-        || { tail -25 "$TMP_PROPIO/$g.log"; fallo "$g no paso"; }
+        || { tail -25 "$TMP_PROPIO/$g.log"; morir "$g no paso"; }
     # los tres guiones COLOREAN su salida (lib.sh), asi que hay que quitar los
     # codigos ANSI antes de contar. Y UN RECUENTO DE CERO NO ES «TODO BIEN»: es
     # que este contador no sabe leer la salida, y se trata como fallo. La primera
@@ -243,13 +253,13 @@ for g in 03-construir.sh 07-firefox-construir.sh 10-meta-construir.sh; do
     NOK=$(grep -c '\[OK\]'    "$TMP_PROPIO/$g.limpio")
     NML=$(grep -c '\[FALLO\]' "$TMP_PROPIO/$g.limpio")
     [ "$NOK" -gt 0 ] || { tail -25 "$TMP_PROPIO/$g.limpio"
-        fallo "$g no imprimio ni una comprobacion: el contador no sabe leer su salida"; }
-    [ "$NML" -eq 0 ] || { grep '\[FALLO\]' "$TMP_PROPIO/$g.limpio"; fallo "$g dio $NML fallos"; }
+        morir "$g no imprimio ni una comprobacion: el contador no sabe leer su salida"; }
+    [ "$NML" -eq 0 ] || { grep '\[FALLO\]' "$TMP_PROPIO/$g.limpio"; morir "$g dio $NML fallos"; }
     echo "          $NOK comprobaciones, $NML fallos"
 done
 mkdir -p "$TMP_PROPIO/propios"
 R "cd ~/$REMOTO/debian-packages && tar -cf - *.deb" | tar -xf - -C "$TMP_PROPIO/propios" \
-    || fallo "no pude traerme los .deb"
+    || morir "no pude traerme los .deb"
 ok "traidos $(contar_deb "$TMP_PROPIO/propios") .deb del constructor"
 
 # LA COMPROBACION QUE IMPORTA: entran POR HUELLA, contra el manifiesto. Un .deb
@@ -271,19 +281,19 @@ while IFS=$'\t' read -r org pkg _ fic tam sha; do
         MAL=$((MAL+1))
     fi
 done < "$MANIFIESTO"
-[ "$MAL" -eq 0 ] || fallo "$MAL de los tres .deb propios no cuadran con el manifiesto"
+[ "$MAL" -eq 0 ] || morir "$MAL de los tres .deb propios no cuadran con el manifiesto"
 ok "los tres .deb propios cuadran con el manifiesto, huella y tamano"
 
 # --- 4. la cosecha: los 24 de fuera y autofirma, todo por huella -------------
-paso "4. la cosecha -- 24 de fuera + autofirma, POR HUELLA"
+titulo "4. la cosecha -- 24 de fuera + autofirma, POR HUELLA"
 [ -n "$TRABAJO" ] || TRABAJO="$TMP_PROPIO/repo"
-mkdir -p "$TRABAJO" || fallo "no pude crear $TRABAJO"
+mkdir -p "$TRABAJO" || morir "no pude crear $TRABAJO"
 # CUANTOS .deb SON LO DICE EL MANIFIESTO, y no este guion. Estuvo escrito «28» a
 # mano hasta el 2026-08-22, y ese dia el manifiesto paso a 29 al meter libnss3
 # (§4.61): un numero repetido en dos sitios es un sitio donde se pueden separar,
 # y el que manda es el manifiesto, que es LA FUENTE de la lista (cosechar-repo.sh).
 N_MAN=$(grep -cE '^(ARCHIVO|PROPIO)'"$(printf '\t')" "$MANIFIESTO")
-[ "$N_MAN" -gt 0 ] || fallo "el manifiesto no tiene lineas de datos: $MANIFIESTO"
+[ "$N_MAN" -gt 0 ] || morir "el manifiesto no tiene lineas de datos: $MANIFIESTO"
 # DOS ORDENES, y la PRIMERA TIENE QUE SALIR INCOMPLETA: en ese momento aun no
 # esta autofirma, que se construye en otro repositorio. Su «N-1 de N -> [FALLO]»
 # es EL CONTROL de que cosechar-repo.sh sabe dar la respuesta mala antes de
@@ -292,39 +302,39 @@ echo "        (la 1a orden SALE INCOMPLETA a proposito: falta autofirma. Su [FAL
 "$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
     | sed 's/^/        /' | tail -6
 N_PARCIAL=$(contar_deb "$TRABAJO")
-[ "$N_PARCIAL" -eq $((N_MAN - 1)) ] || fallo "CONTROL ROTO: sin autofirma esperaba $((N_MAN - 1)) .deb y hay $N_PARCIAL"
+[ "$N_PARCIAL" -eq $((N_MAN - 1)) ] || morir "CONTROL ROTO: sin autofirma esperaba $((N_MAN - 1)) .deb y hay $N_PARCIAL"
 ok "control: sin autofirma la cosecha se queda en $((N_MAN - 1)) y se niega"
 echo "        (la 2a orden la completa con autofirma, POR HUELLA entre tres casi homonimos)"
 "$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
     | sed 's/^/        /' | tail -6
 N=$(contar_deb "$TRABAJO")
-[ "$N" -eq "$N_MAN" ] || fallo "en la cosecha hay $N .deb y el manifiesto pide $N_MAN"
+[ "$N" -eq "$N_MAN" ] || morir "en la cosecha hay $N .deb y el manifiesto pide $N_MAN"
 ok "$N .deb cosechados sin tocar ninguna ISO, los que pide el manifiesto"
 
 # --- 5. el indice, que no se puede hacer aqui -------------------------------
-paso "5. el indice Packages (dpkg-scanpackages no existe en macOS)"
+titulo "5. el indice Packages (dpkg-scanpackages no existe en macOS)"
 R "rm -rf ~/$REMOTO-repo && mkdir -p ~/$REMOTO-repo"
 ( cd "$TRABAJO" && COPYFILE_DISABLE=1 tar -cf - *.deb ) \
-    | R "cd ~/$REMOTO-repo && tar -xf - 2>/dev/null" || fallo "no pude enviar los $N_MAN"
+    | R "cd ~/$REMOTO-repo && tar -xf - 2>/dev/null" || morir "no pude enviar los $N_MAN"
 # el cotejo de huellas a los dos lados, que es la proteccion de verdad (trampa 24)
 ( cd "$TRABAJO" && shasum -a 256 *.deb ) | LC_ALL=C sort > "$TMP_PROPIO/h.aqui"
 R "cd ~/$REMOTO-repo && sha256sum *.deb" | LC_ALL=C sort > "$TMP_PROPIO/h.alli"
 D=$(diff "$TMP_PROPIO/h.aqui" "$TMP_PROPIO/h.alli" | grep -c '^[<>]')
-[ "$D" -eq 0 ] || fallo "los $N_MAN no llegaron iguales: $D diferencias"
+[ "$D" -eq 0 ] || morir "los $N_MAN no llegaron iguales: $D diferencias"
 ok "las $N_MAN huellas cuadran a los dos lados"
 sed '1s/^./f/' "$TMP_PROPIO/h.aqui" > "$TMP_PROPIO/h.sab"
-cmp -s "$TMP_PROPIO/h.aqui" "$TMP_PROPIO/h.sab" && fallo "CONTROL ROTO: el sabotaje no saboteo"
+cmp -s "$TMP_PROPIO/h.aqui" "$TMP_PROPIO/h.sab" && morir "CONTROL ROTO: el sabotaje no saboteo"
 [ "$(diff "$TMP_PROPIO/h.sab" "$TMP_PROPIO/h.alli" | grep -c '^[<>]')" -ge 1 ] \
-    || fallo "CONTROL ROTO: el cotejo no ve una huella cambiada en un caracter"
+    || morir "CONTROL ROTO: el cotejo no ve una huella cambiada en un caracter"
 ok "control: con una huella cambiada en UN caracter, el cotejo la senala"
 
 R "cd ~/$REMOTO-repo && dpkg-scanpackages . /dev/null > Packages 2>/dev/null" \
-    || fallo "dpkg-scanpackages fallo"
+    || morir "dpkg-scanpackages fallo"
 scp -q "${SSH_OPTS[@]}" "$CONSTRUCTOR:~/$REMOTO-repo/Packages" "$TRABAJO/Packages" \
-    || fallo "no pude traerme el Packages"
+    || morir "no pude traerme el Packages"
 HA=$(R "sha256sum ~/$REMOTO-repo/Packages | cut -d' ' -f1")
 HB=$(shasum -a 256 "$TRABAJO/Packages" | cut -d' ' -f1)
-[ "$HA" = "$HB" ] || fallo "el Packages no llego igual
+[ "$HA" = "$HB" ] || morir "el Packages no llego igual
         alli $HA
         aqui $HB"
 ok "Packages: $(grep -c '^Filename: ' "$TRABAJO/Packages") entradas, ${HB:0:16}…"
@@ -335,21 +345,21 @@ paste -d' ' <(sed -n 's|^Filename: \./||p' "$TRABAJO/Packages") \
             <(sed -n 's|^Size: ||p'         "$TRABAJO/Packages") \
             <(sed -n 's|^SHA256: ||p'       "$TRABAJO/Packages") | LC_ALL=C sort > "$TMP_PROPIO/idx"
 D=$(diff "$TMP_PROPIO/man" "$TMP_PROPIO/idx" | grep -c '^[<>]')
-[ "$D" -eq 0 ] || fallo "el indice y el manifiesto no dicen lo mismo: $D diferencias
+[ "$D" -eq 0 ] || morir "el indice y el manifiesto no dicen lo mismo: $D diferencias
 $(diff "$TMP_PROPIO/man" "$TMP_PROPIO/idx" | head -8)"
 ok "el indice y el manifiesto dicen lo mismo en las $N_MAN lineas"
 awk 'NR==1{$2=$2+1}1' "$TMP_PROPIO/man" > "$TMP_PROPIO/man.sab"
 [ "$(diff "$TMP_PROPIO/man.sab" "$TMP_PROPIO/idx" | grep -c '^[<>]')" -eq 2 ] \
-    || fallo "CONTROL ROTO: con un tamano falseado, la comparacion no lo senala"
+    || morir "CONTROL ROTO: con un tamano falseado, la comparacion no lo senala"
 ok "control: con un tamano falseado, la comparacion lo senala"
 
 # --- 6. la ISO --------------------------------------------------------------
-paso "6. la ISO"
+titulo "6. la ISO"
 # el $BISECADO va SIN comillas a proposito: o esta vacio -- y entonces no pone
 # ningun argumento, que es el producto -- o son banderas sueltas sin espacios.
 "$AQUI/fabricar-iso.sh" --iso "$ISO_OFICIAL" --repo "$TRABAJO" --salida "$SALIDA" $BISECADO \
-    | sed 's/^/        /' || fallo "fabricar-iso.sh no paso"
-[ -f "$SALIDA" ] || fallo "no salio la ISO"
+    | sed 's/^/        /' || morir "fabricar-iso.sh no paso"
+[ -f "$SALIDA" ] || morir "no salio la ISO"
 
 echo
 echo "commit: $COMMIT"

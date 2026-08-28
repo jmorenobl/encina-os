@@ -31,6 +31,14 @@
 # tres miembros). En verde es la referencia con la que comparar el dia que
 # alguna de las dos maquinas se mueva; sin ella, un [OK] no deja dato.
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Este guion no
+# cuenta ni resume: el primer problema lo para, y la palabra es morir(), que
+# escribe [FALLO] por stderr y sale con 1. Hasta el 2026-08-28 esa misma
+# funcion se llamaba fallo(), igual que la que en lib.sh APUNTA Y SIGUE; la
+# misma palabra para dos flujos de control opuestos es lo que la tarea 2 quita.
+# El 'set' de abajo es el que este guion ya tenia y no se ha unificado con el
+# de lib.sh: cambiar las opciones de shell de un guion sin ejecutarlo entero
+# seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
@@ -53,14 +61,15 @@ done
 [ -n "$PAQUETE" ] || uso
 [ -f "$MANIFIESTO" ] || { echo "[FALLO] no existe el manifiesto: $MANIFIESTO"; exit 1; }
 
-fallo()    { echo "[FALLO] $*"; exit 1; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 hallazgo() { echo "[HALLAZGO] $*"; }
-ok()       { echo "[OK]    $*"; }
 
 # sha256 se llama distinto en macOS y en Linux, y este guion corre en los dos
 if   command -v sha256sum >/dev/null; then huella() { sha256sum "$1" | cut -d' ' -f1; }
 elif command -v shasum    >/dev/null; then huella() { shasum -a 256 "$1" | cut -d' ' -f1; }
-else fallo "no hay ni sha256sum ni shasum"; fi
+else morir "no hay ni sha256sum ni shasum"; fi
 huella_de_tuberia() {
     if command -v sha256sum >/dev/null; then sha256sum | cut -d' ' -f1
     else shasum -a 256 | cut -d' ' -f1; fi
@@ -94,7 +103,7 @@ fi
 echo "== 1. $PAQUETE en el manifiesto"
 LINEAS=$(awk -F"$TAB" -v p="$PAQUETE" '$1=="PROPIO" && $2==p' "$MANIFIESTO")
 N=$(printf '%s\n' "$LINEAS" | grep -c .)
-[ "$N" -eq 1 ] || fallo "$PAQUETE sale $N veces como PROPIO en $MANIFIESTO (tiene que salir 1)"
+[ "$N" -eq 1 ] || morir "$PAQUETE sale $N veces como PROPIO en $MANIFIESTO (tiene que salir 1)"
 IFS="$TAB" read -r _origen _paq VERSION FICHERO TAMANO SHA <<EOF
 $LINEAS
 EOF
@@ -165,7 +174,7 @@ echo "        construido  $SHA_REAL  $TAM_REAL bytes"
     && echo "        MISMO TAMANO Y OTROS BYTES: el tamano no discrimina (§4.37i)"
 
 if command -v dpkg-deb >/dev/null; then
-    TMP=$(mktemp -d) || fallo "no puedo crear un temporal"
+    TMP=$(mktemp -d) || morir "no puedo crear un temporal"
     trap 'rm -rf "$TMP"' EXIT
 
     echo

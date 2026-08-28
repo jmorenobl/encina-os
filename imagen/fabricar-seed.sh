@@ -17,6 +17,14 @@
 # Este script NO inventa huellas: las saca de imagen/encina-seed.sh, que es la
 # unica autoridad, para que las dos no puedan separarse.
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Este guion no
+# cuenta ni resume: el primer problema lo para, y la palabra es morir(), que
+# escribe [FALLO] por stderr y sale con 1. Hasta el 2026-08-28 esa misma
+# funcion se llamaba fallo(), igual que la que en lib.sh APUNTA Y SIGUE; la
+# misma palabra para dos flujos de control opuestos es lo que la tarea 2 quita.
+# El 'set' de abajo es el que este guion ya tenia y no se ha unificado con el
+# de lib.sh: cambiar las opciones de shell de un guion sin ejecutarlo entero
+# seria una mutacion sin verificar.
 set -u
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
@@ -67,8 +75,9 @@ done
 
 [ -n "$REPO" ] && [ -n "$SALIDA" ] || { uso; exit 2; }
 
-fallo() { echo "[FALLO] $*"; exit 1; }
-ok()    { echo "[OK]    $*"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 
 # --- 1. las huellas, sacadas del guion que las va a comprobar dentro ---------
 huella_de() {  # $1 = nombre de la variable en encina-seed.sh
@@ -92,19 +101,19 @@ HUELLAS=("$(huella_de H_AUTOFIRMA)"
 echo "== 1. los cuatro .deb de Encina, POR HUELLA (§4.13: misma version != mismos bytes)"
 for i in 0 1 2 3; do
     f="$REPO/${FICHEROS[$i]}"
-    [ -f "$f" ] || fallo "no esta: $f"
+    [ -f "$f" ] || morir "no esta: $f"
     real=$(shasum -a 256 "$f" | cut -d' ' -f1)
-    [ "$real" = "${HUELLAS[$i]}" ] || fallo "huella distinta en ${FICHEROS[$i]}
+    [ "$real" = "${HUELLAS[$i]}" ] || morir "huella distinta en ${FICHEROS[$i]}
         esperada ${HUELLAS[$i]}
         real     $real"
     ok "${FICHEROS[$i]}  ${real:0:8}…"
 done
 
 echo "== 2. el indice Packages describe esos mismos bytes, y TODO lo que viaja"
-[ -f "$REPO/Packages" ] || fallo "no esta: $REPO/Packages"
+[ -f "$REPO/Packages" ] || morir "no esta: $REPO/Packages"
 for i in 0 1 2 3; do
     grep -q "^SHA256: ${HUELLAS[$i]}$" "$REPO/Packages" \
-        || fallo "Packages no contiene la huella de ${FICHEROS[$i]}"
+        || morir "Packages no contiene la huella de ${FICHEROS[$i]}"
 done
 ok "las cuatro huellas de Encina estan en Packages"
 # EL RESTO DEL REPO -- el nivel 3 de §4.27 -- no tiene huellas escritas a mano en
@@ -112,16 +121,16 @@ ok "las cuatro huellas de Encina estan en Packages"
 # instalar. Asi que aqui se comprueba EL INDICE ENTERO contra los bytes que
 # viajan, en las dos direcciones: ni sobra un Filename ni falta un .deb.
 grep -qE '^Filename: \./' "$REPO/Packages" \
-    || fallo "Packages no tiene rutas relativas ./ — el repo no se leeria"
+    || morir "Packages no tiene rutas relativas ./ — el repo no se leeria"
 NIDX=$(grep -cE '^Filename: \./' "$REPO/Packages")
 NDEB=$(ls -1 "$REPO"/*.deb 2>/dev/null | wc -l | tr -d ' ')
-[ "$NIDX" -eq "$NDEB" ] || fallo "Packages describe $NIDX ficheros y en el repo hay $NDEB .deb"
+[ "$NIDX" -eq "$NDEB" ] || morir "Packages describe $NIDX ficheros y en el repo hay $NDEB .deb"
 ok "Packages describe $NIDX ficheros y viajan $NDEB, ni uno mas ni uno menos"
 MALAS=0
 while read -r f; do
     [ -f "$REPO/$f" ] || { echo "        no viaja: $f"; MALAS=$((MALAS+1)); }
 done < <(sed -n 's|^Filename: \./||p' "$REPO/Packages")
-[ "$MALAS" -eq 0 ] || fallo "$MALAS ficheros descritos en Packages no estan en el repo"
+[ "$MALAS" -eq 0 ] || morir "$MALAS ficheros descritos en Packages no estan en el repo"
 # y las huellas del indice contra los bytes, una a una
 paste -d' ' <(sed -n 's|^Filename: \./||p' "$REPO/Packages") \
             <(sed -n 's|^SHA256: ||p'      "$REPO/Packages") \
@@ -131,7 +140,7 @@ paste -d' ' <(sed -n 's|^Filename: \./||p' "$REPO/Packages") \
     done > "$REPO/.huellas-malas.tmp"
 if [ -s "$REPO/.huellas-malas.tmp" ]; then
     cat "$REPO/.huellas-malas.tmp"; rm -f "$REPO/.huellas-malas.tmp"
-    fallo "el indice Packages no describe los bytes que viajan"
+    morir "el indice Packages no describe los bytes que viajan"
 fi
 rm -f "$REPO/.huellas-malas.tmp"
 ok "las $NIDX huellas de Packages coinciden con los bytes del repo"
@@ -142,9 +151,9 @@ PRIMERO=$(sed -n 's|^Filename: \./||p' "$REPO/Packages" | sed -n 1p)
 H_OTRA=$(sed -n 's|^SHA256: ||p' "$REPO/Packages" | sed -n 2p)
 r=$(shasum -a 256 "$REPO/$PRIMERO" | cut -d' ' -f1)
 if [ -n "$H_OTRA" ] && [ "$r" = "$H_OTRA" ]; then
-    fallo "CONTROL ROTO: dos ficheros distintos con la misma huella"
+    morir "CONTROL ROTO: dos ficheros distintos con la misma huella"
 elif [ -z "$H_OTRA" ]; then
-    fallo "CONTROL ROTO: el indice no tiene una segunda huella con la que comparar"
+    morir "CONTROL ROTO: el indice no tiene una segunda huella con la que comparar"
 else
     ok "control: enfrentado a la huella de otro fichero, el comparador lo ve"
 fi
@@ -175,22 +184,22 @@ PY
     ok "el seed actualizado desde encina-seed.sh"
 fi
 grep -qxF "$LINEA" "$YAML" \
-    || fallo "el seed y encina-seed.sh se han separado.
+    || morir "el seed y encina-seed.sh se han separado.
         Vuelve a lanzar esto con --actualizar-yaml"
 ok "coinciden ($(wc -c <"$GUION" | tr -d ' ') bytes de guion, ${#B64} de base64)"
 
 echo "== 4. el volumen CIDATA"
 rm -f "$SALIDA"
-dd if=/dev/zero of="$SALIDA" bs=1m count="$TAM_MB" 2>/dev/null || fallo "dd"
+dd if=/dev/zero of="$SALIDA" bs=1m count="$TAM_MB" 2>/dev/null || morir "dd"
 DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$SALIDA" | awk '{print $1}')
-[ -n "$DEV" ] || fallo "hdiutil attach -nomount"
-newfs_msdos -F 16 -v CIDATA "$DEV" >/dev/null 2>&1 || { hdiutil detach "$DEV" >/dev/null; fallo "newfs_msdos"; }
-hdiutil detach "$DEV" >/dev/null || fallo "detach"
+[ -n "$DEV" ] || morir "hdiutil attach -nomount"
+newfs_msdos -F 16 -v CIDATA "$DEV" >/dev/null 2>&1 || { hdiutil detach "$DEV" >/dev/null; morir "newfs_msdos"; }
+hdiutil detach "$DEV" >/dev/null || morir "detach"
 
 DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage "$SALIDA" | head -1 | awk '{print $1}')
-[ -d /Volumes/CIDATA ] || { hdiutil detach "$DEV" >/dev/null; fallo "no se monto /Volumes/CIDATA"; }
-cp "$YAML"     /Volumes/CIDATA/user-data || fallo "cp user-data"
-cp "$METADATA" /Volumes/CIDATA/meta-data || fallo "cp meta-data"
+[ -d /Volumes/CIDATA ] || { hdiutil detach "$DEV" >/dev/null; morir "no se monto /Volumes/CIDATA"; }
+cp "$YAML"     /Volumes/CIDATA/user-data || morir "cp user-data"
+cp "$METADATA" /Volumes/CIDATA/meta-data || morir "cp meta-data"
 mkdir -p /Volumes/CIDATA/encina-repo
 # OJO AL COPIAR: macOS escribe al lado un AppleDouble '._<nombre>' por cada
 # fichero. NO llegan al objetivo, y esta medido (§4.18m): el 'cp' de
@@ -198,26 +207,26 @@ mkdir -p /Volumes/CIDATA/encina-repo
 # empiezan por punto, y /target/srv/encina-repo acaba con cinco ficheros
 # exactos. Cambiar aquel 'cp' por un 'cp -a' o un 'rsync' SI los metería
 # dentro del repositorio de apt. El volumen medido es este, con ellos dentro.
-cp "$REPO"/*.deb "$REPO"/Packages /Volumes/CIDATA/encina-repo/ || fallo "cp repo"
+cp "$REPO"/*.deb "$REPO"/Packages /Volumes/CIDATA/encina-repo/ || morir "cp repo"
 sync
-hdiutil detach "$DEV" >/dev/null || fallo "detach 2"
+hdiutil detach "$DEV" >/dev/null || morir "detach 2"
 ok "escrito"
 
 echo "== 5. releerlo antes de usarlo, que es gratis y evita medir con un seed vacio"
 DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage "$SALIDA" | head -1 | awk '{print $1}')
-[ -d /Volumes/CIDATA ] || fallo "no se volvio a montar"
+[ -d /Volumes/CIDATA ] || morir "no se volvio a montar"
 ls -l /Volumes/CIDATA/ /Volumes/CIDATA/encina-repo/
 for i in 0 1 2 3; do
     real=$(shasum -a 256 "/Volumes/CIDATA/encina-repo/${FICHEROS[$i]}" | cut -d' ' -f1)
-    [ "$real" = "${HUELLAS[$i]}" ] || fallo "el .deb no sobrevivio al FAT: ${FICHEROS[$i]}"
+    [ "$real" = "${HUELLAS[$i]}" ] || morir "el .deb no sobrevivio al FAT: ${FICHEROS[$i]}"
 done
 ok "los cuatro .deb sobreviven al volumen, huella a huella"
-diff -q "$YAML" /Volumes/CIDATA/user-data >/dev/null || fallo "user-data no coincide"
-diff -q "$METADATA" /Volumes/CIDATA/meta-data >/dev/null || fallo "meta-data no coincide"
+diff -q "$YAML" /Volumes/CIDATA/user-data >/dev/null || morir "user-data no coincide"
+diff -q "$METADATA" /Volumes/CIDATA/meta-data >/dev/null || morir "meta-data no coincide"
 ok "user-data y meta-data coinciden byte a byte"
 # control de que este paso 5 sabe decir que no
 if [ -f /Volumes/CIDATA/encina-repo/fichero-que-no-existe-jamas ]; then
-    fallo "control roto: existe un fichero que no se copio"
+    morir "control roto: existe un fichero que no se copio"
 fi
 ok "control: un fichero que no se copio no aparece"
 hdiutil detach "$DEV" >/dev/null

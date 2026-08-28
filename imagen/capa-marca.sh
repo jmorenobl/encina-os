@@ -61,6 +61,11 @@
 # capas del medio de verdad. Con --trabajo la segunda vuelta es barata, y el
 # directorio es el mismo que usa inventario-marca.sh.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C
 
@@ -83,13 +88,10 @@ done
 [ -n "$ISO" ] && [ -n "$SALIDA" ] || uso
 [ -f "$ISO" ] || { echo "[FALLO] no existe la ISO: $ISO" >&2; exit 1; }
 
-N_OK=0; N_MAL=0; N_OMI=0; FALLOS=()
-titulo() { echo; echo "=== $* ==="; }
-paso()   { echo "--- $* "; }
-ok()     { N_OK=$((N_OK+1)); echo "  [OK]    $*"; }
-omitido(){ N_OMI=$((N_OMI+1)); echo "  [OMIT]  $*"; }
-fallo()  { N_MAL=$((N_MAL+1)); echo "  [FALLO] $1"; [ -n "${2:-}" ] && echo "$2" | sed 's/^/          | /'; FALLOS+=("$1"); }
-morir()  { echo "[FALLO] $*" >&2; exit 1; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion fue el que
+# invento morir() (§4.67c); desde la tarea 3 la toma de la biblioteca.
+. "$AQUI/../lib/salida.sh"
 
 for h in xorriso osirrox unsquashfs mksquashfs shasum sips python3; do
     command -v "$h" >/dev/null || morir "falta la herramienta: $h"
@@ -295,7 +297,7 @@ fi
 if [ "$N_MAL" -gt 0 ]; then
     echo
     echo "NO SE FABRICA NADA. Han fallado controles:"
-    for f in "${FALLOS[@]}"; do echo "  - $f"; done
+    for f in "${FALLOS_DETALLE[@]}"; do echo "  - $f"; done
     exit 1
 fi
 
@@ -440,7 +442,7 @@ echo "  correctas: $N_OK   fallos: $N_MAL   omitidas: $N_OMI"
 if [ "$N_MAL" -gt 0 ]; then
     echo
     echo "NO VALE:"
-    for f in "${FALLOS[@]}"; do echo "  - $f"; done
+    for f in "${FALLOS_DETALLE[@]}"; do echo "  - $f"; done
     rm -f "$CAPA"
     exit 1
 fi

@@ -58,6 +58,14 @@
 # AppleDouble que inventa 'tar' TERMINAN EN .deb y dpkg-scanpackages las
 # indexaria (trampa 24).
 
+# MODELO DE SALIDA: ABORTAR (tarea 2, MEDICIONES.md §4.67). Este guion no
+# cuenta ni resume: el primer problema lo para, y la palabra es morir(), que
+# escribe [FALLO] por stderr y sale con 1. Hasta el 2026-08-28 esa misma
+# funcion se llamaba fallo(), igual que la que en lib.sh APUNTA Y SIGUE; la
+# misma palabra para dos flujos de control opuestos es lo que la tarea 2 quita.
+# El 'set' de abajo es el que este guion ya tenia y no se ha unificado con el
+# de lib.sh: cambiar las opciones de shell de un guion sin ejecutarlo entero
+# seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 
@@ -92,11 +100,12 @@ esac
 [ -f "$MANIFIESTO" ] || { echo "[FALLO] no existe el manifiesto: $MANIFIESTO"; exit 1; }
 [ -n "$CACHE" ] || CACHE="$SALIDA/.indices"
 
-fallo() { echo "[FALLO] $*"; exit 1; }
-ok()    { echo "[OK]    $*"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 
-command -v curl >/dev/null || fallo "no hay curl"
-mkdir -p "$SALIDA" "$CACHE" || fallo "no puedo crear $SALIDA"
+command -v curl >/dev/null || morir "no hay curl"
+mkdir -p "$SALIDA" "$CACHE" || morir "no puedo crear $SALIDA"
 
 # --- 1. el manifiesto, leido y contado --------------------------------------
 echo "== 1. el manifiesto"
@@ -105,9 +114,9 @@ DATOS=$(grep -vE '^(#|origen'"$TAB"'|$)' "$MANIFIESTO")
 N_TOTAL=$(printf '%s\n' "$DATOS" | grep -c .)
 N_ARCH=$(printf  '%s\n' "$DATOS" | grep -c "^ARCHIVO$TAB")
 N_PROP=$(printf  '%s\n' "$DATOS" | grep -c "^PROPIO$TAB")
-[ "$N_TOTAL" -gt 0 ] || fallo "el manifiesto no tiene ni una linea de datos"
+[ "$N_TOTAL" -gt 0 ] || morir "el manifiesto no tiene ni una linea de datos"
 [ $((N_ARCH + N_PROP)) -eq "$N_TOTAL" ] \
-    || fallo "hay lineas con un origen que no es ARCHIVO ni PROPIO"
+    || morir "hay lineas con un origen que no es ARCHIVO ni PROPIO"
 ok "$N_TOTAL paquetes: $N_ARCH de ARCHIVO (se bajan) y $N_PROP PROPIO (se construyen)"
 
 # --- 1bis. LOS DOS MANIFIESTOS DICEN LA MISMA LISTA (§4.64) ------------------
@@ -123,14 +132,14 @@ if [ -f "$HERMANO" ]; then
     A=$(lista_de "$MANIFIESTO"); B=$(lista_de "$HERMANO")
     # EL CONTROL VA DELANTE: el cotejo tiene que saber decir que NO.
     if [ "$(printf '%s\n' "$A" | sed '1s/$/-SABOTAJE/')" = "$B" ]; then
-        fallo "CONTROL ROTO: el cotejo no distingue una lista alterada"
+        morir "CONTROL ROTO: el cotejo no distingue una lista alterada"
     fi
     if [ "$A" = "$B" ]; then
         ok "$(printf '%s\n' "$A" | grep -c .) paquetes, y los dos manifiestos dicen la misma lista"
     else
         echo "        estas lineas NO estan en los dos, o no a la misma version:"
         diff <(printf '%s\n' "$A") <(printf '%s\n' "$B") | grep -E '^[<>]' | sed 's/^/          /'
-        fallo "repo-manifiesto.tsv y repo-manifiesto-amd64.tsv se han separado"
+        morir "repo-manifiesto.tsv y repo-manifiesto-amd64.tsv se han separado"
     fi
 else
     echo "        [AVISO] no existe $HERMANO: no hay con que cotejar la lista"
@@ -154,13 +163,13 @@ declare -a IDX_FICHERO IDX_BASE
 for s in $SUITES; do for c in $COMPONENTES; do
     d="$CACHE/ubuntu-$s-$c-$ARQ.Packages"
     traer_indice "$d" "$UBUNTU/dists/$s/$c/binary-$ARQ/Packages.gz" si \
-        || fallo "no pude traer el indice $s/$c"
+        || morir "no pude traer el indice $s/$c"
     IDX_FICHERO+=("$d"); IDX_BASE+=("$UBUNTU")
 done; done
 for a in "$ARQ" all; do
     d="$CACHE/mozilla-$a.Packages"
     traer_indice "$d" "$MOZILLA/dists/mozilla/main/binary-$a/Packages" no \
-        || fallo "no pude traer el indice de Mozilla ($a)"
+        || morir "no pude traer el indice de Mozilla ($a)"
     IDX_FICHERO+=("$d"); IDX_BASE+=("$MOZILLA")
 done
 ok "${#IDX_FICHERO[@]} indices"
@@ -284,7 +293,7 @@ while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
             [ "$(shasum -a 256 "$cand" | cut -d' ' -f1)" = "$sha" ] && { origen_f="$cand"; break; }
         done < <(find "$PROPIOS" -name '*.deb' -type f 2>/dev/null)
         if [ -n "$origen_f" ]; then
-            cp "$origen_f" "$destino" || fallo "cp $origen_f"
+            cp "$origen_f" "$destino" || morir "cp $origen_f"
             echo "        copiado    $fichero  ${sha:0:8}…  <- $origen_f"
             continue
         fi
@@ -337,4 +346,4 @@ if [ "$CUADRAN" -eq "$N_TOTAL" ] && [ "$SOBRAN" -eq "$N_TOTAL" ]; then
     echo "    y al transferir, COPYFILE_DISABLE=1 (trampa 24)"
     exit 0
 fi
-fallo "el repositorio NO esta completo: $NOCUADRAN no cuadran, $AUSENTES ausentes"
+morir "el repositorio NO esta completo: $NOCUADRAN no cuadran, $AUSENTES ausentes"

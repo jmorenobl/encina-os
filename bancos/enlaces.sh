@@ -98,8 +98,7 @@
 # aparte para que se lea al mismo tiempo que el guion.
 #
 #   bancos/vigencia.sh        planeado por la tarea 5 de refactorizacion.md
-#   lib/salida.sh             planeado por la tarea 3
-#   lib/vm.sh                 planeado por la tarea 3
+#   (lib/salida.sh y lib/vm.sh estuvieron aqui hasta que la tarea 3 los creo, el 2026-08-28: el guion aviso de que sobraban, que es para lo que existe el aviso)
 #   scripts/construir-deb.sh  nombre que PROPONE la tarea 10, y ademas guion
 #                             real del repositorio hermano encina-autofirma
 #   imagen/autoinstall-e3.yaml   nombre historico conservado a proposito;
@@ -132,19 +131,9 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
-    C_OK=$(tput setaf 2); C_MAL=$(tput setaf 1); C_AVI=$(tput setaf 3)
-    C_TIT=$(tput bold);   C_TEN=$(tput setaf 8); C_FIN=$(tput sgr0)
-else
-    C_OK=""; C_MAL=""; C_AVI=""; C_TIT=""; C_TEN=""; C_FIN=""
-fi
-
-N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0
-ok()      { N_OK=$((N_OK+1));   echo "  ${C_OK}[OK]${C_FIN}    $*"; }
-fallo()   { N_MAL=$((N_MAL+1)); echo "  ${C_MAL}[FALLO]${C_FIN} $*"; }
-aviso()   { N_AVI=$((N_AVI+1)); echo "  ${C_AVI}[AVISO]${C_FIN} $*"; }
-omitido() { N_OMI=$((N_OMI+1)); echo "  ${C_TEN}[OMIT]${C_FIN}  $*"; }
-titulo()  { echo; echo "${C_TIT}== $*${C_FIN}"; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/enlaces.XXXXXX") || exit 2
 trap 'rm -rf "$TMP"' EXIT
@@ -356,7 +345,7 @@ MD
 }
 
 # ------------------------------------------------------------ la medicion ----
-EXCLUIDAS="bancos/vigencia.sh lib/salida.sh lib/vm.sh scripts/construir-deb.sh imagen/autoinstall-e3.yaml imagen/verificar-e2.sh"
+EXCLUIDAS="bancos/vigencia.sh scripts/construir-deb.sh imagen/autoinstall-e3.yaml imagen/verificar-e2.sh"
 esta_excluida() { case " $EXCLUIDAS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
 # LAS ROTAS DECLARADAS: rotas de verdad, y SIN DESTINO DEMOSTRABLE. Salen

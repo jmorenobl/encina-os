@@ -37,6 +37,11 @@
 # el bisecado -- la regresion sigue dentro del grupo -- pero si lo que se creia
 # que era una de sus cuatro piezas.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 export LC_ALL=C
 
@@ -50,20 +55,22 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-N_OK=0; N_FALLO=0; N_OMIT=0; CORRIDOS=()
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3): ok/fallo/aviso/omitido, los
+# contadores N_OK/N_MAL/N_AVI/N_OMI y morir(). Este guion ya no define ninguno.
+. "$AQUI/../lib/salida.sh"
+CORRIDOS=()
 echo "== el lector de mecanismos, contra medios reales (capa volid info menu)"
 printf '   %-8s %-8s %s\n' esperado leido medio
 while IFS='|' read -r ESP ISO NOTA; do
     if [ ! -f "$MEDIOS/$ISO" ]; then
-        printf '[OMIT]  %-8s %-8s %-38s %s\n' "$ESP" "--" "$ISO" "no esta en $MEDIOS"
-        N_OMIT=$((N_OMIT+1)); continue
+        omitido "$(printf '%-8s %-8s %-38s %s' "$ESP" "--" "$ISO" "no esta en $MEDIOS")"; continue
     fi
     LEIDO=$("$AQUI/fabricar-iso.sh" --leer-mecanismos "$MEDIOS/$ISO" 2>&1 | cut -d' ' -f1-7 | sed 's/   .*//')
     CORRIDOS+=("$ESP")
     if [ "$LEIDO" = "$ESP" ]; then
-        printf '[OK]    %-8s %-8s %-38s %s\n' "$ESP" "$LEIDO" "$ISO" "$NOTA"; N_OK=$((N_OK+1))
+        ok    "$(printf '%-8s %-8s %-38s %s' "$ESP" "$LEIDO" "$ISO" "$NOTA")"
     else
-        printf '[FALLO] %-8s %-8s %-38s %s\n' "$ESP" "$LEIDO" "$ISO" "$NOTA"; N_FALLO=$((N_FALLO+1))
+        fallo "$(printf '%-8s %-8s %-38s %s' "$ESP" "$LEIDO" "$ISO" "$NOTA")"
     fi
 done <<'CASOS'
 0 0 0 0|ubuntu-24.04.4-desktop-arm64.iso|la oficial de Canonical
@@ -76,8 +83,8 @@ CASOS
 
 # EL CONTROL DEL PROPIO BANCO: si no se ha ejecutado ni un caso, o si todos los
 # casos esperaran lo mismo, este banco no demostraria nada aunque saliera verde.
-if [ "$N_OK" -eq 0 ] && [ "$N_FALLO" -eq 0 ]; then
-    echo "[FALLO] CONTROL ROTO: no se ejecuto ni un caso ($N_OMIT omitidos): esto NO es un aprobado"
+if [ "$N_OK" -eq 0 ] && [ "$N_MAL" -eq 0 ]; then
+    echo "[FALLO] CONTROL ROTO: no se ejecuto ni un caso ($N_OMI omitidos): esto NO es un aprobado"
     exit 1
 fi
 
@@ -96,13 +103,13 @@ for COL in capa volid info menu; do
         # NO suma a «correctas»: esto describe la TABLA DE CASOS, no una lectura.
         # Sumarlo daria un «correctas: 3» con los cinco casos en rojo, que fue lo
         # primero que enseno este control al estrenarlo.
-        echo "[OK]    columna «$COL»: los casos que corrieron esperan las dos respuestas ($VALS)"
+        echo "  [OK]    columna «$COL»: los casos que corrieron esperan las dos respuestas ($VALS)"
     else
-        echo "[AVISO] columna «$COL»: todos los casos que corrieron esperan «$VALS». En esa columna"
-        echo "        este banco NO puede distinguir un lector bueno de uno que conteste siempre lo mismo"
+        aviso "columna «$COL»: todos los casos que corrieron esperan «$VALS». En esa columna
+          este banco NO puede distinguir un lector bueno de uno que conteste siempre lo mismo"
     fi
 done
 echo
-echo "correctas: $N_OK   fallos: $N_FALLO   omitidas: $N_OMIT"
-[ "$N_FALLO" -eq 0 ] || exit 1
-[ "$N_OMIT" -eq 0 ] || echo "[AVISO] $N_OMIT medios no estaban: el banco vale menos de lo que parece"
+echo "correctas: $N_OK   fallos: $N_MAL   omitidas: $N_OMI"
+[ "$N_MAL" -eq 0 ] || exit 1
+[ "$N_OMI" -eq 0 ] || echo "[AVISO] $N_OMI medios no estaban: el banco vale menos de lo que parece"

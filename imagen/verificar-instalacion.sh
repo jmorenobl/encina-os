@@ -51,6 +51,11 @@
 # durante la instalacion. 'telemetry' no detecta el clic de confirmacion
 # (§4.14g). Eso se demuestra desde fuera, con la maquina apagandose sola.
 
+# MODELO DE SALIDA: CONTAR Y SEGUIR (tarea 2, MEDICIONES.md §4.67). fallo()
+# apunta, incrementa el contador y SIGUE midiendo; morir() aborta; el codigo
+# de salida lo fija el resumen del final. El 'set' de abajo es el que este
+# guion ya tenia y no se ha unificado con el de lib.sh: cambiar las opciones
+# de shell de un guion sin ejecutarlo entero seria una mutacion sin verificar.
 set -uo pipefail
 
 FORMA=e2
@@ -68,13 +73,18 @@ case "$FORMA" in
     *) echo "[FALLO] --forma solo acepta e2 o e3 (recibido: '$FORMA')"; exit 2 ;;
 esac
 
-N_OK=0; N_MAL=0; N_AVI=0; N_OMI=0
-titulo()  { echo; echo "=== $* ==="; }
-ok()      { N_OK=$((N_OK+1));   echo "  [OK]     $*"; }
-aviso()   { N_AVI=$((N_AVI+1)); echo "  [AVISO]  $*"; }
-omitido() { N_OMI=$((N_OMI+1)); echo "  [OMIT]   $*"; }
-dato()    { echo "  [DATO]   $*"; }
-fallo()   { N_MAL=$((N_MAL+1)); echo "  [FALLO]  $1"; [ -n "${2:-}" ] && echo "$2" | sed 's/^/           | /'; }
+# EL VOCABULARIO VIENE DE lib/salida.sh (tarea 3), y este guion tiene un
+# problema que los demas no tienen: CORRE DENTRO DE LA MAQUINA INSTALADA, sin
+# el repositorio -- llega solo, por wget desde el buzon del Mac (§4.79) --. Asi
+# que la copia que viaja se EMPAQUETA: 'make medios/verificar-instalacion.sh'
+# sustituye el bloque entre estas dos marcas por el texto de lib/salida.sh, y
+# la copia empaquetada no depende de nada. Ejecutado desde el clon, carga la
+# biblioteca; ejecutado suelto y sin empaquetar, se niega y lo dice.
+# --- INICIO lib/salida.sh (el Makefile lo empaqueta aqui) ---
+. "$(cd "$(dirname "$0")" && pwd)/../lib/salida.sh" 2>/dev/null \
+    || { echo "[FALLO] no encuentro lib/salida.sh junto a este guion. O lo ejecutas desde el clon," >&2
+         echo "        o usas la copia EMPAQUETADA: make medios/verificar-instalacion.sh" >&2; exit 2; }
+# --- FIN lib/salida.sh ---
 
 # igual "que se comprueba" "esperado" "obtenido"
 igual() { if [ "$2" = "$3" ]; then ok "$1 ($3)"; else fallo "$1" "esperado: $2
