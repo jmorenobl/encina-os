@@ -4,7 +4,7 @@
 #     ./construir-todo.sh --constructor jorge@192.168.64.3 \
 #                         --iso-oficial <ubuntu-24.04.4-desktop-arm64.iso> \
 #                         --autofirma <dir con autofirma_*.deb> \
-#                         --salida <encina.iso>
+#                         --salida <encina.iso> [--cosecha <dir|tar|URL>]
 #
 # QUE HACE, y son las cuatro cosas que hasta hoy habia que encadenar a mano:
 #     1. construye los TRES .deb de Encina desde el arbol VERSIONADO
@@ -31,6 +31,14 @@
 # distintas y comparalas. No se compara contra ninguna ISO anterior a
 # proposito: ac0a5721… lleva dentro los .deb viejos y un seed que exige sus
 # huellas, o sea que es coherente CONSIGO MISMA y no con el arbol de hoy.
+#
+# DESDE LA COSECHA PUBLICADA (2026-08-29, MEDICIONES.md §4.82): --cosecha, y
+# tambien --archivo, --mozilla y --launchpad, se le pasan TAL CUAL a
+# cosechar-repo.sh, que es quien sabe lo que significan: los 25 de ARCHIVO se
+# cogen del tar publicado junto a la ISO, POR HUELLA, sin tocar el archivo de
+# Ubuntu ni Mozilla ni Launchpad. Es lo que hace que un clon limpio reproduzca
+# las huellas el dia que el archivo haya retirado lo que el manifiesto ancla
+# (trampa 68). Los tres .deb de Encina se siguen construyendo aqui, del arbol.
 #
 # UNA SOLA VM ENCENDIDA A LA VEZ, y este guion lo COMPRUEBA antes de nada: dos
 # VMs contestan en la misma IP y el hostname no distingue (trampa 14 de
@@ -66,6 +74,10 @@ TRABAJO=""; VM=""; LLAVE=""; PERMITIR_SUCIO=0; CONSERVAR=0
 # su salida, para que un registro de 20 minutos diga en la cabecera que se ha
 # fabricado.
 BISECADO=""
+# lo que va a cosechar-repo.sh tal cual (--cosecha y las URLs); un array que
+# puede estar vacio, y en el bash 3.2 de macOS eso se expande como dice la
+# trampa 59: ${A[@]+"${A[@]}"}
+COSECHA_OPTS=()
 
 uso() { sed -n '2,9p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
@@ -81,6 +93,8 @@ while [ $# -gt 0 ]; do
         --conservar)      CONSERVAR=1;       shift ;;
         --sin-capa|--sin-volid|--sin-info|--sin-menu)
                           BISECADO="$BISECADO $1"; shift ;;
+        --cosecha|--archivo|--mozilla|--launchpad)
+                          COSECHA_OPTS+=("$1" "$2"); shift 2 ;;
         -h|--help)        sed -n '1,40p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
@@ -138,6 +152,7 @@ git rev-parse --git-dir >/dev/null 2>&1 || morir "$RAIZ no es un repositorio git
 COMMIT=$(git rev-parse HEAD)
 SUCIO=$(git status --porcelain | wc -l | tr -d ' ')
 echo "        commit     $COMMIT"
+[ ${#COSECHA_OPTS[@]} -eq 0 ] || echo "        cosecha    ${COSECHA_OPTS[*]}   (los de ARCHIVO, de ahi y por huella)"
 if [ "$SUCIO" -ne 0 ]; then
     if [ "$PERMITIR_SUCIO" = 0 ]; then
         morir "el arbol tiene $SUCIO cambios sin confirmar y se construye 'git archive HEAD'.
@@ -300,13 +315,13 @@ N_MAN=$(grep -cE '^(ARCHIVO|PROPIO)'"$(printf '\t')" "$MANIFIESTO")
 # escribir nada, y va anunciado para que nadie aprenda a saltarse los [FALLO].
 echo "        (la 1a orden SALE INCOMPLETA a proposito: falta autofirma. Su [FALLO] es el control)"
 "$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$TMP_PROPIO/propios" \
-    | sed 's/^/        /' | tail -6
+    ${COSECHA_OPTS[@]+"${COSECHA_OPTS[@]}"} | sed 's/^/        /' | tail -6
 N_PARCIAL=$(contar_deb "$TRABAJO")
 [ "$N_PARCIAL" -eq $((N_MAN - 1)) ] || morir "CONTROL ROTO: sin autofirma esperaba $((N_MAN - 1)) .deb y hay $N_PARCIAL"
 ok "control: sin autofirma la cosecha se queda en $((N_MAN - 1)) y se niega"
 echo "        (la 2a orden la completa con autofirma, POR HUELLA entre tres casi homonimos)"
 "$AQUI/cosechar-repo.sh" --arq "$ARQ" --salida "$TRABAJO" --propios "$AUTOFIRMA" \
-    | sed 's/^/        /' | tail -6
+    ${COSECHA_OPTS[@]+"${COSECHA_OPTS[@]}"} | sed 's/^/        /' | tail -6
 N=$(contar_deb "$TRABAJO")
 [ "$N" -eq "$N_MAN" ] || morir "en la cosecha hay $N .deb y el manifiesto pide $N_MAN"
 ok "$N .deb cosechados sin tocar ninguna ISO, los que pide el manifiesto"

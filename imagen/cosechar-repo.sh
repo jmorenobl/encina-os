@@ -2,7 +2,8 @@
 # Encina OS - Bloque 0. Reconstruye /encina-repo DESDE CERO, EN MACOS.
 #
 #     ./cosechar-repo.sh --salida <dir> [--arq arm64|amd64] [--propios <dir>]
-#                        [--manifiesto <tsv>]
+#                        [--manifiesto <tsv>] [--cosecha <dir|tar|URL>]
+#                        [--archivo <URL>] [--mozilla <URL>] [--launchpad <URL>]
 #
 # POR QUE EXISTE: hasta hoy los .deb del repositorio offline SOLO vivian
 # dentro de la ISO, y para fabricar la ISO hacia falta la ISO anterior. Este
@@ -37,6 +38,26 @@
 #                            RUTA ENTERA Y POR HUELLA, nunca con 'ls -t|head -1'.
 # Con --propios <dir> se copian de ahi, y tambien POR HUELLA: un fichero con el
 # nombre bueno y otros bytes se rechaza (es la trampa de MEDICIONES.md §4.13).
+#
+# DESDE LA COSECHA PUBLICADA, --cosecha <dir|tar|URL> (2026-08-29, MEDICIONES.md
+# §4.82, tareas/publicar.md): los de ARCHIVO se cogen de ahi POR HUELLA en vez
+# de pedirlos al archivo, y el archivo, Mozilla y Launchpad NO SE CONSULTAN.
+# Existe porque ninguna de esas tres fuentes es permanente para todo: el
+# archivo retira (trampa 68), Launchpad solo conserva lo de Ubuntu, y Firefox
+# viene de packages.mozilla.org, que retira y no esta en Launchpad. La cosecha
+# es el /encina-repo que viaja en la ISO --los 29 .deb con su Packages--,
+# empaquetado con imagen/empaquetar-cosecha.py y publicado JUNTO A la ISO. Si
+# es una URL se baja a --cache; si es un .tar se extrae ahi; si es un
+# directorio se lee tal cual. Cada .deb entra con EL MISMO cotejo que lo del
+# archivo (huella y tamano del manifiesto, o no entra) y el mismo control, y
+# se dice con su palabra, [COSECHA]. Los PROPIO siguen viniendo de --propios:
+# los tres de Encina los construye construir-todo.sh desde el arbol, y
+# autofirma se puede senalar a la cosecha extraida, que --propios ya busca
+# por huella.
+#
+# --archivo, --mozilla y --launchpad cambian de donde se baja (un espejo, o
+# una URL CORTADA para demostrar que con --cosecha no se toca la red del
+# archivo: es el control de §4.82). Sin ellas, los de siempre.
 #
 # COMO SE ENCUENTRA CADA .deb, y por que no se construye la ruta a mano: los
 # nombres del 'pool' no son deducibles del nombre del paquete -- Mozilla les
@@ -74,6 +95,7 @@ export LC_ALL=C   # trampa 2: la salida de las herramientas, sin traducir
 AQUI=$(cd "$(dirname "$0")" && pwd)
 MANIFIESTO=""
 SALIDA=""; PROPIOS=""; CACHE=""; ARQ=arm64
+COSECHA=""; ARCHIVO_URL=""; MOZILLA_URL=""; LAUNCHPAD_URL=""
 
 MOZILLA=https://packages.mozilla.org/apt
 # LAUNCHPAD CONSERVA LO QUE EL ARCHIVO RETIRA (trampa 68, §4.81c): por nombre de fichero, sin epoch
@@ -89,6 +111,10 @@ while [ $# -gt 0 ]; do
         --propios)    PROPIOS="$2";    shift 2 ;;
         --manifiesto) MANIFIESTO="$2"; shift 2 ;;
         --cache)      CACHE="$2";      shift 2 ;;
+        --cosecha)    COSECHA="$2";    shift 2 ;;
+        --archivo)    ARCHIVO_URL="$2";   shift 2 ;;
+        --mozilla)    MOZILLA_URL="$2";   shift 2 ;;
+        --launchpad)  LAUNCHPAD_URL="$2"; shift 2 ;;
         -h|--help)    sed -n '1,45p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
@@ -100,6 +126,10 @@ case "$ARQ" in
     amd64) UBUNTU=http://archive.ubuntu.com/ubuntu;     PORDEF="$AQUI/repo-manifiesto-amd64.tsv" ;;
     *) echo "[FALLO] arquitectura desconocida: $ARQ (arm64 o amd64)"; exit 2 ;;
 esac
+# un espejo, o una URL cortada a proposito (el control de --cosecha, §4.82)
+[ -n "$ARCHIVO_URL" ]   && UBUNTU="$ARCHIVO_URL"
+[ -n "$MOZILLA_URL" ]   && MOZILLA="$MOZILLA_URL"
+[ -n "$LAUNCHPAD_URL" ] && LAUNCHPAD="$LAUNCHPAD_URL"
 [ -n "$MANIFIESTO" ] || MANIFIESTO="$PORDEF"
 [ -f "$MANIFIESTO" ] || { echo "[FALLO] no existe el manifiesto: $MANIFIESTO"; exit 1; }
 [ -n "$CACHE" ] || CACHE="$SALIDA/.indices"
@@ -149,8 +179,37 @@ else
     echo "        [AVISO] no existe $HERMANO: no hay con que cotejar la lista"
 fi
 
+# --- 2bis. la cosecha publicada, si se ha pedido: entonces NO hay paso 2 ni 3 --
+COSECHA_DIR=""; COSECHA_TAR=""
+if [ -n "$COSECHA" ]; then
+    echo "== 2. la cosecha publicada, en vez de los indices del archivo"
+    case "$COSECHA" in
+        http://*|https://*)
+            COSECHA_TAR="$CACHE/cosecha-$ARQ.tar"
+            if [ -s "$COSECHA_TAR" ]; then
+                echo "        cache  $(basename "$COSECHA_TAR")"
+            else
+                curl -fsSL -o "$COSECHA_TAR.parcial" "$COSECHA" || morir "no pude bajar la cosecha de $COSECHA"
+                mv "$COSECHA_TAR.parcial" "$COSECHA_TAR"
+                echo "        bajada $COSECHA -> $(basename "$COSECHA_TAR")"
+            fi ;;
+        *)  [ -e "$COSECHA" ] || morir "no existe la cosecha: $COSECHA"
+            if [ -d "$COSECHA" ]; then COSECHA_DIR="$COSECHA"; else COSECHA_TAR="$COSECHA"; fi ;;
+    esac
+    if [ -z "$COSECHA_DIR" ]; then
+        echo "        tar    $(shasum -a 256 "$COSECHA_TAR" | cut -d' ' -f1)  $(wc -c <"$COSECHA_TAR" | tr -d ' ') bytes  $COSECHA_TAR"
+        COSECHA_DIR="$CACHE/cosecha-$ARQ"
+        rm -rf "$COSECHA_DIR"; mkdir -p "$COSECHA_DIR" || morir "mkdir $COSECHA_DIR"
+        tar -xf "$COSECHA_TAR" -C "$COSECHA_DIR" || morir "no pude extraer $COSECHA_TAR"
+    fi
+    N_COS=$(find "$COSECHA_DIR" -name '*.deb' -type f | wc -l | tr -d ' ')
+    ok "cosecha en $COSECHA_DIR: $N_COS .deb; los de ARCHIVO se cogen de ahi POR HUELLA, y el archivo, Mozilla y Launchpad no se consultan"
+fi
+
 # --- 2. los indices del archivo ---------------------------------------------
 # Se guardan en cache: son 33 MB y no cambian entre dos vueltas del mismo dia.
+TABLA="$CACHE/.tabla.tsv"
+if [ -z "$COSECHA" ]; then
 echo "== 2. los indices del archivo (en cache: $CACHE)"
 traer_indice() {   # <destino> <url> <comprimido si|no>
     local dst="$1" url="$2" gz="$3"
@@ -182,7 +241,6 @@ ok "${#IDX_FICHERO[@]} indices"
 # Una sola pasada por cada indice. Se emite TODO lo que el archivo ofrece; el
 # cotejo contra el manifiesto se hace despues, para poder distinguir 'no esta
 # esa version' de 'esta con otros bytes'.
-TABLA="$CACHE/.tabla.tsv"
 : > "$TABLA"
 for i in "${!IDX_FICHERO[@]}"; do
     awk -v base="${IDX_BASE[$i]}" '
@@ -202,10 +260,11 @@ for i in "${!IDX_FICHERO[@]}"; do
 done
 N_TABLA=$(wc -l <"$TABLA" | tr -d ' ')
 ok "$N_TABLA entradas en los indices"
+fi   # sin --cosecha
 
 # --- 4. los 24 de ARCHIVO, bajados y comprobados POR HUELLA -----------------
 echo "== 4. los $N_ARCH de ARCHIVO"
-RETIRADOS=""; OTROSBYTES=""; MALAS=0; BAJADOS=0; YAESTABAN=0; DE_LAUNCHPAD=0
+RETIRADOS=""; OTROSBYTES=""; MALAS=0; BAJADOS=0; YAESTABAN=0; DE_LAUNCHPAD=0; DE_COSECHA=0
 while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
     [ "$origen" = ARCHIVO ] || continue
     # la arquitectura sale del nombre del fichero, y de paso lo valida
@@ -233,6 +292,41 @@ while IFS="$TAB" read -r origen paquete version fichero tamano sha; do
         fi
         echo "        estaba con otros bytes, se rehace: $fichero"
         rm -f "$destino"
+    fi
+
+    # DE LA COSECHA PUBLICADA, POR HUELLA (2026-08-29, §4.82): primero por
+    # nombre --en la raiz o en el directorio con que viaja el tar--, y si el
+    # nombre no esta, por huella en todo el arbol. Entra con EL MISMO cotejo
+    # que lo del archivo y con el mismo control; el archivo no se toca.
+    if [ -n "$COSECHA" ]; then
+        cand=""
+        for c in "$COSECHA_DIR/$fichero" "$COSECHA_DIR"/*/"$fichero"; do
+            [ -f "$c" ] && { cand="$c"; break; }
+        done
+        if [ -z "$cand" ]; then
+            while IFS= read -r c; do
+                [ "$(shasum -a 256 "$c" | cut -d' ' -f1)" = "$sha" ] && { cand="$c"; break; }
+            done < <(find "$COSECHA_DIR" -name '*.deb' -type f)
+        fi
+        if [ -z "$cand" ]; then
+            echo "        [FALLO] no esta en la cosecha: $fichero  ${sha:0:8}…"
+            MALAS=$((MALAS+1)); continue
+        fi
+        r=$(shasum -a 256 "$cand" | cut -d' ' -f1)
+        t=$(wc -c <"$cand" | tr -d ' ')
+        if [ "$r" != "$sha" ] || [ "$t" != "$tamano" ]; then
+            echo "        [FALLO] la cosecha trae $fichero con OTROS BYTES: no entra"
+            echo "                esperada $sha  ($tamano bytes)"
+            echo "                real     $r  ($t bytes)"
+            MALAS=$((MALAS+1)); continue
+        fi
+        # CONTROL, y va antes de aceptar nada (el mismo que el de Launchpad)
+        case "$sha" in f*) sab="0${sha:1}" ;; *) sab="f${sha:1}" ;; esac
+        [ "$sab" != "$sha" ] || morir "CONTROL ROTO: el sabotaje de la huella no saboteo"
+        [ "$r" != "$sab" ] || morir "CONTROL ROTO: la comparacion acepta una huella cambiada"
+        cp "$cand" "$destino" || morir "cp $cand"
+        echo "        [COSECHA]  $fichero  ${sha:0:8}…  los bytes del manifiesto"
+        DE_COSECHA=$((DE_COSECHA+1)); continue
     fi
 
     # que ofrece el archivo para ESE paquete, ESA version y ESA arquitectura
@@ -346,7 +440,7 @@ EOF
 
 # --- 6. el veredicto, con las tres respuestas separadas ----------------------
 echo "== 6. el veredicto"
-echo "        bajados: $BAJADOS   ya estaban: $YAESTABAN   de Launchpad (retirados del archivo, por huella): $DE_LAUNCHPAD   fallos de descarga: $MALAS"
+echo "        bajados: $BAJADOS   ya estaban: $YAESTABAN   de Launchpad (retirados del archivo, por huella): $DE_LAUNCHPAD${COSECHA:+   de la cosecha publicada (por huella): $DE_COSECHA}   fallos de descarga: $MALAS"
 if [ -n "$RETIRADOS" ]; then
     echo
     echo "[HALLAZGO] el archivo de Ubuntu retira las versiones superadas, y esto"
