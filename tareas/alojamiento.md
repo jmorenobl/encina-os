@@ -1,6 +1,6 @@
 # Bloque 3 — ALOJAMIENTO: 3,46 GB no caben en un release de GitHub
 
-- [ ] **Elegir dónde vive la ISO.** GitHub no acepta adjuntos de release de más de
+- [x] **Elegir dónde vive la ISO.** GitHub no acepta adjuntos de release de más de
       2 GiB, y la nuestra son 3,46 GB. Las salidas son partirla en trozos con su
       guion de recomposición, o alojarla fuera.
       *Hecha cuando:* hay una URL que descarga, y su `sha256` **publicado al lado**.
@@ -10,6 +10,12 @@
       en la huella), `make publicar` (el directorio con `SHA256SUMS` calculado y
       las notas con las huellas sustituidas desde él)— y las opciones de abajo,
       con su precio.
+      **MARCADA EL 2026-08-29 (noche), §4.82j-l: SourceForge.** Jorge creó el
+      proyecto y ordenó la subida; los siete ficheros están en
+      `https://downloads.sourceforge.net/project/encina-os/0.2.1/` con
+      `SHA256SUMS` al lado, y bajados desde fuera dan su huella: la `arm64` por
+      la URL canónica (`shasum -c: OK`, 2,5 MB/s) y la `amd64` sólo por la web
+      seed del `.torrent` publicado (`3d5d12a9…`).
 - [ ] **Publicar las huellas y cómo comprobarlas.** Una ISO sin huella al lado no
       se la puedes dar a nadie.
       **Preparada, no hecha (2026-08-29):** `imagen/preparar-publicacion.sh` deja

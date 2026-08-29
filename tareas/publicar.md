@@ -40,7 +40,7 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
       cambie de contenido), y **si se publica `arm64` habiéndolo probado en
       hierro sólo en `amd64`** (la pregunta de arriba; las notas lo dicen tal
       cual, sin letra pequeña).
-- [ ] **Publicar la cosecha con la ISO, no sólo la ISO** (añadida el 2026-08-28,
+- [x] **Publicar la cosecha con la ISO, no sólo la ISO** (añadida el 2026-08-28,
   `MEDICIONES.md` §4.81f, trampa 68). El archivo de Ubuntu retira las versiones
   superadas y el manifiesto ancla una: `cosechar-repo.sh` cae a Launchpad por
   huella y eso cubre todo lo de Ubuntu para siempre, pero **Firefox viene de
@@ -64,6 +64,11 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
   los dos tar servidos por HTTP local y `autofirma` sacado del tar, da las dos
   huellas** (§4.82d). Se marca cuando el tar del que se cosecha sea **el de la
   release**, no el servido desde este Mac.
+  **MARCADA EL 2026-08-29 (noche), §4.82k:** la cosecha está en SourceForge
+  (`downloads.sourceforge.net/project/encina-os/0.2.1/encina-repo-<arq>.tar`,
+  subida por Jorge a las 20:03, §4.82j) y el clon limpio contra **esa** URL,
+  con las tres del archivo cortadas y `autofirma` sacado del tar bajado de
+  allí, da `63f360dd…` y `3d5d12a9…`, dos pasadas cada una, desde `d79bd84`.
 - [ ] **Conservar también la ISO oficial `arm64`, la entrada** (añadida el
   2026-08-29, `MEDICIONES.md` §4.82a, trampa 69). La casilla de arriba protege
   los `.deb`; dentro de un año tampoco estará la entrada: `cdimage.ubuntu.com`
