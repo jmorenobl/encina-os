@@ -10,8 +10,8 @@
   <a href="https://github.com/jmorenobl/encina-os/actions/workflows/build.yml"><img src="https://github.com/jmorenobl/encina-os/actions/workflows/build.yml/badge.svg" alt="Estado de la construcción"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-EUPL--1.2-3A664E" alt="Licencia EUPL-1.2"></a>
   <img src="https://img.shields.io/badge/base-Ubuntu%2024.04%20LTS-A78B75" alt="Base: Ubuntu 24.04 LTS">
-  <img src="https://img.shields.io/badge/arquitectura-arm64-A78B75" alt="Arquitectura: arm64">
-  <img src="https://img.shields.io/badge/imagen-sin%20publicar-D6BFA0" alt="Imagen: sin publicar">
+  <img src="https://img.shields.io/badge/arquitectura-arm64%20%C2%B7%20amd64-A78B75" alt="Arquitectura: arm64 y amd64">
+  <a href="https://github.com/jmorenobl/encina-os/releases/tag/v0.2.1"><img src="https://img.shields.io/badge/imagen-v0.2.1-3A664E" alt="Imagen: v0.2.1"></a>
 </p>
 
 <p align="center">
@@ -65,15 +65,26 @@ solo. Nada más. Todo lo que hace está medido y escrito.
 
 ## Cómo probarlo
 
-**Todavía no hay una imagen que descargar.** La ISO existe, se instala sola en
-nueve minutos y está verificada, pero **no está publicada**, y no por pereza:
-faltan tres cosas concretas, y están abiertas con su motivo en
-[TAREAS.md](TAREAS.md) — que **el medio se pueda fabricar sin partir de una ISO
-anterior**, que **deje de llevar la marca de Ubuntu**, y **dónde vive un fichero
-de 3,46 GB**, que no cabe en un release de GitHub. La cuarta, la de publicar las
-fuentes, ya está hecha: está aquí abajo, en «Licencia y fuentes».
+**Hay imagen que descargar desde el 2026-08-29.** Dos, una por arquitectura, en
+SourceForge, con su huella al lado; los `.torrent` (con *web seed*, sin
+tracker), las cosechas para reproducirla y las notas están en la
+[release `v0.2.1`](https://github.com/jmorenobl/encina-os/releases/tag/v0.2.1)
+de este repositorio, atados al commit.
 
-Lo que puedes hacer hoy, si quieres verlo funcionar:
+| | Descarga | SHA-256 |
+|---|---|---|
+| **arm64** (el producto) | [`encina-os-arm64.iso`](https://downloads.sourceforge.net/project/encina-os/0.2.1/encina-os-arm64.iso) · [torrent](https://downloads.sourceforge.net/project/encina-os/0.2.1/encina-os-arm64.iso.torrent) | `63f360dd755251d10628e71405235979b5b5e13ebf43d9f7e089ecbc2563a1f5` |
+| **amd64** | [`encina-os-amd64.iso`](https://downloads.sourceforge.net/project/encina-os/0.2.1/encina-os-amd64.iso) · [torrent](https://downloads.sourceforge.net/project/encina-os/0.2.1/encina-os-amd64.iso.torrent) | `3d5d12a9bda400685beedabf9c1dd4ddde512e419866174b0bb6da7847f801f0` |
+| las dos, y todo lo demás | [`SHA256SUMS`](https://downloads.sourceforge.net/project/encina-os/0.2.1/SHA256SUMS) | |
+
+**Comprueba la huella antes de grabar nada** (`shasum -a 256 -c SHA256SUMS` en
+macOS, `sha256sum -c SHA256SUMS` en Linux): una ISO sin huella al lado no se la
+puedes dar a nadie. Lo que trae, lo que no —exige red al instalar, Secure Boot
+no demostrado— y cómo reproducirla byte a byte están en las notas de la
+release. Es una distribución derivada de Ubuntu; ni publicada ni avalada por
+Canonical.
+
+Lo que puedes hacer sin bajar nada, si quieres verlo construir:
 
 ```bash
 git clone https://github.com/jmorenobl/encina-os
@@ -92,7 +103,7 @@ Esto no son defectos: es dónde está el proyecto hoy. Lo que falta está en
 
 | | Hoy | Cuándo |
 |---|---|---|
-| **Arquitectura** | **Solo arm64.** Si tu equipo es Intel o AMD, todavía no hay nada para ti | Sin fecha. No es prioridad |
+| **Arquitectura** | **arm64 es el producto**; y hay imagen **amd64**, instalada y verificada en hierro (un Acer Aspire ES1-524) | Las dos publicadas el 2026-08-29 |
 | **Marca** | **El sistema instalado ya tiene cara propia** —fondos, GDM, arranque, la bellota en la rejilla y el Centro de aplicaciones con su icono—. **El medio no**: quien instala ve un instalador que dice Ubuntu | Es la prioridad siguiente, y es la que desbloquea publicar |
 | **Instalación** | **Exige red.** El núcleo no viaja en el medio y lo baja el instalador | Límite declarado. Comprarlo cuesta 1 089 MB y saca la ISO del DVD de una capa |
 | **Certificado** | Software, de la FNMT | DNIe con lector: incremento futuro |

@@ -25,8 +25,14 @@ hecho **todo lo que no depende de dónde vive la ISO**, y **nada subido a
 ningún sitio** —esa decisión es de Jorge, `alojamiento.md`—. Ninguna casilla
 de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
 
-- [ ] **La release, con lo que trae y lo que no.** Arquitectura, que exige red al
+- [x] **La release, con lo que trae y lo que no.** Arquitectura, que exige red al
       instalar, y que Secure Boot no está demostrado.
+      **MARCADA EL 2026-08-29 (noche), §4.82m: la release `v0.2.1`**, ordenada
+      por Jorge («si»), con `NOTAS.md` de cuerpo —lo que trae, lo que no (red,
+      Secure Boot, arm64 en VM y amd64 en hierro, `[OJOS]` pendientes), cómo
+      comprobar y cómo reproducir— y `SHA256SUMS`, los dos `.torrent` y las dos
+      cosechas de adjuntos; las ISOs en SourceForge. Etiqueta: la versión de
+      `encina-meta`, y un medio nuevo será una `encina-meta` nueva.
       **Escrita, no publicada (2026-08-29):** [publicar/notas-plantilla.md](../publicar/notas-plantilla.md)
       es el texto —lo que trae, lo que no, cómo comprobar, cómo reproducir— y
       `make publicar` (`imagen/preparar-publicacion.sh`) lo deja en
@@ -104,8 +110,12 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
       firma en `valide.redsara.es` en un clon efímero, el menú de GRUB del medio,
       las diapositivas del instalador)—. Ningún guion de hoy toca lo que se ve:
       los dos medios son los mismos bytes que el 2026-08-25.
-- [ ] **Poner el enlace en el README** y quitar de él la frase «todavía no hay una
+- [x] **Poner el enlace en el README** y quitar de él la frase «todavía no hay una
       imagen que descargar».
+      **MARCADA EL 2026-08-29 (noche), §4.82m:** «Cómo probarlo» es una tabla con
+      las dos ISOs enlazadas a la canónica de SourceForge, su torrent y su huella
+      entera al lado, `SHA256SUMS` y la orden para comprobar; la insignia dice
+      «imagen: v0.2.1» y la de arquitectura «arm64 · amd64».
       **Bloqueada por la URL (2026-08-29):** se hace en el mismo commit que la
       release, con la huella al lado del enlace, y la insignia
       «imagen: sin publicar» cambia con ella.

@@ -16,8 +16,12 @@
       `SHA256SUMS` al lado, y bajados desde fuera dan su huella: la `arm64` por
       la URL canónica (`shasum -c: OK`, 2,5 MB/s) y la `amd64` sólo por la web
       seed del `.torrent` publicado (`3d5d12a9…`).
-- [ ] **Publicar las huellas y cómo comprobarlas.** Una ISO sin huella al lado no
+- [x] **Publicar las huellas y cómo comprobarlas.** Una ISO sin huella al lado no
       se la puedes dar a nadie.
+      **MARCADA EL 2026-08-29 (noche), §4.82m:** `SHA256SUMS` en la misma carpeta
+      de SourceForge que las ISOs, las huellas enteras al lado de cada enlace en
+      el README con la orden para comprobarlas, y las notas de la release
+      `v0.2.1` con las seis huellas, generadas desde `SHA256SUMS`.
       **Preparada, no hecha (2026-08-29):** `imagen/preparar-publicacion.sh` deja
       `SHA256SUMS` calculado junto a los cuatro ficheros —y comprueba que `shasum
       -a 256 -c` pasa y que con una huella cambiada falla— y `NOTAS.md` con las
