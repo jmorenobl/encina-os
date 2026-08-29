@@ -182,3 +182,9 @@ son para que la receta pública siga fabricando esta misma ISO cuando el archivo
 de Ubuntu y Mozilla hayan retirado las versiones que el manifiesto ancla
 (trampa 68): `make dos-veces ARQ=arm64 COSECHA=<URL del tar>`. Se cogen por
 huella, como todo aquí.
+
+**Y desde la misma tarde (§4.82h-i):** `encina-os-<arq>.iso.torrent` — un `.torrent`
+por ISO, sin tracker, con web seed a la URL canónica de SourceForge
+(`make torrent`; `make publicar` los rehace siempre); `publicar/<versión>/` lleva
+ahora seis ficheros más `SHA256SUMS` y `NOTAS.md`, y es lo que sube
+`imagen/subir-sourceforge.sh`.

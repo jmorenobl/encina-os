@@ -114,5 +114,18 @@ trozos:
 # las dos cosechas, SHA256SUMS y las notas de la release con las huellas
 # sustituidas desde ese SHA256SUMS (nunca escritas a mano). No sube nada a
 # ningun sitio: eso es de Jorge (tareas/alojamiento.md).
+# --url-base es la URL canonica de SourceForge, y con ella se hacen antes los
+# dos .torrent (su web seed es esa misma URL): asi no puede haber un torrent de
+# una ISO que no sea la publicada
 publicar:
-	./imagen/preparar-publicacion.sh --medios $(MEDIOS) --salida $(MEDIOS)/publicar/$(VERSION)
+	$(MAKE) torrent ARQ=arm64 && $(MAKE) torrent ARQ=amd64
+	./imagen/preparar-publicacion.sh --medios $(MEDIOS) --salida $(MEDIOS)/publicar/$(VERSION) --url-base $(SOURCEFORGE)
+
+# UN .torrent POR ISO, CON WEB SEED A SOURCEFORGE Y SIN TRACKER (§4.82h). La
+# web seed es la URL CANONICA del fichero entero: los espejos llevan token y
+# caducan. Reproducible: dos pasadas, el mismo infohash. Va en la release de
+# GitHub junto a SHA256SUMS; el fichero entero vive en SourceForge.
+SOURCEFORGE ?= https://downloads.sourceforge.net/project/encina-os/$(VERSION)
+torrent:
+	python3 imagen/hacer-torrent.py --fichero $(ISO_SALIDA) --salida $(ISO_SALIDA).torrent \
+	    --web-seed $(SOURCEFORGE)/$(notdir $(ISO_SALIDA))

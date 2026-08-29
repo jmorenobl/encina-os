@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Encina OS - SUBIR LO PUBLICADO A SOURCEFORGE, Y COMPROBAR QUE LLEGO.
+#
+#     ./imagen/subir-sourceforge.sh --directorio <medios/publicar/<version>> [--usuario <u>]
+#                                   [--proyecto encina-os] [--llave <clave ssh>] [--de-verdad]
+#
+# QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/alojamiento.md): sube por
+# rsync sobre ssh a frs.sourceforge.net los ficheros de --directorio (lo que
+# deja 'make publicar': las dos ISOs, las dos cosechas y SHA256SUMS) a
+# /home/frs/project/<proyecto>/<version>/, y DESPUES comprueba que lo que hay
+# alli es lo que hay aqui: 'rsync --checksum --dry-run' de vuelta tiene que no
+# querer transferir nada, y la URL canonica de cada fichero tiene que
+# contestar 302 hacia un espejo (asi sirve SourceForge, §4.82h).
+#
+# SIN --de-verdad NO SUBE NADA: hace el rsync con --dry-run y lo dice. Publicar
+# es el unico acto irreversible del proyecto (TAREAS.md), y este guion no lo da
+# por hecho ni por pedido: lo da por pasado, y solo cuando lo ha visto.
+#
+# LA CARPETA REMOTA ES LA VERSION (0.2.1): una carpeta nueva por medio nuevo,
+# nunca se pisa una; el nombre de la version es el de encina-meta y sale del
+# nombre de --directorio, que es como 'make publicar' lo deja.
+#
+# MODELO DE SALIDA: ABORTAR (tarea 2, §4.67): morir() al primer problema.
+set -uo pipefail
+export LC_ALL=C
+
+AQUI=$(cd "$(dirname "$0")" && pwd)
+RAIZ=$(cd "$AQUI/.." && pwd)
+DIR=""; USUARIO="jmorenobl"; PROYECTO="encina-os"; LLAVE="$HOME/.ssh/sourceforge-encina"; DE_VERDAD=0
+uso() { sed -n '2,5p' "$0"; exit 2; }
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --directorio) DIR="$2";      shift 2 ;;
+        --usuario)    USUARIO="$2";  shift 2 ;;
+        --proyecto)   PROYECTO="$2"; shift 2 ;;
+        --llave)      LLAVE="$2";    shift 2 ;;
+        --de-verdad)  DE_VERDAD=1;   shift ;;
+        -h|--help)    sed -n '1,22p' "$0"; exit 0 ;;
+        *) echo "[FALLO] argumento desconocido: $1"; uso ;;
+    esac
+done
+[ -n "$DIR" ] || uso
+. "$RAIZ/lib/salida.sh"
+
+[ -d "$DIR" ] || morir "no existe $DIR (make publicar)"
+[ -f "$LLAVE" ] || morir "no existe la clave $LLAVE (registra su .pub en SourceForge: Account settings > SSH Settings)"
+VERSION=$(basename "$DIR")
+case "$VERSION" in [0-9]*.[0-9]*) ;; *) morir "el directorio tiene que llamarse como la version (0.2.1): $DIR" ;; esac
+FICHEROS="encina-os-arm64.iso encina-os-amd64.iso encina-repo-arm64.tar encina-repo-amd64.tar encina-os-arm64.iso.torrent encina-os-amd64.iso.torrent SHA256SUMS"
+for f in $FICHEROS; do [ -f "$DIR/$f" ] || morir "falta $DIR/$f"; done
+REMOTO="$USUARIO@frs.sourceforge.net"
+RUTA="/home/frs/project/$PROYECTO/$VERSION"
+SSH="ssh -i $LLAVE -o BatchMode=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=accept-new"
+CANONICA="https://downloads.sourceforge.net/project/$PROYECTO/$VERSION"
+
+titulo "0. lo que se va a subir, y a donde"
+( cd "$DIR" && shasum -a 256 -c SHA256SUMS ) | sed 's/^/        /' || morir "SHA256SUMS no cuadra con los ficheros de $DIR"
+ok "los seis ficheros cuadran con su SHA256SUMS"
+echo "        destino  $REMOTO:$RUTA/"
+echo "        canonica $CANONICA/<fichero>"
+
+titulo "1. la via de subida contesta"
+rsync --list-only -e "$SSH" "$REMOTO:/home/frs/project/$PROYECTO/" > /dev/null 2>&1 \
+    || morir "rsync no puede listar /home/frs/project/$PROYECTO/ como $USUARIO: ¿la clave $LLAVE esta registrada en SourceForge?"
+ok "frs.sourceforge.net lista /home/frs/project/$PROYECTO/ con la clave $LLAVE"
+
+if [ "$DE_VERDAD" = 0 ]; then
+    titulo "2. ENSAYO (--dry-run): lo que rsync haria"
+    # shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
+    ( cd "$DIR" && rsync -av --dry-run --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /'
+    echo
+    echo "NO SE HA SUBIDO NADA. Con --de-verdad se sube, y es el acto irreversible: esa orden la da Jorge."
+    exit 0
+fi
+
+titulo "2. LA SUBIDA (--de-verdad)"
+# shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
+( cd "$DIR" && rsync -av --partial --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /' \
+    || morir "rsync fallo (se puede relanzar: --partial conserva lo subido)"
+ok "rsync termino"
+
+titulo "3. lo que hay ALLI contra lo que hay AQUI (trampa 13: la mutacion se verifica)"
+# rsync --checksum --dry-run de vuelta: si quisiera transferir algo, algo difiere
+# shellcheck disable=SC2086  # idem
+DIFIEREN=$( cd "$DIR" && rsync -ac --dry-run --out-format='%n' -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" | grep -c . )
+[ "$DIFIEREN" -eq 0 ] || morir "rsync --checksum querria volver a transferir $DIFIEREN fichero(s): lo de alli no es lo de aqui"
+ok "rsync --checksum no quiere transferir nada: los siete ficheros son los mismos bytes a los dos lados"
+echo "        (SourceForge tarda unos minutos en repartir a los espejos; la URL canonica se comprueba abajo)"
+
+titulo "4. la URL canonica de cada fichero"
+for f in $FICHEROS; do
+    codigo=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$CANONICA/$f")
+    case "$codigo" in
+        302|200) echo "        $codigo  $CANONICA/$f" ;;
+        *)       echo "        $codigo  $CANONICA/$f   <- aun no, o no esta: mirar en unos minutos"; N_AVI=$((N_AVI+1)) ;;
+    esac
+done
+echo
+echo "Lo que este guion NO comprueba: que la descarga entera desde la canonica de la huella"
+echo "(eso es bajarla, 3,5 GB, y shasum -c; y el torrent con aria2c sin pares, §4.82h)."

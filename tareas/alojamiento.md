@@ -69,11 +69,15 @@ lo que no cabe entero es cada ISO.
    sin ningún par: baja entero, y los dos controles (web seed cortada, pieza
    saboteada) fallan como tienen que fallar.** No encaja con GitHub en trozos.
 
-**Jorge, la misma tarde:** *«creo que lo voy a hacer con SourceForge»*. Si se
-confirma: el proyecto en SourceForge lo crea él (es una cuenta); el `.torrent`
-pasa a `make torrent` con la URL canónica del proyecto, y `SHA256SUMS`, las
-notas y los dos `.torrent` van también en la release de GitHub, atados al
-commit.
+**DECIDIDO POR JORGE LA MISMA TARDE: SourceForge, y el proyecto ya existe**
+(`sourceforge.net/projects/encina-os`, §4.82i). La URL canónica de descarga es
+`https://downloads.sourceforge.net/project/encina-os/<versión>/<fichero>`, y es
+la que llevan los `.torrent` (`make torrent`), las notas (`make publicar`) y la
+subida (`imagen/subir-sourceforge.sh`). **La primera casilla sigue abierta
+hasta que haya URL que descargue**: falta registrar la clave
+`~/.ssh/sourceforge-encina.pub` en la cuenta, el ensayo en seco, y la orden de
+subir de verdad, que es de Jorge. `SHA256SUMS`, las notas, las cosechas y los
+dos `.torrent` van también en la release de GitHub, atados al commit.
 
 **Recomendación (del agente, 2026-08-29):** la (1) como base en cualquier
 caso —las cosechas, `SHA256SUMS`, las notas y los trozos en la release, atados

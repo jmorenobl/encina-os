@@ -49,7 +49,8 @@ done
 [ -d "$MEDIOS" ]     || morir "no existe $MEDIOS"
 [ -f "$PLANTILLA" ]  || morir "no existe la plantilla: $PLANTILLA"
 [ -f "$MANIFIESTO" ] || morir "no existe el manifiesto: $MANIFIESTO"
-FICHEROS="encina-os-arm64.iso encina-os-amd64.iso encina-repo-arm64.tar encina-repo-amd64.tar"
+# y desde la tarde del 2026-08-29 (§4.82h), los dos .torrent con web seed a SourceForge ('make torrent')
+FICHEROS="encina-os-arm64.iso encina-os-amd64.iso encina-repo-arm64.tar encina-repo-amd64.tar encina-os-arm64.iso.torrent encina-os-amd64.iso.torrent"
 
 # --- 0. el commit desde el que se reproduce, y el arbol limpio ---------------
 titulo "0. desde que commit se reproduce lo que se publica"
@@ -65,7 +66,7 @@ echo "        commit  $COMMIT"
 ok "arbol versionado en $COMMIT"
 
 # --- 1. los ficheros, enlazados (o copiados) a --salida ----------------------
-titulo "1. los cuatro ficheros"
+titulo "1. los seis ficheros"
 for f in $FICHEROS; do
     [ -f "$MEDIOS/$f" ] || morir "falta $MEDIOS/$f (make dos-veces / make cosecha)"
 done
@@ -75,7 +76,7 @@ for f in $FICHEROS; do
         || morir "no pude poner $f en $SALIDA"
     echo "        $(stat -f %z "$SALIDA/$f") bytes  $f"
 done
-ok "los cuatro ficheros estan en $SALIDA"
+ok "los seis ficheros estan en $SALIDA"
 
 # --- 2. SHA256SUMS, calculado, y su control ---------------------------------
 titulo "2. SHA256SUMS calculado en $SALIDA"
@@ -119,6 +120,7 @@ sed -e "s|@VERSION@|$(version_de encina-meta)|g" \
     -e "s|@SHA_ISO_AMD64@|$(huella encina-os-amd64.iso)|g"   -e "s|@TAM_ISO_AMD64@|$(tamano encina-os-amd64.iso)|g" \
     -e "s|@SHA_REPO_ARM64@|$(huella encina-repo-arm64.tar)|g" -e "s|@TAM_REPO_ARM64@|$(tamano encina-repo-arm64.tar)|g" \
     -e "s|@SHA_REPO_AMD64@|$(huella encina-repo-amd64.tar)|g" -e "s|@TAM_REPO_AMD64@|$(tamano encina-repo-amd64.tar)|g" \
+    -e "s|@SHA_TORRENT_ARM64@|$(huella encina-os-arm64.iso.torrent)|g" -e "s|@SHA_TORRENT_AMD64@|$(huella encina-os-amd64.iso.torrent)|g" \
     "$PLANTILLA" > "$SALIDA/NOTAS.md" || morir "sed sobre la plantilla"
 # EL CONTROL: ningun marcador sin sustituir
 QUEDAN=$(grep -o '@[A-Z_0-9]*@' "$SALIDA/NOTAS.md" | sort -u | tr '\n' ' ')
@@ -128,7 +130,7 @@ QUEDAN=$(grep -o '@[A-Z_0-9]*@' "$SALIDA/NOTAS.md" | sort -u | tr '\n' ' ')
 for f in $FICHEROS; do
     grep -q "$(huella "$f")" "$SALIDA/NOTAS.md" || morir "NOTAS.md no lleva la huella de $f"
 done
-ok "NOTAS.md: $(wc -l < "$SALIDA/NOTAS.md" | tr -d ' ') lineas, las cuatro huellas dentro y ningun marcador suelto"
+ok "NOTAS.md: $(wc -l < "$SALIDA/NOTAS.md" | tr -d ' ') lineas, las seis huellas dentro y ningun marcador suelto"
 
 echo
 echo "listo en $SALIDA:"

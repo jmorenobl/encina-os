@@ -1,7 +1,7 @@
-# Encina OS @VERSION@ — Ubuntu 24.04 LTS con la firma electrónica española funcionando de fábrica
+# Encina OS @VERSION@ — distribución derivada de Ubuntu con la firma electrónica española funcionando de fábrica
 
-Ubuntu 24.04.4 LTS **sin modificar la base**, con cuatro paquetes encima y un
-instalador que los pone solo: `encina-branding` @V_BRANDING@,
+Distribución derivada de Ubuntu 24.04.4 LTS **sin modificar la base**, con
+cuatro paquetes encima y un instalador que los pone solo: `encina-branding` @V_BRANDING@,
 `encina-firefox-native` @V_FIREFOX_NATIVE@, `encina-meta` @V_META@ y
 `autofirma` @V_AUTOFIRMA@. Entrar en una sede electrónica con el certificado,
 pulsar «Firmar» y que el documento salga firmado — con el Firefox de Mozilla,
@@ -18,7 +18,16 @@ Todo lo que hace está medido y escrito, incluido lo que salió mal:
 | `encina-os-amd64.iso` — para Intel/AMD; instalado y verificado en hierro (Acer Aspire ES1-524) | @TAM_ISO_AMD64@ | `@SHA_ISO_AMD64@` |
 | `encina-repo-arm64.tar` — los 29 `.deb` que viajan en `/encina-repo` de la ISO arm64, con su `Packages` | @TAM_REPO_ARM64@ | `@SHA_REPO_ARM64@` |
 | `encina-repo-amd64.tar` — los mismos 29 para amd64 | @TAM_REPO_AMD64@ | `@SHA_REPO_AMD64@` |
-| `SHA256SUMS` — las cuatro huellas de arriba, calculadas y no escritas a mano | | |
+| `encina-os-arm64.iso.torrent` — el torrent de la ISO arm64, con *web seed* a la URL de arriba y sin tracker | | `@SHA_TORRENT_ARM64@` |
+| `encina-os-amd64.iso.torrent` — lo mismo para amd64 | | `@SHA_TORRENT_AMD64@` |
+| `SHA256SUMS` — las huellas de arriba, calculadas y no escritas a mano | | |
+
+**Dónde se baja:** las dos ISOs (y todo lo demás) en `@URL_BASE@/<fichero>`
+—SourceForge, que redirige a un espejo cercano—; también con cualquier cliente
+de BitTorrent abriendo el `.torrent`, que baja de esa misma URL aunque nadie
+siembre y comprueba cada pieza al llegar. Los `.torrent`, las cosechas,
+`SHA256SUMS` y estas notas están además en la release de GitHub, atados al
+commit.
 
 Los dos `.tar` **no son para instalar**: la ISO ya lleva esos `.deb` dentro.
 Son para **volver a fabricar esta misma ISO** dentro de un año, cuando el
@@ -84,7 +93,8 @@ coinciden; la que tiene que salir es la de la tabla. Con `ARQ=amd64` y el otro
 
 Los paquetes de Encina, EUPL-1.2. Ubuntu y Firefox, los suyos, sin modificar.
 Proyecto independiente: sin relación con la Administración General del Estado,
-la FNMT ni Canonical.
+la FNMT ni Canonical. Ubuntu es una marca de Canonical Ltd.; esta distribución
+ni está publicada ni avalada por Canonical.
 
 *Notas generadas el @FECHA@ por `imagen/preparar-publicacion.sh` desde `SHA256SUMS`
 y `imagen/repo-manifiesto.tsv`; ninguna huella de esta página está escrita a mano.*

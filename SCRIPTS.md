@@ -3360,3 +3360,26 @@ cosecha esté publicada**. Es la trampa 68 aplicada a la entrada: **lo que se
 ancla y nadie conserva hay que conservarlo uno** —los 3,3 GiB de la oficial—,
 o aceptar que reproducir el `arm64` exige tener la ISO de aquel día. Queda
 escrito en `tareas/publicar.md`; no se decide en §4.82.
+
+**`imagen/hacer-torrent.py --fichero <iso> --salida <torrent> --web-seed <URL>`**
+(`make torrent ARQ=…`, la misma tarde, §4.82h-i). Un `.torrent` de un fichero,
+**sin fecha, sin tracker y con web seed** (BEP 19, `url-list`) a la URL
+canónica de SourceForge del fichero entero; bencode a mano, sin dependencias;
+el control delante (el infohash tiene que cambiar con un byte del fichero), dos
+pasadas comparadas y lo escrito vuelto a leer. La web seed **tiene que ser la
+canónica** (`downloads.sourceforge.net/project/encina-os/<versión>/<fichero>`):
+los espejos llevan un token que caduca y sin él devuelven 301 al canónico.
+Medido con `aria2c` sin pares: contra SourceForge (un fichero público ajeno) y
+contra la ISO entera en local. qBittorrent y Transmission, `[OMIT]`.
+
+**`imagen/subir-sourceforge.sh --directorio medios/publicar/<versión> [--de-verdad]`**
+(§4.82i). `rsync` sobre `ssh` a `frs.sourceforge.net`, a
+`/home/frs/project/encina-os/<versión>/`, con la clave dedicada
+`~/.ssh/sourceforge-encina`. **Sin `--de-verdad` no sube nada**: `--dry-run` y
+lo dice. Con ella: sube, y **verifica la mutación** (trampa 13) con `rsync
+--checksum --dry-run` de vuelta —nada que transferir, o `[FALLO]`— y pidiendo
+la URL canónica de cada fichero. La carpeta remota es la versión: una por
+medio, nunca se pisa. Dos trampas de SourceForge vistas al escribirlo:
+`curl -A 'Mozilla/5.0'` da **403** en cualquier página de proyecto (sin `-A`,
+200: no es que el proyecto no esté público), y `frs` sólo admite claves
+registradas en la cuenta (`Permission denied (publickey)` con cualquier otra).
