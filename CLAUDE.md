@@ -38,6 +38,12 @@ make paquetes          # los tres .deb desde git archive HEAD, por huella (Linux
 make iso ARQ=arm64     # construir-todo.sh con nombre; make dos-veces es SU definición de terminado, ejecutable
 make medios/SHA256SUMS # las sumas calculadas, no escritas a mano
 make verificador       # medios/verificar-instalacion.sh EMPAQUETADO (lleva lib/salida.sh dentro): el que viaja a la máquina
+make cosecha ARQ=arm64 # los 29 .deb del medio VIGENTE en medios/encina-repo-arm64.tar, reproducible; la ISO de esa
+                       # pasada se coteja con SHA256SUMS y se borra (fase 3, §4.82)
+make trozos ARQ=arm64  # la ISO en trozos < 2 GiB por si el alojamiento es GitHub; cat los recompone en la huella
+make publicar          # medios/publicar/<versión>/: ISOs, cosechas, SHA256SUMS calculado y NOTAS.md con las huellas
+                       # sustituidas desde él. NO sube nada: dónde vive la ISO es de Jorge (tareas/alojamiento.md)
+make dos-veces ARQ=arm64 COSECHA=<URL o tar>   # la receta DESDE la cosecha publicada: sin archivo, Mozilla ni Launchpad (trampa 68)
 ```
 
 Construcción y lintian (van en la VM Ubuntu **y** en la CI; un paquete por

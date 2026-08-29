@@ -3290,3 +3290,73 @@ que Mozilla publique la 153.0.5, y para eso no hay fuente permanente —la
 al publicar hay que publicar también—. Y la regla de fondo, que es la de
 §4.36: **el guion no coge la versión nueva por su cuenta**; subir el manifiesto
 es cambiar el producto, con huellas nuevas y `[OJOS]` nuevos.
+
+## La cosecha se publica con la ISO, y la receta sabe cosechar DESDE ella (2026-08-29, `MEDICIONES.md` §4.82)
+
+**Lo que muerde, en una frase:** el archivo de Ubuntu retira lo que el
+manifiesto ancla (trampa 68) y Launchpad sólo conserva lo de Ubuntu, así que
+**Firefox (`packages.mozilla.org`) no tiene fuente permanente** y el día que
+Mozilla publique la 153.0.5 la receta pública deja de reproducir el medio. La
+salida no es coger la versión nueva (eso cambia el producto, §4.36): es
+**publicar la cosecha misma** —los 29 `.deb` de `/encina-repo`, los que ya
+viajan dentro de la ISO— junto a la ISO, y que la receta sepa leerla.
+
+**`cosechar-repo.sh --cosecha <dir|tar|URL>`.** Los 25 de ARCHIVO se cogen de
+ahí **por huella** —por nombre primero, en la raíz o en el directorio con que
+viaja el tar; si el nombre no está, por huella en todo el árbol— con el mismo
+cotejo que lo del archivo (huella y tamaño del manifiesto, o no entra) y el
+mismo control por fichero que el de Launchpad; la palabra es `[COSECHA]`. Con
+`--cosecha` **no hay paso 2 ni 3**: el archivo, Mozilla y Launchpad no se
+consultan. Si es una URL, se baja a `--cache`; si es un `.tar`, se extrae ahí.
+Los PROPIO siguen viniendo de `--propios`, que ya busca por huella en cualquier
+directorio, incluida la cosecha extraída (así se toma `autofirma` de ella sin
+construirla). Y `--archivo`, `--mozilla`, `--launchpad` cambian de dónde se
+baja: un espejo, o **una URL cortada** (`http://127.0.0.1:1/`) para el
+control. `construir-todo.sh` las pasa tal cual; en `make`, `COSECHA=` y
+`CONSTRUIR_OPTS=`.
+
+```
+./imagen/cosechar-repo.sh --arq arm64 --salida <dir> --cosecha https://…/encina-repo-arm64.tar \
+    --archivo http://127.0.0.1:1/ --mozilla http://127.0.0.1:1/ --launchpad http://127.0.0.1:1/
+make dos-veces ARQ=arm64 COSECHA=https://…/encina-repo-arm64.tar AUTOFIRMA=<cosecha extraída>
+```
+
+**`imagen/empaquetar-cosecha.py --repo <dir> --arq <arq> --salida <tar>`.**
+El tar reproducible de los 29 con su `Packages`: el control delante (el
+comparador tiene que rechazar una huella cambiada en un carácter y un tamaño
+cambiado en un byte), el directorio y el `Packages` contra el manifiesto
+enteros, **escrito dos veces y comparado byte a byte**, y vuelto a leer contra
+el manifiesto (trampa 13). `ustar`, por orden de nombre, `0644`, `uid/gid 0`, y
+la fecha de todos los miembros es `SOURCE_DATE_EPOCH`: el último commit que
+tocó el manifiesto, leído de git (o `--epoca`). Es Python porque el `bsdtar` de
+macOS no tiene `--mtime` ni ordena, y GNU `tar` no está en el Mac. **`make
+cosecha ARQ=…`** lo encadena todo: `construir-todo.sh --trabajo
+medios/cosecha-<arq> --conservar`, **la ISO de esa misma pasada cotejada con
+`medios/SHA256SUMS`** —la cosecha tiene que ser la del medio vigente, o no se
+empaqueta— y el tar en `medios/encina-repo-<arq>.tar`.
+
+**`imagen/preparar-publicacion.sh --medios <dir> --salida <dir> [--url-base
+<URL>]`** (`make publicar`). Junta las dos ISOs y las dos cosechas, calcula
+`SHA256SUMS` ahí —y comprueba que `shasum -c` pasa y que **con una huella
+cambiada falla**— y escribe `NOTAS.md` desde `publicar/notas-plantilla.md`
+sustituyendo huellas, tamaños, versiones (del manifiesto) y commit **desde
+esos ficheros**; en las notas no puede quedar ningún `@…@` ni faltar ninguna
+de las cuatro huellas. Se niega sobre un árbol sucio. **No sube nada.**
+
+**`make trozos ARQ=…`.** Por si el alojamiento es una release de GitHub («cada
+fichero tiene que ser menor de 2 GiB»): `split -b 2000m`, y la comprobación de
+que `cat` los recompone en la huella del medio.
+
+**69. LA ISO OFICIAL `arm64` NO TIENE FUENTE PERMANENTE: `old-releases.ubuntu.com`
+SÓLO CONSERVA `amd64`.** `cdimage.ubuntu.com/releases/24.04/release/` sirve
+hoy `24.04.3` y `24.04.4`; los *point releases* anteriores están en
+`old-releases.ubuntu.com/releases/24.04.N/` —`24.04.1`, `.2` y `.3` contestan
+200— pero en esos directorios sólo hay `ubuntu-24.04*-desktop-amd64.iso` (y de
+`arm64`, la beta del `live-server`). El día que salga `24.04.5`,
+`ubuntu-24.04.4-desktop-amd64.iso` seguirá en `old-releases` y la `arm64`
+**no estará en ningún sitio de Canonical**: `traer-iso-oficial.sh` dirá
+`[RETIRADO]` (sabe desde §4.39) y la receta `arm64` se parará ahí **aunque la
+cosecha esté publicada**. Es la trampa 68 aplicada a la entrada: **lo que se
+ancla y nadie conserva hay que conservarlo uno** —los 3,3 GiB de la oficial—,
+o aceptar que reproducir el `arm64` exige tener la ISO de aquel día. Queda
+escrito en `tareas/publicar.md`; no se decide en §4.82.

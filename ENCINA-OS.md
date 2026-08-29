@@ -401,6 +401,29 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-08-29: **LA FASE 3 HA EMPEZADO, y está hecho todo lo que no depende de dónde vive la ISO — nada subido a ningún sitio** (`MEDICIONES.md` §4.82)
+>
+> **Lo que hay desde hoy:** la cosecha de 29 `.deb` por arquitectura,
+> empaquetada reproducible y **cotejada contra los dos medios vigentes**
+> (`make cosecha`: la ISO de esa misma pasada da `63f360dd…` / `3d5d12a9…`,
+> otra vez, desde `74504fc`); `cosechar-repo.sh --cosecha` cosechando desde
+> ella con el archivo, Mozilla y Launchpad **cortados**; y la definición de
+> terminado de la casilla ejecutada: **un clon limpio, `--cache` vacío, las
+> URLs en `127.0.0.1:1` y los dos tar por HTTP local, da las dos huellas** —en
+> la mitad de tiempo que ayer, porque no baja nada—. `make trozos` (2 y 4
+> trozos, `cat` los recompone en la huella) y `make publicar` (SHA256SUMS
+> calculado y las notas con las huellas sustituidas desde él, con sus
+> controles) están medidos. **Lo que no se ha hecho, a propósito:** subir nada
+> —dónde vive la ISO es de Jorge, y las opciones con su precio están en
+> [alojamiento.md](tareas/alojamiento.md)—, instalar en hierro mirando
+> ([ojos.md](tareas/ojos.md) dice qué y dónde), y el enlace del README. **Y
+> tres decisiones nuevas que son de Jorge** ([publicar.md](tareas/publicar.md)):
+> la etiqueta de la release (propuesta `v0.2.1`, y que un medio nuevo sea una
+> `encina-meta` nueva), publicar `arm64` con hierro sólo `amd64`, y **conservar
+> la ISO oficial `arm64`**, porque `old-releases.ubuntu.com` sólo guarda
+> `amd64` y dentro de un año la entrada `arm64` no estará en Canonical (trampa
+> 69). Ninguna casilla marcada hoy.
+>
 > ### AL DÍA, 2026-08-28: **LA FASE 2 ESTÁ COMPLETA — la refactorización entera, sin tocar un byte del producto** — y lo que queda es la fase 3, publicar
 >
 > **Añadido la tarde del 2026-08-28 (§4.81), la sesión previa a la fase 3:**

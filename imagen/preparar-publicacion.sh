@@ -2,7 +2,7 @@
 # Encina OS - LO QUE SE PUBLICA, EN UN DIRECTORIO Y CON SUS SUMAS CALCULADAS.
 #
 #     ./imagen/preparar-publicacion.sh --medios <dir> --salida <dir>
-#                                      [--url-base <URL>] [--plantilla <md>]
+#                                      [--url-base <URL>] [--plantilla <md>] [--permitir-sucio]
 #
 # QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/alojamiento.md y
 # tareas/publicar.md): junta en --salida lo que la release lleva --las dos
@@ -27,7 +27,7 @@ export LC_ALL=C
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
 RAIZ=$(cd "$AQUI/.." && pwd)
-MEDIOS=""; SALIDA=""; URL_BASE=""; PLANTILLA="$RAIZ/publicar/notas-plantilla.md"
+MEDIOS=""; SALIDA=""; URL_BASE=""; PLANTILLA="$RAIZ/publicar/notas-plantilla.md"; PERMITIR_SUCIO=0
 MANIFIESTO="$AQUI/repo-manifiesto.tsv"
 
 uso() { sed -n '2,5p' "$0"; exit 2; }
@@ -37,6 +37,7 @@ while [ $# -gt 0 ]; do
         --salida)    SALIDA="$2";    shift 2 ;;
         --url-base)  URL_BASE="$2";  shift 2 ;;
         --plantilla) PLANTILLA="$2"; shift 2 ;;
+        --permitir-sucio) PERMITIR_SUCIO=1; shift ;;
         -h|--help)   sed -n '1,22p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
@@ -55,9 +56,13 @@ titulo "0. desde que commit se reproduce lo que se publica"
 cd "$RAIZ" || morir "no pude entrar en $RAIZ"
 COMMIT=$(git rev-parse HEAD 2>/dev/null) || morir "$RAIZ no es un repositorio git"
 SUCIO=$(git status --porcelain | wc -l | tr -d ' ')
-[ "$SUCIO" -eq 0 ] || morir "el arbol tiene $SUCIO cambios sin confirmar: las notas dirian un commit que no es lo que hay"
+if [ "$SUCIO" -ne 0 ]; then
+    [ "$PERMITIR_SUCIO" = 1 ] || morir "el arbol tiene $SUCIO cambios sin confirmar: las notas dirian un commit que no es lo que hay
+        (--permitir-sucio para probar el guion, sabiendo que esas notas NO se publican)"
+    aviso "$SUCIO cambios sin confirmar: las notas dicen $COMMIT y eso NO es lo que hay en el disco. NO publicar esto"
+fi
 echo "        commit  $COMMIT"
-ok "arbol limpio en $COMMIT"
+ok "arbol versionado en $COMMIT"
 
 # --- 1. los ficheros, enlazados (o copiados) a --salida ----------------------
 titulo "1. los cuatro ficheros"
@@ -74,13 +79,18 @@ ok "los cuatro ficheros estan en $SALIDA"
 
 # --- 2. SHA256SUMS, calculado, y su control ---------------------------------
 titulo "2. SHA256SUMS calculado en $SALIDA"
-# shellcheck disable=SC2086
+# shellcheck disable=SC2086  # FICHEROS son cuatro nombres fijos separados por espacio, sin espacios dentro: se quiere que se partan
 ( cd "$SALIDA" && shasum -a 256 $FICHEROS > SHA256SUMS ) || morir "shasum"
 sed 's/^/        /' "$SALIDA/SHA256SUMS"
 ( cd "$SALIDA" && shasum -a 256 -c SHA256SUMS >/dev/null 2>&1 ) || morir "shasum -c NO pasa sobre el SHA256SUMS recien escrito"
 ok "shasum -a 256 -c SHA256SUMS pasa"
-# EL CONTROL: con una huella cambiada en un caracter, 'shasum -c' tiene que fallar
-sed '1s/^./X/' "$SALIDA/SHA256SUMS" > "$SALIDA/.SHA256SUMS.sab"
+# EL CONTROL: con una huella cambiada en un caracter, 'shasum -c' tiene que fallar.
+# Y EL CARACTER TIENE QUE SEGUIR SIENDO HEXADECIMAL: la primera version de esta
+# linea ponia una «X», y 'shasum -c' trata esa linea como MAL FORMADA --la
+# avisa y no la cuenta como fallo--, asi que el control salio «CONTROL ROTO» a
+# la primera (§4.82e). Es §4.37c en otra forma: un sabotaje que no sabotea.
+case "$(cut -c1 "$SALIDA/SHA256SUMS" | head -1)" in f) SAB=0 ;; *) SAB=f ;; esac
+sed "1s/^./$SAB/" "$SALIDA/SHA256SUMS" > "$SALIDA/.SHA256SUMS.sab"
 cmp -s "$SALIDA/SHA256SUMS" "$SALIDA/.SHA256SUMS.sab" && morir "CONTROL ROTO: el sabotaje no saboteo"
 if ( cd "$SALIDA" && shasum -a 256 -c .SHA256SUMS.sab >/dev/null 2>&1 ); then
     morir "CONTROL ROTO: shasum -c pasa con una huella cambiada"

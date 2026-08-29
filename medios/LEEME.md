@@ -165,3 +165,20 @@ dentro de la máquina no hay clon. Se fabrica con **`make verificador`**, que pe
 biblioteca dentro y deja aquí `medios/verificar-instalacion.sh` (en `.gitignore`, como
 todo lo de este directorio). La copia sin empaquetar, suelta, se niega a correr y lo dice.
 
+
+## Lo de la fase 3 (2026-08-29, `MEDICIONES.md` §4.82): la cosecha que se publica con la ISO
+
+```
+encina-repo-arm64.tar     0fdb779a…  los 29 .deb de /encina-repo del medio arm64 VIGENTE, con su Packages;
+                                     'make cosecha ARQ=arm64' (la ISO de esa pasada dio 63f360dd… y se borró)
+encina-repo-amd64.tar     f50a5c2f…  lo mismo para amd64 (la ISO de esa pasada dio 3d5d12a9…)
+cosecha-<arq>/                       el --trabajo --conservar del que sale cada tar
+encina-os-<arq>.iso.parte-*          'make trozos': trozos de < 2 GiB por si el alojamiento es GitHub
+publicar/<versión>/                  'make publicar': lo que se sube, con SHA256SUMS calculado y NOTAS.md
+```
+
+Los dos `.tar` **no son para instalar** —la ISO ya lleva esos `.deb` dentro—:
+son para que la receta pública siga fabricando esta misma ISO cuando el archivo
+de Ubuntu y Mozilla hayan retirado las versiones que el manifiesto ancla
+(trampa 68): `make dos-veces ARQ=arm64 COSECHA=<URL del tar>`. Se cogen por
+huella, como todo aquí.
