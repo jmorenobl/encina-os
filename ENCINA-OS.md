@@ -401,7 +401,27 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
-> ### AL DÍA, 2026-08-29: **LA FASE 3 HA EMPEZADO, y está hecho todo lo que no depende de dónde vive la ISO — nada subido a ningún sitio** (`MEDICIONES.md` §4.82)
+> ### AL DÍA, 2026-08-29 (noche): **PUBLICADO.** Las dos ISOs en SourceForge con `SHA256SUMS` al lado, la release `v0.2.1` en GitHub y el README enlazándolas (`MEDICIONES.md` §4.82j-m)
+>
+> **Jorge eligió SourceForge y ordenó los dos actos irreversibles.** Los siete
+> ficheros —las dos ISOs, las dos cosechas, los dos `.torrent` y `SHA256SUMS`—
+> están en `https://downloads.sourceforge.net/project/encina-os/0.2.1/`
+> (`imagen/subir-sourceforge.sh --de-verdad`, 10,9 GB en 20 min, cotejados de
+> vuelta), y **bajados desde fuera dan su huella**: la `arm64` por la URL
+> canónica y la `amd64` sólo por la web seed del torrent publicado. **El clon
+> limpio contra la cosecha publicada**, con el archivo, Mozilla y Launchpad
+> cortados, da `63f360dd…` y `3d5d12a9…` otra vez. La release
+> [`v0.2.1`](https://github.com/jmorenobl/encina-os/releases/tag/v0.2.1) está
+> sobre `ac663f5` con las notas de cuerpo y `SHA256SUMS`, torrents y cosechas
+> de adjuntos, y el README dice desde dónde bajar y con qué huella. **Marcadas:
+> las dos casillas de [alojamiento.md](tareas/alojamiento.md) y tres de las
+> cinco de [publicar.md](tareas/publicar.md).** **Lo que queda, y es de Jorge:**
+> instalar «en una máquina que no sea del banco, mirando la pantalla»
+> ([ojos.md](tareas/ojos.md)), y decidir si se conserva la ISO oficial `arm64`
+> (trampa 69). Y la regla nueva: un medio nuevo es una `encina-meta` nueva, una
+> carpeta nueva en SourceForge y una etiqueta nueva; nada publicado cambia.
+>
+> ### AL DÍA, 2026-08-29 (tarde): **LA FASE 3 HA EMPEZADO, y está hecho todo lo que no depende de dónde vive la ISO — nada subido a ningún sitio** (`MEDICIONES.md` §4.82)
 >
 > **Lo que hay desde hoy:** la cosecha de 29 `.deb` por arquitectura,
 > empaquetada reproducible y **cotejada contra los dos medios vigentes**
