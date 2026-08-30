@@ -1,0 +1,130 @@
+== identidad ==
+encina-e2-completa
+aarch64
+dom 30 ago 2026 22:09:53 UTC
+19d38c416d8dd1e7f0782fa8612a1199341954a259ed678dec5dca62b1202c6c  /etc/encina-e2-testigo-seed
+autofirma 1.9.1+encina4 install ok installed
+encina-branding 0.1.17 install ok installed
+encina-firefox-native 0.2.1 install ok installed
+encina-meta 0.2.1 install ok installed
+
+== firefox instalado y snap ==
+firefox 154.0.1~build1
+Nombre                     Versión                         Rev    Seguimiento      Editor       Notas
+bare                       1.0                             5      latest/stable    canonical**  base
+core22                     20260113                        2293   latest/stable    canonical**  base
+firefox                    147.0.3-1                       7764   latest/stable/…  mozilla**    -
+gnome-42-2204              0+git.837775c-sdk0+git.015db9a  245    latest/stable/…  canonical**  -
+gtk-common-themes          0.1-81-g442e511                 1535   latest/stable/…  canonical**  -
+snap-store                 0+git.90575829                  1271   2/stable/…       canonical**  -
+snapd                      2.73                            25939  latest/stable    canonical**  snapd
+snapd-desktop-integration  0.9                             346    latest/stable/…  canonical**  -
+
+== B1.a systemctl list-timers 'apt-daily*' ==
+NEXT                        LEFT LAST PASSED UNIT                    ACTIVATES
+Mon 2026-08-31 06:58:29 UTC   8h -         - apt-daily-upgrade.timer apt-daily-upgrade.service
+Mon 2026-08-31 17:04:10 UTC  18h -         - apt-daily.timer         apt-daily.service
+
+2 timers listed.
+
+== B1.b /etc/apt/apt.conf.d/20auto-upgrades ==
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+
+== B1.c /etc/apt/apt.conf.d/50unattended-upgrades (Allowed-Origins y Origins-Pattern, sin comentarios) ==
+Unattended-Upgrade::Allowed-Origins {
+	"${distro_id}:${distro_codename}";
+	"${distro_id}:${distro_codename}-security";
+	"${distro_id}ESMApps:${distro_codename}-apps-security";
+	"${distro_id}ESM:${distro_codename}-infra-security";
+};
+Unattended-Upgrade::Package-Blacklist {
+};
+Unattended-Upgrade::DevRelease "auto";
+
+== control del grep: el fichero entero tiene mas lineas que lo filtrado ==
+143 /etc/apt/apt.conf.d/50unattended-upgrades
+
+== fuentes de apt ==
+total 24
+drwxr-xr-x 2 root root 4096 ago 30 22:06 .
+drwxr-xr-x 9 root root 4096 ago 30 21:59 ..
+-rw-r--r-- 1 root root   43 ago 30 22:06 encina-local.list
+-rw-r--r-- 1 root root  863 ago 10 16:06 mozilla.sources
+-rw-r--r-- 1 root root  390 ago 30 21:59 ubuntu.sources
+-rw-r--r-- 1 root root 2559 feb 10  2026 ubuntu.sources.curtin.orig
+deb [trusted=yes] file:/srv/encina-repo ./
+# Repositorio APT oficial de Mozilla. Lo instala encina-firefox-native.
+#
+# Formato deb822 (.sources), nunca apt-key: apt-key esta obsoleto y deposita
+# la clave en un llavero global de confianza, de modo que esa clave firmaria
+# como valido cualquier repositorio del sistema. Signed-By ata la clave a
+# este repositorio y solo a este.
+#
+# La clave se verifica contra la huella 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3
+# antes de entrar en el paquete. El uid dice "Artifact Registry Repository
+# Signer <artifact-registry-repository-signer@google.com>" y no Mozilla porque
+# Mozilla sirve el repositorio desde Google Artifact Registry: es lo esperado.
+#
+# Este fichero no instala Firefox. Solo declara de donde puede venir.
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /usr/share/keyrings/packages.mozilla.org.asc
+Types: deb
+URIs: http://ports.ubuntu.com/ubuntu-ports/
+Suites: noble noble-updates noble-backports
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+Types: deb
+URIs: http://ports.ubuntu.com/ubuntu-ports/
+Suites: noble-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+== anclaje ==
+# Anclaje de prioridad del repositorio de Mozilla.
+#
+# Sin este fichero apt reinstala el Snap de Ubuntu en la primera
+# actualizacion. Es la causa de fallo mas habitual de este paquete y no se
+# nota en el momento: la instalacion sale bien, Firefox nativo funciona, y
+# semanas despues un apt upgrade lo sustituye por el Snap sin avisar.
+#
+# El motivo es que el paquete 'firefox' de Ubuntu es un deb de transicion
+# cuya unica funcion es instalar el Snap, y lleva epoch (1:...), lo que lo
+# hace VERSION MAS ALTA que cualquier version real de Mozilla. Comparando
+# solo versiones, Ubuntu gana siempre. La prioridad 1000 decide por origen
+# en vez de por version, y ademas permite el cambio aunque suponga bajar de
+# numero de version: por debajo de 1000 apt no haria ese cambio.
+#
+# 'Pin: origin <host>' casa con el NOMBRE DE MAQUINA del repositorio, no con
+# el campo Origin: del fichero Release (que aqui vale
+# "namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla"). Para
+# casar con ese campo habria que escribir 'Pin: release o=...'. Es una
+# confusion facil y deja el anclaje sin efecto.
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000
+# This file is used by Ubuntu Pro and supplied by the ubuntu-pro-client
+# package. It has no effect if Ubuntu Pro services are not in use since no
+# other apt repositories are expected to match o=UbuntuESMApps.
+#
+# Pin esm-apps packages to a slightly higher value than the default,
+# so those are preferred over a non-ESM package from the archive when the
+# service is enabled.
+
+Package: *
+Pin: release o=UbuntuESMApps
+Pin-Priority: 510
+# This file is used by Ubuntu Pro and supplied by the ubuntu-pro-client
+# package. It has no effect if Ubuntu Pro services are not in use since no
+# other apt repositories are expected to match o=UbuntuESM.
+#
+# Pin esm-infra packages to a slightly higher value than the default,
+# so those are preferred over a non-ESM package from the archive when the
+# service is enabled.
+Package: *
+Pin: release o=UbuntuESM
+Pin-Priority: 510

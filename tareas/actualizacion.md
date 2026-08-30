@@ -68,6 +68,14 @@ tacharlo con fecha si resulta falso.
    llegarían sólo cuando alguien abra «Actualización de software» o teclee
    `apt`. Si es cierto, hay que **declararlo** o **cerrarlo**, y cerrarlo es un
    fichero en `/etc/apt/apt.conf.d/` que pertenece a `encina-firefox-native`.
+   **CONFIRMADA POR COMPORTAMIENTO EL 2026-08-31 (B1, `MEDICIONES.md`
+   §4.84d):** con un Firefox más nuevo en Mozilla que el instalado, el
+   `--dry-run` dice literalmente `pkg firefox is not in an allowed origin`,
+   y en la misma pasada los openjdk de `noble-security` **sí** salen (el
+   control). Matiz medido que la deducción no tenía: el origen de Mozilla
+   para la sintaxis `o:a` **no** es `packages.mozilla.org` sino
+   `namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla`
+   (§4.84d); C-bis lo tiene en cuenta.
 3. **Existe una puerta documentada para la 1:** `/etc/update-manager/release-upgrades.d/*.cfg`
    admite `[Sources]` `AllowThirdParty=yes`, que conserva las fuentes de terceros
    durante el salto. Un paquete de Encina puede llevar ese fichero. La fuente de
@@ -138,7 +146,9 @@ sabe que hay un salto de base debajo.
       `0.2.1` por arquitectura** (qué se instaló dónde y qué se comprobó), más
       el aviso de que la distribución es experimental. Lo que dice de
       `unattended-upgrades` y de 26.04 va escrito como **no medido**; B1 y B3
-      lo corrigen cuando se midan. Las notas de `v0.2.1` en GitHub no se han
+      lo corrigen cuando se midan. *(La mitad de B1, corregida el 2026-08-31:
+      el README dice desde hoy la excepción medida de Firefox, §4.84. Queda
+      la de B3.)* Las notas de `v0.2.1` en GitHub no se han
       tocado: es de Jorge. Y de paso se enmendaron **D9** («son las dos») y la
       fila E6 de `ENCINA-OS.md` §6, que decía «Sin abrir» ocho días después de
       estar hecho. Tres
@@ -198,7 +208,18 @@ sabe que hay un salto de base debajo.
 
 ## Bloque B — Medir lo que ya existe, sin cambiar nada (VM; cada medición desde una instalación limpia de `63f360dd…`, §9.1)
 
-- [ ] **B1. Qué hace `unattended-upgrades` en una Encina OS instalada, con
+- [x] **HECHA EL 2026-08-31 (`MEDICIONES.md` §4.84a-d), y su «hecha cuando»
+      ejecutado entero:** VM nueva `encina-b1-actualizacion` instalada
+      desatendida desde `63f360dd…` (verificador 64/0); los dos actores
+      fabricados degradando a las versiones de la cosecha (la máquina recién
+      instalada estaba al día); la salida literal del `--dry-run` en §4.84d
+      con las dos respuestas —el control de `noble-security` **sí** («pkgs
+      that look like they should be upgraded: openjdk-17-jre …»), Firefox
+      **no** («pkg firefox is not in an allowed origin»)—; el resultado
+      convertido en **C-bis, que pasa al primer puesto del bloque C**, y el
+      README enmendado. El `[OJOS]` de `update-manager` va en
+      [ojos.md](ojos.md), con la VM apagada y preparada para él. La casilla
+      original, tal como se escribió: **B1. Qué hace `unattended-upgrades` en una Encina OS instalada, con
       Firefox y con los cuatro `.deb`.** Contrasta la deducción 2. En la máquina
       recién instalada: `systemctl list-timers apt-daily*`,
       `/etc/apt/apt.conf.d/20auto-upgrades`, `50unattended-upgrades` y
@@ -214,14 +235,27 @@ sabe que hay un salto de base debajo.
       *Hecha cuando:* la salida literal del `--dry-run` está en
       `MEDICIONES.md` con las dos respuestas, y el resultado está escrito en A2
       o se convierte en la casilla C-bis de abajo.
-- [ ] **B2. La fuente local `trusted=yes` cuando `/srv/encina-repo` deja de
-      cuadrar.** Tres preguntas, y las tres cuestan una orden: ¿qué dice `apt
-      update` si el directorio se borra (¿aviso o error que para todo lo
-      demás?)?; si se instala a mano un `encina-branding` más nuevo que el del
-      repositorio local, ¿lo respeta `full-upgrade` o lo baja de versión?
-      (`apt-cache policy encina-branding`); y ¿`apt` señala algo por
-      `trusted=yes` en cada `update`? Esto decide si el bloque C **retira** la
-      fuente local tras instalar o la deja para siempre.
+- [x] **HECHA EL 2026-08-31 (`MEDICIONES.md` §4.84e), en la misma VM y después
+      de B1, las tres salidas literales en la sección:** (P1) con el
+      directorio apartado, `apt update` termina en **error, rc 100** (`E:
+      Failed to fetch … Packages`), aunque las fuentes de red se refrescan en
+      esa misma pasada y los cuatro paquetes de Encina quedan **sin
+      candidato**; (P2) un `encina-branding` más nuevo instalado a mano **se
+      respeta** (instalado a 100 es el candidato; el 500 del repo local no
+      degrada nada y `full-upgrade` ni lo nombra); (P3) `trusted=yes` **no
+      provoca ni un aviso** en `apt update` (sólo las `Ign:` de cortesía del
+      repo plano, rc 0). Lo que le dice a C2 está escrito en §4.84e; **la
+      decisión de retirar o dejar `encina-local.list` sigue siendo de C2**.
+      Todo deshecho y verificado (directorio y `0.1.17` restaurados). La
+      casilla original: **B2. La fuente local `trusted=yes` cuando
+      `/srv/encina-repo` deja de cuadrar.** Tres preguntas, y las tres
+      cuestan una orden: ¿qué dice `apt update` si el directorio se borra
+      (¿aviso o error que para todo lo demás?)?; si se instala a mano un
+      `encina-branding` más nuevo que el del repositorio local, ¿lo respeta
+      `full-upgrade` o lo baja de versión? (`apt-cache policy
+      encina-branding`); y ¿`apt` señala algo por `trusted=yes` en cada
+      `update`? Esto decide si el bloque C **retira** la fuente local tras
+      instalar o la deja para siempre.
       *Hecha cuando:* las tres salidas literales están en `MEDICIONES.md` y la
       casilla C2 cita cuál de las dos cosas hace con `encina-local.list` y por
       qué.
@@ -286,7 +320,10 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       `/etc/apt/sources.list.d/encina.sources` con `Signed-By:`, **una sola
       suite para todas las series** (como Mozilla; deducción 3), y la decisión
       de B2 sobre `encina-local.list` aplicada en su `postinst` o dejada en paz
-      **con el motivo escrito**. Con su `construir-`, `instalar-` y
+      **con el motivo escrito** *(B2 está medida, §4.84e: dejarla no hace
+      ruido y no pisa versiones; su precio es que sin `/srv/encina-repo` cada
+      `apt update` devuelve rc 100 — la decisión se toma aquí, con eso
+      delante)*. Con su `construir-`, `instalar-` y
       `verificar-keyring.sh` por la misma convención que los otros tres, y en la
       CI. **La clave privada no entra en este repositorio** ni en la CI: se
       escribe dónde vive, quién la tiene y cómo se rota, y se mide que un `.deb`
@@ -330,13 +367,22 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       *Hecha cuando:* la orden del README, copiada tal cual en una VM `0.2.1`
       limpia, deja `apt-cache policy` enseñando el origen de Encina, y a
       continuación C3 se cumple en ella.
-- [ ] **C-bis. Si B1 confirma la deducción 2: los parches de Firefox llegan
-      solos.** Un fichero `/etc/apt/apt.conf.d/52encina-firefox` con
+- [ ] **C-bis. B1 CONFIRMÓ la deducción 2 el 2026-08-31 (§4.84d): los parches
+      de Firefox NO llegan solos, y esta casilla PASA AL PRIMER PUESTO del
+      bloque** — afecta a las máquinas `0.2.1` ya publicadas y, al revés que
+      el resto del bloque C, no depende de A1 ni de C1: es un fichero en
+      `encina-firefox-native`, que es de quien es la fuente. Un
+      `/etc/apt/apt.conf.d/52encina-firefox` con
       `Unattended-Upgrade::Allowed-Origins { "packages.mozilla.org:mozilla"; }`
       (el nombre exacto del origen sale del `Release` de Mozilla, y se mide, no
-      se copia de aquí), **en `encina-firefox-native`**, que es de quien es la
-      fuente. Y lo mismo para el origen de Encina en `encina-keyring` si C1 es
-      (b).
+      se copia de aquí — **y B1 ya lo midió, §4.84d: para la sintaxis `o:a`
+      el origen es `namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla`,
+      no `packages.mozilla.org`; la alternativa robusta es `Origins-Pattern`
+      con `site=packages.mozilla.org`, que no depende del nombre interno del
+      Artifact Registry — se decide midiendo las dos formas**). Y lo mismo
+      para el origen de Encina en `encina-keyring` si C1 es (b). El fichero
+      llega a las máquinas ya instaladas sólo con un medio nuevo o a mano:
+      eso también se escribe cuando se haga.
       *Hecha cuando:* el `--dry-run` de B1 repetido con el fichero puesto
       **sí** lista a Firefox, y sin el fichero (el control, que es la propia
       B1) no.
@@ -386,6 +432,11 @@ cuando toque encender una VM por cualquier otro motivo**: cuestan una orden
 cada una y no dependen de nada. **C detrás de A1 y B2**, porque implementar un
 canal sin haber decidido qué es una versión es pagar dos veces. **D detrás de
 B3 y B4**, por definición.
+
+*Enmienda del 2026-08-31: B1 y B2 están hechas (§4.84) y el orden del bloque C
+cambia en una cosa: **C-bis va primero**, porque no depende de A1 ni de C1 y
+es lo único del bloque que arregla un hueco de seguridad de las máquinas ya
+publicadas. Lo demás del párrafo sigue tal cual.*
 
 Y una cosa que este fichero no hace, a propósito: **no construye un actualizador
 propio**. Ubuntu ya tiene uno (`do-release-upgrade`) y `apt`; lo que Encina tiene

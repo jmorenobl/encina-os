@@ -1,0 +1,128 @@
+[sudo] contraseña para encina: == P3 (primero, porque no muta nada): ¿apt señala algo por trusted=yes en cada update? ==
+-- la linea de encina-local.list:
+deb [trusted=yes] file:/srv/encina-repo ./
+-- apt-get update entero, para leer avisos:
+Get:1 file:/srv/encina-repo ./ InRelease
+Ign:1 file:/srv/encina-repo ./ InRelease
+Get:2 file:/srv/encina-repo ./ Release
+Ign:2 file:/srv/encina-repo ./ Release
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages [42.5 kB]
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Hit:5 http://ports.ubuntu.com/ubuntu-ports noble InRelease
+Hit:6 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease
+Hit:7 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease
+Hit:8 https://packages.mozilla.org/apt mozilla InRelease
+Hit:9 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease
+Reading package lists...
+rc=0
+
+== P1: ¿qué dice apt update si el directorio se borra? (se aparta con mv, y se restaura) ==
+mutacion verificada: /srv/encina-repo ya no existe
+Get:1 file:/srv/encina-repo ./ InRelease
+Ign:1 file:/srv/encina-repo ./ InRelease
+Get:2 file:/srv/encina-repo ./ Release
+Ign:2 file:/srv/encina-repo ./ Release
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Err:3 file:/srv/encina-repo ./ Packages
+  File not found - /srv/encina-repo/./Packages (2: No such file or directory)
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Hit:5 http://ports.ubuntu.com/ubuntu-ports noble InRelease
+Hit:6 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease
+Hit:7 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease
+Hit:8 https://packages.mozilla.org/apt mozilla InRelease
+Hit:9 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease
+Reading package lists...
+E: Failed to fetch file:/srv/encina-repo/./Packages  File not found - /srv/encina-repo/./Packages (2: No such file or directory)
+E: Some index files failed to download. They have been ignored, or old ones used instead.
+rc_sin_directorio=100
+-- ¿y para todo lo demas? apt-cache policy encina-branding tras ese update:
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17
+  Version table:
+ *** 0.1.17 100
+        100 /var/lib/dpkg/status
+restaurado: /srv/encina-repo existe otra vez
+Hit:8 https://packages.mozilla.org/apt mozilla InRelease
+Hit:9 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease
+Reading package lists...
+rc_restaurado=0
+
+== P2: un encina-branding MAS NUEVO instalado a mano: ¿full-upgrade lo respeta o lo baja? ==
+-- se fabrica 0.1.17+b2prueba1 reempaquetando el .deb del repo local (solo cambia la version):
+Version: 0.1.17+b2prueba1
+dpkg-deb: construyendo el paquete `encina-branding' en `/tmp/b2-deb/encina-branding_0.1.17+b2prueba1_all.deb'.
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for gnome-menus (3.36.0-1.1ubuntu3) ...
+Processing triggers for libglib2.0-0t64:arm64 (2.80.0-6ubuntu3.8) ...
+Processing triggers for initramfs-tools (0.142ubuntu25.8) ...
+update-initramfs: Generating /boot/initrd.img-7.0.0-30-generic
+-- mutacion verificada:
+encina-branding 0.1.17+b2prueba1 install ok installed
+-- apt-cache policy encina-branding:
+encina-branding:
+  Installed: 0.1.17+b2prueba1
+  Candidate: 0.1.17+b2prueba1
+  Version table:
+ *** 0.1.17+b2prueba1 100
+        100 /var/lib/dpkg/status
+     0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+-- apt-get -s full-upgrade, lo que dice de encina-branding:
+(full-upgrade no nombra a encina-branding: lo respeta)
+
+== deshacer P2: volver al 0.1.17 del repo local ==
+Processing triggers for libglib2.0-0t64:arm64 (2.80.0-6ubuntu3.8) ...
+Processing triggers for initramfs-tools (0.142ubuntu25.8) ...
+update-initramfs: Generating /boot/initrd.img-7.0.0-30-generic
+encina-branding 0.1.17 install ok installed

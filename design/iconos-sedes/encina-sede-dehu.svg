@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!--
+  Acceso a DEHU (notificaciones electronicas). El glifo es una campana:
+  "aqui llegan avisos", legible a 48 px sin reconocer ninguna marca.
+  Loseta y bellota: ver loseta.svg y LEEME.md de este directorio; geometria
+  medida de la plantilla de Yaru, trazados propios, paleta de design/paleta.tsv.
+  El glifo va en papel #F5F7F4 sobre la placa acento/acento-profundo.
+  El comentario va dentro de <svg> por los 256 bytes de gdk-pixbuf.
+-->
+<defs>
+  <linearGradient id="placa" x1="0" y1="24" x2="0" y2="232" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#3A664E"/>
+    <stop offset="1" stop-color="#2F4033"/>
+  </linearGradient>
+  <filter id="sombra-ancha" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="4.48"/>
+  </filter>
+  <filter id="sombra-fina" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="1.12"/>
+  </filter>
+  <clipPath id="recorte-placa">
+    <path d="M 63,24 H 193 C 228.3,24 232,27.6 232,63 V 193 C 232,228.4 228.3,232 193,232 H 63 C 27.7,232 24,228.4 24,193 V 63 C 24,27.6 27.7,24 63,24 Z"/>
+  </clipPath>
+</defs>
+
+<path d="M 63,24 H 193 C 228.3,24 232,27.6 232,63 V 193 C 232,228.4 228.3,232 193,232 H 63 C 27.7,232 24,228.4 24,193 V 63 C 24,27.6 27.7,24 63,24 Z"
+      transform="translate(0,1)" fill="#000000" opacity="0.2" filter="url(#sombra-ancha)"/>
+<path d="M 63,24 H 193 C 228.3,24 232,27.6 232,63 V 193 C 232,228.4 228.3,232 193,232 H 63 C 27.7,232 24,228.4 24,193 V 63 C 24,27.6 27.7,24 63,24 Z"
+      transform="translate(0,1)" fill="#000000" opacity="0.1" filter="url(#sombra-fina)"/>
+<path d="M 63,24 H 193 C 228.3,24 232,27.6 232,63 V 193 C 232,228.4 228.3,232 193,232 H 63 C 27.7,232 24,228.4 24,193 V 63 C 24,27.6 27.7,24 63,24 Z"
+      fill="url(#placa)"/>
+<g clip-path="url(#recorte-placa)">
+  <rect x="24" y="24" width="208" height="2.5" fill="#ffffff" opacity="0.3"/>
+  <rect x="24" y="229.5" width="208" height="2.5" fill="#000000" opacity="0.2"/>
+</g>
+
+<g fill="#F5F7F4">
+  <path d="M 119,65 c 0,-5 4,-9 9,-9 s 9,4 9,9 v 5.5 c 23.5,4.2 39,23 39,46.5 v 25 l 12.6,16.5 c 2.6,3.4 0.2,8.5 -4.1,8.5 h -114 c -4.3,0 -6.7,-5.1 -4.1,-8.5 L 80,142 v -25 c 0,-23.5 15.5,-42.3 39,-46.5 z"/>
+  <path d="M 114,173 a 14,12 0 0 0 28,0 z"/>
+</g>
+
+<g fill="#D6BFA0">
+  <rect x="200.6" y="181" width="2.8" height="6" rx="1.4"/>
+  <path d="M 190,193.5 c 0,-5.2 5.4,-8.5 12,-8.5 s 12,3.3 12,8.5 c 0,1.7 -1.3,3 -3,3 h -18 c -1.7,0 -3,-1.3 -3,-3 z"/>
+  <path d="M 192.5,199.5 h 19 c -0.5,9 -4.5,14.5 -9.5,17.5 c -5,-3 -9,-8.5 -9.5,-17.5 z"/>
+</g>
+</svg>
