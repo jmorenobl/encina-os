@@ -129,7 +129,19 @@ sabe que hay un salto de base debajo.
       `bancos/versiones.sh` vigila lo que la decisión diga que hay que vigilar,
       **con su control rojo** (un `.md` de mentira con la serie mal escrita se
       señala).
-- [ ] **A2. Declarar en el README cómo se actualiza Encina OS y cómo no.** Tres
+- [x] ~~**A2. Declarar en el README cómo se actualiza Encina OS y cómo no.**~~
+      **HECHA EL 2026-08-30, el mismo día, a petición de Jorge** (*«indicar que
+      las actualizaciones de momento no están soportadas … en la baseline no hay
+      camino fácil de upgrade»*): el README lleva la sección «Actualizar: de
+      momento, no hay camino» con la tabla de los tres relojes, la fila
+      «Actualizaciones: no soportadas» en «El estado», y **la línea base de
+      `0.2.1` por arquitectura** (qué se instaló dónde y qué se comprobó), más
+      el aviso de que la distribución es experimental. Lo que dice de
+      `unattended-upgrades` y de 26.04 va escrito como **no medido**; B1 y B3
+      lo corrigen cuando se midan. Las notas de `v0.2.1` en GitHub no se han
+      tocado: es de Jorge. Y de paso se enmendaron **D9** («son las dos») y la
+      fila E6 de `ENCINA-OS.md` §6, que decía «Sin abrir» ocho días después de
+      estar hecho. Tres
       frases, y son las medidas: la base se actualiza sola desde Ubuntu; los
       cuatro paquetes de Encina **no** (hasta que el bloque C exista: un
       `.deb` nuevo es un medio nuevo, y la máquina instalada lo recibe
@@ -153,6 +165,36 @@ sabe que hay un salto de base debajo.
       *Hecha cuando:* se ha ensayado en seco una vez sobre un árbol limpio
       —`make publicar` ya tiene ensayo en seco (§4.82g)— con las horas
       apuntadas, y ninguna orden de la receta es «a mano».
+- [ ] **A4. Un guion de respaldo y restauración del usuario, porque hoy
+      «actualizar» es reinstalar.** Lo pidió Jorge el 2026-08-30: *«habría que
+      hacer un backup de los certificados cargados y los documentos y listado de
+      aplicaciones instaladas para poder reproducirlo una vez se ha
+      reinstalado»*. Mientras no exista el canal del bloque C —y aunque exista,
+      para el salto de serie— es el único camino que tiene alguien con una
+      `0.2.1` puesta, y hoy es un párrafo del README hecho a mano. Dos guiones
+      que viajen en el medio (`encina-branding` no es su sitio: es una
+      responsabilidad nueva, va con `encina-keyring` si C1 es (b), o en un
+      paquete propio pequeño si es (a)): `respaldar-usuario.sh` deja un solo
+      `.tar` en un destino que el usuario elige, y `restaurar-usuario.sh` lo
+      vuelve a poner en una máquina recién instalada. **Qué guarda, y cada cosa
+      con su medición delante:** el perfil de Firefox entero (los certificados
+      viven en `cert9.db`/`key4.db` del perfil, y copiarlos no cierra ninguna
+      barrera de la firma: **D13 no se toca**, la CA del socket la sigue
+      poniendo AutoFirma), la configuración de AutoFirma **donde esté** (no se
+      sabe todavía: ni este repositorio ni `encina-autofirma` lo tienen escrito
+      — es lo primero que se mide), la carpeta personal salvo cachés, y
+      `apt-mark showmanual` + `snap list` con un `restaurar` que los reinstala.
+      **Y lo que no guarda, dicho:** ni `/etc` ni claves del sistema; es del
+      usuario, no de la máquina.
+      *Control:* un `.tar` con un `cert9.db` cambiado en un byte se señala al
+      restaurar; y restaurar sobre una máquina que **no** es Encina OS se niega.
+      *Hecha cuando:* en una VM instalada desde `63f360dd…` con un certificado
+      de pruebas cargado se **firma** (el positivo de extremo a extremo de E1),
+      se respalda, se reinstala desde el mismo medio, se restaura, y **se
+      vuelve a firmar** con el mismo certificado sin importar nada a mano; las
+      dos firmas están en `MEDICIONES.md` y la de después es `[OJOS]` en
+      `valide.redsara.es`, como la primera. Entonces el párrafo del README pasa
+      a ser una orden.
 
 ## Bloque B — Medir lo que ya existe, sin cambiar nada (VM; cada medición desde una instalación limpia de `63f360dd…`, §9.1)
 
