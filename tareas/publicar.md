@@ -75,7 +75,7 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
   subida por Jorge a las 20:03, §4.82j) y el clon limpio contra **esa** URL,
   con las tres del archivo cortadas y `autofirma` sacado del tar bajado de
   allí, da `63f360dd…` y `3d5d12a9…`, dos pasadas cada una, desde `d79bd84`.
-- [ ] **Conservar también la ISO oficial `arm64`, la entrada** (añadida el
+- [x] **Conservar también la ISO oficial `arm64`, la entrada** (añadida el
   2026-08-29, `MEDICIONES.md` §4.82a, trampa 69). La casilla de arriba protege
   los `.deb`; dentro de un año tampoco estará la entrada: `cdimage.ubuntu.com`
   sirve dos *point releases* y `old-releases.ubuntu.com` **sólo conserva
@@ -89,6 +89,15 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
   de Jorge y va con la de `alojamiento.md`.** Hecha cuando: el clon limpio de la
   casilla anterior arranca desde la ISO oficial **bajada de donde diga esta
   casilla**, no de `medios/`.
+  **MARCADA EL 2026-08-30, `MEDICIONES.md` §4.83 (Jorge: «haz la
+  recomendación»):** la base está en SourceForge, `base/arm64/`, junto al
+  `SHA256SUMS` y al `SHA256SUMS.gpg` de Canonical de aquel día (también en
+  `imagen/base-firmada/`); `traer-iso-oficial.sh` cae a ella por huella y con
+  la firma (`[RESPALDO]`, cuarta columna de `ISOS_OFICIALES`; `amd64` →
+  `old-releases`); y el clon limpio, con el servidor de Canonical y el archivo
+  cortados, bajó la base del respaldo y dio `63f360dd…` dos veces. **La base no
+  flota**: cuando salga `24.04.5` se decide si se hace `0.2.2`, que es una
+  vuelta entera.
 - [ ] **Instalarla desde cero como lo haría un desconocido**, en una máquina que
       no sea del banco, y **mirando la pantalla**.
       *Hecha cuando:* arranca, se instala contestando lo que pregunta, y

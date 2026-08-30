@@ -188,3 +188,9 @@ por ISO, sin tracker, con web seed a la URL canónica de SourceForge
 (`make torrent`; `make publicar` los rehace siempre); `publicar/<versión>/` lleva
 ahora seis ficheros más `SHA256SUMS` y `NOTAS.md`, y es lo que sube
 `imagen/subir-sourceforge.sh`.
+
+**Y el 2026-08-30 (§4.83, trampa 69):** la ISO oficial `arm64` tiene **respaldo**
+en SourceForge, `base/arm64/`, con el `SHA256SUMS` y el `.gpg` de Canonical de
+aquel día (versionados en `imagen/base-firmada/`); `traer-iso-oficial.sh` cae
+ahí por huella y con la firma si Canonical la ha retirado. La `amd64`, a
+`old-releases.ubuntu.com`. Se sube con `subir-sourceforge.sh --base <arq>`.

@@ -401,6 +401,23 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-08-30: **LA BASE CONSERVADA** — reproducir `0.2.1` ya no depende de que Canonical siga sirviendo la ISO de aquel día (`MEDICIONES.md` §4.83)
+>
+> Jorge preguntó si la base podía «fijar 24.04 y coger la última»; **no, por
+> diseño** (la huella del producto es función de los bytes de la base, y cada
+> *point release* cambia cosas medidas), y aprobó lo otro: **anclar y
+> conservar**. La ISO oficial `arm64` está en SourceForge, `base/arm64/`,
+> junto al `SHA256SUMS` y al `.gpg` **de Canonical** de aquel día (versionados
+> en `imagen/base-firmada/`); `traer-iso-oficial.sh` cae a ese respaldo
+> —cuarta columna de `ISOS_OFICIALES`; `amd64` → `old-releases`— por huella y
+> con la firma, por los mismos pasos que el servidor (`[RESPALDO]`); y **el clon
+> limpio, con Canonical y el archivo cortados, bajó la base del respaldo y dio
+> `63f360dd…` dos veces**. Quinta casilla de [publicar.md](tareas/publicar.md)
+> marcada. **Lo que queda del proyecto es una sola cosa, y es de Jorge:**
+> instalar «en una máquina que no sea del banco, mirando la pantalla»
+> ([ojos.md](tareas/ojos.md)). Y la regla: la base no flota; con `24.04.5` se
+> decide si `0.2.2`.
+>
 > ### AL DÍA, 2026-08-29 (noche): **PUBLICADO.** Las dos ISOs en SourceForge con `SHA256SUMS` al lado, la release `v0.2.1` en GitHub y el README enlazándolas (`MEDICIONES.md` §4.82j-m)
 >
 > **Jorge eligió SourceForge y ordenó los dos actos irreversibles.** Los siete
