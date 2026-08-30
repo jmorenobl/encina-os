@@ -12,6 +12,10 @@ Lo que ya está hecho no vive aquí: vive en `AGENTS.md` como casilla marcada y 
 `MEDICIONES.md` con sus salidas. Un bloque que se cierra entero se va a
 [tareas/cerradas/](tareas/cerradas/) y deja de leerse.
 
+**Y desde el 2026-08-30 hay [roadmap/](roadmap/)**: la intención de producto de
+Jorge —v1, v2, v3—, con cada punto enlazado a su tarea o marcado `[SIN TAREA]`.
+El roadmap dice el «qué»; las casillas siguen viviendo aquí.
+
 ## Abierto
 
 | Bloque | Qué | Abiertas |
