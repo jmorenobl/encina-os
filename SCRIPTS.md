@@ -3359,7 +3359,7 @@ hoy `24.04.3` y `24.04.4`; los *point releases* anteriores están en
 cosecha esté publicada**. Es la trampa 68 aplicada a la entrada: **lo que se
 ancla y nadie conserva hay que conservarlo uno** —los 3,3 GiB de la oficial—,
 o aceptar que reproducir el `arm64` exige tener la ISO de aquel día. Queda
-escrito en `tareas/publicar.md`; no se decide en §4.82.
+escrito en `tareas/cerradas/publicar.md`; no se decide en §4.82.
 
 **`imagen/hacer-torrent.py --fichero <iso> --salida <torrent> --web-seed <URL>`**
 (`make torrent ARQ=…`, la misma tarde, §4.82h-i). Un `.torrent` de un fichero,

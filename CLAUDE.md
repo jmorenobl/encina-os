@@ -42,7 +42,7 @@ make cosecha ARQ=arm64 # los 29 .deb del medio VIGENTE en medios/encina-repo-arm
                        # pasada se coteja con SHA256SUMS y se borra (fase 3, §4.82)
 make trozos ARQ=arm64  # la ISO en trozos < 2 GiB por si el alojamiento es GitHub; cat los recompone en la huella
 make publicar          # medios/publicar/<versión>/: ISOs, cosechas, SHA256SUMS calculado y NOTAS.md con las huellas
-                       # sustituidas desde él. NO sube nada: dónde vive la ISO es de Jorge (tareas/alojamiento.md)
+                       # sustituidas desde él. NO sube nada: dónde vive la ISO es de Jorge (tareas/cerradas/alojamiento.md)
 make dos-veces ARQ=arm64 COSECHA=<URL o tar>   # la receta DESDE la cosecha publicada: sin archivo, Mozilla ni Launchpad (trampa 68)
 make torrent ARQ=arm64 # el .torrent de la ISO, sin tracker, con web seed a la URL canónica de SourceForge (§4.82h-i)
 ./imagen/subir-sourceforge.sh --directorio medios/publicar/0.2.1 [--de-verdad]   # sin --de-verdad, sólo el ensayo; subir es de Jorge

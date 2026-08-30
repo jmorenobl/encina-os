@@ -40,7 +40,7 @@
 # nombre bueno y otros bytes se rechaza (es la trampa de MEDICIONES.md §4.13).
 #
 # DESDE LA COSECHA PUBLICADA, --cosecha <dir|tar|URL> (2026-08-29, MEDICIONES.md
-# §4.82, tareas/publicar.md): los de ARCHIVO se cogen de ahi POR HUELLA en vez
+# §4.82, tareas/cerradas/publicar.md): los de ARCHIVO se cogen de ahi POR HUELLA en vez
 # de pedirlos al archivo, y el archivo, Mozilla y Launchpad NO SE CONSULTAN.
 # Existe porque ninguna de esas tres fuentes es permanente para todo: el
 # archivo retira (trampa 68), Launchpad solo conserva lo de Ubuntu, y Firefox

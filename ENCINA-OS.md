@@ -412,7 +412,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > —cuarta columna de `ISOS_OFICIALES`; `amd64` → `old-releases`— por huella y
 > con la firma, por los mismos pasos que el servidor (`[RESPALDO]`); y **el clon
 > limpio, con Canonical y el archivo cortados, bajó la base del respaldo y dio
-> `63f360dd…` dos veces**. Quinta casilla de [publicar.md](tareas/publicar.md)
+> `63f360dd…` dos veces**. Quinta casilla de [publicar.md](tareas/cerradas/publicar.md)
 > marcada. **Lo que queda del proyecto es una sola cosa, y es de Jorge:**
 > instalar «en una máquina que no sea del banco, mirando la pantalla»
 > ([ojos.md](tareas/ojos.md)). Y la regla: la base no flota; con `24.04.5` se
@@ -431,8 +431,8 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > [`v0.2.1`](https://github.com/jmorenobl/encina-os/releases/tag/v0.2.1) está
 > sobre `ac663f5` con las notas de cuerpo y `SHA256SUMS`, torrents y cosechas
 > de adjuntos, y el README dice desde dónde bajar y con qué huella. **Marcadas:
-> las dos casillas de [alojamiento.md](tareas/alojamiento.md) y tres de las
-> cinco de [publicar.md](tareas/publicar.md).** **Lo que queda, y es de Jorge:**
+> las dos casillas de [alojamiento.md](tareas/cerradas/alojamiento.md) y tres de las
+> cinco de [publicar.md](tareas/cerradas/publicar.md).** **Lo que queda, y es de Jorge:**
 > instalar «en una máquina que no sea del banco, mirando la pantalla»
 > ([ojos.md](tareas/ojos.md)), y decidir si se conserva la ISO oficial `arm64`
 > (trampa 69). Y la regla nueva: un medio nuevo es una `encina-meta` nueva, una
@@ -452,9 +452,9 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > calculado y las notas con las huellas sustituidas desde él, con sus
 > controles) están medidos. **Lo que no se ha hecho, a propósito:** subir nada
 > —dónde vive la ISO es de Jorge, y las opciones con su precio están en
-> [alojamiento.md](tareas/alojamiento.md)—, instalar en hierro mirando
+> [alojamiento.md](tareas/cerradas/alojamiento.md)—, instalar en hierro mirando
 > ([ojos.md](tareas/ojos.md) dice qué y dónde), y el enlace del README. **Y
-> tres decisiones nuevas que son de Jorge** ([publicar.md](tareas/publicar.md)):
+> tres decisiones nuevas que son de Jorge** ([publicar.md](tareas/cerradas/publicar.md)):
 > la etiqueta de la release (propuesta `v0.2.1`, y que un medio nuevo sea una
 > `encina-meta` nueva), publicar `arm64` con hierro sólo `amd64`, y **conservar
 > la ISO oficial `arm64`**, porque `old-releases.ubuntu.com` sólo guarda
@@ -476,7 +476,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > (§4.81a), y las trampas 28b-33b **renumeradas a 62-67** (§4.81e). Lo que
 > queda abierto para la fase 3 es una sola cosa nueva: Firefox no tiene fuente
 > permanente (Mozilla retira y Launchpad no lo tiene), así que publicar
-> incluye publicar la cosecha (`tareas/publicar.md`).
+> incluye publicar la cosecha (`tareas/cerradas/publicar.md`).
 >
 > **Dónde está el proyecto:** la fase 1 del orden del 2026-08-23 está completa
 > desde el 2026-08-25 —`3d5d12a9…` (`amd64`) en el hierro, §4.78, y `63f360dd…`
@@ -507,7 +507,7 @@ Una sola tarea. No abras ninguna otra hasta terminarla.
 > ninguna), y el medio `amd64`.
 >
 > **Lo siguiente, y es lo último del proyecto: la fase 3.**
-> [alojamiento.md](tareas/alojamiento.md) y [publicar.md](tareas/publicar.md):
+> [alojamiento.md](tareas/cerradas/alojamiento.md) y [publicar.md](tareas/cerradas/publicar.md):
 > `make dos-veces ARQ=arm64` y `ARQ=amd64` desde estos guiones, instalar,
 > mirar —[tareas/ojos.md](tareas/ojos.md) dice qué falta por mirar y dónde—, y
 > publicar. Antes, un push para ver el job «bancos» en verde en la CI de verdad.

@@ -35,7 +35,7 @@ pasa a ser **lo último**. Está en `TAREAS.md`, «El orden cambia el 2026-08-23
 
       **Lo que queda en pie de la objeción, y es lo único:** los 1 089 MB y **el
       límite de 2 GiB por adjunto de una release de GitHub**
-      ([alojamiento.md](alojamiento.md)) — que ya se pasa hoy con 3,46 GB, así que
+      ([cerradas/alojamiento.md](cerradas/alojamiento.md)) — que ya se pasa hoy con 3,46 GB, así que
       **crecer a ~4,7 GB no cambia de categoría el problema: lo empeora en grado,
       no en clase.**
 

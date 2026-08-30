@@ -4,7 +4,7 @@
     ./imagen/hacer-torrent.py --fichero <iso> --salida <torrent> --web-seed <URL> [--web-seed <URL>…]
                               [--pieza <MiB>]
 
-POR QUE EXISTE (2026-08-29, MEDICIONES.md §4.82h, tareas/alojamiento.md): la ISO
+POR QUE EXISTE (2026-08-29, MEDICIONES.md §4.82h, tareas/cerradas/alojamiento.md): la ISO
 vive en SourceForge y un .torrent con web seed (BEP 19, 'url-list') deja que un
 cliente de BitTorrent la baje entera desde esa URL aunque nadie siembre, con la
 integridad de cada pieza comprobada al llegar, y que se reparta entre quien la

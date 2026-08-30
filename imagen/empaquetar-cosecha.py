@@ -4,7 +4,7 @@
     ./imagen/empaquetar-cosecha.py --repo <dir> --arq arm64|amd64 --salida <tar>
                                    [--manifiesto <tsv>] [--epoca <segundos>]
 
-POR QUE EXISTE (2026-08-29, MEDICIONES.md §4.82, tareas/publicar.md): el archivo
+POR QUE EXISTE (2026-08-29, MEDICIONES.md §4.82, tareas/cerradas/publicar.md): el archivo
 de Ubuntu retira las versiones superadas y el manifiesto ancla una (trampa 68);
 Launchpad conserva lo de Ubuntu, pero Firefox viene de packages.mozilla.org y
 NO tiene fuente permanente. El dia que Mozilla publique la siguiente, la receta

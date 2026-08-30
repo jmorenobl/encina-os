@@ -71,7 +71,7 @@ $(MEDIOS)/verificar-instalacion.sh: imagen/verificar-instalacion.sh lib/salida.s
 	@chmod +x $@.parcial && mv $@.parcial $@
 	@echo "[OK]    $@: $$(wc -l < $@ | tr -d ' ') lineas, $$(shasum -a 256 $@ | cut -c1-16)…  (imagen/verificar-instalacion.sh + lib/salida.sh)"
 
-# LA COSECHA QUE SE PUBLICA CON LA ISO (tareas/publicar.md, MEDICIONES.md
+# LA COSECHA QUE SE PUBLICA CON LA ISO (tareas/cerradas/publicar.md, MEDICIONES.md
 # §4.82): el /encina-repo que construir-todo.sh deja con --trabajo --conservar
 # --29 .deb y su Packages-- empaquetado reproducible por empaquetar-cosecha.py.
 # La ISO de esa misma pasada se COTEJA con medios/SHA256SUMS y se borra: la
@@ -96,7 +96,7 @@ cosecha:
 
 # TROZOS DE MENOS DE 2 GiB, por si el alojamiento es una release de GitHub
 # («cada fichero de una release tiene que ser menor de 2 GiB», su
-# documentacion; tareas/alojamiento.md). Se recomponen con 'cat', y aqui se
+# documentacion; tareas/cerradas/alojamiento.md). Se recomponen con 'cat', y aqui se
 # comprueba que recompuestos dan la huella del medio: un troceado que no se
 # comprueba es una ISO que a lo mejor no arranca en casa de nadie.
 TROZO ?= 2000m
@@ -113,7 +113,7 @@ trozos:
 # LO QUE SE PUBLICA, EN UN DIRECTORIO Y CON SUS SUMAS CALCULADAS: las dos ISOs,
 # las dos cosechas, SHA256SUMS y las notas de la release con las huellas
 # sustituidas desde ese SHA256SUMS (nunca escritas a mano). No sube nada a
-# ningun sitio: eso es de Jorge (tareas/alojamiento.md).
+# ningun sitio: eso es de Jorge (tareas/cerradas/alojamiento.md).
 # --url-base es la URL canonica de SourceForge, y con ella se hacen antes los
 # dos .torrent (su web seed es esa misma URL): asi no puede haber un torrent de
 # una ISO que no sea la publicada

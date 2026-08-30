@@ -160,7 +160,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       esta misma casilla manda inventar y que ya está escrito seis líneas más
       arriba**. Lo que sí hay son **dos enlaces relativos rotos de 128**, y son
       la carga útil de esta tarea: `MEDICIONES.md:16713`
-      (`[alojamiento.md](../alojamiento.md)`, que está en `tareas/`) y
+      (`[alojamiento.md](alojamiento.md)`, que está en `tareas/`) y
       `design/capturas/despues/entrega-cd84d2ec/LEEME.md:46` (faltan cuatro
       niveles de `..`, no tres). ~~**No se arreglaron el 2026-08-23 a propósito:**
       son el primer resultado del instrumento y quitárselo lo dejaría sin nada
@@ -384,7 +384,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       disco, pero `medios/verificar-instalacion.sh` es una copia que `.gitignore`
       tapa con `medios/*`. **Lo que NO entra: firmar las sumas** — exige una clave
       que `AGENTS.md` §7 prohíbe en el runner, y decidir dónde vive es de
-      [publicar.md](../publicar.md) (fila **E2**).
+      [publicar.md](publicar.md) (fila **E2**).
 
 ## 7. Vaciar `ENCINA-OS.md` §7
 
@@ -644,7 +644,7 @@ encargo nuevo, «proyecto profesional» lo sería aún más.
       *Lo que pedía la casilla, conservado:* **Un sitio donde se apunte qué mirada falta, por medio y por
       arquitectura.** Hoy los `[OJOS]` pendientes están repartidos por
       [marca-del-medio.md](../marca-del-medio.md),
-      [aspecto/5-cierre.md](../aspecto/5-cierre.md), [publicar.md](../publicar.md) y
+      [aspecto/5-cierre.md](../aspecto/5-cierre.md), [publicar.md](publicar.md) y
       `ENCINA-OS.md` §7, y **no hay ninguna hoja que los junte**.
       *Por qué:* es lo único que la comparación con el exterior encontró que este
       repositorio no tiene y otro sí. Ubuntu valida cada imagen con **casos de

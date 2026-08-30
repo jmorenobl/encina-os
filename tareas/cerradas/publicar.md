@@ -3,7 +3,7 @@
 **FASE 3, Y ES LO ÚLTIMO DEL PROYECTO — decidido por Jorge el 2026-08-23.** Antes
 van, en este orden: **(1)** que las ISOs se prueben de verdad —el hierro `amd64`
 en el portátil AMD A9 y la vuelta única `arm64`— y **(2)** la refactorización
-entera, [refactorizacion.md](cerradas/refactorizacion.md). El motivo, en una frase:
+entera, [refactorizacion.md](refactorizacion.md). El motivo, en una frase:
 **publicar es el único acto de este proyecto que no se puede deshacer**, y un
 acto irreversible va detrás de los reversibles. El argumento completo, y el
 anterior dejado al lado, en `TAREAS.md`, «El orden cambia el 2026-08-23».
@@ -33,7 +33,7 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
       comprobar y cómo reproducir— y `SHA256SUMS`, los dos `.torrent` y las dos
       cosechas de adjuntos; las ISOs en SourceForge. Etiqueta: la versión de
       `encina-meta`, y un medio nuevo será una `encina-meta` nueva.
-      **Escrita, no publicada (2026-08-29):** [publicar/notas-plantilla.md](../publicar/notas-plantilla.md)
+      **Escrita, no publicada (2026-08-29):** [publicar/notas-plantilla.md](../../publicar/notas-plantilla.md)
       es el texto —lo que trae, lo que no, cómo comprobar, cómo reproducir— y
       `make publicar` (`imagen/preparar-publicacion.sh`) lo deja en
       `medios/publicar/<versión>/NOTAS.md` con huellas, tamaños, versiones y commit
@@ -98,8 +98,16 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
   cortados, bajó la base del respaldo y dio `63f360dd…` dos veces. **La base no
   flota**: cuando salga `24.04.5` se decide si se hace `0.2.2`, que es una
   vuelta entera.
-- [ ] **Instalarla desde cero como lo haría un desconocido**, en una máquina que
+- [x] **Instalarla desde cero como lo haría un desconocido**, en una máquina que
       no sea del banco, y **mirando la pantalla**.
+      **CERRADA EL 2026-08-30 CON LA DECISIÓN DE JORGE, a sabiendas, que es lo
+      que este bloque pedía:** `amd64` está hecha en hierro (el Acer, §4.78:
+      arranca, se instala contestando, 65 / 0, y mirada); para `arm64` **no hay
+      otra máquina** —Jorge, 2026-08-30: *«arm64 sólo lo puedo mirar en esta
+      máquina usando UTM. No tengo acceso a otra máquina Apple Silicon»*— y se
+      publica probada en hierro sólo en `amd64` y en el banco en `arm64` (§4.79,
+      con el veredicto de Jorge sobre las seis pantallas). Las miradas que
+      siguen pendientes por fila están en [ojos.md](../ojos.md) y no bloquean nada.
       *Hecha cuando:* arranca, se instala contestando lo que pregunta, y
       `verificar-instalacion.sh` como root da 0 fallos.
       **NO SE MARCA, y lo que falta es UNA palabra de la casilla.** El 2026-08-13
@@ -111,7 +119,7 @@ de abajo se marca hoy; cada una lleva qué hay hecho y qué le falta.
       puedes dar a alguien», y es justo lo que este bloque promete. Hace falta
       hardware real, o al menos otro anfitrión.
       **Al día 2026-08-29: es de Jorge y sigue abierta.** Lo que hay que mirar, y
-      en cuál de los dos medios, está fila a fila en [ojos.md](ojos.md) —las
+      en cuál de los dos medios, está fila a fila en [ojos.md](../ojos.md) —las
       PENDIENTE de la tabla A son sobre `3d5d12a9…` en el Acer (menú de GRUB del
       medio, el instalador en español, el splash del medio, GDM con la identidad,
       el GRUB de la máquina instalada, los nombres en español, Firefox en

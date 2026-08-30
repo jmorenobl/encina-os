@@ -4,8 +4,8 @@
 #     ./imagen/preparar-publicacion.sh --medios <dir> --salida <dir>
 #                                      [--url-base <URL>] [--plantilla <md>] [--permitir-sucio]
 #
-# QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/alojamiento.md y
-# tareas/publicar.md): junta en --salida lo que la release lleva --las dos
+# QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/cerradas/alojamiento.md y
+# tareas/cerradas/publicar.md): junta en --salida lo que la release lleva --las dos
 # ISOs, las dos cosechas (encina-repo-<arq>.tar, 'make cosecha')--, calcula
 # ahi su SHA256SUMS, y escribe NOTAS.md desde la plantilla sustituyendo las
 # huellas, los tamanos, las versiones y el commit DESDE ESOS FICHEROS: ninguna
@@ -13,7 +13,7 @@
 # vez una huella por el nombre de la VM y no por el fichero (TAREAS.md).
 #
 # LO QUE NO HACE: subir nada a ningun sitio. Donde vive la ISO lo decide Jorge
-# (tareas/alojamiento.md); --url-base es la URL bajo la que quedaran los
+# (tareas/cerradas/alojamiento.md); --url-base es la URL bajo la que quedaran los
 # ficheros, y sin ella las notas llevan «<URL-PENDIENTE>» y se avisa.
 #
 # LOS CONTROLES VAN DELANTE de lo que protegen: 'shasum -c' sobre el
@@ -107,7 +107,7 @@ version_de() { awk -F'\t' -v p="$1" '$1=="PROPIO" && $2==p {print $3}' "$MANIFIE
 for p in encina-branding encina-firefox-native encina-meta autofirma; do
     [ -n "$(version_de "$p")" ] || morir "el manifiesto no tiene la version de $p"
 done
-[ -n "$URL_BASE" ] || { URL_BASE="<URL-PENDIENTE>"; aviso "sin --url-base: las notas llevan <URL-PENDIENTE> (tareas/alojamiento.md)"; }
+[ -n "$URL_BASE" ] || { URL_BASE="<URL-PENDIENTE>"; aviso "sin --url-base: las notas llevan <URL-PENDIENTE> (tareas/cerradas/alojamiento.md)"; }
 sed -e "s|@VERSION@|$(version_de encina-meta)|g" \
     -e "s|@COMMIT@|$COMMIT|g" \
     -e "s|@FECHA@|$(date +%Y-%m-%d)|g" \
@@ -136,4 +136,4 @@ echo
 echo "listo en $SALIDA:"
 ls -l "$SALIDA" | sed 's/^/        /'
 echo
-echo "LO QUE ESTE GUION NO HACE: subirlo. Donde vive la ISO es de tareas/alojamiento.md."
+echo "LO QUE ESTE GUION NO HACE: subirlo. Donde vive la ISO es de tareas/cerradas/alojamiento.md."

@@ -10,7 +10,7 @@
 #         coteja la ISO contra ESE SHA256SUMS firmado: se conserva lo que Canonical
 #         firmo, o nada.
 #
-# QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/alojamiento.md): sube por
+# QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/cerradas/alojamiento.md): sube por
 # rsync sobre ssh a frs.sourceforge.net los ficheros de --directorio (lo que
 # deja 'make publicar': las dos ISOs, las dos cosechas y SHA256SUMS) a
 # /home/frs/project/<proyecto>/<version>/, y DESPUES comprueba que lo que hay
