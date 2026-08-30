@@ -46,6 +46,8 @@ make publicar          # medios/publicar/<versión>/: ISOs, cosechas, SHA256SUMS
 make dos-veces ARQ=arm64 COSECHA=<URL o tar>   # la receta DESDE la cosecha publicada: sin archivo, Mozilla ni Launchpad (trampa 68)
 make torrent ARQ=arm64 # el .torrent de la ISO, sin tracker, con web seed a la URL canónica de SourceForge (§4.82h-i)
 ./imagen/subir-sourceforge.sh --directorio medios/publicar/0.2.1 [--de-verdad]   # sin --de-verdad, sólo el ensayo; subir es de Jorge
+./imagen/subir-sourceforge.sh --base arm64 [--de-verdad]   # la ISO oficial con su SHA256SUMS firmado, a base/arm64/ (§4.83, trampa 69)
+./imagen/traer-iso-oficial.sh --arq arm64 --verificador jorge@192.168.64.3      # cae al respaldo ([RESPALDO]) si Canonical la retiró
 ```
 
 Construcción y lintian (van en la VM Ubuntu **y** en la CI; un paquete por

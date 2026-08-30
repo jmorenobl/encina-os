@@ -3383,3 +3383,26 @@ medio, nunca se pisa. Dos trampas de SourceForge vistas al escribirlo:
 `curl -A 'Mozilla/5.0'` da **403** en cualquier página de proyecto (sin `-A`,
 200: no es que el proyecto no esté público), y `frs` sólo admite claves
 registradas en la cuenta (`Permission denied (publickey)` con cualquier otra).
+
+## La base conservada: el respaldo de la ISO oficial (2026-08-30, `MEDICIONES.md` §4.83)
+
+**`traer-iso-oficial.sh` cae a un RESPALDO por huella y con la firma de
+Canonical** cuando el servidor ha retirado la ISO (`[RETIRADO]`) o no contesta
+(`[NO CONTESTA]`). El respaldo es la **cuarta columna** de `ISOS_OFICIALES` en
+`fabricar-iso.sh`: `arm64` → nuestra copia en SourceForge (`base/arm64/`, la
+ISO junto al `SHA256SUMS` y al `SHA256SUMS.gpg` de Canonical de aquel día,
+versionados también en `imagen/base-firmada/`), `amd64` → `old-releases.ubuntu.com`,
+que conserva los *point releases* de `amd64` con su propio `SHA256SUMS`
+firmado. El respaldo pasa por **los mismos pasos** que el servidor (la función
+`sumas_de`): firma con su control negativo, huella dentro del fichero firmado,
+ISO cotejada al llegar; la palabra es `[RESPALDO]`. `--respaldo <URL>` lo
+cambia y `--sin-respaldo` lo quita (los controles). La regla no cambia: **no
+se coge una versión nueva**; cuando salga `24.04.5`, hacer `0.2.2` sobre ella
+es una decisión y una vuelta entera.
+
+**`subir-sourceforge.sh --base <arq>`**: sube la ISO oficial con los dos
+ficheros firmados a `base/<arq>/`, cotejándola **antes** contra la línea del
+`SHA256SUMS` firmado y contra la huella que exige `fabricar-iso.sh`; sin
+`--de-verdad`, ensayo. Una trampa vista al medirlo: **`gpgv` en la VM contesta
+en español** («Firma correcta», no «Good signature»), trampa 2; se mira su
+código de salida.

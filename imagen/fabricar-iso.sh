@@ -196,10 +196,19 @@ INFO_CRUDO=""
 # firma (Ubuntu CD Image Automatic Signing Key (2012), comprobada con su control
 # negativo en §4.64), asi que lo que cambia es la direccion y no la confianza.
 #
-#   arq    huella de la ISO oficial 24.04.4 de escritorio    donde vive
+# Y UNA CUARTA COLUMNA DESDE EL 2026-08-30 (MEDICIONES.md §4.83, trampa 69): EL
+# RESPALDO, de donde traer-iso-oficial.sh coge la ISO POR HUELLA Y CON LA FIRMA
+# DE CANONICAL el dia que el servidor de arriba la haya retirado. Canonical
+# retira cada point release de cdimage/releases cuando sale el siguiente;
+# old-releases.ubuntu.com conserva los de amd64 (con su SHA256SUMS firmado) y
+# NINGUNO de escritorio arm64, asi que la de arm64 la conservamos nosotros en
+# SourceForge, junto al SHA256SUMS y al SHA256SUMS.gpg de Canonical de aquel
+# dia (imagen/base-firmada/): la comprobacion sigue siendo contra SU firma.
+#
+#   arq    huella de la ISO oficial 24.04.4 de escritorio    donde vive    respaldo
 ISOS_OFICIALES="\
-arm64 c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe https://cdimage.ubuntu.com/ubuntu/releases/24.04/release
-amd64 3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e https://releases.ubuntu.com/24.04"
+arm64 c2610520bf582976839a1724c669e1cfed0547427be5a0ad12d457b92b46ffbe https://cdimage.ubuntu.com/ubuntu/releases/24.04/release https://downloads.sourceforge.net/project/encina-os/base/arm64
+amd64 3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e https://releases.ubuntu.com/24.04 https://old-releases.ubuntu.com/releases/24.04"
 # EL TITULO DEL MENU DE ARRANQUE. Lo oficial es 'Try or Install Ubuntu', y es
 # pila A de D22: presenta el producto ante el usuario, en la primera pantalla.
 MENU_ENCINA="Probar o instalar Encina OS"
