@@ -135,7 +135,10 @@ torrent:
 # DE_VERDAD=1 es un ENSAYO EN SECO que ejecuta lo ejecutable sin cambiar el
 # producto; la cadena real (--de-verdad) la estrena la casilla C4, y sus dos
 # actos irreversibles (subida y etiqueta) son de quien la escribe.
+# OJO: la variable de que paquetes cambian se llama CAMBIAN y no PAQUETES,
+# porque PAQUETES ya existe en mk/paquetes.mk (los tres de siempre) y el primer
+# ensayo la arrastro sin que nadie la pidiera.
 release:
 	./imagen/sacar-version.sh --version $(NUEVA) --constructor $(CONSTRUCTOR) \
-	    $(if $(PAQUETES),--paquetes "$(PAQUETES)",) $(if $(CAMBIO),--cambio "$(CAMBIO)",) \
+	    $(if $(CAMBIAN),--paquetes "$(CAMBIAN)",) $(if $(CAMBIO),--cambio "$(CAMBIO)",) \
 	    $(if $(DE_VERDAD),--de-verdad,)
