@@ -218,7 +218,9 @@ sabe que hay un salto de base debajo.
       **no** («pkg firefox is not in an allowed origin»)—; el resultado
       convertido en **C-bis, que pasa al primer puesto del bloque C**, y el
       README enmendado. El `[OJOS]` de `update-manager` va en
-      [ojos.md](ojos.md), con la VM apagada y preparada para él. La casilla
+      [ojos.md](ojos.md), **y quedó COBRADO POR JORGE esa misma mañana**
+      (§4.84, enmienda): «Actualización de software» enseña la de Firefox en
+      español, bajo «Otras actualizaciones» y no bajo «seguridad». La casilla
       original, tal como se escribió: **B1. Qué hace `unattended-upgrades` en una Encina OS instalada, con
       Firefox y con los cuatro `.deb`.** Contrasta la deducción 2. En la máquina
       recién instalada: `systemctl list-timers apt-daily*`,
