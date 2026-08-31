@@ -3406,3 +3406,54 @@ ficheros firmados a `base/<arq>/`, cotejándola **antes** contra la línea del
 `--de-verdad`, ensayo. Una trampa vista al medirlo: **`gpgv` en la VM contesta
 en español** («Firma correcta», no «Good signature»), trampa 2; se mira su
 código de salida.
+
+## La receta de «sacar una versión», entera y en una orden (A3, 2026-08-31, `MEDICIONES.md` §4.86)
+
+**`make release NUEVA=X.Y.Z [CAMBIAN="p1 p2"] [CAMBIO="texto"] [DE_VERDAD=1]`**
+(`imagen/sacar-version.sh`). Hasta hoy «sacar una versión» estaba repartido
+entre `mk/*.mk`, `subir-sourceforge.sh`, `make publicar` y la regla de
+`ENCINA-OS.md` §7, y el ritual de los seis sitios (§4.48f) era trabajo a mano.
+La receta encadena las nueve fases, **cronometradas** (la obligación de D5:
+saber cuánto tarda responder a un fallo de seguridad con un medio nuevo):
+
+```
+0 comprobaciones   árbol limpio; versión > vigente (del manifiesto); constructor con dch;
+                   clave de SourceForge; gh autenticado; la etiqueta vieja SÍ y la nueva NO
+1 dch              en la VM constructora, nunca a mano (los changelogs viajan y vuelven)
+2 seis sitios      imagen/actualizar-seis-sitios.sh (abajo) — y en de-verdad, antes,
+                   los tres .deb desde 'git archive HEAD' en el constructor (§4.37)
+3-5 el medio       make dos-veces (las dos arqs), make medios/SHA256SUMS, make cosecha (las dos)
+6 publicar         make publicar (carpeta nueva, notas sin huellas a mano)
+7 subida           subir-sourceforge.sh          } los dos actos irreversibles:
+8 etiqueta         gh release create v<X.Y.Z>    } de quien escribe DE_VERDAD=1
+9 README           las huellas de las dos ISOs, sustituidas desde SHA256SUMS y releídas
+```
+
+**Sin `DE_VERDAD=1` es un ENSAYO EN SECO que ejecuta lo ejecutable** sin tocar
+el producto: el `dch` de prueba en un directorio tirado de la VM, el ritual dos
+veces en un *worktree* desechable (idempotente sobre lo vigente + su control),
+`make -n` para lo que construye, `preparar-publicacion.sh` a un directorio
+tirado (su `SHA256SUMS` tiene que reproducir byte a byte el publicado), el
+`rsync --dry-run` de la subida contra la carpeta publicada, y las
+comprobaciones de etiqueta y README. **Ensayado entero el 2026-08-31 sobre
+árbol limpio: 20/0 en ~2 min 20 s** (§4.86c, la salida en
+`design/capturas/despues/a3-receta/`). **`--de-verdad` no se ha estrenado
+nunca: lo estrena C4**, que es donde se mide el punta-a-punta real.
+
+**`imagen/actualizar-seis-sitios.sh --repo <dir> [--constructor u@host]`** — el
+ritual de §4.48f, ejecutable. Lee **los bytes** de `--repo` (el futuro
+`/encina-repo`) y de ahí reescribe las filas PROPIO de los **dos** manifiestos
+(releídas, y arbitradas por `comprobar-propios.sh`), las `H_*` y los nombres de
+`encina-seed.sh`, regenera `Packages` en el constructor si dejó de describir
+los bytes (el patrón de cotejo a dos lados de `construir-todo.sh`), y regenera
+los dos `autoinstall*.yaml` con `fabricar-seed.sh --actualizar-yaml`. Los otros
+dos sitios históricos (los arrays de `fabricar-seed.sh` y `fabricar-iso.sh`) se
+actualizan solos desde la tarea 14: leen el manifiesto. **Es idempotente sobre
+lo vigente (ni un byte, 11/0) y su control mueve exactamente los cinco ficheros
+que llevan la huella cambiada** (§4.86b). Ni `dch` ni commit: la versión la
+decide una persona.
+
+Y dos trampas de la sesión que lo parió (§4.86d): **la variable de `make
+release` es `CAMBIAN` y no `PAQUETES`** —`PAQUETES` ya era de `mk/paquetes.mk`
+y se colaba sola en el `--paquetes`—, y el banco de shellcheck **exige el
+motivo al lado de cada `disable`**, también en los guiones nuevos.

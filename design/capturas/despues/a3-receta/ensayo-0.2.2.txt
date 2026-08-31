@@ -1,0 +1,63 @@
+./imagen/sacar-version.sh --version 0.2.2 --constructor jorge@192.168.64.3 \
+	      \
+	    
+== sacar-version 0.2.2 -- ENSAYO EN SECO
+
+=== 0. lo que se comprueba antes de empezar ===
+  [OK]    el arbol esta limpio (8943a86)
+  [OK]    version: 0.2.1 (vigente, del manifiesto) -> 0.2.2 (pedida)
+  [OK]    el constructor contesta y tiene dch: Ubuntu 24.04.4 LTS  arm64
+  [OK]    la clave de SourceForge esta
+  [OK]    gh esta y autenticado
+  [OK]    control: la release v0.2.1 existe (el instrumento ve etiquetas)
+  [OK]    v0.2.2 no existe todavia: la carpeta y la etiqueta seran nuevas
+  [OK]    las dos bases oficiales y las dos cosechas estan en medios/
+
+=== 1. dch en la VM constructora (nunca a mano) ===
+  [OK]    [ENSAYO] dch -v 0.2.2 probado en un directorio tirado de la VM; el arbol no se toca
+
+=== 2. los .deb nuevos y el ritual de los seis sitios ===
+  [OK]    [ENSAYO] ritual sobre lo vigente: idempotente, ni un byte (11 comprobaciones dentro)
+  [OK]    control: un .deb de bytes cambiados mueve exactamente 5 ficheros (2 manifiestos, encina-seed.sh, 2 YAML)
+
+=== 3-5. el medio dos veces, las sumas y la cosecha, por arquitectura ===
+  [OK]    [ENSAYO] make dos-veces ARQ=arm64 resuelve (make -n, sin ejecutar)
+  [OK]    [ENSAYO] make dos-veces ARQ=amd64 resuelve (make -n, sin ejecutar)
+  [OK]    [ENSAYO] make medios/SHA256SUMS resuelve (make -n, sin ejecutar)
+  [OK]    [ENSAYO] make cosecha ARQ=arm64 resuelve (make -n, sin ejecutar)
+  [OK]    [ENSAYO] make cosecha ARQ=amd64 resuelve (make -n, sin ejecutar)
+         duracion real: no se ejecuta en seco; el punta-a-punta lo mide C4.
+         Referencias medidas: la reproduccion desde cosecha publicada, minutos
+         por arquitectura (§4.82); la subida de 10,9 GB, ~20 min (§4.82j).
+
+=== 6. make publicar: la carpeta nueva, sin una huella escrita a mano ===
+  [OK]    [ENSAYO] preparar-publicacion.sh reproduce byte a byte el SHA256SUMS publicado de 0.2.1
+
+=== 7. la subida a SourceForge ===
+  [OK]    [ENSAYO] subir-sourceforge.sh en seco contra la carpeta publicada de 0.2.1 (su propio --dry-run)
+
+=== 8. la etiqueta ===
+   [ENSAYO] la orden real (v0.2.2 no existe: comprobado en la fase 0):
+     cd medios/publicar/0.2.2 && gh release create v0.2.2 \
+        --title 'Encina OS 0.2.2' --notes-file NOTAS.md \
+        SHA256SUMS *.torrent encina-repo-arm64.tar encina-repo-amd64.tar
+  [OK]    [ENSAYO] etiqueta: la pareja de controles ya paso en la fase 0 (v0.2.1 si, v0.2.2 no)
+
+=== 9. el README: las huellas de la tabla, desde SHA256SUMS ===
+  [OK]    [ENSAYO] el README lleva las huellas de las dos ISOs publicadas de 0.2.1: la sustitucion tiene ancla
+
+=== el cronometro, fase a fase (la obligacion de D5) ===
+   0 comprobaciones previas                           2 s
+   1 dch en la VM                                     1 s
+   2 seis sitios (+ .deb en de-verdad)               28 s
+   3-5 medios, sumas y cosechas                       0 s
+   6 make publicar                                   72 s
+   7 subida                                          33 s
+   8 etiqueta                                         0 s
+   9 README                                           0 s
+   (tiempos del ENSAYO; el punta-a-punta real es de C4, que estrena --de-verdad)
+
+=== RESUMEN ===
+  correctas: 20   fallos: 0   avisos: 0   omitidas: 0
+
+Todas las comprobaciones automáticas pasan.

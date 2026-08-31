@@ -246,7 +246,7 @@ if [ "$DE_VERDAD" = 1 ]; then
 else
     for objetivo in "dos-veces ARQ=arm64" "dos-veces ARQ=amd64" "medios/SHA256SUMS" \
                     "cosecha ARQ=arm64" "cosecha ARQ=amd64"; do
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086  # «objetivo» es «dos-veces ARQ=arm64»: la palabra y su variable, y se quiere que se partan
         make -n $objetivo >"$TMP/make-n.log" 2>&1 || morir "make -n $objetivo no resuelve:
 $(tail -5 "$TMP/make-n.log")"
         ok "[ENSAYO] make $objetivo resuelve (make -n, sin ejecutar)"

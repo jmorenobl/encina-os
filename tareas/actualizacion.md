@@ -163,7 +163,22 @@ sabe que hay un salto de base debajo.
       huellas, no de un aviso fechado.*
       *Hecha cuando:* el README lo dice en una sección propia, y esa sección
       cita este fichero y las casillas B1 y B3 como lo que la sostiene.
-- [ ] **A3. La receta de «sacar `0.2.2`», escrita y ejecutable antes de
+- [x] **HECHA EL 2026-08-31, noche (`MEDICIONES.md` §4.86), con su «hecha
+      cuando» ejecutado:** la receta es **una orden**, `make release
+      NUEVA=X.Y.Z` (`imagen/sacar-version.sh`, nueve fases cronometradas), y
+      la última pieza «a mano» —el ritual de los seis sitios, §4.48f— es
+      desde hoy `imagen/actualizar-seis-sitios.sh`, idempotente sobre lo
+      vigente (ni un byte) y con su control (un `.deb` de bytes cambiados
+      mueve exactamente los cinco ficheros que llevan su huella). **Ensayada
+      en seco entera sobre un árbol limpio: 20/0 en ~2 min 20 s**, con las
+      horas de cada fase apuntadas en §4.86c y la salida en
+      `design/capturas/despues/a3-receta/`. La obligación de D5 queda a
+      medias a sabiendas: el ensayo tiene sus tiempos y las fases reales ya
+      medidas llevan su fuente (la subida ~20 min, §4.82j); **el
+      punta-a-punta real lo mide C4, que es quien estrena `DE_VERDAD=1`** —
+      el modo real existe, no se ha ejecutado nunca, y sus dos actos
+      irreversibles (subida y etiqueta) son de quien lo escribe. La casilla
+      original: **A3. La receta de «sacar `0.2.2`», escrita y ejecutable antes de
       necesitarla.** Hoy está repartida entre `mk/*.mk`, `subir-sourceforge.sh`,
       `make publicar` y la regla de §7. Un solo apartado en `SCRIPTS.md` —o un
       `make release`— que encadene: `dch` en la VM, los tres `.deb` por huella,
@@ -387,8 +402,10 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       aterrizarlo en `main` toca `repo-manifiesto.tsv` y eso es comprometerse
       al medio `0.2.2` (meta nueva, cosecha nueva, carpeta y etiqueta nuevas
       — §4.85f lo desglosa); y a las máquinas `0.2.1` ya instaladas el
-      fichero solo les llega a mano o reinstalando, y dónde se escribe esa
-      orden (README o notas de la release) se decide con C1. La casilla
+      fichero solo les llega a mano o reinstalando. *Enmienda de la misma
+      noche: la orden a mano YA ESTÁ ESCRITA en las notas de la release
+      `v0.2.1`, por decisión de Jorge y editadas por el agente a su orden,
+      verificadas releyendo (§4.85, enmienda final).* La casilla
       original: **C-bis. B1 CONFIRMÓ la deducción 2 el 2026-08-31 (§4.84d): los parches
       de Firefox NO llegan solos, y esta casilla PASA AL PRIMER PUESTO del
       bloque** — afecta a las máquinas `0.2.1` ya publicadas y, al revés que
