@@ -66,6 +66,12 @@ done
 . "$RAIZ/lib/salida.sh"
 cd "$RAIZ" || morir "no pude entrar en $RAIZ"
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
+
+# LA SERIE DE LA BASE, escrita como literal A PROPOSITO (D24): el titulo de
+# toda release la lleva («Encina OS <version> (Ubuntu <serie>)»), y
+# bancos/versiones.sh coteja este literal contra la ISO oficial anclada del
+# Makefile, con su control rojo — si la base cambia y esto no, el banco avisa.
+SERIE_BASE="24.04"
 R() { ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o LogLevel=ERROR "$CONSTRUCTOR" "$@"; }
 
 # el cronometro: una fila por fase, y la tabla al final (la obligacion de D5)
@@ -309,7 +315,7 @@ fase_abre
 if [ "$DE_VERDAD" = 1 ]; then
     git push origin main || morir "git push fallo (la etiqueta necesita el commit publicado)"
     ( cd "medios/publicar/$VERSION" && \
-      gh release create "v$VERSION" --title "Encina OS $VERSION" --notes-file NOTAS.md \
+      gh release create "v$VERSION" --title "Encina OS $VERSION (Ubuntu $SERIE_BASE)" --notes-file NOTAS.md \
           SHA256SUMS ./*.torrent encina-repo-arm64.tar encina-repo-amd64.tar ) \
         || morir "gh release create fallo"
     gh release view "v$VERSION" >/dev/null 2>&1 || morir "la release v$VERSION no aparece tras crearla"
@@ -317,7 +323,7 @@ if [ "$DE_VERDAD" = 1 ]; then
 else
     echo "   [ENSAYO] la orden real (v$VERSION no existe: comprobado en la fase 0):"
     echo "     cd medios/publicar/$VERSION && gh release create v$VERSION \\"
-    echo "        --title 'Encina OS $VERSION' --notes-file NOTAS.md \\"
+    echo "        --title 'Encina OS $VERSION (Ubuntu $SERIE_BASE)' --notes-file NOTAS.md \\"
     echo "        SHA256SUMS *.torrent encina-repo-arm64.tar encina-repo-amd64.tar"
     ok "[ENSAYO] etiqueta: la pareja de controles ya paso en la fase 0 (v$VIGENTE si, v$VERSION no)"
 fi

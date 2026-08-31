@@ -90,6 +90,13 @@ tacharlo con fecha si resulta falso.
 
 ## La delimitación que se propone, y es decisión de Jorge
 
+*Enmienda del 2026-08-31 (noche): DECIDIDA — es **D24** en `ENCINA-OS.md` §2
+(«Adelante con la recomendación»). La regla de abajo queda con dos ajustes que
+D24 fija: NO existe la «edición» (toda refabricación sube `encina-meta`, la
+regla de §7 confirmada tal cual) y la serie de la base va en el título de
+**toda** release, no solo al saltar de mayor. El texto original se conserva
+como estaba.*
+
 Un solo número —`0.2.1`— lleva hoy **tres relojes** que se mueven por manos
 distintas:
 
@@ -127,7 +134,19 @@ sabe que hay un salto de base debajo.
 
 ## Bloque A — Delimitar: una decisión y dos textos (sin VM)
 
-- [ ] **A1. Decidir la regla de los tres relojes y escribirla como decisión en
+- [x] **HECHA EL 2026-08-31, noche — es D24, y su «hecha cuando» está entero**
+      (`MEDICIONES.md` §4.87): decisión de Jorge («Adelante con la
+      recomendación») con número y fecha; las dos preguntas contestadas —la
+      serie va en el título de **toda** release («Encina OS <versión>
+      (Ubuntu <serie>)») y la «edición» NO existe: toda refabricación sube
+      `encina-meta`—; la regla de §7 del 2026-08-29 queda **CONFIRMADA con la
+      enmienda al lado** (en D24 y aquí); y `bancos/versiones.sh` vigila la
+      serie con la comprobación (C) **y su control rojo** — el cotejo es
+      entre el literal `SERIE_BASE` de `sacar-version.sh` (lo que el título
+      dirá) y la ISO oficial anclada del `Makefile` (lo que la base es), que
+      es donde una serie mal escrita hace daño de verdad; el «.md de mentira»
+      de la casilla se sustituyó por ese sabotaje ejecutable, y el porqué
+      está en D24. La casilla original: **A1. Decidir la regla de los tres relojes y escribirla como decisión en
       `ENCINA-OS.md` §2.** Con las dos preguntas abiertas contestadas: ¿la serie
       de la base va en el nombre del producto?, y ¿existe la «edición» o toda
       refabricación sube `encina-meta`? Es de Jorge; las opciones y su precio
@@ -327,7 +346,15 @@ los cuatro: `encina-firefox-native` es «la fuente de Mozilla y su anclaje» y
 responsabilidad nueva y R-«un paquete, una responsabilidad» pide que tenga
 nombre propio (`encina-keyring`, como `ubuntu-keyring`).
 
-- [ ] **C1. Decidir (a), (b) o (c), y escribirlo en `ENCINA-OS.md` §2.** Si es
+- [x] **HECHA EL 2026-08-31, noche — es D25 = la opción (b), y su «hecha
+      cuando» está entero:** decisión de Jorge («Adelante con la
+      recomendación»); la fila de D5 lleva la enmienda fechada — desde que el
+      canal exista (C4), un fallo en un paquete se responde publicando el
+      `.deb` en el repositorio firmado, sin reinstalar; hasta entonces, medio
+      nuevo con la receta de A3. Y una regla de orden que D25 fija: **el
+      repositorio se publica —aunque vacío— ANTES de que ninguna máquina
+      lleve `encina-keyring`** (el patrón de B2: una fuente sin servidor es
+      rc 100 en cada `apt update`). La casilla original: **C1. Decidir (a), (b) o (c), y escribirlo en `ENCINA-OS.md` §2.** Si es
       (a), el bloque C se cierra aquí con esa decisión y A2 es su texto. Si es
       (b) o (c), lo de abajo.
       *Hecha cuando:* tiene número `D`, y la fila de D5 lleva una enmienda

@@ -114,6 +114,12 @@ citas() {
     done
 }
 
+# la serie de la base (D24): la que manda es la de la ISO oficial anclada en el
+# Makefile (ubuntu-<serie>.<point>-desktop); el titulo de toda release la lleva
+# como literal SERIE_BASE en imagen/sacar-version.sh, y aqui se cotejan.
+serie_makefile() { sed -n 's/.*ubuntu-\([0-9][0-9]*\.[0-9][0-9]*\)\.[0-9][0-9]*-desktop.*/\1/p' "$1" | head -1; }
+serie_receta()   { sed -n 's/^SERIE_BASE="\([0-9.]*\)"$/\1/p' "$1" | head -1; }
+
 RC=0
 if [ "$HACER_CONTROL" = 1 ]; then
     titulo "EL CONTROL, antes de medir: una version cambiada en un .md, y una en el manifiesto"
@@ -136,6 +142,15 @@ if [ "$HACER_CONTROL" = 1 ]; then
         ok "rojo (2/2): el manifiesto saboteado («$VM») no cuadra con debian/changelog («$VC») y el comparador lo ve"
     else
         fallo "CONTROL ROTO: el manifiesto saboteado pasa contra el changelog ($VM / $VC)"; RC=1
+    fi
+    # la serie de la base (D24): el cotejo tiene que saber decir que no
+    sed 's/^SERIE_BASE=".*"$/SERIE_BASE="99.99"/' "$RAIZ/imagen/sacar-version.sh" > "$C/receta-sab.sh"
+    cmp -s "$RAIZ/imagen/sacar-version.sh" "$C/receta-sab.sh" && { fallo "CONTROL ROTO: el sabotaje de SERIE_BASE no saboteo" ""; RC=1; }
+    SM=$(serie_makefile "$RAIZ/Makefile"); SS=$(serie_receta "$C/receta-sab.sh")
+    if [ -n "$SM" ] && [ -n "$SS" ] && [ "$SM" != "$SS" ]; then
+        ok "rojo (3/3): con SERIE_BASE saboteada («$SS») el cotejo contra el Makefile («$SM») la ve distinta"
+    else
+        fallo "CONTROL ROTO: la serie saboteada no se distingue (Makefile «$SM», sabotaje «$SS»)"; RC=1
     fi
     if [ "$RC" -ne 0 ]; then echo; echo "EL CONTROL NO PASA. No se mide nada."; exit 1; fi
 fi
@@ -169,6 +184,20 @@ if [ "$HACER_MEDICION" = 1 ]; then
         RC=1
     fi
     omitido "los REGISTROS (mediciones/, DIARIO.md, SCRIPTS.md, tareas/cerradas/) no se miran: conservan las versiones de su dia a proposito"
+
+    titulo "(C) la serie de la base: el Makefile contra el titulo de la release (D24)"
+    SM=$(serie_makefile "$RAIZ/Makefile"); SS=$(serie_receta "$RAIZ/imagen/sacar-version.sh")
+    if [ -z "$SM" ]; then fallo "no leo la serie de la ISO oficial en el Makefile"; RC=1
+    elif [ -z "$SS" ]; then fallo "no leo SERIE_BASE en imagen/sacar-version.sh"; RC=1
+    elif [ "$SM" = "$SS" ]; then
+        ok "la serie de la base es una sola: Makefile «$SM» == SERIE_BASE «$SS» (el titulo de la release la lleva, D24)"
+    else
+        fallo "la base anclada y el titulo de la release NO dicen la misma serie" \
+"Makefile (ISO oficial): $SM
+imagen/sacar-version.sh (SERIE_BASE): $SS
+D24: si la base cambia de serie, SERIE_BASE se cambia con ella, a mano y a sabiendas."
+        RC=1
+    fi
 fi
 
 echo
