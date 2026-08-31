@@ -404,6 +404,30 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-09-01 (madrugada): **EL CANAL ESTÁ FABRICADO Y MEDIDO EN LOCAL; PUBLICARLO ES DE JORGE** — `make repo` firma el repositorio con los `.deb` de `0.2.1` por huella, y en un banco nuevo el mecanismo entero funciona (`MEDICIONES.md` §4.88)
+>
+> **C3, hasta donde se puede sin publicar.** `make repo`
+> (`imagen/fabricar-repo.sh`, nuevo) deja `medios/repo` firmado en el
+> constructor —los cuatro `.deb` de `0.2.1` POR HUELLA, arbitrados por
+> `comprobar-propios.sh`; la firma verificada con la clave pública DEL
+> PAQUETE y su control— con el cotejo a los dos lados (15/0); el ensayo de
+> `subir-sourceforge.sh --repo` a `repo/` está pasado y verificado que no
+> toca nada. Y en el banco nuevo `encina-c3-canal` (verificador 64/0, tres
+> veces): `encina-keyring` puesto reproduce hoy el error de §4.87d, y con un
+> repo de LABORATORIO firmado con la misma clave (un `encina-branding`
+> reempaquetado a `0.1.17+c3lab1`, patrón P2) servido por HTTP local,
+> **`apt update && full-upgrade` trae la más alta con el anclaje de Mozilla
+> a 1000 en la misma foto** y el control de la fuente cortada sin candidato;
+> deshecho verificado y la VM apagada como testigo. Trampa 70 nueva (el QEMU
+> de UTM sólo abre lo que el bundle le declara). **Lo que queda de C3 exige
+> el repo VIVO** —el `302` de SourceForge seguido por `apt`, el origen por la
+> fuente de verdad— y por eso la casilla queda con su estado escrito, sin
+> marcar. **De Jorge:** ordenar la publicación —
+> `./imagen/subir-sourceforge.sh --repo medios/repo --de-verdad` — que va
+> ANTES que cualquier máquina con la clave (la regla de orden de D25); con el
+> canal vivo, C4 fusiona `cbis-52encina-firefox` y estrena
+> `make release NUEVA=0.2.2 … DE_VERDAD=1`.
+>
 > ### AL DÍA, 2026-08-31 (noche): **EL CAMINO AL 0.2.2 ESTÁ DECIDIDO Y CASI ARMADO** — D24 y D25 inscritas, la receta de sacar una versión es una orden ensayada, y el quinto paquete existe y está medido (`MEDICIONES.md` §4.85-§4.87)
 >
 > **Jorge aprobó la recomendación entera** (*«Adelante con la recomendación.

@@ -4,7 +4,7 @@
 # la VM constructora ($(CONSTRUCTOR)) para los pasos que macOS no puede dar.
 # Aqui solo se le ponen nombre y se le exige su definicion de terminado.
 
-.PHONY: iso dos-veces qemu verificador sumas cosecha trozos publicar release
+.PHONY: iso dos-veces qemu verificador sumas cosecha trozos publicar release repo
 
 # DESDE LA COSECHA PUBLICADA (2026-08-29, MEDICIONES.md §4.82): con
 # COSECHA=<dir|tar|URL> los 25 .deb de ARCHIVO salen de ahi por huella y no
@@ -129,6 +129,16 @@ SOURCEFORGE ?= https://downloads.sourceforge.net/project/encina-os/$(VERSION)
 torrent:
 	python3 imagen/hacer-torrent.py --fichero $(ISO_SALIDA) --salida $(ISO_SALIDA).torrent \
 	    --web-seed $(SOURCEFORGE)/$(notdir $(ISO_SALIDA))
+
+# EL CANAL DE D25 (casilla C3, MEDICIONES.md §4.88): el repositorio apt firmado
+# a partir de los .deb POR HUELLA del manifiesto (comprobar-propios.sh arbitra).
+# Los indices y la firma se hacen EN EL CONSTRUCTOR: apt-ftparchive y la clave
+# del proyecto viven alli y la clave no viaja (§4.87b). El arbol queda en
+# medios/repo. NO SUBE NADA: la subida es
+# ./imagen/subir-sourceforge.sh --repo medios/repo [--de-verdad], y --de-verdad
+# es de Jorge -- el repo se publica ANTES que la clave (la regla de orden de D25).
+repo:
+	./imagen/fabricar-repo.sh --constructor $(CONSTRUCTOR)
 
 # LA RECETA DE «SACAR UNA VERSION» ENTERA (A3 de tareas/actualizacion.md,
 # 2026-08-31): imagen/sacar-version.sh, fase a fase y cronometrada. Sin

@@ -13,6 +13,8 @@
 #     make verificador  medios/verificar-instalacion.sh EMPAQUETADO, el que viaja solo
 #     make release NUEVA=X.Y.Z   la receta de sacar una version, ENSAYO en seco (A3);
 #                       con DE_VERDAD=1 la cadena real, que estrena C4 (sacar-version.sh)
+#     make repo         el repositorio apt FIRMADO del canal (D25/C3) en medios/repo,
+#                       desde los .deb por huella; la subida es subir-sourceforge.sh --repo
 #
 # La configuracion va partida por asunto en mk/*.mk, que es la forma de
 # pop-os/iso (organizacion-comparada.md, fila A4/D4): este fichero solo dice
@@ -39,6 +41,6 @@ include mk/medio.mk
 
 .PHONY: ayuda
 ayuda:
-	@sed -n '4,15p' Makefile
+	@sed -n '4,17p' Makefile
 	@echo
 	@echo "  ARQ=$(ARQ)  CONSTRUCTOR=$(CONSTRUCTOR)  AUTOFIRMA=$(AUTOFIRMA)"

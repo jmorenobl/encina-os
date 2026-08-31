@@ -3457,3 +3457,54 @@ Y dos trampas de la sesión que lo parió (§4.86d): **la variable de `make
 release` es `CAMBIAN` y no `PAQUETES`** —`PAQUETES` ya era de `mk/paquetes.mk`
 y se colaba sola en el `--paquetes`—, y el banco de shellcheck **exige el
 motivo al lado de cada `disable`**, también en los guiones nuevos.
+
+## El canal de D25: `make repo` y la subida a `repo/` (C3, 2026-09-01, `MEDICIONES.md` §4.88)
+
+**`make repo`** (`imagen/fabricar-repo.sh --constructor u@host [--salida
+medios/repo] [--debs medios/cosecha-arm64] [--laboratorio <sufijo>]`) fabrica
+el repositorio `apt` estático firmado que D25 decidió: `pool/main/` con los
+`.deb` PROPIO **por huella** (los de la cosecha publicada; `comprobar-propios.sh`
+arbitra contra los DOS manifiestos antes de mover un byte) y `dists/encina/`
+con `Packages` para `arm64` y `amd64` (los cuatro son `_all`), `Release`
+(`Origin: Encina OS`, `Suite: encina`, `Codename: encina`) e `InRelease` +
+`Release.gpg` firmados. **La firma ocurre en el constructor** (`apt-ftparchive`
+y el `GNUPGHOME` dedicado viven allí, §4.87b: la clave privada no viaja), se
+verifica allí mismo **con la clave pública del paquete** `encina-keyring` (la
+que llevará cada máquina) y con su control (un keyring vacío la rechaza), y el
+árbol vuelve al Mac donde **todo se coteja otra vez** (trampa 24): cada `.deb`
+contra el manifiesto, cada línea `SHA256` del `Release` contra los índices,
+cada `Filename` del `Packages` contra el pool — con el control del cotejo (un
+`Packages` saboteado da rojo). El `Release` lleva `Date:` y **no es
+reproducible byte a byte**; lo que C3 exige es que los `.deb` sí lo sean.
+
+**`--laboratorio <sufijo>`** fabrica en `medios/repo-laboratorio` el actor de
+la medición: un solo `encina-branding` reempaquetado con `dpkg-deb` a
+`<versión>+<sufijo>` (el patrón P2 de §4.84e: sólo cambia `Version:`), firmado
+con la misma clave. Se sirve por HTTP local para medir el canal **antes** de
+publicarlo, y no se publica jamás.
+
+**`./imagen/subir-sourceforge.sh --repo medios/repo [--de-verdad]`** sube el
+árbol a `repo/` del proyecto **sin tocar `0.2.1/` ni `base/`**; vuelve a
+cotejar cada `.deb` del pool contra el manifiesto (al canal sólo van bytes
+publicados), y en la subida real manda `pool/` **antes** que `dists/`: quien
+haga `apt update` a mitad de subida no puede ver índices que apunten a `.deb`
+que aún no están. Sin `--de-verdad` es el ensayo de siempre, y el `--dry-run`
+de `rsync` **no crea nada** en el remoto (verificado con `--list-only` después,
+§4.88). El acto irreversible es de Jorge, y **el repo se publica antes que la
+clave** (la regla de orden de D25).
+
+**Dos mordidas del mismo día (§4.88):** el `> dists/encina/Release` directo
+crea el fichero **antes** de que `apt-ftparchive release` escanee el árbol y el
+`Release` acaba listándose a sí mismo con una huella imposible — se genera
+fuera y se mueve dentro. Y la 70, del banco:
+
+**70. `qemu-aarch64-softmmu: failed to load ".../Data/Image"` CON EL FICHERO
+PERFECTO.** El `Image` descomprimido (magia `ARMd` en 0x38 correcta, gzip
+íntegro, permisos 644) no carga si sólo va nombrado en `-kernel` de
+`AdditionalArguments`: **el QEMU de UTM está sandboxeado y sólo puede abrir los
+ficheros que el bundle le declara**. La receta de §4.84a decía «e `initrd` como
+unidades CD» y no era un adorno: `Image` e `initrd` tienen que estar **además**
+como unidades (`ImageType CD`, `Interface None`, `ReadOnly`) en `config.plist`
+para que UTM les dé acceso; con las dos unidades añadidas el mismo `-kernel`
+carga a la primera. El control barato de que los argumentos llegaron sigue
+siendo leer la línea de QEMU del `debug.log` (`grep -o`, trampa 47).

@@ -1,0 +1,51 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+
+===== A. la fuente del laboratorio, como fichero REAL (verificada tras escribir)
+-rw-r--r-- 1 root root 0 Aug 31 22:55 /etc/apt/sources.list.d/c3-laboratorio.list
+
+===== B. apt update ENTERO: el canal oficial sigue muerto (rc 100 esperado, §4.87d) Y la fuente del laboratorio entra en la misma pasada
+rc_apt_update=100
+Ign:7 https://downloads.sourceforge.net/project/encina-os/repo encina InRelease
+Err:10 https://downloads.sourceforge.net/project/encina-os/repo encina Release
+E: The repository 'https://downloads.sourceforge.net/project/encina-os/repo encina Release' does not have a Release file.
+
+===== C. apt-cache policy: el candidato +c3lab1 con su origen, y Mozilla a 1000 en la misma foto
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17
+  Version table:
+ *** 0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+        100 /var/lib/dpkg/status
+firefox:
+  Installed: 154.0.1~build1
+  Candidate: 154.0.1~build1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+ *** 154.0.1~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+/var/lib/apt/lists/192.168.64.1:8330_dists_encina_InRelease:Origin: Encina OS
+
+===== D. full-upgrade: el canal trae la encina-branding mas alta
+rc_full_upgrade=0
+The following package was automatically installed and is no longer required:
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+branding_tras_upgrade=0.1.17
+
+===== E. tras el upgrade: policy otra vez (instalada +c3lab1, el anclaje sigue a 1000)
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17
+  Version table:
+ *** 0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+        100 /var/lib/dpkg/status
+firefox:
+  Installed: 154.0.1~build1
+  Candidate: 154.0.1~build1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+ *** 154.0.1~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages

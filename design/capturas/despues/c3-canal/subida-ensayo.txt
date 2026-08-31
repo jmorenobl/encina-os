@@ -1,0 +1,52 @@
+
+=== 0. el canal: cada .deb del pool es, POR HUELLA, el de una release publicada ===
+  [OK]    autofirma_1.9.1+encina4_all.deb  faeca3a9f0cf… = la del manifiesto
+  [OK]    encina-branding_0.1.17_all.deb  6929df0e69ac… = la del manifiesto
+  [OK]    encina-firefox-native_0.2.1_all.deb  640f508e3802… = la del manifiesto
+  [OK]    encina-meta_0.2.1_all.deb  204081f0ff3c… = la del manifiesto
+        destino  jmorenobl@frs.sourceforge.net:/home/frs/project/encina-os/repo/
+        canonica https://downloads.sourceforge.net/project/encina-os/repo/<fichero>
+
+=== 1. la via de subida contesta ===
+  [OK]    frs.sourceforge.net lista /home/frs/project/encina-os/ con la clave /Users/jorge/.ssh/sourceforge-encina
+
+=== 2. ENSAYO (--dry-run): lo que rsync haria ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Could not chdir to home directory /home/users/j/jm/jmorenobl: No such file or directory
+        Transfer starting: 18 files
+        created directory /home/frs/project/encina-os/repo
+        dists/
+        dists/encina/
+        dists/encina/InRelease
+        dists/encina/Release
+                      0   0%   00:00:00 (xfer#1, to-check=3/18)
+        dists/encina/Release.gpg
+                      0   0%   00:00:00 (xfer#2, to-check=4/18)
+        dists/encina/main/
+        dists/encina/main/binary-amd64/
+        dists/encina/main/binary-amd64/Packages
+                      0   0%   00:00:00 (xfer#3, to-check=7/18)
+        dists/encina/main/binary-amd64/Packages.gz
+                      0   0%   00:00:00 (xfer#4, to-check=8/18)
+        dists/encina/main/binary-arm64/
+        dists/encina/main/binary-arm64/Packages
+                      0   0%   00:00:00 (xfer#5, to-check=10/18)
+        dists/encina/main/binary-arm64/Packages.gz
+                      0   0%   00:00:00 (xfer#6, to-check=11/18)
+        pool/
+        pool/main/
+        pool/main/autofirma_1.9.1+encina4_all.deb
+                      0   0%   00:00:00 (xfer#7, to-check=14/18)
+        pool/main/encina-branding_0.1.17_all.deb
+                      0   0%   00:00:00 (xfer#8, to-check=15/18)
+        pool/main/encina-firefox-native_0.2.1_all.deb
+                      0   0%   00:00:00 (xfer#9, to-check=16/18)
+        pool/main/encina-meta_0.2.1_all.deb
+                      0   0%   00:00:00 (xfer#10, to-check=17/18)
+        
+        sent 1103 bytes  received 128 bytes  2089 bytes/sec
+        total size is 46580461  speedup is 37839.50
+
+NO SE HA SUBIDO NADA. Con --de-verdad se sube, y es el acto irreversible: esa orden la da Jorge.

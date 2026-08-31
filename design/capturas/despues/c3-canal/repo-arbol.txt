@@ -1,0 +1,65 @@
+== make repo: el arbol resultante (2026-09-01)
+medios/repo/dists/encina/InRelease
+medios/repo/dists/encina/Release
+medios/repo/dists/encina/Release.gpg
+medios/repo/dists/encina/main/binary-amd64/Packages
+medios/repo/dists/encina/main/binary-amd64/Packages.gz
+medios/repo/dists/encina/main/binary-arm64/Packages
+medios/repo/dists/encina/main/binary-arm64/Packages.gz
+medios/repo/pool/main/autofirma_1.9.1+encina4_all.deb
+medios/repo/pool/main/encina-branding_0.1.17_all.deb
+medios/repo/pool/main/encina-firefox-native_0.2.1_all.deb
+medios/repo/pool/main/encina-meta_0.2.1_all.deb
+
+== dists/encina/Release
+Architectures: arm64 amd64
+Codename: encina
+Components: main
+Date: Mon, 31 Aug 2026 22:39:32 +0000
+Label: Encina OS
+Origin: Encina OS
+Suite: encina
+MD5Sum:
+ 2b7c931e5b544f456f6d7a8b3a1ccb1e            12245 main/binary-amd64/Packages
+ 00588973554246b763e61b95ab98a465             5547 main/binary-amd64/Packages.gz
+ 2b7c931e5b544f456f6d7a8b3a1ccb1e            12245 main/binary-arm64/Packages
+ 00588973554246b763e61b95ab98a465             5547 main/binary-arm64/Packages.gz
+SHA1:
+ 1a90535ccdabd3aa94719cf25c707b7b798ef7b3            12245 main/binary-amd64/Packages
+ f2754a0d57aca108c902414de3dae7270e6519d9             5547 main/binary-amd64/Packages.gz
+ 1a90535ccdabd3aa94719cf25c707b7b798ef7b3            12245 main/binary-arm64/Packages
+ f2754a0d57aca108c902414de3dae7270e6519d9             5547 main/binary-arm64/Packages.gz
+SHA256:
+ 11f136f9de48e801948a1434074912297778f8ca7bda7e7a9c94c4b3cb896621            12245 main/binary-amd64/Packages
+ 697d1a33aa80e1a43545446f9ba216d49d77a704b9afffed5877ca478051e5db             5547 main/binary-amd64/Packages.gz
+ 11f136f9de48e801948a1434074912297778f8ca7bda7e7a9c94c4b3cb896621            12245 main/binary-arm64/Packages
+ 697d1a33aa80e1a43545446f9ba216d49d77a704b9afffed5877ca478051e5db             5547 main/binary-arm64/Packages.gz
+SHA512:
+ ca9a9803e6243da7cc60c0642a5b383caa9fc0555570e3354a9f501b236cadde8511043d0872e201dd9c9b1f51c3b37e319a86de71c99757354a1ff326596ca8            12245 main/binary-amd64/Packages
+ 8e80d2e39713a81547ba11add01b43cd2ca1e233f2d1fde150485f1c91a5b0e7b9c0566f656842debffcfb9f7ad18ea03a8cc8edc8ce97fa0add28a79b817146             5547 main/binary-amd64/Packages.gz
+ ca9a9803e6243da7cc60c0642a5b383caa9fc0555570e3354a9f501b236cadde8511043d0872e201dd9c9b1f51c3b37e319a86de71c99757354a1ff326596ca8            12245 main/binary-arm64/Packages
+ 8e80d2e39713a81547ba11add01b43cd2ca1e233f2d1fde150485f1c91a5b0e7b9c0566f656842debffcfb9f7ad18ea03a8cc8edc8ce97fa0add28a79b817146             5547 main/binary-arm64/Packages.gz
+
+== InRelease, cabecera y firma
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: arm64 amd64
+31:-----BEGIN PGP SIGNATURE-----
+
+== huellas del pool
+faeca3a9f0cf7a6e01a8d6ab28ae9fe6f56f6aa326287675701bd3962064cd6d  medios/repo/pool/main/autofirma_1.9.1+encina4_all.deb
+6929df0e69ac1c31c12a661a0ba35a038636983693fa3a00720afe742583ccd2  medios/repo/pool/main/encina-branding_0.1.17_all.deb
+640f508e3802a2513a5be33ecab192e637f5c09f659d6273966458fe1fcc9925  medios/repo/pool/main/encina-firefox-native_0.2.1_all.deb
+204081f0ff3c5dc33481bbe4e3febccf3d289615f174270ca9b0d067e085f9b6  medios/repo/pool/main/encina-meta_0.2.1_all.deb
+
+== repo-laboratorio
+medios/repo-laboratorio/dists/encina/InRelease
+medios/repo-laboratorio/dists/encina/Release
+medios/repo-laboratorio/dists/encina/Release.gpg
+medios/repo-laboratorio/dists/encina/main/binary-amd64/Packages
+medios/repo-laboratorio/dists/encina/main/binary-amd64/Packages.gz
+medios/repo-laboratorio/dists/encina/main/binary-arm64/Packages
+medios/repo-laboratorio/dists/encina/main/binary-arm64/Packages.gz
+medios/repo-laboratorio/pool/main/encina-branding_0.1.17+c3lab1_all.deb
+47cc94434c453a6965e69e84ad769a9612fd5cf02d40ae6278eeb33dcb43e1b7  medios/repo-laboratorio/pool/main/encina-branding_0.1.17+c3lab1_all.deb

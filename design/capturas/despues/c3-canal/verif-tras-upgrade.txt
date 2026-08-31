@@ -1,0 +1,125 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+
+=== 0. Quien contesta (por huella, que el nombre no distingue nada) ===
+  hostname: encina-e2-completa     kernel: aarch64     Ubuntu 24.04.4 LTS
+  [OK]    corriendo como root, se puede leer telemetry
+
+=== 1. La instalacion la goberno un seed, y nadie contesto nada (forma E2) ===
+  [OK]    las etapas por las que paso el instalador (done,loading)
+  [OK]    no aparece ninguna pantalla contestada a mano
+  [OK]    testigo encina-e2-testigo-instalador: testigo-entorno-instalador 2026-08-31T22:51:15Z
+  [OK]    testigo encina-e2-testigo-in-target: testigo-in-target 2026-08-31T22:51:15Z uname=aarch64 id=0
+  [OK]    testigo encina-e2-testigo-seed: encina-seed llego al final 2026-08-31T22:52:42Z estado=COMPLETO
+  [OK]    control: un testigo que no se escribio nunca sale ausente
+
+=== 2. EL FIREFOX QUE EL USUARIO PUEDE ABRIR ES EL NATIVO (D16, sustituye a «Sin Snap») ===
+  [OK]    iconos de Firefox que ve el usuario (1)
+  [OK]    control: 27 aplicaciones visibles de 95 totales (el inventario no esta mudo)
+  [OK]    coincide con las 27 declaradas antes de instalar
+  --- las aplicaciones que ve el usuario, por nombre ---
+  software-properties-drivers.desktop  |  Additional Drivers
+  nm-connection-editor.desktop  |  Advanced Network Configuration
+  autofirma.desktop  |  AutoFirma
+  org.gnome.Calculator.desktop  |  Calculator
+  snap-store_snap-store.desktop  |  Centro de aplicaciones
+  org.gnome.Characters.desktop  |  Characters
+  org.gnome.clocks.desktop  |  Clocks
+  org.gnome.baobab.desktop  |  Disk Usage Analyzer
+  org.gnome.DiskUtility.desktop  |  Disks
+  simple-scan.desktop  |  Document Scanner
+  org.gnome.Evince.desktop  |  Document Viewer
+  org.gnome.Nautilus.desktop  |  Files
+  firefox.desktop  |  Firefox
+  org.gnome.font-viewer.desktop  |  Fonts
+  yelp.desktop  |  Help
+  org.gnome.eog.desktop  |  Image Viewer
+  gnome-language-selector.desktop  |  Language Support
+  org.gnome.Logs.desktop  |  Logs
+  org.gnome.seahorse.Application.desktop  |  Passwords and Keys
+  org.gnome.PowerStats.desktop  |  Power Statistics
+  org.gnome.Settings.desktop  |  Settings
+  software-properties-gtk.desktop  |  Software & Updates
+  update-manager.desktop  |  Software Updater
+  gnome-session-properties.desktop  |  Startup Applications
+  org.gnome.SystemMonitor.desktop  |  System Monitor
+  org.gnome.Terminal.desktop  |  Terminal
+  org.gnome.TextEditor.desktop  |  Text Editor
+  [OK]    firefox_firefox.desktop no resuelve a nada bajo /snap/ (/usr/bin/firefox %u)
+  [OK]    control: org.gnome.Nautilus.desktop -> nautilus --new-window %U
+  [OK]    control: un identificador que no existe (NINGUNA)
+  [OK]    firefox 154.0.1~build1 (sin epoch: es el de Mozilla)
+  [OK]    /usr/bin/firefox -> /usr/lib/firefox/firefox
+  [OK]    perfiles de Mozilla bajo ~/snap/ (0 = el Snap nunca se abrio) (0)
+  [OK]    control: el buscador sabe encontrar algo (.bashrc -> 2)
+  [OK]    control: el buscador sabe decir cero (0)
+  [DATO]  forma (c): snapd + Snap de Firefox instalado y NUNCA abierto  <- la de D16
+  [DATO]  snapd='ii'  revisiones de firefox en /snap: 1  perfiles bajo ~/snap: 0
+
+=== 3. Firefox esta en espanol, y el anclaje sigue mandando ===
+  [OK]    el idioma esta puesto: langpack-es-ES@firefox.mozilla.org.xpi
+  [OK]    el anclaje de Mozilla sigue a prioridad 1000
+
+=== 4. El repo local sin firmar, los cuatro paquetes y las tres aplicaciones de D17/D18 ===
+  [OK]    /etc/apt/sources.list.d/encina-local.list: deb [trusted=yes] file:/srv/encina-repo ./
+  [OK]    encina-meta 0.2.1 install ok installed
+  [OK]    encina-branding 0.1.17+c3lab1 install ok installed
+  [OK]    encina-firefox-native 0.2.1 install ok installed
+  [OK]    autofirma 1.9.1+encina4 install ok installed
+  [OK]    autofirma es la +encina4, que es la que espera por raiz (M20)
+  [OK]    simple-scan 46.0-0ubuntu2.1 install ok installed
+  [OK]    sane-airscan 0.99.29-0ubuntu4 install ok installed
+  [OK]    evince 46.3.1-0ubuntu1.1 install ok installed
+  [OK]    la tienda: snap-store 0+git.90575829 rev 1271
+  [OK]    control: un snap inventado -> snap list dice que no
+  [OK]    gnome-software fuera (unknown ok not-installed)
+  [OK]    control: un paquete inventado -> no se ha encontrado
+  [OK]    dependientes marcados automaticos (3)
+  [OK]    encina-meta marcado manual (1)
+  [OK]    control: encina-meta NO esta en showauto (0)
+
+=== 5. La maquina llega entera ===
+  [OK]    systemctl is-system-running (running)
+  [OK]    ninguna unidad fallida
+  [OK]    graphical.target (active)
+  [OK]    control: rescue.target (inactive)
+           Name=gdm Seat=seat0 Type=wayland Class=greeter State=active 
+  [OK]    el escritorio arranca: hay un saludador grafico vivo (GDM)
+  [OK]    control: loginctl lista 2 sesion(es), o sea que no esta mudo
+
+=== 6. El veredicto que dejo el seed (§4.27) ===
+  [OK]    el veredicto que dejo el seed (COMPLETO)
+  [OK]    el seed no echo nada en falta
+  [OK]    control: se leen las claves de /etc/encina-estado (2026-08-31T22:52:42Z)
+  [DATO]  el seed vio  application/pdf: ANTES=org.gnome.Evince.desktop|org.gnome.Evince.desktop  DESPUES=org.gnome.Evince.desktop|org.gnome.Evince.desktop
+
+=== 6bis. EL MANEJADOR DEL PDF, ATADO (D17) ===
+  [OK]    application/pdf (con ubuntu:GNOME) -> org.gnome.Evince.desktop
+  [OK]    application/pdf (SIN escritorio) -> org.gnome.Evince.desktop
+  [OK]    control: un tipo inventado no resuelve a nada ()
+  [OK]    control: application/zip -> org.gnome.Nautilus.desktop (xdg-mime no esta mudo, y el zip no se ha tocado)
+  --- los ficheros que compiten, de mas fuerte a mas debil ---
+    /etc/xdg/mimeapps.list  [encina-branding]  pdf=org.gnome.Evince.desktop
+    /usr/share/applications/gnome-mimeapps.list  [gnome-session-common]  pdf=org.gnome.Evince.desktop
+  [OK]    el fichero que ata el PDF es NUESTRO (R5) (encina-branding)
+  [OK]    control: gnome-mimeapps.list es de 'gnome-session-common' (dpkg -S no esta mudo)
+
+=== 8. EL ICONO DE LA REJILLA (bloque 1, la mitad del sistema instalado) ===
+  [OK]    el tema de iconos es NUESTRO (R5) (encina-branding)
+  [OK]    el icono de Yaru esta DESVIADO por nosotros (R5 via dpkg-divert, 0.1.17) (encina-branding)
+  [OK]    el fichero servido en la ruta de Yaru es el nuestro (md5 7e26039f858eb1912f92863edc40d459)
+  [OK]    el original de Yaru sigue entero en .distrib -> ../places/start-here-symbolic.svg
+  [OK]    el tema de iconos por defecto del sistema (Encina)
+  [OK]    control: gtk-theme sigue siendo 'Yaru-sage' (gsettings no contesta 'Encina' a todo)
+  [OK]    'view-app-grid-ubuntu-symbolic' resuelve a Encina (/usr/share/icons/Encina/scalable/actions/view-app-grid-ubuntu-symbolic.svg)
+  [OK]    control: con tema='Yaru' el mismo nombre da OTRO fichero (/usr/share/icons/Yaru/scalable/actions/view-app-grid-ubuntu-symbolic.svg)
+  [OK]    'view-app-grid-symbolic' resuelve a Encina (/usr/share/icons/Encina/scalable/actions/view-app-grid-symbolic.svg)
+  [OK]    control: con tema='Yaru' el mismo nombre da OTRO fichero (/usr/share/icons/Yaru/scalable/actions/view-app-grid-symbolic.svg)
+  [OK]    con el tema puesto, los iconos ajenos siguen saliendo de la familia Yaru (Inherits funciona)
+  [OK]    control: el comparador rechaza Adwaita, la respuesta vacia y un nombre que solo EMPIEZA por Yaru
+  [OK]    control: un icono inventado no resuelve (NO-RESUELVE)
+
+=== Resumen ===
+  [OK] 64   [FALLO] 0   [AVISO] 0   [OMIT] 0
+  Faltan las casillas [OJOS]: la firma en valide.redsara.es -que va en un
+  clon efimero que se destruye (ENCINA-OS.md §9.1)- y si los nombres de las
+  aplicaciones de arriba se ven en espanol en una sesion de escritorio.

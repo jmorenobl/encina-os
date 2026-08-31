@@ -103,10 +103,12 @@ else
     else
         fallo "apt update rechazó el repo firmado con la clave BUENA" "$(tail -8 <<<"$SAL")"
     fi
+    # shellcheck disable=SC2010  # los nombres de lista de apt derivan de URLs sin espacios; el filtro es por subcadena, un glob no sabe -i
     LISTA=$(ls /var/lib/apt/lists/ 2>/dev/null | grep -i "encina.*InRelease" | head -1 || true)
     if [[ -n "$LISTA" ]] && grep -q "^Origin: Encina OS" "/var/lib/apt/lists/$LISTA"; then
         ok "el origen quedó registrado: Origin: Encina OS (en $LISTA)"
     else
+        # shellcheck disable=SC2010  # idem: listado informativo del [FALLO], nombres sin espacios
         fallo "no encuentro el Origin: Encina OS en las listas de apt" "$(ls /var/lib/apt/lists/ | grep -i encina || echo '(ninguna lista)')"
     fi
     sudo rm -f "/var/lib/apt/lists/$LISTA" 2>/dev/null || true

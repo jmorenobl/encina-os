@@ -1,0 +1,31 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+===== A2. la fuente, escrita con bash -c y RELEIDA
+-rw-r--r-- 1 root root 100 Aug 31 22:56 /etc/apt/sources.list.d/c3-laboratorio.list
+deb [signed-by=/usr/share/keyrings/encina-archive-keyring.gpg] http://192.168.64.1:8330 encina main
+
+===== B2. apt update entero: el oficial muerto (rc 100 esperado) y el laboratorio entrando en la misma pasada
+rc_apt_update=100
+Hit:5 http://192.168.64.1:8330 encina InRelease
+Ign:8 https://downloads.sourceforge.net/project/encina-os/repo encina InRelease
+Err:11 https://downloads.sourceforge.net/project/encina-os/repo encina Release
+E: The repository 'https://downloads.sourceforge.net/project/encina-os/repo encina Release' does not have a Release file.
+
+===== C2. policy: el candidato +c3lab1, su origen, y Mozilla a 1000 en la misma foto
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17+c3lab1
+  Version table:
+     0.1.17+c3lab1 500
+        500 http://192.168.64.1:8330 encina/main arm64 Packages
+ *** 0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+        100 /var/lib/dpkg/status
+firefox:
+  Installed: 154.0.1~build1
+  Candidate: 154.0.1~build1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+ *** 154.0.1~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+/var/lib/apt/lists/192.168.64.1:8330_dists_encina_InRelease:Origin: Encina OS

@@ -1,0 +1,29 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+===== F. deshecho: branding de vuelta a 0.1.17 desde el repo local del medio
+rc_downgrade=0
+dpkg: warning: downgrading encina-branding from 0.1.17+c3lab1 to 0.1.17
+Preparing to unpack .../encina-branding_0.1.17_all.deb ...
+Unpacking encina-branding (0.1.17) over (0.1.17+c3lab1) ...
+Setting up encina-branding (0.1.17) ...
+branding="0.1.17"
+
+===== G. la fuente y las listas del laboratorio, fuera (verificado)
+encina-local.list
+encina.sources
+mozilla.sources
+ubuntu.sources
+ubuntu.sources.curtin.orig
+(ninguna lista del laboratorio)
+
+===== H. el estado que queda: el error esperado de §4.87d, y nada mas
+rc_apt_update=100
+Ign:7 https://downloads.sourceforge.net/project/encina-os/repo encina InRelease
+Err:10 https://downloads.sourceforge.net/project/encina-os/repo encina Release
+E: The repository 'https://downloads.sourceforge.net/project/encina-os/repo encina Release' does not have a Release file.
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17
+  Version table:
+ *** 0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+        100 /var/lib/dpkg/status

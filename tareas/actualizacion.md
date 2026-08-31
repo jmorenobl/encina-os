@@ -397,7 +397,25 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       demás, `apt update` en una `0.2.1` con el paquete puesto enseña el origen
       de Encina en `apt-cache policy`, **y** con la clave equivocada `apt
       update` falla en rojo con `NO_PUBKEY` (el control).
-- [ ] **C3. `make repo`: el repositorio firmado a partir de los `.deb` por
+- [ ] **EMPEZADA Y MEDIDA EN LOCAL EL 2026-09-01, madrugada (`MEDICIONES.md`
+      §4.88); queda LA PUBLICACIÓN, que es de Jorge, y lo que sólo el repo
+      vivo puede dar.** Lo hecho y medido: `make repo`
+      (`imagen/fabricar-repo.sh`) deja `medios/repo` firmado —los cuatro
+      `.deb` de `0.2.1` POR HUELLA, arbitrados por `comprobar-propios.sh`
+      contra los dos manifiestos; la firma en el constructor, verificada con
+      la clave pública DEL PAQUETE y su control—; el ensayo de subida a
+      `repo/` pasado sin tocar `0.2.1/` ni `base/` (y verificado que el
+      `--dry-run` no crea nada); y en el banco nuevo `encina-c3-canal`
+      (verificador 64/0) el mecanismo entero con un repo de laboratorio
+      firmado servido por HTTP local: `full-upgrade` trae
+      `encina-branding 0.1.17+c3lab1`, el anclaje de Mozilla sigue a 1000 en
+      la misma foto, el control de la fuente cortada da rojo, y el deshecho
+      verificado. **El «hecha cuando» literal NO está ejecutado a
+      propósito**: exige el repo remoto vivo (el `302` de SourceForge seguido
+      por `apt`, el origen de Encina por la fuente de verdad) y publicar es
+      de Jorge — la orden, cuando la dé:
+      `./imagen/subir-sourceforge.sh --repo medios/repo --de-verdad`. La VM
+      queda apagada como testigo preparado. La casilla original: **C3. `make repo`: el repositorio firmado a partir de los `.deb` por
       huella, y su subida.** `dists/<suite>/` con `Packages`, `Release`,
       `InRelease` (`apt-ftparchive` o `reprepro` en la VM; el Mac no tiene
       ninguno, trampa de siempre), firmado con la clave de C2, y

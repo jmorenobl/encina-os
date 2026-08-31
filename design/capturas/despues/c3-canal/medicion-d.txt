@@ -1,0 +1,28 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+===== D2. full-upgrade: el canal trae la mas alta
+rc_full_upgrade=0
+1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Get:1 http://192.168.64.1:8330 encina/main arm64 encina-branding all 0.1.17+c3lab1 [6953 kB]
+Preparing to unpack .../encina-branding_0.1.17+c3lab1_all.deb ...
+Unpacking encina-branding (0.1.17+c3lab1) over (0.1.17) ...
+Setting up encina-branding (0.1.17+c3lab1) ...
+branding_tras_upgrade="0.1.17+c3lab1"
+
+===== E2. policy tras el upgrade: instalada +c3lab1 y el anclaje a 1000
+encina-branding:
+  Installed: 0.1.17+c3lab1
+  Candidate: 0.1.17+c3lab1
+  Version table:
+ *** 0.1.17+c3lab1 500
+        500 http://192.168.64.1:8330 encina/main arm64 Packages
+        100 /var/lib/dpkg/status
+     0.1.17 500
+firefox:
+  Installed: 154.0.1~build1
+  Candidate: 154.0.1~build1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+ *** 154.0.1~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+        100 /var/lib/dpkg/status

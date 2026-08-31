@@ -9,6 +9,14 @@
 #         de Canonical de aquel dia (imagen/base-firmada/<arq>/). Antes de subir
 #         coteja la ISO contra ESE SHA256SUMS firmado: se conserva lo que Canonical
 #         firmo, o nada.
+#     ./imagen/subir-sourceforge.sh --repo <dir> [--de-verdad]
+#         (2026-09-01, §4.88, casilla C3): sube EL CANAL de D25 -- el repositorio
+#         apt firmado que deja 'make repo' (pool/ + dists/encina/) -- a repo/ del
+#         proyecto, SIN tocar 0.2.1/ ni base/. Antes de subir coteja cada .deb del
+#         pool por huella contra el manifiesto: al canal solo van bytes de una
+#         release publicada. En la subida real pool/ va ANTES que dists/: una
+#         maquina que haga apt update a mitad de subida no debe ver indices que
+#         apunten a .deb que aun no estan.
 #
 # QUE HACE (2026-08-29, MEDICIONES.md §4.82, tareas/cerradas/alojamiento.md): sube por
 # rsync sobre ssh a frs.sourceforge.net los ficheros de --directorio (lo que
@@ -33,8 +41,8 @@ export LC_ALL=C
 AQUI=$(cd "$(dirname "$0")" && pwd)
 RAIZ=$(cd "$AQUI/.." && pwd)
 DIR=""; USUARIO="jmorenobl"; PROYECTO="encina-os"; LLAVE="$HOME/.ssh/sourceforge-encina"; DE_VERDAD=0
-BASE_ARQ=""; MEDIOS="$RAIZ/medios"
-uso() { sed -n '2,5p' "$0"; exit 2; }
+BASE_ARQ=""; MEDIOS="$RAIZ/medios"; REPO_DIR=""; MODO_REPO=0
+uso() { sed -n '2,19p' "$0"; exit 2; }
 while [ $# -gt 0 ]; do
     case "$1" in
         --directorio) DIR="$2";      shift 2 ;;
@@ -44,11 +52,12 @@ while [ $# -gt 0 ]; do
         --de-verdad)  DE_VERDAD=1;   shift ;;
         --base)       BASE_ARQ="$2"; shift 2 ;;
         --medios)     MEDIOS="$2";   shift 2 ;;
-        -h|--help)    sed -n '1,22p' "$0"; exit 0 ;;
+        --repo)       REPO_DIR="$2"; shift 2 ;;
+        -h|--help)    sed -n '1,35p' "$0"; exit 0 ;;
         *) echo "[FALLO] argumento desconocido: $1"; uso ;;
     esac
 done
-[ -n "$DIR" ] || [ -n "$BASE_ARQ" ] || uso
+[ -n "$DIR" ] || [ -n "$BASE_ARQ" ] || [ -n "$REPO_DIR" ] || uso
 . "$RAIZ/lib/salida.sh"
 
 [ -f "$LLAVE" ] || morir "no existe la clave $LLAVE (registra su .pub en SourceForge: Account settings > SSH Settings)"
@@ -80,6 +89,26 @@ if [ -n "$BASE_ARQ" ]; then
     [ "$r" = "$H_ISO" ] || morir "$NOMBRE NO es el firmado: real $r, firmado $H_ISO"
     ok "$NOMBRE  $H_ISO  = la linea del SHA256SUMS firmado (y la que exige fabricar-iso.sh)"
     echo "        (la firma .gpg de esas sumas se comprueba con gpgv donde lo haya: traer-iso-oficial.sh --verificador)"
+elif [ -n "$REPO_DIR" ]; then
+    # --- EL CANAL (D25, casilla C3): el repositorio firmado, a repo/ --------
+    [ -d "$REPO_DIR/pool" ] && [ -f "$REPO_DIR/dists/encina/InRelease" ] \
+        || morir "$REPO_DIR no tiene pool/ y dists/encina/InRelease (make repo)"
+    DIR=$(cd "$REPO_DIR" && pwd)
+    MODO_REPO=1
+    MANIFIESTO="$RAIZ/imagen/repo-manifiesto.tsv"
+    titulo "0. el canal: cada .deb del pool es, POR HUELLA, el de una release publicada"
+    for deb in "$DIR"/pool/*/*.deb; do
+        f=$(basename "$deb")
+        ESPERADA=$(awk -F'\t' -v n="$f" '$1=="PROPIO" && $4==n {print $6}' "$MANIFIESTO")
+        [ -n "$ESPERADA" ] || morir "$f esta en el pool y NO es un PROPIO del manifiesto: al canal solo van .deb de una release publicada"
+        r=$(shasum -a 256 "$deb" | cut -d' ' -f1)
+        [ "$r" = "$ESPERADA" ] || morir "$f NO es por huella el del manifiesto: real $r, esperado $ESPERADA"
+        ok "$f  ${r:0:12}… = la del manifiesto"
+    done
+    # la lista de ficheros, con su ruta relativa: para el cotejo de vuelta y las URLs
+    FICHEROS=$(cd "$DIR" && find pool dists -type f | sort)
+    RUTA="/home/frs/project/$PROYECTO/repo"
+    CANONICA="https://downloads.sourceforge.net/project/$PROYECTO/repo"
 else
     [ -d "$DIR" ] || morir "no existe $DIR (make publicar)"
     VERSION=$(basename "$DIR")
@@ -103,8 +132,12 @@ ok "frs.sourceforge.net lista /home/frs/project/$PROYECTO/ con la clave $LLAVE"
 
 if [ "$DE_VERDAD" = 0 ]; then
     titulo "2. ENSAYO (--dry-run): lo que rsync haria"
-    # shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
-    ( cd "$DIR" && rsync -av --dry-run --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /'
+    if [ "$MODO_REPO" = 1 ]; then
+        ( cd "$DIR" && rsync -av --dry-run --progress -e "$SSH" pool dists "$REMOTO:$RUTA/" ) | sed 's/^/        /'
+    else
+        # shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
+        ( cd "$DIR" && rsync -av --dry-run --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /'
+    fi
     echo
     echo "NO SE HA SUBIDO NADA. Con --de-verdad se sube, y es el acto irreversible: esa orden la da Jorge."
     exit 0
@@ -122,15 +155,29 @@ if [ -n "$BASE_ARQ" ]; then
     rmdir "$VACIO"
     echo "        creado (o ya estaba) /home/frs/project/$PROYECTO/base/"
 fi
-# shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
-( cd "$DIR" && rsync -av --partial --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /' \
-    || morir "rsync fallo (se puede relanzar: --partial conserva lo subido)"
+if [ "$MODO_REPO" = 1 ]; then
+    # pool/ ANTES que dists/: si alguien hace apt update a mitad de subida, los
+    # indices que vea solo pueden apuntar a .deb que ya estan
+    ( cd "$DIR" && rsync -av --partial --progress -e "$SSH" pool "$REMOTO:$RUTA/" ) | sed 's/^/        /' \
+        || morir "rsync de pool/ fallo (se puede relanzar: --partial conserva lo subido)"
+    ( cd "$DIR" && rsync -av --partial --progress -e "$SSH" dists "$REMOTO:$RUTA/" ) | sed 's/^/        /' \
+        || morir "rsync de dists/ fallo (se puede relanzar: --partial conserva lo subido)"
+else
+    # shellcheck disable=SC2086  # FICHEROS son siete nombres fijos sin espacios: se quiere que se partan
+    ( cd "$DIR" && rsync -av --partial --progress -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" ) | sed 's/^/        /' \
+        || morir "rsync fallo (se puede relanzar: --partial conserva lo subido)"
+fi
 ok "rsync termino"
 
 titulo "3. lo que hay ALLI contra lo que hay AQUI (trampa 13: la mutacion se verifica)"
 # rsync --checksum --dry-run de vuelta: si quisiera transferir algo, algo difiere
-# shellcheck disable=SC2086  # idem
-DIFIEREN=$( cd "$DIR" && rsync -ac --dry-run --out-format='%n' -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" | grep -c . )
+if [ "$MODO_REPO" = 1 ]; then
+    # los directorios salen siempre en el listado aunque no cambie nada: se filtran
+    DIFIEREN=$( cd "$DIR" && rsync -ac --dry-run --out-format='%n' -e "$SSH" pool dists "$REMOTO:$RUTA/" | grep -v '/$' | grep -c . )
+else
+    # shellcheck disable=SC2086  # idem
+    DIFIEREN=$( cd "$DIR" && rsync -ac --dry-run --out-format='%n' -e "$SSH" $FICHEROS "$REMOTO:$RUTA/" | grep -c . )
+fi
 [ "$DIFIEREN" -eq 0 ] || morir "rsync --checksum querria volver a transferir $DIFIEREN fichero(s): lo de alli no es lo de aqui"
 ok "rsync --checksum no quiere transferir nada: los ficheros son los mismos bytes a los dos lados"
 echo "        (SourceForge tarda unos minutos en repartir a los espejos; la URL canonica se comprueba abajo)"

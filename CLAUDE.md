@@ -48,6 +48,9 @@ make torrent ARQ=arm64 # el .torrent de la ISO, sin tracker, con web seed a la U
 make release NUEVA=X.Y.Z   # la receta de sacar una versión ENTERA (A3, §4.86), en ENSAYO en seco; con DE_VERDAD=1
                        # la cadena real (dch, seis sitios, dos-veces, cosecha, publicar, subida, etiqueta, README),
                        # que ESTRENA la casilla C4 — los actos irreversibles son de quien escribe DE_VERDAD=1
+make repo              # el repositorio apt FIRMADO del canal (D25, casilla C3, §4.88) en medios/repo, desde los
+                       # .deb por huella del manifiesto; la firma ocurre en el constructor (la clave no viaja)
+./imagen/subir-sourceforge.sh --repo medios/repo [--de-verdad]   # el canal a repo/ de SourceForge, sin tocar 0.2.1/ ni base/
 ./imagen/subir-sourceforge.sh --directorio medios/publicar/0.2.1 [--de-verdad]   # sin --de-verdad, sólo el ensayo; subir es de Jorge
 ./imagen/subir-sourceforge.sh --base arm64 [--de-verdad]   # la ISO oficial con su SHA256SUMS firmado, a base/arm64/ (§4.83, trampa 69)
 ./imagen/traer-iso-oficial.sh --arq arm64 --verificador jorge@192.168.64.3      # cae al respaldo ([RESPALDO]) si Canonical la retiró
