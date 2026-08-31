@@ -1,0 +1,17 @@
+# El error que se anula aqui es correcto en general y no aplica a este
+# paquete. Justificacion, para que nadie tenga que reconstruirla:
+#
+# package-installs-apt-sources
+#
+#   lintian lo emite porque la eleccion de repositorios es territorio del
+#   administrador y un paquete no deberia decidir por el. La regla es buena.
+#   Pero este paquete no hace ninguna otra cosa: la clave del repositorio de
+#   Encina OS y su fuente SON su unico contenido (D25); sin ese fichero el
+#   .deb queda vacio. Es la misma justificacion, palabra por palabra, que la
+#   de mozilla.sources en encina-firefox-native.
+#
+#   El administrador conserva la ultima palabra por dos vias: instala este
+#   paquete porque quiere, y el fichero es conffile, de modo que dpkg respeta
+#   cualquier edicion local y 'apt purge' lo retira y devuelve el sistema a
+#   su configuracion de repositorios original.
+encina-keyring: package-installs-apt-sources [etc/apt/sources.list.d/encina.sources]

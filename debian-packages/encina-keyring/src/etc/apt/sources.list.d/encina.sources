@@ -1,0 +1,5 @@
+Types: deb
+URIs: https://downloads.sourceforge.net/project/encina-os/repo
+Suites: encina
+Components: main
+Signed-By: /usr/share/keyrings/encina-archive-keyring.gpg

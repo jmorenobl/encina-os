@@ -1,0 +1,27 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: encina-keyring
+Source: https://github.com/jmorenobl/encina-os
+
+Files: *
+Copyright: 2026 Jorge MB <jmorenobl@gmail.com>
+License: EUPL-1.2
+Comment: La clave publica src/usr/share/keyrings/encina-archive-keyring.gpg
+ es la clave de firma del repositorio de paquetes de Encina OS, generada por
+ el proyecto el 2026-08-31, huella
+ 58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF. Una clave publica de firma se
+ publica precisamente para ser copiada y redistribuida: es el unico modo de
+ que sirva para verificar firmas.
+
+License: EUPL-1.2
+ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
+ the European Commission - subsequent versions of the EUPL (the "Licence").
+ You may not use this work except in compliance with the Licence.
+ .
+ You may obtain a copy of the Licence at:
+ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the Licence is distributed on an "AS IS" basis, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ Licence for the specific language governing permissions and limitations
+ under the Licence.

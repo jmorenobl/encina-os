@@ -1,0 +1,39 @@
+
+=== 1. Lo instalado: los dos ficheros, la huella y la integridad ===
+  [OK]    Presente: /usr/share/keyrings/encina-archive-keyring.gpg
+  [OK]    Presente: /etc/apt/sources.list.d/encina.sources
+  [OK]    La clave instalada es la de Encina OS (58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF)
+  [OK]    Integridad de los ficheros instalados (dpkg -V)
+
+=== 2. EL MECANISMO: la clave manda, con sus dos respuestas ===
+  [OK]    control: el repo firmado con OTRA clave se rechaza, y por el motivo correcto (NO_PUBKEY)
+  [OK]    el repo firmado con la clave de Encina entra: apt update en verde
+  [OK]    el origen quedó registrado: Origin: Encina OS (en _home_encina_repo-prueba-encina_dists_encina_InRelease)
+
+=== 3. La fuente que viaja: el canal remoto, tal como está hoy ===
+  [AVISO] apt update falla POR EL CANAL de Encina: esperado hasta que C3 publique el repositorio (D25: el repo va antes que la clave)
+         Ign:10 https://downloads.sourceforge.net/project/encina-os/repo encina InRelease
+         Err:11 https://downloads.sourceforge.net/project/encina-os/repo encina Release
+         E: The repository 'https://downloads.sourceforge.net/project/encina-os/repo encina Release' does not have a Release file.
+
+=== 4. Idempotencia: cinco instalaciones seguidas (R9) ===
+  ciclo 1/5 ok
+  ciclo 2/5 ok
+  ciclo 3/5 ok
+  ciclo 4/5 ok
+  ciclo 5/5 ok
+  [OK]    Cinco reinstalaciones sin error
+  [OK]    El estado es idéntico antes y después
+
+=== 5. Purga: el sistema vuelve a su configuración original ===
+  [OK]    Purga ejecutada sin error
+  [OK]    Eliminado: /usr/share/keyrings/encina-archive-keyring.gpg
+  [OK]    Eliminado: /etc/apt/sources.list.d/encina.sources
+  [OK]    Sin el paquete, apt update vuelve a estar en verde (la fuente de Encina ya no está)
+--- Reinstalando para dejar el sistema como estaba 
+  [OK]    Paquete reinstalado
+
+=== RESUMEN ===
+  correctas: 14   fallos: 0   avisos: 1   omitidas: 0
+
+Todas las comprobaciones automáticas pasan.

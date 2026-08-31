@@ -1,0 +1,15 @@
+encina-keyring (0.1.0) noble; urgency=medium
+
+  * Primera version (D25, 2026-08-31). La clave publica de firma del
+    repositorio de paquetes de Encina OS, huella
+    58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF (ed25519, generada el 2026-
+    08-31, custodia escrita en el README del paquete), y la fuente APT
+    del repositorio en SourceForge con Signed-By y una sola suite
+    (encina) para todas las series, como la de Mozilla. Sin scripts de
+    mantenedor: los dos ficheros son declarativos, y la fuente local del
+    medio (encina-local.list) se deja en paz con la medicion delante
+    (MEDICIONES.md 4.84e). El repositorio remoto tiene que existir antes
+    de instalar este paquete: una fuente sin servidor es un error rc 100
+    en cada apt update.
+
+ -- Jorge MB <jmorenobl@gmail.com>  Tue, 01 Sep 2026 00:00:48 +0200

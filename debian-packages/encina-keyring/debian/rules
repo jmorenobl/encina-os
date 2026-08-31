@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+# Todo el arbol de src/ se copia tal cual a la raiz del sistema.
+#
+# El paquete no lleva postinst, prerm ni postrm, y no es un descuido:
+#
+#   - No hay nada que ejecutar. Los dos ficheros son declarativos y apt los
+#     lee solo en el siguiente 'apt update'.
+#   - La fuente local del medio (encina-local.list) SE DEJA EN PAZ, con la
+#     medicion delante (MEDICIONES.md 4.84e): no hace ruido, no pisa
+#     versiones, y quitarla costaria poder reinstalar sin red. Tocarla desde
+#     un script de mantenedor seria ademas territorio de otro paquete.
+#   - Llamar a apt desde un script de mantenedor es un interbloqueo (R3).
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	cp -a src/. debian/encina-keyring/

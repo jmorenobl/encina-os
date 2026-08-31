@@ -1,0 +1,16 @@
+
+=== 1. Instalación ===
+  [OK]    apt-get install encina-keyring_0.1.0_all.deb termina sin error
+
+=== 2. Lo que ha quedado en el sistema, releído (trampa 13) ===
+  [OK]    dpkg dice: install ok installed 0.1.0
+  [OK]    Presente: /usr/share/keyrings/encina-archive-keyring.gpg
+  [OK]    Presente: /etc/apt/sources.list.d/encina.sources
+  [OK]    La clave instalada tiene la huella de Encina OS: 58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF
+
+=== RESUMEN ===
+  correctas: 5   fallos: 0   avisos: 0   omitidas: 0
+
+Todas las comprobaciones automáticas pasan.
+
+Siguiente:  ./scripts/verificar-keyring.sh [--repo-prueba <dir firmado>]

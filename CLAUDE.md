@@ -61,6 +61,7 @@ suyo):
 ./scripts/construir-branding.sh          # encina-branding   (--saltar-reglas omite las comprobaciones estáticas)
 ./scripts/construir-firefox.sh  # encina-firefox-native (se detiene si la huella de la clave de Mozilla no cuadra)
 ./scripts/construir-meta.sh     # encina-meta       (se detiene si falta debian/changelog; no lo crea)
+./scripts/construir-keyring.sh  # encina-keyring    (se detiene si la huella de la clave de Encina no cuadra; D25)
 ENCINA_REPO="$PWD" ./scripts/construir-branding.sh   # así los invoca la CI
 ```
 
@@ -70,6 +71,8 @@ Instalar y verificar en VM (nunca en el Mac):
 ./scripts/instalar-branding.sh   ./scripts/verificar-branding.sh   # branding: usuario nuevo, idempotencia x5, purga
 ./scripts/instalar-firefox.sh ./scripts/verificar-firefox.sh   # full-upgrade x2 = la prueba del anclaje
 ./scripts/instalar-meta.sh ./scripts/verificar-meta.sh         # la secuencia de tres órdenes
+./scripts/instalar-keyring.sh ./scripts/verificar-keyring.sh   # keyring: el mecanismo con sus dos respuestas
+                                # (verificar-keyring.sh --repo-prueba <dir firmado en el constructor>: NO_PUBKEY es el control)
 ```
 
 Imagen (`imagen/`), desde el Mac:

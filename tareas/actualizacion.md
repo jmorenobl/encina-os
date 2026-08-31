@@ -359,7 +359,28 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       (b) o (c), lo de abajo.
       *Hecha cuando:* tiene número `D`, y la fila de D5 lleva una enmienda
       fechada diciendo cómo se responde a un fallo desde entonces.
-- [ ] **C2. `encina-keyring`: la clave pública del proyecto, la fuente y nada
+- [ ] **EMPEZADA Y CASI ENTERA EL 2026-08-31, noche (`MEDICIONES.md` §4.87);
+      quedan las dos casillas que dependen del canal en vivo.** Lo hecho y
+      medido: la clave generada (ed25519, huella `58A525AB…F8C7EF`, custodia
+      escrita en el README del paquete: vive en el `GNUPGHOME` dedicado de
+      `encina-dev`, respaldo fuera de git en el Mac, sin contraseña con el
+      precio dicho, rotación con y sin compromiso); el paquete con sus dos
+      ficheros (`encina.sources` con `Signed-By` y **una sola suite
+      `encina`**, deducción 3), sin scripts de mantenedor, y
+      **`encina-local.list` se deja en paz con el motivo escrito** (§4.84e:
+      ni ruido ni pisadas; quitarla costaría reinstalar sin red);
+      `construir-keyring.sh` 19/0 con lintian limpio (la huella verificada
+      también DENTRO del `.deb`), `instalar-keyring.sh` 5/0, y
+      `verificar-keyring.sh` 14/0 con **el mecanismo por sus dos caras**: el
+      repo de prueba firmado con la clave de verdad entra (`Origin: Encina
+      OS` registrado) y re-firmado con una clave intrusa se rechaza con
+      `NO_PUBKEY` — el control. El `apt update` con la fuente remota puesta
+      **falla hoy como D25 predice** («does not have a Release file»,
+      esperado hasta C3) y está medido literal. **Lo que queda:** el origen
+      de Encina en `apt-cache policy` por la fuente remota DE VERDAD (lo
+      desbloquea C3) y la entrada en la CI (que va con la fila del
+      manifiesto, en C4, como hizo `encina-meta`). La especificación vive en
+      `AGENTS.md` §5bis. La casilla original: **C2. `encina-keyring`: la clave pública del proyecto, la fuente y nada
       más.** `/usr/share/keyrings/encina-archive-keyring.gpg` y
       `/etc/apt/sources.list.d/encina.sources` con `Signed-By:`, **una sola
       suite para todas las series** (como Mozilla; deducción 3), y la decisión

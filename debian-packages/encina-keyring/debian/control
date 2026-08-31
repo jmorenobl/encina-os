@@ -1,0 +1,31 @@
+Source: encina-keyring
+Section: admin
+Priority: optional
+Maintainer: Jorge MB <jmorenobl@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: encina-keyring
+Architecture: all
+Depends: ${misc:Depends}
+Description: Clave de firma y fuente APT del repositorio de Encina OS
+ La clave publica con la que Encina OS firma su repositorio de paquetes
+ (huella 58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF) y la fuente APT que
+ apunta a el, con Signed-By: solo esa clave puede firmar ese repositorio,
+ y solo ese repositorio queda firmado por esa clave.
+ .
+ La fuente usa una sola suite (encina) para todas las series de Ubuntu,
+ igual que hace Mozilla con la suya: asi sobrevive a un salto de version
+ de la base sin cambiar de nombre.
+ .
+ Este paquete no lleva scripts de mantenedor: los dos ficheros son
+ declarativos y apt los lee solo en el siguiente 'apt update'. La fuente
+ local del medio (/etc/apt/sources.list.d/encina-local.list) se deja en
+ paz a proposito: no hace ruido, no pisa versiones mas nuevas, y es lo
+ que permite reinstalar los paquetes del medio sin red (medido en
+ MEDICIONES.md 4.84e).
+ .
+ Orden que importa: el repositorio remoto tiene que existir antes de
+ instalar este paquete. Una fuente cuyo servidor no contesta convierte
+ cada 'apt update' en un error.

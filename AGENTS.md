@@ -567,6 +567,83 @@ sudo apt install firefox firefox-l10n-es-es
 
 ---
 
+## 5bis. Paquete `encina-keyring` (D25, 2026-08-31)
+
+### 5bis.1 Qué hace y qué NO hace
+
+**Hace:** llevar la clave pública con la que Encina OS firma su repositorio de
+paquetes, y la fuente APT que apunta a él con `Signed-By`. Dos ficheros
+declarativos, ninguna línea ejecutable.
+
+**No hace:** ni instalar paquetes, ni tocar `encina-local.list` (la fuente
+local del medio se queda, con la medición delante: §4.84e — no hace ruido, no
+pisa versiones, y es lo que permite reinstalar sin red), ni llevar scripts de
+mantenedor (R3: no hay nada que ejecutar).
+
+**Por qué es un paquete propio y no tres líneas en otro:** una clave y una
+fuente propias son una responsabilidad nueva —custodia, rotación, revocación—
+y R-«un paquete, una responsabilidad» pide que tenga nombre, como
+`ubuntu-keyring`. `encina-firefox-native` es «la fuente de Mozilla y su
+anclaje»; esto es «en quién confía apt cuando el paquete viene de Encina».
+
+**LA REGLA DE ORDEN, y es de D25:** el repositorio remoto se publica —aunque
+esté vacío— **antes** de que ninguna máquina de usuario lleve este paquete.
+Una fuente cuyo servidor no contesta convierte cada `apt update` en un error
+rc 100 (el patrón de §4.84e), y está medido con este paquete puesto (§4.87):
+`E: The repository … does not have a Release file`.
+
+### 5bis.2 Contenido
+
+**La clave:** `usr/share/keyrings/encina-archive-keyring.gpg` — ed25519, solo
+firma, sin caducidad (la rotación es una versión nueva del paquete, no una
+fecha), generada el 2026-08-31. Huella, que `construir-keyring.sh` verifica y
+se detiene si no cuadra (el patrón de la clave de Mozilla en §5.2):
+
+```
+58A525AB990C4B8DC5AB3D240A007E6F65F8C7EF
+```
+
+**La custodia de la privada está escrita en el README del paquete** y no se
+resume aquí: dónde vive (el `GNUPGHOME` dedicado de la VM constructora), el
+respaldo (fuera de todo repositorio git), el precio de no llevar contraseña, y
+cómo se rota — con transición y sin ella.
+
+**La fuente:** `etc/apt/sources.list.d/encina.sources`, formato deb822,
+**una sola suite (`encina`) para todas las series** —como la de Mozilla
+(deducción 3 de `tareas/actualizacion.md`): así sobrevive al salto de versión
+de la base—:
+
+```
+Types: deb
+URIs: https://downloads.sourceforge.net/project/encina-os/repo
+Suites: encina
+Components: main
+Signed-By: /usr/share/keyrings/encina-archive-keyring.gpg
+```
+
+### 5bis.3 Definición de terminado
+
+- [ ] `lintian` sin errores (el override de `package-installs-apt-sources`
+      lleva su justificación, la misma que la de `mozilla.sources`)
+- [ ] La huella de la clave, verificada en tres sitios: en `src/`, **dentro
+      del `.deb`** (`dpkg-deb -x`, trampa 13 aplicada al empaquetado) y en la
+      máquina tras instalar
+- [ ] **El mecanismo, con sus dos respuestas** (`verificar-keyring.sh
+      --repo-prueba`): un repositorio firmado con la clave de Encina entra
+      (`apt update` en verde y `Origin: Encina OS` registrado en las listas), y
+      **el mismo repositorio re-firmado con otra clave se rechaza con
+      `NO_PUBKEY`** — sin ese rojo, el verde no mide nada. El repo de prueba se
+      fabrica en el constructor: la clave privada no viaja
+- [ ] Idempotencia x5 y purga: los dos ficheros desaparecen (`encina.sources`
+      es conffile) y `apt update` vuelve a verde sin el paquete
+- [ ] **Con el canal en vivo (C3):** `apt update` en una máquina con el
+      paquete enseña el origen de Encina en `apt-cache policy` por la fuente
+      remota de verdad — hasta entonces esta casilla queda abierta a
+      propósito, con el error esperado medido y escrito
+- [ ] **En la CI:** entra en la matriz **en el mismo commit que su fila del
+      manifiesto** (C4), como hizo `encina-meta` — antes no, porque
+      `comprobar-propios.sh` cotejaría contra una fila que no existe
+
 ## 6. Paquete `encina-meta` (incremento E1)
 
 Incremento abierto el 2026-08-08. Es el siguiente y el más pequeño del proyecto

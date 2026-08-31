@@ -404,6 +404,32 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-08-31 (noche): **EL CAMINO AL 0.2.2 ESTÁ DECIDIDO Y CASI ARMADO** — D24 y D25 inscritas, la receta de sacar una versión es una orden ensayada, y el quinto paquete existe y está medido (`MEDICIONES.md` §4.85-§4.87)
+>
+> **Jorge aprobó la recomendación entera** (*«Adelante con la recomendación.
+> Confío en tu criterio experto»*): el medio siguiente **nace con canal**, en
+> una sola vuelta. Lo que hay desde esta noche: **C-bis medida** (§4.85: con
+> `Origins-Pattern "site=packages.mozilla.org"` un `unattended-upgrade` real
+> subió Firefox; el paquete `0.2.2` espera en la rama local
+> `cbis-52encina-firefox`, sin publicar, y la orden a mano para las `0.2.1`
+> está en las notas de la release por orden de Jorge); **A3 hecha** (§4.86:
+> `make release NUEVA=X.Y.Z`, nueve fases cronometradas, ensayo en seco 20/0;
+> el ritual de los seis sitios es `actualizar-seis-sitios.sh`, con su pareja
+> de respuestas; `DE_VERDAD=1` lo estrena C4); **D24** (tres relojes, sin
+> «edición», la serie en el título de toda release, vigilada por
+> `versiones.sh` (C) con control rojo) y **D25** (canal (b): repo apt firmado
+> en SourceForge + `encina-keyring`, enmienda a D5 al lado); y **C2 casi
+> entera** (§4.87: la clave con custodia escrita, el paquete 19/0 + lintian,
+> el mecanismo medido por sus dos caras — `NO_PUBKEY` con clave intrusa,
+> `Origin: Encina OS` con la buena — y el canal sin publicar rompiendo
+> `apt update` tal como D25 predice: **el repo va antes que la clave**).
+> **La única tarea siguiente: C3** — `make repo` firmado en la VM, medir que
+> `apt` sigue el `302` de SourceForge, y publicar el repositorio; con eso,
+> C4 fusiona la rama y estrena `make release … DE_VERDAD=1`. **De Jorge:**
+> borrar la VM `encina-cbis-firefox` (el clasificador de permisos bloqueó el
+> `utmctl delete` al agente; quedó apagada y con el `apt update` en el error
+> esperado de §4.87d).
+>
 > ### AL DÍA, 2026-08-30: **LA BASE CONSERVADA** — reproducir `0.2.1` ya no depende de que Canonical siga sirviendo la ISO de aquel día (`MEDICIONES.md` §4.83)
 >
 > Jorge preguntó si la base podía «fijar 24.04 y coger la última»; **no, por
