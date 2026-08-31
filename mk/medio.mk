@@ -4,7 +4,7 @@
 # la VM constructora ($(CONSTRUCTOR)) para los pasos que macOS no puede dar.
 # Aqui solo se le ponen nombre y se le exige su definicion de terminado.
 
-.PHONY: iso dos-veces qemu verificador sumas cosecha trozos publicar
+.PHONY: iso dos-veces qemu verificador sumas cosecha trozos publicar release
 
 # DESDE LA COSECHA PUBLICADA (2026-08-29, MEDICIONES.md §4.82): con
 # COSECHA=<dir|tar|URL> los 25 .deb de ARCHIVO salen de ahi por huella y no
@@ -129,3 +129,13 @@ SOURCEFORGE ?= https://downloads.sourceforge.net/project/encina-os/$(VERSION)
 torrent:
 	python3 imagen/hacer-torrent.py --fichero $(ISO_SALIDA) --salida $(ISO_SALIDA).torrent \
 	    --web-seed $(SOURCEFORGE)/$(notdir $(ISO_SALIDA))
+
+# LA RECETA DE «SACAR UNA VERSION» ENTERA (A3 de tareas/actualizacion.md,
+# 2026-08-31): imagen/sacar-version.sh, fase a fase y cronometrada. Sin
+# DE_VERDAD=1 es un ENSAYO EN SECO que ejecuta lo ejecutable sin cambiar el
+# producto; la cadena real (--de-verdad) la estrena la casilla C4, y sus dos
+# actos irreversibles (subida y etiqueta) son de quien la escribe.
+release:
+	./imagen/sacar-version.sh --version $(NUEVA) --constructor $(CONSTRUCTOR) \
+	    $(if $(PAQUETES),--paquetes "$(PAQUETES)",) $(if $(CAMBIO),--cambio "$(CAMBIO)",) \
+	    $(if $(DE_VERDAD),--de-verdad,)

@@ -11,6 +11,8 @@
 #     make medios/SHA256SUMS   las sumas de medios/, calculadas y no escritas a mano
 #     make qemu         un bundle de UTM para arrancar el medio (fabricar-vm-medio.py)
 #     make verificador  medios/verificar-instalacion.sh EMPAQUETADO, el que viaja solo
+#     make release NUEVA=X.Y.Z   la receta de sacar una version, ENSAYO en seco (A3);
+#                       con DE_VERDAD=1 la cadena real, que estrena C4 (sacar-version.sh)
 #
 # La configuracion va partida por asunto en mk/*.mk, que es la forma de
 # pop-os/iso (organizacion-comparada.md, fila A4/D4): este fichero solo dice
@@ -37,6 +39,6 @@ include mk/medio.mk
 
 .PHONY: ayuda
 ayuda:
-	@sed -n '4,13p' Makefile
+	@sed -n '4,15p' Makefile
 	@echo
 	@echo "  ARQ=$(ARQ)  CONSTRUCTOR=$(CONSTRUCTOR)  AUTOFIRMA=$(AUTOFIRMA)"

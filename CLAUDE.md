@@ -45,6 +45,9 @@ make publicar          # medios/publicar/<versión>/: ISOs, cosechas, SHA256SUMS
                        # sustituidas desde él. NO sube nada: dónde vive la ISO es de Jorge (tareas/cerradas/alojamiento.md)
 make dos-veces ARQ=arm64 COSECHA=<URL o tar>   # la receta DESDE la cosecha publicada: sin archivo, Mozilla ni Launchpad (trampa 68)
 make torrent ARQ=arm64 # el .torrent de la ISO, sin tracker, con web seed a la URL canónica de SourceForge (§4.82h-i)
+make release NUEVA=X.Y.Z   # la receta de sacar una versión ENTERA (A3, §4.86), en ENSAYO en seco; con DE_VERDAD=1
+                       # la cadena real (dch, seis sitios, dos-veces, cosecha, publicar, subida, etiqueta, README),
+                       # que ESTRENA la casilla C4 — los actos irreversibles son de quien escribe DE_VERDAD=1
 ./imagen/subir-sourceforge.sh --directorio medios/publicar/0.2.1 [--de-verdad]   # sin --de-verdad, sólo el ensayo; subir es de Jorge
 ./imagen/subir-sourceforge.sh --base arm64 [--de-verdad]   # la ISO oficial con su SHA256SUMS firmado, a base/arm64/ (§4.83, trampa 69)
 ./imagen/traer-iso-oficial.sh --arq arm64 --verificador jorge@192.168.64.3      # cae al respaldo ([RESPALDO]) si Canonical la retiró
