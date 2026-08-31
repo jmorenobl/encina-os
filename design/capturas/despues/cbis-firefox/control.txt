@@ -1,0 +1,196 @@
+===== fase control  2026-08-31T20:48:08Z =====
+== fichero: NO existe (verificado tras rm)
+== estado de los actores ANTES (apt list --upgradable):
+firefox-l10n-es-es/mozilla 154.0.1~build1 all [upgradable from: 153.0.4~build1]
+firefox/mozilla 154.0.1~build1 arm64 [upgradable from: 153.0.4~build1]
+openjdk-17-jre-headless/noble-updates,noble-security 17.0.20+8-1~24.04 arm64 [upgradable from: 17.0.19+10-1~24.04.2]
+openjdk-17-jre/noble-updates,noble-security 17.0.20+8-1~24.04 arm64 [upgradable from: 17.0.19+10-1~24.04.2]
+== unattended-upgrade --dry-run --debug:
+Running on the development release
+Starting unattended upgrades script
+Allowed origins are: o=Ubuntu,a=noble, o=Ubuntu,a=noble-security, o=UbuntuESMApps,a=noble-apps-security, o=UbuntuESM,a=noble-infra-security
+Initial blacklist: 
+Initial whitelist (not strict): 
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_i18n_Translation-en'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=394 ID:24> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_binary-arm64_Packages'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=1062 ID:23> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_i18n_Translation-en'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=67282 ID:22> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_binary-arm64_Packages'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=144288 ID:21> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_i18n_Translation-en'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=121051 ID:20> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_binary-arm64_Packages'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=253846 ID:19> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_i18n_Translation-en'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=150720 ID:18> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_binary-arm64_Packages'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=571382 ID:17> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_i18n_Translation-en'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3621482 ID:16> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_binary-arm64_Packages'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=10729123 ID:15> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_i18n_Translation-en'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=6322469 ID:14> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_binary-arm64_Packages'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=13350012 ID:13> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_i18n_Translation-en'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3745332 ID:12> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_binary-arm64_Packages'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=7029210 ID:11> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-all_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='all' site='packages.mozilla.org' IndexType='Debian Package Index' Size=5684327 ID:2> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-arm64_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='arm64' site='packages.mozilla.org' IndexType='Debian Package Index' Size=102325 ID:1> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/_srv_encina-repo_._Packages'  a=,c=,v=,o=,l= arch='' site='' IndexType='Debian Package Index' Size=42484 ID:0> with -32768 pin
+Applying pinning: PkgFilePin(id=24, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_i18n_Translation-en'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=394 ID:24>
+Applying pinning: PkgFilePin(id=23, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_binary-arm64_Packages'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=1062 ID:23>
+Applying pinning: PkgFilePin(id=22, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_i18n_Translation-en'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=67282 ID:22>
+Applying pinning: PkgFilePin(id=21, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_binary-arm64_Packages'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=144288 ID:21>
+Applying pinning: PkgFilePin(id=20, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_i18n_Translation-en'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=121051 ID:20>
+Applying pinning: PkgFilePin(id=19, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_binary-arm64_Packages'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=253846 ID:19>
+Applying pinning: PkgFilePin(id=18, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_i18n_Translation-en'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=150720 ID:18>
+Applying pinning: PkgFilePin(id=17, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_binary-arm64_Packages'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=571382 ID:17>
+Applying pinning: PkgFilePin(id=16, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_i18n_Translation-en'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3621482 ID:16>
+Applying pinning: PkgFilePin(id=15, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_binary-arm64_Packages'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=10729123 ID:15>
+Applying pinning: PkgFilePin(id=14, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_i18n_Translation-en'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=6322469 ID:14>
+Applying pinning: PkgFilePin(id=13, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_binary-arm64_Packages'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=13350012 ID:13>
+Applying pinning: PkgFilePin(id=12, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_i18n_Translation-en'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3745332 ID:12>
+Applying pinning: PkgFilePin(id=11, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_binary-arm64_Packages'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=7029210 ID:11>
+Applying pinning: PkgFilePin(id=2, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-all_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='all' site='packages.mozilla.org' IndexType='Debian Package Index' Size=5684327 ID:2>
+Applying pinning: PkgFilePin(id=1, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-arm64_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='arm64' site='packages.mozilla.org' IndexType='Debian Package Index' Size=102325 ID:1>
+Applying pinning: PkgFilePin(id=0, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/_srv_encina-repo_._Packages'  a=,c=,v=,o=,l= arch='' site='' IndexType='Debian Package Index' Size=42484 ID:0>
+Using (^linux-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^kfreebsd-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^gnumach-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^.*-modules-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^.*-kernel-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^linux-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^kfreebsd-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^gnumach-.*-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^.*-modules-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$|^.*-kernel-[1-9][0-9]*\.[0-9]+\.[0-9]+-[0-9]+(-.+)?$) regexp to find kernel packages
+Using (^linux-.*-7\.0\.0\-30\-generic$|^linux-.*-7\.0\.0\-30$|^kfreebsd-.*-7\.0\.0\-30\-generic$|^kfreebsd-.*-7\.0\.0\-30$|^gnumach-.*-7\.0\.0\-30\-generic$|^gnumach-.*-7\.0\.0\-30$|^.*-modules-7\.0\.0\-30\-generic$|^.*-modules-7\.0\.0\-30$|^.*-kernel-7\.0\.0\-30\-generic$|^.*-kernel-7\.0\.0\-30$|^linux-.*-7\.0\.0\-30\-generic$|^linux-.*-7\.0\.0\-30$|^kfreebsd-.*-7\.0\.0\-30\-generic$|^kfreebsd-.*-7\.0\.0\-30$|^gnumach-.*-7\.0\.0\-30\-generic$|^gnumach-.*-7\.0\.0\-30$|^.*-modules-7\.0\.0\-30\-generic$|^.*-modules-7\.0\.0\-30$|^.*-kernel-7\.0\.0\-30\-generic$|^.*-kernel-7\.0\.0\-30$) regexp to find running kernel packages
+Checking: firefox ([<Origin component:'main' archive:'mozilla' origin:'namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla' label:'namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla' site:'packages.mozilla.org' isTrusted:True>])
+sanity check failed for: {'firefox-l10n-es-es=154.0.1~build1', 'firefox=154.0.1~build1'} : pkg firefox is not in an allowed origin
+falling back to adjusting firefox's dependencies
+sanity check failed for: {'firefox=1:1snap1-0ubuntu5', 'firefox-l10n-es-es=153.0.4~build1'} : pkg firefox-l10n-es-es is marked to be deleted
+Checking: openjdk-17-jre ([<Origin component:'main' archive:'noble-updates' origin:'Ubuntu' label:'Ubuntu' site:'ports.ubuntu.com' isTrusted:True>, <Origin component:'main' archive:'noble-security' origin:'Ubuntu' label:'Ubuntu' site:'ports.ubuntu.com' isTrusted:True>])
+Checking: openjdk-17-jre-headless ([<Origin component:'main' archive:'noble-updates' origin:'Ubuntu' label:'Ubuntu' site:'ports.ubuntu.com' isTrusted:True>, <Origin component:'main' archive:'noble-security' origin:'Ubuntu' label:'Ubuntu' site:'ports.ubuntu.com' isTrusted:True>])
+pkgs that look like they should be upgraded: openjdk-17-jre
+openjdk-17-jre-headless
+Fetched 0 B in 0s (0 B/s)                                                       
+fetch.run() result: 0
+<apt_pkg.AcquireItem object:Status: 2 Complete: 1 Local: 1 IsTrusted: 1 FileSize: 233850 DestFile:'/var/cache/apt/archives/openjdk-17-jre_17.0.20+8-1~24.04_arm64.deb' DescURI: 'http://ports.ubuntu.com/ubuntu-ports/pool/main/o/openjdk-17/openjdk-17-jre_17.0.20%2b8-1%7e24.04_arm64.deb' ID:0 ErrorText: ''>
+check_conffile_prompt(/var/cache/apt/archives/openjdk-17-jre_17.0.20+8-1~24.04_arm64.deb)
+found pkg: openjdk-17-jre
+No conffiles in deb /var/cache/apt/archives/openjdk-17-jre_17.0.20+8-1~24.04_arm64.deb (There is no member named 'conffiles')
+<apt_pkg.AcquireItem object:Status: 2 Complete: 1 Local: 1 IsTrusted: 1 FileSize: 47471146 DestFile:'/var/cache/apt/archives/openjdk-17-jre-headless_17.0.20+8-1~24.04_arm64.deb' DescURI: 'http://ports.ubuntu.com/ubuntu-ports/pool/main/o/openjdk-17/openjdk-17-jre-headless_17.0.20%2b8-1%7e24.04_arm64.deb' ID:0 ErrorText: ''>
+check_conffile_prompt(/var/cache/apt/archives/openjdk-17-jre-headless_17.0.20+8-1~24.04_arm64.deb)
+found pkg: openjdk-17-jre-headless
+conffile line: /etc/java-17-openjdk/accessibility.properties cb5ef274bab0096317e5053916bd8bb8
+current md5: cb5ef274bab0096317e5053916bd8bb8
+conffile line: /etc/java-17-openjdk/jfr/default.jfc 9437cd21e045a402824041f2c83477ac
+current md5: 9437cd21e045a402824041f2c83477ac
+conffile line: /etc/java-17-openjdk/jfr/profile.jfc afea752652ea2eb60d134d1ba8d0b5dc
+current md5: afea752652ea2eb60d134d1ba8d0b5dc
+conffile line: /etc/java-17-openjdk/jvm-arm64.cfg c77e64af82305512acd5d5c4f8fb371f
+current md5: c77e64af82305512acd5d5c4f8fb371f
+conffile line: /etc/java-17-openjdk/logging.properties 0f00ec3e7a7767a4efeae1875fb5f3d4
+current md5: 0f00ec3e7a7767a4efeae1875fb5f3d4
+conffile line: /etc/java-17-openjdk/management/jmxremote.access 5880f5255cf159b204761cf24be76061
+current md5: 5880f5255cf159b204761cf24be76061
+conffile line: /etc/java-17-openjdk/management/management.properties 055470250aefd21bb36a38aa74c9d9be
+current md5: 055470250aefd21bb36a38aa74c9d9be
+conffile line: /etc/java-17-openjdk/net.properties 6796eefe85e78830093081ab9029fcca
+current md5: 6796eefe85e78830093081ab9029fcca
+conffile line: /etc/java-17-openjdk/psfont.properties.ja d4c735bf5756759a1c3bc8de408629fc
+current md5: d4c735bf5756759a1c3bc8de408629fc
+conffile line: /etc/java-17-openjdk/psfontj2d.properties 17b15d370018acc01550175882c7da91
+current md5: 17b15d370018acc01550175882c7da91
+conffile line: /etc/java-17-openjdk/security/blocked.certs 19e78890d61c0dfc65b291341c08beba
+current md5: 19e78890d61c0dfc65b291341c08beba
+conffile line: /etc/java-17-openjdk/security/default.policy 74fb678fd76187aa6436479dbc923b59
+current md5: 74fb678fd76187aa6436479dbc923b59
+conffile line: /etc/java-17-openjdk/security/java.policy aad9032ca70395e13bbf249e9ce0a118
+current md5: aad9032ca70395e13bbf249e9ce0a118
+conffile line: /etc/java-17-openjdk/security/java.security fc695b666d333c2bb01e77d51e97f09e
+current md5: fc695b666d333c2bb01e77d51e97f09e
+conffile line: /etc/java-17-openjdk/security/nss.cfg ccd8ac9d15b87311cc9054767517c14d
+current md5: ccd8ac9d15b87311cc9054767517c14d
+conffile line: /etc/java-17-openjdk/security/policy/README.txt 3d47d94bc4f19d18bcc8b23f51d013af
+current md5: 3d47d94bc4f19d18bcc8b23f51d013af
+conffile line: /etc/java-17-openjdk/security/policy/limited/default_US_export.policy 1a08ffdf0bc871296c8d698fb22f542a
+current md5: 1a08ffdf0bc871296c8d698fb22f542a
+conffile line: /etc/java-17-openjdk/security/policy/limited/default_local.policy 6d7b4616a5dba477b6b6d3f9a12e568f
+current md5: 6d7b4616a5dba477b6b6d3f9a12e568f
+conffile line: /etc/java-17-openjdk/security/policy/limited/exempt_local.policy 4cbb03f484c86cbea1a217baae07d3c9
+current md5: 4cbb03f484c86cbea1a217baae07d3c9
+conffile line: /etc/java-17-openjdk/security/policy/unlimited/default_US_export.policy 1a08ffdf0bc871296c8d698fb22f542a
+current md5: 1a08ffdf0bc871296c8d698fb22f542a
+conffile line: /etc/java-17-openjdk/security/policy/unlimited/default_local.policy 2a0f330c51aff13a96af8bd5082c84a8
+current md5: 2a0f330c51aff13a96af8bd5082c84a8
+conffile line: /etc/java-17-openjdk/security/public_suffix_list.dat d8e49334a95739fdd9508cdf770876c1
+current md5: d8e49334a95739fdd9508cdf770876c1
+conffile line: /etc/java-17-openjdk/sound.properties 4f95242740bfb7b133b879597947a41e
+current md5: 4f95242740bfb7b133b879597947a41e
+conffile line: /etc/java-17-openjdk/swing.properties 235f7a79068085d8ef02e2b5134a294a
+current md5: 235f7a79068085d8ef02e2b5134a294a
+Packages blacklist due to conffile prompts: []
+Option --dry-run given, *not* performing real actions
+Packages that will be upgraded: openjdk-17-jre openjdk-17-jre-headless
+Writing dpkg log to /var/log/unattended-upgrades/unattended-upgrades-dpkg.log
+applying set ['openjdk-17-jre', 'openjdk-17-jre-headless']
+/usr/bin/unattended-upgrade:567: DeprecationWarning: This process (pid=3745) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+/usr/bin/dpkg --status-fd 10 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/openjdk-17-jre_17.0.20+8-1~24.04_arm64.deb /var/cache/apt/archives/openjdk-17-jre-headless_17.0.20+8-1~24.04_arm64.deb 
+/usr/bin/dpkg --status-fd 10 --configure --pending 
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_i18n_Translation-en'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=394 ID:24> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_binary-arm64_Packages'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=1062 ID:23> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_i18n_Translation-en'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=67282 ID:22> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_binary-arm64_Packages'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=144288 ID:21> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_i18n_Translation-en'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=121051 ID:20> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_binary-arm64_Packages'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=253846 ID:19> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_i18n_Translation-en'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=150720 ID:18> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_binary-arm64_Packages'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=571382 ID:17> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_i18n_Translation-en'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3621482 ID:16> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_binary-arm64_Packages'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=10729123 ID:15> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_i18n_Translation-en'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=6322469 ID:14> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_binary-arm64_Packages'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=13350012 ID:13> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_i18n_Translation-en'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3745332 ID:12> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_binary-arm64_Packages'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=7029210 ID:11> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-all_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='all' site='packages.mozilla.org' IndexType='Debian Package Index' Size=5684327 ID:2> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-arm64_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='arm64' site='packages.mozilla.org' IndexType='Debian Package Index' Size=102325 ID:1> with -32768 pin
+Marking not allowed <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/_srv_encina-repo_._Packages'  a=,c=,v=,o=,l= arch='' site='' IndexType='Debian Package Index' Size=42484 ID:0> with -32768 pin
+Applying pinning: PkgFilePin(id=24, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_i18n_Translation-en'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=394 ID:24>
+Applying pinning: PkgFilePin(id=23, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_multiverse_binary-arm64_Packages'  a=noble-backports,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=1062 ID:23>
+Applying pinning: PkgFilePin(id=22, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_i18n_Translation-en'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=67282 ID:22>
+Applying pinning: PkgFilePin(id=21, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_universe_binary-arm64_Packages'  a=noble-backports,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=144288 ID:21>
+Applying pinning: PkgFilePin(id=20, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_i18n_Translation-en'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=121051 ID:20>
+Applying pinning: PkgFilePin(id=19, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-backports_main_binary-arm64_Packages'  a=noble-backports,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=253846 ID:19>
+Applying pinning: PkgFilePin(id=18, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_i18n_Translation-en'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=150720 ID:18>
+Applying pinning: PkgFilePin(id=17, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_multiverse_binary-arm64_Packages'  a=noble-updates,c=multiverse,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=571382 ID:17>
+Applying pinning: PkgFilePin(id=16, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_i18n_Translation-en'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3621482 ID:16>
+Applying pinning: PkgFilePin(id=15, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_universe_binary-arm64_Packages'  a=noble-updates,c=universe,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=10729123 ID:15>
+Applying pinning: PkgFilePin(id=14, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_i18n_Translation-en'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=6322469 ID:14>
+Applying pinning: PkgFilePin(id=13, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_restricted_binary-arm64_Packages'  a=noble-updates,c=restricted,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=13350012 ID:13>
+Applying pinning: PkgFilePin(id=12, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_i18n_Translation-en'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='' site='ports.ubuntu.com' IndexType='Debian Translation Index' Size=3745332 ID:12>
+Applying pinning: PkgFilePin(id=11, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/ports.ubuntu.com_ubuntu-ports_dists_noble-updates_main_binary-arm64_Packages'  a=noble-updates,c=main,v=24.04,o=Ubuntu,l=Ubuntu arch='arm64' site='ports.ubuntu.com' IndexType='Debian Package Index' Size=7029210 ID:11>
+Applying pinning: PkgFilePin(id=2, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-all_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='all' site='packages.mozilla.org' IndexType='Debian Package Index' Size=5684327 ID:2>
+Applying pinning: PkgFilePin(id=1, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/packages.mozilla.org_apt_dists_mozilla_main_binary-arm64_Packages'  a=mozilla,c=main,v=,o=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla,l=namespaces/moz-fx-productdelivery-pr-38b5/repositories/mozilla arch='arm64' site='packages.mozilla.org' IndexType='Debian Package Index' Size=102325 ID:1>
+Applying pinning: PkgFilePin(id=0, priority=-32768)
+Applying pin -32768 to package_file: <apt_pkg.PackageFile object: filename:'/var/lib/apt/lists/_srv_encina-repo_._Packages'  a=,c=,v=,o=,l= arch='' site='' IndexType='Debian Package Index' Size=42484 ID:0>
+left to upgrade set()
+All upgrades installed
+InstCount=0 DelCount=0 BrokenCount=0
+The list of kept packages can't be calculated in dry-run mode.
+rc=0

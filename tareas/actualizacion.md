@@ -369,7 +369,27 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       *Hecha cuando:* la orden del README, copiada tal cual en una VM `0.2.1`
       limpia, deja `apt-cache policy` enseñando el origen de Encina, y a
       continuación C3 se cumple en ella.
-- [ ] **C-bis. B1 CONFIRMÓ la deducción 2 el 2026-08-31 (§4.84d): los parches
+- [x] **HECHA EL 2026-08-31, noche (`MEDICIONES.md` §4.85), con su «hecha
+      cuando» ejecutado entero y UNA MITAD PENDIENTE DE JORGE:** banco rehecho
+      por la receta de §4.84a (verificador 64/0), el control de B1 reproducido
+      SIN fichero («pkg firefox is not in an allowed origin», openjdk sí),
+      **las dos sintaxis medidas por separado y las dos en verde**, y la
+      elegida es `Origins-Pattern` con `site=packages.mozilla.org` — el
+      precio de cada una escrito en §4.85c; de propina, un
+      `unattended-upgrade` **real** con el fichero puesto subió firefox
+      153.0.4→154.0.1 (dpkg lo confirma, §4.85d). El fichero
+      `52encina-firefox` vive en la `0.2.2` **propuesta** de
+      `encina-firefox-native` (el `dch` está hecho en la rama, no en `main`)
+      con la definición de terminado ejecutada (construir 40/0, lintian limpio,
+      verificar 25/0 con purga y con la comprobación nueva y su control), y
+      el README enmendado. **Lo que es de Jorge:** todo el paquete está en la
+      rama local **`cbis-52encina-firefox`, SIN publicar**, porque
+      aterrizarlo en `main` toca `repo-manifiesto.tsv` y eso es comprometerse
+      al medio `0.2.2` (meta nueva, cosecha nueva, carpeta y etiqueta nuevas
+      — §4.85f lo desglosa); y a las máquinas `0.2.1` ya instaladas el
+      fichero solo les llega a mano o reinstalando, y dónde se escribe esa
+      orden (README o notas de la release) se decide con C1. La casilla
+      original: **C-bis. B1 CONFIRMÓ la deducción 2 el 2026-08-31 (§4.84d): los parches
       de Firefox NO llegan solos, y esta casilla PASA AL PRIMER PUESTO del
       bloque** — afecta a las máquinas `0.2.1` ya publicadas y, al revés que
       el resto del bloque C, no depende de A1 ni de C1: es un fichero en

@@ -1,0 +1,104 @@
+
+=== 1. LA prueba crítica: dos apt full-upgrade seguidos ===
+  Aviso: full-upgrade actualiza todo el sistema y puede tardar y traer
+  un kernel nuevo. Es lo que pide AGENTS.md §5.5 y no se salta.
+
+  Antes:
+    deb-version: 154.0.1~build1
+    binario:     /usr/lib/firefox/firefox
+    candidato:   154.0.1~build1
+    origen:      1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+    snap:        firefox 147.0.3-1 7764
+--- sudo apt full-upgrade  (vuelta 1 de 2) 
+  [OK]    full-upgrade 1/2 termina sin error
+    0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+    (apt no ha mencionado firefox ni snap)
+--- sudo apt full-upgrade  (vuelta 2 de 2) 
+  [OK]    full-upgrade 2/2 termina sin error
+    0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+    (apt no ha mencionado firefox ni snap)
+  [AVISO] Las dos vueltas no han movido ningún paquete: no habia nada que actualizar
+         Ubuntu retiene las actualizaciones por fases. Se fuerza una
+         vuelta mas incluyendolas, para que apt tenga algo que decidir.
+--- sudo apt full-upgrade  (vuelta extra, con actualizaciones por fases) 
+  [OK]    full-upgrade con fases termina sin error
+    0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+    (apt no ha mencionado firefox ni snap)
+  [AVISO] Ni forzando las fases hay nada que actualizar: la prueba del anclaje se apoya solo en el A/B de la purga
+
+  Después:
+    deb-version: 154.0.1~build1
+    binario:     /usr/lib/firefox/firefox
+    candidato:   154.0.1~build1
+    origen:      1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+    snap:        firefox 147.0.3-1 7764
+  [OK]    Firefox sigue siendo el paquete nativo de Mozilla (154.0.1~build1)
+  [OK]    /usr/bin/firefox sigue sin apuntar al Snap
+  [OK]    El candidato de firefox sigue saliendo de packages.mozilla.org
+  [OK]    El Snap preexistente sigue igual, ni reinstalado ni actualizado por apt
+         firefox 147.0.3-1 7764
+         (sigue ahí a propósito: eliminarlo es cosa de la receta de imagen, R4)
+  [OK]    unattended-upgrades tiene a Mozilla permitido: /etc/apt/apt.conf.d/52encina-firefox declara Origins-Pattern site=packages.mozilla.org
+  [OK]    control: el mismo comparador rechaza el fichero con el site cambiado
+
+=== 2. Idempotencia: cinco instalaciones seguidas (R9) ===
+  ciclo 1/5 ok
+  ciclo 2/5 ok
+  ciclo 3/5 ok
+  ciclo 4/5 ok
+  ciclo 5/5 ok
+  [OK]    Cinco reinstalaciones sin error
+  [OK]    La configuración de repositorios es idéntica antes y después
+  [OK]    Hay exactamente un fichero de fuentes de Mozilla
+  [OK]    Integridad de los ficheros instalados (dpkg -V)
+
+=== 3. Purga: el sistema vuelve a su configuración de repositorios original ===
+--- sudo apt purge encina-firefox-native 
+  [OK]    Purga ejecutada sin error
+  [OK]    Eliminado: /etc/apt/sources.list.d/mozilla.sources
+  [OK]    Eliminado: /etc/apt/preferences.d/encina-mozilla
+  [OK]    Eliminado: /etc/apt/apt.conf.d/52encina-firefox
+  [OK]    Eliminado: /usr/share/keyrings/packages.mozilla.org.asc
+  [OK]    Eliminado: /usr/share/applications/firefox_firefox.desktop
+  [OK]    Eliminado: /usr/share/glib-2.0/schemas/99-encina-firefox-native.gschema.override
+  [OK]    Tras purgar, el lanzador del Snap vuelve a resolver a: /snap/bin/firefox %u
+         Es la prueba de que ocultarlo no era eliminarlo (R4): nada se
+         destruyó, solo quedó tapado mientras el paquete estaba puesto.
+  [OK]    El Snap sigue instalado tras toda la prueba (nunca se tocó)
+  [OK]    apt ya no ofrece nada de packages.mozilla.org
+  [OK]    Sin el paquete, el candidato vuelve a ser el deb de transición de Ubuntu (1:1snap1-0ubuntu5)
+         Es la prueba A/B: la única diferencia entre las dos situaciones
+         es este paquete, así que el anclaje es lo que sostiene Firefox nativo.
+    firefox:
+      Installed: 154.0.1~build1
+      Candidate: 1:1snap1-0ubuntu5
+      Version table:
+         1:1snap1-0ubuntu5 500
+            500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+     *** 154.0.1~build1 100
+            100 /var/lib/dpkg/status
+         153.0.4~build1 500
+            500 file:/srv/encina-repo ./ Packages
+    (firefox sigue instalado: purgar la configuración del repositorio no
+     desinstala lo que ya se instaló desde él, y así debe ser)
+--- Reinstalando para dejar el sistema como estaba 
+  [OK]    Paquete reinstalado y apt update rehecho
+
+=== RESUMEN ===
+  correctas: 25   fallos: 0   avisos: 2   omitidas: 0
+
+Todas las comprobaciones automáticas pasan.
+
+
+=== Pendiente de tus ojos (no lo doy por bueno yo) ===
+  [OJOS]  Haz clic en el icono de Firefox del dock, como un usuario cualquiera
+  [OJOS]  En about:support, confirma DOS filas antes de mirar el idioma:
+            · 'Binario de la aplicación' -> /usr/lib/firefox/firefox-bin
+              (si pone /snap/firefox/... es el Snap: no vale)
+            · 'ID de distribución' -> mozilla-deb, nunca canonical-*
+  [OJOS]  Y entonces sí, que la interfaz esté EN ESPAÑOL
+            En ese orden: el Snap también está en español, así que ver
+            español antes de confirmar el binario no demuestra nada.
+
+Cuando eso pase:
+    ./scripts/diario.sh "A2 verificado: encina-firefox-native 0.2.2"
