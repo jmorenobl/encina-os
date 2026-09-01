@@ -380,7 +380,11 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       de Encina en `apt-cache policy` por la fuente remota DE VERDAD (lo
       desbloquea C3) y la entrada en la CI (que va con la fila del
       manifiesto, en C4, como hizo `encina-meta`). La especificación vive en
-      `AGENTS.md` §5bis. La casilla original: **C2. `encina-keyring`: la clave pública del proyecto, la fuente y nada
+      `AGENTS.md` §5bis. *Enmienda del 2026-09-01 (§4.88h): con el canal
+      publicado por orden de Jorge, la primera de las dos casillas quedó
+      MEDIDA — `apt update` en el testigo enseña
+      `release o=Encina OS,a=encina` por la fuente remota de verdad — y de
+      C2 sólo queda la CI, que entra con la fila del manifiesto en C4.* La casilla original: **C2. `encina-keyring`: la clave pública del proyecto, la fuente y nada
       más.** `/usr/share/keyrings/encina-archive-keyring.gpg` y
       `/etc/apt/sources.list.d/encina.sources` con `Signed-By:`, **una sola
       suite para todas las series** (como Mozilla; deducción 3), y la decisión
@@ -415,7 +419,17 @@ nombre propio (`encina-keyring`, como `ubuntu-keyring`).
       por `apt`, el origen de Encina por la fuente de verdad) y publicar es
       de Jorge — la orden, cuando la dé:
       `./imagen/subir-sourceforge.sh --repo medios/repo --de-verdad`. La VM
-      queda apagada como testigo preparado. La casilla original: **C3. `make repo`: el repositorio firmado a partir de los `.deb` por
+      queda apagada como testigo preparado. *Enmienda del mismo día
+      (§4.88h): **Jorge dio la orden («Adelante. Vamos a probar lo que
+      falta») y EL CANAL ESTÁ VIVO** — subida en verde con las 11 canónicas
+      a 302, y en el testigo el mismo `apt update` pasó del error de §4.87d
+      a verde trayendo `InRelease` y `Packages` por la canónica: **`apt`
+      sigue el 302 de SourceForge**, `o=Encina OS` en `apt-cache policy`
+      por la fuente de verdad, Mozilla a 1000, verificador 64/0.
+      **Queda SOLO el «hecha cuando» literal** —una `encina-branding` real
+      más alta por esta fuente— que ejecuta C4 con `0.2.2`: fabricar una
+      versión solo para probar chocaría con D24, y el mecanismo del upgrade
+      ya está medido con el laboratorio (§4.88d).* La casilla original: **C3. `make repo`: el repositorio firmado a partir de los `.deb` por
       huella, y su subida.** `dists/<suite>/` con `Packages`, `Release`,
       `InRelease` (`apt-ftparchive` o `reprepro` en la VM; el Mac no tiene
       ninguno, trampa de siempre), firmado con la clave de C2, y

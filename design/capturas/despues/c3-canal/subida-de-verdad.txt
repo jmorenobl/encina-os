@@ -1,0 +1,84 @@
+
+=== 0. el canal: cada .deb del pool es, POR HUELLA, el de una release publicada ===
+  [OK]    autofirma_1.9.1+encina4_all.deb  faeca3a9f0cf… = la del manifiesto
+  [OK]    encina-branding_0.1.17_all.deb  6929df0e69ac… = la del manifiesto
+  [OK]    encina-firefox-native_0.2.1_all.deb  640f508e3802… = la del manifiesto
+  [OK]    encina-meta_0.2.1_all.deb  204081f0ff3c… = la del manifiesto
+        destino  jmorenobl@frs.sourceforge.net:/home/frs/project/encina-os/repo/
+        canonica https://downloads.sourceforge.net/project/encina-os/repo/<fichero>
+
+=== 1. la via de subida contesta ===
+  [OK]    frs.sourceforge.net lista /home/frs/project/encina-os/ con la clave /Users/jorge/.ssh/sourceforge-encina
+
+=== 2. LA SUBIDA (--de-verdad) ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Could not chdir to home directory /home/users/j/jm/jmorenobl: No such file or directory
+        Transfer starting: 6 files
+        created directory /home/frs/project/encina-os/repo
+        pool/
+        pool/main/
+        pool/main/autofirma_1.9.1+encina4_all.deb
+                2162688   5%    3.59MB/s   00:00:09        2621440   7%  777.44KB/s   00:00:46        6291456  16%    6.98MB/s   00:00:04       12419072  31%   11.07MB/s   00:00:02       18677760  47%   11.16MB/s   00:00:01       23461888  59%    8.63MB/s   00:00:01       29622272  75%   11.09MB/s   00:00:00       34963456  88%   10.17MB/s   00:00:00       39570056 100%    8.00MB/s   00:00:04 (xfer#1, to-check=2/6)
+        pool/main/encina-branding_0.1.17_all.deb
+                6193152  89%   11.17MB/s   00:00:00        6952548 100%   10.97MB/s   00:00:00 (xfer#2, to-check=3/6)
+        pool/main/encina-firefox-native_0.2.1_all.deb
+                  10876 100%   44.12MB/s   00:00:00 (xfer#3, to-check=4/6)
+        pool/main/encina-meta_0.2.1_all.deb
+                   6904 100%   75.66MB/s   00:00:00 (xfer#4, to-check=5/6)
+        
+        sent 46546629 bytes  received 120 bytes  8141671 bytes/sec
+        total size is 46540384  speedup is 1.00
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Could not chdir to home directory /home/users/j/jm/jmorenobl: No such file or directory
+        Transfer starting: 12 files
+        dists/
+        dists/encina/
+        dists/encina/InRelease
+                   2271 100%    1.32MB/s   00:00:00 (xfer#1, to-check=2/12)
+        dists/encina/Release
+                   1994 100%    2.17MB/s   00:00:00 (xfer#2, to-check=3/12)
+        dists/encina/Release.gpg
+                    228 100%  138.46KB/s   00:00:00 (xfer#3, to-check=4/12)
+        dists/encina/main/
+        dists/encina/main/binary-amd64/
+        dists/encina/main/binary-amd64/Packages
+                  12245 100%   12.85MB/s   00:00:00 (xfer#4, to-check=7/12)
+        dists/encina/main/binary-amd64/Packages.gz
+                   5547 100%    3.35MB/s   00:00:00 (xfer#5, to-check=8/12)
+        dists/encina/main/binary-arm64/
+        dists/encina/main/binary-arm64/Packages
+                  12245 100%   14.05MB/s   00:00:00 (xfer#6, to-check=10/12)
+        dists/encina/main/binary-arm64/Packages.gz
+                   5547 100%    9.92MB/s   00:00:00 (xfer#7, to-check=11/12)
+        
+        sent 41100 bytes  received 204 bytes  55959 bytes/sec
+        total size is 40077  speedup is 0.97
+  [OK]    rsync termino
+
+=== 3. lo que hay ALLI contra lo que hay AQUI (trampa 13: la mutacion se verifica) ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Could not chdir to home directory /home/users/j/jm/jmorenobl: No such file or directory
+  [OK]    rsync --checksum no quiere transferir nada: los ficheros son los mismos bytes a los dos lados
+        (SourceForge tarda unos minutos en repartir a los espejos; la URL canonica se comprueba abajo)
+
+=== 4. la URL canonica de cada fichero ===
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/InRelease
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/Release
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/Release.gpg
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/main/binary-amd64/Packages
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/main/binary-amd64/Packages.gz
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/main/binary-arm64/Packages
+        302  https://downloads.sourceforge.net/project/encina-os/repo/dists/encina/main/binary-arm64/Packages.gz
+        302  https://downloads.sourceforge.net/project/encina-os/repo/pool/main/autofirma_1.9.1+encina4_all.deb
+        302  https://downloads.sourceforge.net/project/encina-os/repo/pool/main/encina-branding_0.1.17_all.deb
+        302  https://downloads.sourceforge.net/project/encina-os/repo/pool/main/encina-firefox-native_0.2.1_all.deb
+        302  https://downloads.sourceforge.net/project/encina-os/repo/pool/main/encina-meta_0.2.1_all.deb
+
+Lo que este guion NO comprueba: que la descarga entera desde la canonica de la huella
+(eso es bajarla, 3,5 GB, y shasum -c; y el torrent con aria2c sin pares, §4.82h).

@@ -404,6 +404,25 @@ para escribirla no se pierden: están en `MEDICIONES.md` §4.2 y §4.9.
 
 Una sola tarea. No abras ninguna otra hasta terminarla.
 
+> ### AL DÍA, 2026-09-01 (madrugada, 2ª parte): **EL CANAL ESTÁ VIVO** — Jorge ordenó la publicación («Adelante. Vamos a probar lo que falta»), el repositorio firmado está en `repo/` de SourceForge y **`apt` sigue el `302`**: la incógnita de D25, contestada (`MEDICIONES.md` §4.88h)
+>
+> La subida `--de-verdad` en verde (cotejo por huella 4/4, `pool/` antes que
+> `dists/`, `rsync --checksum` de vuelta sin nada que transferir, las 11
+> canónicas a `302`), y en el testigo `encina-c3-canal` **el mismo
+> `apt update` que ayer moría con «does not have a Release file» pasó a
+> verde** trayendo `InRelease` y `Packages` por la canónica:
+> `release o=Encina OS,a=encina` en `apt-cache policy` por la fuente remota
+> de verdad, el anclaje de Mozilla a 1000 en la misma foto,
+> `full-upgrade` en «0 upgraded» (el canal lleva exactamente lo de `0.2.1`)
+> y el verificador 64/0. **La casilla abierta de C2 queda medida y cerrada**
+> (de C2 sólo queda la CI, con C4); de C3 queda **sólo su «hecha cuando»
+> literal** —una `encina-branding` real más alta por esta fuente—, que
+> ejecuta C4 con `0.2.2`. La regla de orden de D25 se cumplió tal cual: el
+> repo publicado ANTES de que ninguna máquina de usuario lleve la clave.
+> **La siguiente tarea es C4**: fusionar `cbis-52encina-firefox`,
+> `encina-keyring` al manifiesto y a la matriz de la CI, y estrenar
+> `make release NUEVA=0.2.2 CAMBIAN=encina-firefox-native DE_VERDAD=1`.
+>
 > ### AL DÍA, 2026-09-01 (madrugada): **EL CANAL ESTÁ FABRICADO Y MEDIDO EN LOCAL; PUBLICARLO ES DE JORGE** — `make repo` firma el repositorio con los `.deb` de `0.2.1` por huella, y en un banco nuevo el mecanismo entero funciona (`MEDICIONES.md` §4.88)
 >
 > **C3, hasta donde se puede sin publicar.** `make repo`

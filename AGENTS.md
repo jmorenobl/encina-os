@@ -636,10 +636,13 @@ Signed-By: /usr/share/keyrings/encina-archive-keyring.gpg
       fabrica en el constructor: la clave privada no viaja
 - [ ] Idempotencia x5 y purga: los dos ficheros desaparecen (`encina.sources`
       es conffile) y `apt update` vuelve a verde sin el paquete
-- [ ] **Con el canal en vivo (C3):** `apt update` en una máquina con el
+- [x] **Con el canal en vivo (C3):** `apt update` en una máquina con el
       paquete enseña el origen de Encina en `apt-cache policy` por la fuente
       remota de verdad — hasta entonces esta casilla queda abierta a
-      propósito, con el error esperado medido y escrito
+      propósito, con el error esperado medido y escrito. *Medida el
+      2026-09-01 con el canal publicado por orden de Jorge (§4.88h):
+      `release o=Encina OS,a=encina` por
+      `downloads.sourceforge.net/project/encina-os/repo`*
 - [ ] **En la CI:** entra en la matriz **en el mismo commit que su fila del
       manifiesto** (C4), como hizo `encina-meta` — antes no, porque
       `comprobar-propios.sh` cotejaría contra una fila que no existe

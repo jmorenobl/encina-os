@@ -1,0 +1,7 @@
+== curl -sI de la canonica del InRelease (el 302 literal)
+HTTP/2 302 
+location: https://master.dl.sourceforge.net/project/encina-os/repo/dists/encina/InRelease?viasf=1&fid=3e9caeffe30fd562&e=1788332388&st=fDWPbqwCuvEUtGFkq-sx2A
+
+== la descarga entera siguiendo el 302, cotejada contra los bytes locales
+e3673b3e1b8407d491148f6a654aaa4ed6e3721a9f9f8d3bfe4a0752cceaa8c0  /private/tmp/claude-501/-Users-jorge-Projects-encina-os/59c1ceaa-f3f8-4197-931a-ce3586ac4ae3/scratchpad/InRelease.remoto
+e3673b3e1b8407d491148f6a654aaa4ed6e3721a9f9f8d3bfe4a0752cceaa8c0  medios/repo/dists/encina/InRelease

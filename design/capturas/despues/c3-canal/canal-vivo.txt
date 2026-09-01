@@ -1,0 +1,74 @@
+Warning: Permanently added '192.168.64.27' (ED25519) to the list of known hosts.
+===== 1. quien soy, y el estado del que parto (ayer: rc 100, does not have a Release file)
+encina-e2-completa
+encina-branding	0.1.17
+encina-keyring	0.1.0
+
+===== 2. LA MEDICION: apt update ENTERO con el canal publicado
+rc_apt_update=0
+Get:1 file:/srv/encina-repo ./ InRelease
+Ign:1 file:/srv/encina-repo ./ InRelease
+Get:2 file:/srv/encina-repo ./ Release
+Ign:2 file:/srv/encina-repo ./ Release
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages
+Ign:3 file:/srv/encina-repo ./ Packages
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:3 file:/srv/encina-repo ./ Packages [42.5 kB]
+Get:4 file:/srv/encina-repo ./ Translation-en
+Ign:4 file:/srv/encina-repo ./ Translation-en
+Get:6 https://downloads.sourceforge.net/project/encina-os/repo encina InRelease [2271 B]
+Get:13 https://downloads.sourceforge.net/project/encina-os/repo encina/main arm64 Packages [5547 B]
+
+===== 3. apt-cache policy: el origen de Encina por la FUENTE REMOTA DE VERDAD, y Mozilla a 1000 en la misma foto
+encina-branding:
+  Installed: 0.1.17
+  Candidate: 0.1.17
+  Version table:
+ *** 0.1.17 500
+        500 file:/srv/encina-repo ./ Packages
+        500 https://downloads.sourceforge.net/project/encina-os/repo encina/main arm64 Packages
+        100 /var/lib/dpkg/status
+firefox:
+  Installed: 154.0.1~build1
+  Candidate: 154.0.1~build1
+  Version table:
+     1:1snap1-0ubuntu5 500
+        500 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages
+ *** 154.0.1~build1 1000
+       1000 https://packages.mozilla.org/apt mozilla/main arm64 Packages
+        100 /var/lib/dpkg/status
+ 500 https://downloads.sourceforge.net/project/encina-os/repo encina/main arm64 Packages
+     release o=Encina OS,a=encina,n=encina,l=Encina OS,c=main,b=arm64
+     origin downloads.sourceforge.net
+
+===== 4. la lista de apt que quedo registrada, releida del disco
+lista=downloads.sourceforge.net_project_encina-os_repo_dists_encina_InRelease
+Codename: encina
+Label: Encina OS
+Origin: Encina OS
+Suite: encina
+
+===== 5. full-upgrade: el repo lleva exactamente lo de 0.2.1, no debe traer nada
+rc_full_upgrade=0
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
